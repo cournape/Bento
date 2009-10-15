@@ -17,9 +17,7 @@ string = WordStart() + CharsNotIn('\n')
 word = Word(alphas)
 newline = LineEnd().suppress()
 module_name = Word(alphanums + '_')
-full_module_name = Group(module_name + \
-        ZeroOrMore(Literal('.').suppress() + module_name)
-        )
+full_module_name = module_name + ZeroOrMore(Literal('.').suppress() + module_name)
 filename = Word(alphanums + '.' + os.pathsep)
 
 indent_stack = [1]
@@ -81,6 +79,6 @@ metadata_field = (description_definition | name_definition | summary_definition 
 # Modules section
 modules = Literal("Modules")
 modules_definition = modules + colon + \
-        full_module_name + ZeroOrMore(comma_sep + full_module_name)
+        Group(full_module_name) + ZeroOrMore(comma_sep + Group(full_module_name))
 
 stmt << (metadata_field | modules_definition)
