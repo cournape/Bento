@@ -1,4 +1,4 @@
-from pyparsing import \
+from toydist.compat.pyparsing import \
         Literal, WordStart, CharsNotIn, LineEnd, alphas, Word, \
         indentedBlock, OneOrMore, ZeroOrMore, OnlyOnce, \
         Group, empty, lineEnd, FollowedBy, col, alphanums, \
