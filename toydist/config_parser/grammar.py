@@ -1,3 +1,5 @@
+import os
+
 from toydist.compat.pyparsing import \
         Literal, WordStart, CharsNotIn, LineEnd, alphas, Word, \
         indentedBlock, OneOrMore, ZeroOrMore, OnlyOnce, \
@@ -18,6 +20,7 @@ module_name = Word(alphanums + '_')
 full_module_name = Group(module_name + \
         ZeroOrMore(Literal('.').suppress() + module_name)
         )
+filename = Word(alphanums + '.' + os.pathsep)
 
 indent_stack = [1]
 
