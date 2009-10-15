@@ -1,0 +1,68 @@
+.. Thu, 15 Oct 2009 19:28:58 +0900
+
+What's needed for a first prototype
+===================================
+
+Obviously a lot. Before something which is worths putting out there, I would
+like to implement the following:
+
+Fully static package description
+--------------------------------
+
+We delegate everything related to build and install to distutils,
+and we just use the config file as input instead of writing metadata in
+setup.py. Goal: building hello world packages with C extensions with a 2 lines
+setup.py and the package description entirely defined in the metadata.
+
+This requires::
+
+        .# Handle Extension, Package and Modules in the parser
+        .# Create a PackageDescription from a file
+
+Build and Install requirements sections
+---------------------------------------
+
+Second step: build and install requirements. Once handled at
+parsing/description level, we may build a small tool on top of say pip to
+download all the necessasry packages - this would be a toy utility.
+
+This requires::
+
+        .# Version handling: see distutils and the new PEP 386.
+        .# Parsing requirements in config file
+        .# Writing a tool on top of pip to download the build or install
+           requirements ala pip
+
+Basic configuration management
+------------------------------
+
+Third step: add a few fixed variable, say os and arch, to handle .e.g
+system-dependent requirements.
+
+Later
+=====
+
+Things to think about
+
+Tools integration
+-----------------
+
+Example: paver-like tool integration, scons/waf integration
+
+Distutils compatibility story
+-----------------------------
+
+Distutils compat: from config file to setup.py, from setup.py to config file
+
+Distribution content description
+--------------------------------
+
+The current MANIFEST mechanism is insane, as is using the VCS to determine
+files to include. But some people want it::
+
+        .# How to support the following use-case: someones use the VCS to
+        generate the sdist content, I want to reproduce it from the sdist only.
+        .# Is a update_sdist command to update the content from the VCS
+        acceptable ?
+        .# Description needs to be rich enough so that following the FSH is
+        possible
