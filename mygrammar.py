@@ -61,6 +61,9 @@ name_definition = name + colon + word
 summary = Literal('Summary')
 summary_definition = summary + colon + string
 
+author = Literal('Author')
+author_definition = author + colon + string
+
 indented_string = string.copy()
 indented_string.setParseAction(checkPeerIndent)
 multiline_string = Group(OneOrMore(empty + indented_string))
@@ -69,7 +72,8 @@ description_definition = Group(
         Literal("Description") + colon +
         INDENT + multiline_string + UNDENT)
 
-metadata_field = (description_definition | name_definition | summary_definition)
+metadata_field = (description_definition | name_definition | summary_definition \
+        | author_definition)
 
 # Modules section
 modules = Literal("Modules")
@@ -90,6 +94,9 @@ def parse_summary(s, loc, toks):
 def parse_description(s, loc, toks):
     print "= Description is =\n\t%s" % "\n\t".join([str(i) for i in toks[0][1]])
 
+def parse_author(s, loc, toks):
+    print "= Author is =\n\t%s" % toks[1]
+
 def parse_modules(s, loc, toks):
     def module_name(t):
         return ".".join(t)
@@ -99,8 +106,10 @@ def parse_modules(s, loc, toks):
         print module_name(m)
 
 name_definition.setParseAction(parse_name)
+author_definition.setParseAction(parse_author)
 summary_definition.setParseAction(parse_summary)
 description_definition.setParseAction(parse_description)
+
 modules_definition.setParseAction(parse_modules)
 
 if __name__ == '__main__':
@@ -118,6 +127,10 @@ Description:
     There are also basic facilities for discrete fourier transform,
     basic linear algebra and random number generation.
 Summary: array processing for numbers, strings, records, and objects.
-Modules: foo.bar, foo.bar2,
+Modules:
+    foo.bar,
+    foo.bar2,
+    foo.bar3
+Author: someone
 """
     grammar.parseString(data)
