@@ -81,4 +81,26 @@ modules = Literal("Modules")
 modules_definition = modules + colon + \
         Group(full_module_name) + ZeroOrMore(comma_sep + Group(full_module_name))
 
-stmt << (metadata_field | modules_definition)
+# Extension section
+extension_stmt = Forward()
+extension_stmt.setParseAction(checkPeerIndent)
+
+# sources subsection
+src = Literal('sources')
+src_files_line = filename + ZeroOrMore(comma_sep + filename)
+src_definition = src + colon + \
+        INDENT + \
+        Group(OneOrMore(empty + indented_string)) + \
+        UNDENT
+
+extension_stmt << src_definition
+        
+extension_stmts = Group(OneOrMore(empty + extension_stmt))
+
+extension = Literal("Extension")
+extension_definition = \
+        extension + colon + \
+        Group(full_module_name) + \
+        INDENT + extension_stmts + UNDENT
+
+stmt << (metadata_field | modules_definition | extension_definition | src_definition)

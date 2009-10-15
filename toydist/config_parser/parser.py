@@ -1,6 +1,6 @@
 from grammar import \
         grammar, name_definition, author_definition, summary_definition, \
-        description_definition, modules_definition
+        description_definition, modules_definition, extension_definition
 
 #------------------------------
 #       Parse actions
@@ -25,12 +25,21 @@ def parse_modules(s, loc, toks):
     for m in mods:
         print module_name(m)
 
+def parse_extension(s, loc, toks):
+    def module_name(t):
+        return ".".join(t)
+    extens = toks[1:]
+    print "= Extensions are =", toks
+    #for e in extens:
+    #    print module_name(e)
+
 name_definition.setParseAction(parse_name)
 author_definition.setParseAction(parse_author)
 summary_definition.setParseAction(parse_summary)
 description_definition.setParseAction(parse_description)
 
 modules_definition.setParseAction(parse_modules)
+extension_definition.setParseAction(parse_extension)
 
 if __name__ == '__main__':
     data = """\
@@ -52,5 +61,8 @@ Modules:
     foo.bar2,
     foo.bar3
 Author: someone
+Extension: _foo.bar
+    sources:
+        yo
 """
     grammar.parseString(data)
