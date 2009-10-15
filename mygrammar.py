@@ -10,10 +10,14 @@ from pyparsing import \
 #---------------------------------
 # Literals
 colon = Literal(':').suppress()
+comma_sep = Literal(',').suppress()
 string = WordStart() + CharsNotIn('\n')
 word = Word(alphas)
 newline = LineEnd().suppress()
-module_name = word + ZeroOrMore(Literal('.') + word)
+module_name = Word(alphanums + '_')
+full_module_name = Group(module_name + \
+        ZeroOrMore(Literal('.').suppress() + module_name)
+        )
 
 indent_stack = [1]
 
@@ -66,7 +70,13 @@ description_definition = Group(
         INDENT + multiline_string + UNDENT)
 
 metadata_field = (description_definition | name_definition | summary_definition)
-stmt << metadata_field
+
+# Modules section
+modules = Literal("Modules")
+modules_definition = modules + colon + \
+        full_module_name + ZeroOrMore(comma_sep + full_module_name)
+
+stmt << (metadata_field | modules_definition)
 
 #------------------------------
 #       Parse actions
@@ -80,9 +90,18 @@ def parse_summary(s, loc, toks):
 def parse_description(s, loc, toks):
     print "= Description is =\n\t%s" % "\n\t".join([str(i) for i in toks[0][1]])
 
+def parse_modules(s, loc, toks):
+    def module_name(t):
+        return ".".join(t)
+    mods = toks[1:]
+    print "= Modules are ="
+    for m in mods:
+        print module_name(m)
+
 name_definition.setParseAction(parse_name)
 summary_definition.setParseAction(parse_summary)
 description_definition.setParseAction(parse_description)
+modules_definition.setParseAction(parse_modules)
 
 if __name__ == '__main__':
     data = """\
@@ -99,5 +118,6 @@ Description:
     There are also basic facilities for discrete fourier transform,
     basic linear algebra and random number generation.
 Summary: array processing for numbers, strings, records, and objects.
+Modules: foo.bar, foo.bar2,
 """
     grammar.parseString(data)
