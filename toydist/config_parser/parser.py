@@ -2,46 +2,50 @@ from grammar import \
         grammar, name_definition, author_definition, summary_definition, \
         description_definition, modules_definition, extension_definition
 
-#------------------------------
-#       Parse actions
-#------------------------------
-def parse_name(s, loc, toks):
-    print "= Name is =\n\t%s" % toks[1]
+class AST(object):
+    # Not really an AST...
+    def __init__(self):
+        pass
 
-def parse_summary(s, loc, toks):
-    print "= Summary is =\n\t%s" % toks[1]
+    def parse_name(self, s, loc, toks):
+        print "= Name is =\n\t%s" % toks[1]
 
-def parse_description(s, loc, toks):
-    print "= Description is =\n\t%s" % "\n\t".join([str(i) for i in toks[0][1]])
+    def parse_summary(self, s, loc, toks):
+        print "= Summary is =\n\t%s" % toks[1]
 
-def parse_author(s, loc, toks):
-    print "= Author is =\n\t%s" % toks[1]
+    def parse_description(self, s, loc, toks):
+        print "= Description is =\n\t%s" % "\n\t".join([str(i) for i in toks[0][1]])
 
-def parse_modules(s, loc, toks):
-    def module_name(t):
-        return ".".join(t)
-    mods = toks[1:]
-    print "= Modules are ="
-    for m in mods:
-        print module_name(m)
+    def parse_author(self, s, loc, toks):
+        print "= Author is =\n\t%s" % toks[1]
 
-def parse_extension(s, loc, toks):
-    def module_name(t):
-        return ".".join(t)
-    extens = toks[1:]
-    print "= Extensions are =", toks
-    #for e in extens:
-    #    print module_name(e)
+    def parse_modules(self, s, loc, toks):
+        def module_name(t):
+            return ".".join(t)
+        mods = toks[1:]
+        print "= Modules are ="
+        for m in mods:
+            print module_name(m)
 
-name_definition.setParseAction(parse_name)
-author_definition.setParseAction(parse_author)
-summary_definition.setParseAction(parse_summary)
-description_definition.setParseAction(parse_description)
-
-modules_definition.setParseAction(parse_modules)
-extension_definition.setParseAction(parse_extension)
+    def parse_extension(self, s, loc, toks):
+        def module_name(t):
+            return ".".join(t)
+        extens = toks[1:]
+        print "= Extensions are =", toks
+        #for e in extens:
+        #    print module_name(e)
 
 if __name__ == '__main__':
+    ast = AST()
+
+    name_definition.setParseAction(ast.parse_name)
+    author_definition.setParseAction(ast.parse_author)
+    summary_definition.setParseAction(ast.parse_summary)
+    description_definition.setParseAction(ast.parse_description)
+
+    modules_definition.setParseAction(ast.parse_modules)
+    extension_definition.setParseAction(ast.parse_extension)
+
     data = """\
 Name: numpy
 Description:
