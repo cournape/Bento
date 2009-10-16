@@ -1,6 +1,9 @@
 from distutils.version import \
         StrictVersion
 
+from toydist.misc import \
+        Extension
+
 # XXX: this is messy: the grammar is defined as a set of global variables, so
 # having more than one AST instance will cause trouble. This cannot be used
 # besides prototypes.
@@ -13,14 +16,6 @@ from grammar import \
 
 class InvalidFormat(Exception):
     pass
-
-class Extension(object):
-    def __init__(self, name, src):
-        self.name = name
-        self.src = src
-
-    def __repr__(self):
-        return "Extension %s (sources are %s)" % (self.name, ",".join(self.src))
 
 def _module_name(t):
     return ".".join(t)
