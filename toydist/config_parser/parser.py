@@ -1,10 +1,16 @@
+from distutils.version import \
+        StrictVersion
+
 # XXX: this is messy: the grammar is defined as a set of global variables, so
 # having more than one AST instance will cause trouble. This cannot be used
 # besides prototypes.
 from grammar import \
         grammar, name_definition, author_definition, summary_definition, \
         description_definition, modules_definition, extension_definition, \
-        package_definition, modules_definition
+        package_definition, modules_definition, version_definition
+
+class InvalidFormat(Exception):
+    pass
 
 class Extension(object):
     def __init__(self, name, src):
@@ -25,6 +31,7 @@ class AST(object):
         self.author = None
         self.description = None
         self.summary = None
+        self.version = None
 
         # Extensions
         self.extensions = []
@@ -42,6 +49,7 @@ class AST(object):
         summary_definition.setParseAction(self.parse_summary)
         description_definition.setParseAction(self.parse_description)
         author_definition.setParseAction(self.parse_author)
+        version_definition.setParseAction(self.parse_version)
 
         package_definition.setParseAction(self.parse_package)
 
@@ -67,6 +75,13 @@ class AST(object):
     def parse_author(self, s, loc, toks):
         self.author = " ".join(toks.asDict()['author'])
 
+    def parse_version(self, s, loc, toks):
+        version = " ".join(toks.asDict()['version'])
+        if not StrictVersion.version_re.match(version):
+            raise InvalidFormat("version %s is not a valid version number" \
+                                % version)
+        self.version = version
+
     def parse_modules(self, s, loc, toks):
         d = toks.asDict()
         for module in d['modules']:
@@ -91,6 +106,7 @@ if __name__ == '__main__':
 
     data = """\
 Name: numpy
+Version: 1.3.0
 Description:
     NumPy is a general-purpose array-processing package designed to
     efficiently manipulate large multi-dimensional arrays of arbitrary
@@ -118,6 +134,7 @@ Extension: _foo.bar
 
     ast.parse_string(data)
     print ast.name
+    print ast.version
     print ast.summary
     print ast.author
     print ast.description
