@@ -1,6 +1,7 @@
 from grammar import \
         grammar, name_definition, author_definition, summary_definition, \
-        description_definition, modules_definition, extension_definition
+        description_definition, modules_definition, extension_definition, \
+        package_definition
 
 class Extension(object):
     def __init__(self, name, src):
@@ -26,7 +27,7 @@ class AST(object):
         self.extensions = []
 
         # Packages
-        self.pkg = []
+        self.packages = []
 
         # Modules
         self.py_modules = []
@@ -49,6 +50,11 @@ class AST(object):
     def parse_src(self, s, loc, toks):
         pass
 
+    def parse_package(self, s, loc, toks):
+        d = toks.asDict()
+        for pkg in d['packages']:
+            self.packages.append(_module_name(pkg))
+
     def parse_extension(self, s, loc, toks):
         d = toks.asDict()
         name = _module_name(d['extension_name'])
@@ -62,6 +68,8 @@ if __name__ == '__main__':
     summary_definition.setParseAction(ast.parse_summary)
     description_definition.setParseAction(ast.parse_description)
     author_definition.setParseAction(ast.parse_author)
+
+    package_definition.setParseAction(ast.parse_package)
 
     extension_definition.setParseAction(ast.parse_extension)
 
@@ -79,10 +87,13 @@ Description:
     There are also basic facilities for discrete fourier transform,
     basic linear algebra and random number generation.
 Summary: array processing for numbers, strings, records, and objects.
-Modules:
+Package:
     foo.bar,
     foo.bar2,
     foo.bar3
+Modules:
+    bar,
+    foobar
 Author: someone
 Extension: _foo.bar
     sources:
@@ -94,4 +105,7 @@ Extension: _foo.bar
     print ast.summary
     print ast.author
     print ast.description
+
+    print ast.packages
+
     print ast.extensions
