@@ -3,7 +3,8 @@ from toydist.config_parser.parser import \
 
 class PackageDescription:
     def __init__(self, name, version=None, summary=None, url=None,
-            author=None, author_email=None, license=None, description=None,
+            author=None, author_email=None, maintainer=None,
+            maintainer_email=None, license=None, description=None,
             platforms=None, packages=None, py_modules=None, extensions=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
@@ -21,6 +22,8 @@ class PackageDescription:
         self.url = url
         self.author = author
         self.author_email = author_email
+        self.maintainer = maintainer
+        self.maintainer_email = maintainer_email
         self.license = license
         self.description = description
 
@@ -53,10 +56,13 @@ class PackageDescription:
             'url': self.url,
             'author': self.author,
             'author_email': self.author_email,
+            'maintainer': self.maintainer,
+            'maintainer_email': self.maintainer_email,
             'license': self.license,
             'long_description': self.description,
             'platforms': self.platforms,
-            'py_modules': self.py_modules}
+            'py_modules': self.py_modules,
+            'packages': self.packages}
 
         return d
 
@@ -98,7 +104,7 @@ Modules:
     %s""" % "    \n,".join(pkg.py_modules))
     if pkg.packages:
         r.append("""\
-Modules:
+Packages:
     %s""" % "    \n,".join(pkg.packages))
 
 
