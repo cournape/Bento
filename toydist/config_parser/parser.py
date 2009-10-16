@@ -2,13 +2,21 @@ from grammar import \
         grammar, name_definition, author_definition, summary_definition, \
         description_definition, modules_definition, extension_definition
 
+class Extension(object):
+    def __init__(self, name, src):
+        self.name = name
+        self.src = src
+
+    def __repr__(self):
+        return "Extension %s (sources are %s)" % (self.name, ",".join(self.src))
+
 def _module_name(t):
     return ".".join(t)
 
 class AST(object):
     # Not really an AST...
     def __init__(self):
-        pass
+        self.extensions = []
 
     def parse_name(self, s, loc, toks):
         print "= Name is =\n\t%s" % toks[1]
