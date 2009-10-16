@@ -5,7 +5,7 @@ from toydist.compat.pyparsing import \
         indentedBlock, OneOrMore, ZeroOrMore, OnlyOnce, \
         Group, empty, lineEnd, FollowedBy, col, alphanums, \
         Forward, Optional, delimitedList, \
-        ParseException, ParseFatalException
+        ParseException, ParseFatalException, nums
 
 #---------------------------------
 #       Grammar definition
@@ -19,6 +19,7 @@ newline = LineEnd().suppress()
 module_name = Word(alphanums + '_')
 full_module_name = module_name + ZeroOrMore(Literal('.').suppress() + module_name)
 filename = Word(alphanums + '.' + os.pathsep)
+version_string = string.copy()
 
 indent_stack = [1]
 
@@ -73,8 +74,11 @@ description_definition = \
         Literal("Description") + colon + \
         INDENT + multiline_string.setResultsName('description') + UNDENT
 
+version = Literal('Version')
+version_definition = version + colon + version_string.setResultsName('version')
+
 metadata_field = (description_definition | name_definition | summary_definition \
-        | author_definition)
+        | author_definition | version_definition)
 
 # Modules section
 modules = Literal("Modules")
