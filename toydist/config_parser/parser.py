@@ -4,7 +4,7 @@
 from grammar import \
         grammar, name_definition, author_definition, summary_definition, \
         description_definition, modules_definition, extension_definition, \
-        package_definition
+        package_definition, modules_definition
 
 class Extension(object):
     def __init__(self, name, src):
@@ -45,6 +45,8 @@ class AST(object):
 
         package_definition.setParseAction(self.parse_package)
 
+        modules_definition.setParseAction(self.parse_modules)
+
         extension_definition.setParseAction(self.parse_extension)
 
     def parse_string(self, data):
@@ -66,7 +68,9 @@ class AST(object):
         self.author = " ".join(toks.asDict()['author'])
 
     def parse_modules(self, s, loc, toks):
-        pass
+        d = toks.asDict()
+        for module in d['modules']:
+            self.py_modules.append(_module_name(module))
 
     def parse_src(self, s, loc, toks):
         pass
@@ -119,5 +123,7 @@ Extension: _foo.bar
     print ast.description
 
     print ast.packages
+
+    print ast.py_modules
 
     print ast.extensions

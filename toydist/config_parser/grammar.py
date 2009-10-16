@@ -78,8 +78,9 @@ metadata_field = (description_definition | name_definition | summary_definition 
 
 # Modules section
 modules = Literal("Modules")
-modules_definition = modules + colon + \
-        Group(full_module_name) + ZeroOrMore(comma_sep + Group(full_module_name))
+modules_names = Group(full_module_name) + ZeroOrMore(comma_sep + Group(full_module_name))
+modules_definition = modules + colon + modules_names.setResultsName('modules')
+
 
 # Package section
 package = Literal("Package")
