@@ -53,25 +53,25 @@ UNDENT.setParseAction(doUnindent)
 stmt = Forward()
 stmt.setParseAction(checkPeerIndent)
 
-grammar = Group(OneOrMore(empty + stmt))
+grammar = OneOrMore(empty + stmt)
 
 # metadata fields
 name = Literal('Name')
-name_definition = name + colon + word
+name_definition = name + colon + word.setResultsName('name')
 
 summary = Literal('Summary')
-summary_definition = summary + colon + string
+summary_definition = summary + colon + string.setResultsName('summary')
 
 author = Literal('Author')
-author_definition = author + colon + string
+author_definition = author + colon + string.setResultsName('author')
 
 indented_string = string.copy()
 indented_string.setParseAction(checkPeerIndent)
 multiline_string = Group(OneOrMore(empty + indented_string))
 
-description_definition = Group(
-        Literal("Description") + colon +
-        INDENT + multiline_string + UNDENT)
+description_definition = \
+        Literal("Description") + colon + \
+        INDENT + multiline_string.setResultsName('description') + UNDENT
 
 metadata_field = (description_definition | name_definition | summary_definition \
         | author_definition)
@@ -88,19 +88,21 @@ extension_stmt.setParseAction(checkPeerIndent)
 # sources subsection
 src = Literal('sources')
 src_files_line = filename + ZeroOrMore(comma_sep + filename)
+src_value = Group(OneOrMore(empty + indented_string))
 src_definition = src + colon + \
         INDENT + \
-        Group(OneOrMore(empty + indented_string)) + \
+        src_value.setResultsName('extension_src') + \
         UNDENT
 
 extension_stmt << src_definition
         
-extension_stmts = Group(OneOrMore(empty + extension_stmt))
+extension_stmts = OneOrMore(empty + extension_stmt)
 
 extension = Literal("Extension")
+extension_name = Group(full_module_name)
 extension_definition = \
         extension + colon + \
-        Group(full_module_name) + \
+        extension_name.setResultsName('extension_name') + \
         INDENT + extension_stmts + UNDENT
 
 stmt << (metadata_field | modules_definition | extension_definition | src_definition)
