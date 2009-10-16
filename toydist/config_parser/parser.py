@@ -16,11 +16,20 @@ def _module_name(t):
 class AST(object):
     # Not really an AST...
     def __init__(self):
-        self.extensions = []
+        # Metadata
         self.name = None
         self.author = None
         self.description = None
         self.summary = None
+
+        # Extensions
+        self.extensions = []
+
+        # Packages
+        self.pkg = []
+
+        # Modules
+        self.py_modules = []
 
     def parse_name(self, s, loc, toks):
         self.name = toks.asDict()['name']
