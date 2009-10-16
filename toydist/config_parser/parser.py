@@ -18,18 +18,21 @@ class AST(object):
     def __init__(self):
         self.extensions = []
         self.name = None
+        self.author = None
+        self.description = None
+        self.summary = None
 
     def parse_name(self, s, loc, toks):
         self.name = toks.asDict()['name']
 
     def parse_summary(self, s, loc, toks):
-        pass
+        self.summary = " ".join(toks.asDict()['summary'])
 
     def parse_description(self, s, loc, toks):
-        pass
+        self.description = "\n".join(toks.asDict()['description'])
 
     def parse_author(self, s, loc, toks):
-        pass
+        self.author = " ".join(toks.asDict()['author'])
 
     def parse_modules(self, s, loc, toks):
         pass
@@ -47,6 +50,9 @@ if __name__ == '__main__':
     ast = AST()
 
     name_definition.setParseAction(ast.parse_name)
+    summary_definition.setParseAction(ast.parse_summary)
+    description_definition.setParseAction(ast.parse_description)
+    author_definition.setParseAction(ast.parse_author)
 
     extension_definition.setParseAction(ast.parse_extension)
 
@@ -76,4 +82,7 @@ Extension: _foo.bar
     tokens = grammar.parseString(data)
 
     print ast.name
+    print ast.summary
+    print ast.author
+    print ast.description
     print ast.extensions
