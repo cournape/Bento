@@ -17,9 +17,10 @@ class AST(object):
     # Not really an AST...
     def __init__(self):
         self.extensions = []
+        self.name = None
 
     def parse_name(self, s, loc, toks):
-        pass
+        self.name = toks.asDict()['name']
 
     def parse_summary(self, s, loc, toks):
         pass
@@ -44,6 +45,8 @@ class AST(object):
 
 if __name__ == '__main__':
     ast = AST()
+
+    name_definition.setParseAction(ast.parse_name)
 
     extension_definition.setParseAction(ast.parse_extension)
 
@@ -72,4 +75,5 @@ Extension: _foo.bar
 """
     tokens = grammar.parseString(data)
 
+    print ast.name
     print ast.extensions
