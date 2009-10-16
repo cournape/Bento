@@ -113,7 +113,7 @@ class AST(object):
     def parse_extension(self, s, loc, toks):
         d = toks.asDict()
         name = _module_name(d['extension_name'])
-        src = d['extension_src']
+        src = [str(s) for s in d['extension_src']]
         self.extensions.append(Extension(name, src))
 
     def to_dict(self):
