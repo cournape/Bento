@@ -39,12 +39,10 @@ class AST(object):
             print module_name(m)
 
     def parse_extension(self, s, loc, toks):
-        def module_name(t):
-            return ".".join(t)
-        extens = toks[1:]
-        print "= Extensions are =", toks
-        #for e in extens:
-        #    print module_name(e)
+        d = toks.asDict()
+        name = _module_name(d['extension_name'])
+        src = d['extension_src']
+        self.extensions.append(Extension(name, src))
 
 if __name__ == '__main__':
     ast = AST()
@@ -74,4 +72,6 @@ Extension: _foo.bar
     sources:
         yo
 """
-    grammar.parseString(data)
+    tokens = grammar.parseString(data)
+
+    print ast.extensions
