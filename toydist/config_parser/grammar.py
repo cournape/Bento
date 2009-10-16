@@ -81,6 +81,12 @@ modules = Literal("Modules")
 modules_definition = modules + colon + \
         Group(full_module_name) + ZeroOrMore(comma_sep + Group(full_module_name))
 
+# Package section
+package = Literal("Package")
+package_names = Group(full_module_name) + ZeroOrMore(comma_sep + Group(full_module_name))
+package_definition = package + colon + package_names.setResultsName('packages')
+        
+
 # Extension section
 extension_stmt = Forward()
 extension_stmt.setParseAction(checkPeerIndent)
@@ -105,4 +111,5 @@ extension_definition = \
         extension_name.setResultsName('extension_name') + \
         INDENT + extension_stmts + UNDENT
 
-stmt << (metadata_field | modules_definition | extension_definition | src_definition)
+stmt << (metadata_field | modules_definition | package_definition | \
+         extension_definition | src_definition)
