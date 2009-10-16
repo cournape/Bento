@@ -1,3 +1,6 @@
+from toydist.misc import \
+        Extension
+
 from toydist.config_parser.parser import \
         AST
 
@@ -62,6 +65,7 @@ class PackageDescription:
             'long_description': self.description,
             'platforms': self.platforms,
             'py_modules': self.py_modules,
+            'ext_modules': self.extensions,
             'packages': self.packages}
 
         return d
@@ -112,6 +116,13 @@ Modules:
         r.append("""\
 Package:
     %s""" % "    \n,".join(pkg.packages))
+
+    if pkg.extensions:
+        for e in pkg.extensions:
+            r.append("""\
+Extension: %s
+    sources:
+        %s""" % (e.name, "        \n,".join(e.sources)))
 
 
     return "\n".join(r)
