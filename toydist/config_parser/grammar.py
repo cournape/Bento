@@ -128,5 +128,17 @@ extension_definition = \
         extension_name.setResultsName('extension_name') + \
         INDENT + extension_stmts + UNDENT
 
+# Library section
+library = Literal("Library")
+library_stmt = Forward()
+library_stmt.setParseAction(checkPeerIndent)
+
+library_definition = library + colon + \
+        INDENT + library_stmt + UNDENT
+
+library_stmt << ZeroOrMore(
+                    Group(extension_definition)
+                    ).setResultsName('extensions')
+
 stmt << (metadata_field | modules_definition | package_definition | \
-         extension_definition | src_definition)
+         src_definition | library_definition)

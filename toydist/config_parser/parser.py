@@ -12,7 +12,7 @@ from grammar import \
         description_definition, modules_definition, extension_definition, \
         package_definition, modules_definition, version_definition, \
         author_email_definition, maintainer_definition, \
-        maintainer_email_definition
+        maintainer_email_definition, library_definition
 
 class InvalidFormat(Exception):
     pass
@@ -33,8 +33,10 @@ class AST(object):
         self.summary = None
         self.version = None
 
-        # Extensions
-        self.extensions = []
+        self.library = {
+                'extensions': [],
+                'packages': [],
+                'py_modules': []}
 
         # Packages
         self.packages = []
@@ -57,11 +59,13 @@ class AST(object):
 
         version_definition.setParseAction(self.parse_version)
 
+        library_definition.setParseAction(self.parse_library)
+
         package_definition.setParseAction(self.parse_package)
 
         modules_definition.setParseAction(self.parse_modules)
 
-        extension_definition.setParseAction(self.parse_extension)
+        #extension_definition.setParseAction(self.parse_extension)
 
     def parse_string(self, data):
         return grammar.parseString(data)
@@ -105,16 +109,19 @@ class AST(object):
     def parse_src(self, s, loc, toks):
         pass
 
+    def parse_library(self, s, loc, toks):
+        d = toks.asDict()
+        if d.has_key('extensions'):
+            for ext in d['extensions']:
+                ext_d = ext.asDict()
+                name = _module_name(ext_d['extension_name'])
+                src = [str(s) for s in ext_d['extension_src']]
+                self.library['extensions'].append(Extension(name, src))
+
     def parse_package(self, s, loc, toks):
         d = toks.asDict()
         for pkg in d['packages']:
             self.packages.append(_module_name(pkg))
-
-    def parse_extension(self, s, loc, toks):
-        d = toks.asDict()
-        name = _module_name(d['extension_name'])
-        src = [str(s) for s in d['extension_src']]
-        self.extensions.append(Extension(name, src))
 
     def to_dict(self):
         """Return the data as a dict."""
@@ -162,9 +169,13 @@ Author: someone
 AuthorEmail: someone@example.com
 Maintainer: someonelse
 MaintainerEmail: someonelse@example.com
-Extension: _foo.bar
-    sources:
-        yo
+Library:
+    Extension: _foo.bar
+        sources:
+            yo
+    Extension: _foo.bar2
+        sources:
+            yo2
 """
 
     ast.parse_string(data)
@@ -177,8 +188,6 @@ Extension: _foo.bar
     print ast.maintainer_email
     print ast.description
 
-    print ast.packages
-
-    print ast.py_modules
-
-    print ast.extensions
+    print ast.library['extensions']
+    print ast.library['py_modules']
+    print ast.library['packages']
