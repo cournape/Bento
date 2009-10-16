@@ -19,24 +19,22 @@ class AST(object):
         self.extensions = []
 
     def parse_name(self, s, loc, toks):
-        print "= Name is =\n\t%s" % toks[1]
+        pass
 
     def parse_summary(self, s, loc, toks):
-        print "= Summary is =\n\t%s" % toks[1]
+        pass
 
     def parse_description(self, s, loc, toks):
-        print "= Description is =\n\t%s" % "\n\t".join([str(i) for i in toks[0][1]])
+        pass
 
     def parse_author(self, s, loc, toks):
-        print "= Author is =\n\t%s" % toks[1]
+        pass
 
     def parse_modules(self, s, loc, toks):
-        def _module_name(t):
-            return ".".join(t)
-        mods = toks[1:]
-        print "= Modules are ="
-        for m in mods:
-            print module_name(m)
+        pass
+
+    def parse_src(self, s, loc, toks):
+        pass
 
     def parse_extension(self, s, loc, toks):
         d = toks.asDict()
