@@ -100,6 +100,10 @@ def static_representation(pkg):
         r.append("Author: %s" % pkg.author)
     if pkg.author_email:
         r.append("AuthorEmail: %s" % pkg.author_email)
+    if pkg.maintainer:
+        r.append("Author: %s" % pkg.maintainer)
+    if pkg.maintainer_email:
+        r.append("AuthorEmail: %s" % pkg.maintainer_email)
     if pkg.py_modules:
         r.append("""\
 Modules:
