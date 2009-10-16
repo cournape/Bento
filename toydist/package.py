@@ -110,7 +110,7 @@ Modules:
     %s""" % "    \n,".join(pkg.py_modules))
     if pkg.packages:
         r.append("""\
-Packages:
+Package:
     %s""" % "    \n,".join(pkg.packages))
 
 
