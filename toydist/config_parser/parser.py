@@ -7,7 +7,9 @@ from distutils.version import \
 from grammar import \
         grammar, name_definition, author_definition, summary_definition, \
         description_definition, modules_definition, extension_definition, \
-        package_definition, modules_definition, version_definition
+        package_definition, modules_definition, version_definition, \
+        author_email_definition, maintainer_definition, \
+        maintainer_email_definition
 
 class InvalidFormat(Exception):
     pass
@@ -29,6 +31,9 @@ class AST(object):
         # Metadata
         self.name = None
         self.author = None
+        self.author_email = None
+        self.maintainer = None
+        self.maintainer_email = None
         self.description = None
         self.summary = None
         self.version = None
@@ -46,9 +51,15 @@ class AST(object):
 
     def _set_ast(self):
         name_definition.setParseAction(self.parse_name)
+
         summary_definition.setParseAction(self.parse_summary)
         description_definition.setParseAction(self.parse_description)
+
         author_definition.setParseAction(self.parse_author)
+        author_email_definition.setParseAction(self.parse_author_email)
+        maintainer_definition.setParseAction(self.parse_maintainer)
+        maintainer_email_definition.setParseAction(self.parse_maintainer_email)
+
         version_definition.setParseAction(self.parse_version)
 
         package_definition.setParseAction(self.parse_package)
@@ -74,6 +85,15 @@ class AST(object):
 
     def parse_author(self, s, loc, toks):
         self.author = " ".join(toks.asDict()['author'])
+
+    def parse_author_email(self, s, loc, toks):
+        self.author_email = " ".join(toks.asDict()['author_email'])
+
+    def parse_maintainer(self, s, loc, toks):
+        self.maintainer = " ".join(toks.asDict()['maintainer'])
+
+    def parse_maintainer_email(self, s, loc, toks):
+        self.maintainer_email = " ".join(toks.asDict()['maintainer_email'])
 
     def parse_version(self, s, loc, toks):
         version = " ".join(toks.asDict()['version'])
@@ -108,6 +128,9 @@ class AST(object):
             'version': self.version,
             'summary': self.summary,
             'author': self.author,
+            'author_email': self.author_email,
+            'maintainer': self.maintainer,
+            'maintainer_email': self.maintainer_email,
             'description': self.description,
             'packages': self.packages,
             'py_modules': self.py_modules,
@@ -141,6 +164,9 @@ Modules:
     bar,
     foobar
 Author: someone
+AuthorEmail: someone@example.com
+Maintainer: someonelse
+MaintainerEmail: someonelse@example.com
 Extension: _foo.bar
     sources:
         yo
@@ -151,6 +177,9 @@ Extension: _foo.bar
     print ast.version
     print ast.summary
     print ast.author
+    print ast.author_email
+    print ast.maintainer
+    print ast.maintainer_email
     print ast.description
 
     print ast.packages
