@@ -1,0 +1,7 @@
+Name: hello
+Version: 1.0
+Package:
+    hello
+Extension: hello._bar
+    sources:
+        src/hellomodule.c
