@@ -1,3 +1,6 @@
+# XXX: this is messy: the grammar is defined as a set of global variables, so
+# having more than one AST instance will cause trouble. This cannot be used
+# besides prototypes.
 from grammar import \
         grammar, name_definition, author_definition, summary_definition, \
         description_definition, modules_definition, extension_definition, \
@@ -32,6 +35,24 @@ class AST(object):
         # Modules
         self.py_modules = []
 
+        self._set_ast()
+
+    def _set_ast(self):
+        name_definition.setParseAction(self.parse_name)
+        summary_definition.setParseAction(self.parse_summary)
+        description_definition.setParseAction(self.parse_description)
+        author_definition.setParseAction(self.parse_author)
+
+        package_definition.setParseAction(self.parse_package)
+
+        extension_definition.setParseAction(self.parse_extension)
+
+    def parse_string(self, data):
+        return grammar.parseString(data)
+
+    def parse_string(self, data):
+        grammar.parseString(data)
+
     def parse_name(self, s, loc, toks):
         self.name = toks.asDict()['name']
 
@@ -64,15 +85,6 @@ class AST(object):
 if __name__ == '__main__':
     ast = AST()
 
-    name_definition.setParseAction(ast.parse_name)
-    summary_definition.setParseAction(ast.parse_summary)
-    description_definition.setParseAction(ast.parse_description)
-    author_definition.setParseAction(ast.parse_author)
-
-    package_definition.setParseAction(ast.parse_package)
-
-    extension_definition.setParseAction(ast.parse_extension)
-
     data = """\
 Name: numpy
 Description:
@@ -99,8 +111,8 @@ Extension: _foo.bar
     sources:
         yo
 """
-    tokens = grammar.parseString(data)
 
+    ast.parse_string(data)
     print ast.name
     print ast.summary
     print ast.author
