@@ -2,6 +2,9 @@ from grammar import \
         grammar, name_definition, author_definition, summary_definition, \
         description_definition, modules_definition, extension_definition
 
+def _module_name(t):
+    return ".".join(t)
+
 class AST(object):
     # Not really an AST...
     def __init__(self):
@@ -20,7 +23,7 @@ class AST(object):
         print "= Author is =\n\t%s" % toks[1]
 
     def parse_modules(self, s, loc, toks):
-        def module_name(t):
+        def _module_name(t):
             return ".".join(t)
         mods = toks[1:]
         print "= Modules are ="
@@ -38,12 +41,6 @@ class AST(object):
 if __name__ == '__main__':
     ast = AST()
 
-    name_definition.setParseAction(ast.parse_name)
-    author_definition.setParseAction(ast.parse_author)
-    summary_definition.setParseAction(ast.parse_summary)
-    description_definition.setParseAction(ast.parse_description)
-
-    modules_definition.setParseAction(ast.parse_modules)
     extension_definition.setParseAction(ast.parse_extension)
 
     data = """\
