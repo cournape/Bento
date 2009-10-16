@@ -1,7 +1,10 @@
+from toydist.config_parser.parser import \
+        AST
+
 class PackageDescription:
     def __init__(self, name, version=None, summary=None, url=None,
             author=None, author_email=None, license=None, description=None,
-            platforms=None, packages=None, py_modules=None):
+            platforms=None, packages=None, py_modules=None, extensions=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -37,7 +40,13 @@ class PackageDescription:
         else:
             self.py_modules = py_modules
 
+        if not extensions:
+            self.extensions = []
+        else:
+            self.extensions = extensions
+
     def to_dict(self):
+        """Return a distutils.core.setup compatible dict."""
         d = {'name': self.name,
             'version': self.version,
             'description': self.summary,
@@ -50,3 +59,19 @@ class PackageDescription:
             'py_modules': self.py_modules}
 
         return d
+
+def _parse_static(cnt):
+    """Parse a static file. cnt is assumed to be the content of the static file
+    in one string"""
+    ast = AST()
+    ast.parse_string(cnt)
+    return PackageDescription(**ast.to_dict())
+
+def parse_static(filename):
+    f = open(filename)
+    try:
+        cnt = "\n".join(f.readlines())
+        return _parse_static(cnt)
+    finally:
+        f.close()
+

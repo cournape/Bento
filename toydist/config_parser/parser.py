@@ -101,6 +101,20 @@ class AST(object):
         src = d['extension_src']
         self.extensions.append(Extension(name, src))
 
+    def to_dict(self):
+        """Return the data as a dict."""
+        # XXX: redundancy between this and PackageDescription
+        d = {'name': self.name,
+            'version': self.version,
+            'summary': self.summary,
+            'author': self.author,
+            'description': self.description,
+            'packages': self.packages,
+            'py_modules': self.py_modules,
+            'extensions': self.extensions}
+
+        return d
+
 if __name__ == '__main__':
     ast = AST()
 
