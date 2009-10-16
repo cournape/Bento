@@ -66,6 +66,16 @@ summary_definition = summary + colon + string.setResultsName('summary')
 author = Literal('Author')
 author_definition = author + colon + string.setResultsName('author')
 
+author_email = Literal('AuthorEmail')
+author_email_definition = author_email + colon + string.setResultsName('author_email')
+
+maintainer = Literal('Maintainer')
+maintainer_definition = maintainer + colon + string.setResultsName('maintainer')
+
+maintainer_email = Literal('MaintainerEmail')
+maintainer_email_definition = maintainer_email + colon + \
+        string.setResultsName('maintainer_email')
+
 indented_string = string.copy()
 indented_string.setParseAction(checkPeerIndent)
 multiline_string = Group(OneOrMore(empty + indented_string))
@@ -78,7 +88,9 @@ version = Literal('Version')
 version_definition = version + colon + version_string.setResultsName('version')
 
 metadata_field = (description_definition | name_definition | summary_definition \
-        | author_definition | version_definition)
+        | author_definition | author_email_definition \
+        | maintainer_email_definition | maintainer_definition \
+        | version_definition)
 
 # Modules section
 modules = Literal("Modules")
