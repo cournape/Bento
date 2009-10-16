@@ -83,6 +83,8 @@ def parse_static(filename):
         f.close()
 
 def static_representation(pkg):
+    """Return the static representation of the given PackageDescription
+    instance as a string."""
     r = []
     if pkg.name:
         r.append("Name: %s" % pkg.name)
