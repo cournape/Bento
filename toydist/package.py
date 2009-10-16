@@ -60,6 +60,7 @@ class PackageDescription:
 
         return d
 
+
 def _parse_static(cnt):
     """Parse a static file. cnt is assumed to be the content of the static file
     in one string"""
@@ -74,4 +75,32 @@ def parse_static(filename):
         return _parse_static(cnt)
     finally:
         f.close()
+
+def static_representation(pkg):
+    r = []
+    if pkg.name:
+        r.append("Name: %s" % pkg.name)
+    if pkg.version:
+        r.append("Version: %s" % pkg.version)
+    if pkg.summary:
+        r.append("Summary: %s" % pkg.summary)
+    if pkg.url:
+        r.append("Url: %s" % pkg.url)
+    if pkg.description:
+        r.append("Description: %s" % pkg.description)
+    if pkg.author:
+        r.append("Author: %s" % pkg.author)
+    if pkg.author_email:
+        r.append("AuthorEmail: %s" % pkg.author_email)
+    if pkg.py_modules:
+        r.append("""\
+Modules:
+    %s""" % "    \n,".join(pkg.py_modules))
+    if pkg.packages:
+        r.append("""\
+Modules:
+    %s""" % "    \n,".join(pkg.packages))
+
+
+    return "\n".join(r)
 

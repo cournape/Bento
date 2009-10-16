@@ -1,2 +1,4 @@
 from toydist.package import \
-        parse_static
+        parse_static, static_representation
+from toydist.conv import \
+        distutils_to_package_description
