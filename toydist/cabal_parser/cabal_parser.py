@@ -119,8 +119,16 @@ def key_value(r, store):
     line = r.peek()
     if not ':' in line:
         raise NextParser
-    else:
-        r.pop()
+
+    l = r.pop()
+    fields = l.split(':')
+    if not len(fields) >= 2:
+        r.parse_error('Invalid key-value pair')
+
+    if ' ' in fields[0]:
+        r.parse_error('Key-value cannot contain spaces.')
+
+    store[fields[0]] = ' '.join(fields[1:]).strip()
 
 def open_brace(r):
     r.expect('{', 'Expected indentation')
@@ -142,7 +150,10 @@ def section(r, store):
     section = section_header[0]
     name = section_header[1]
 
-    store[section] = {name: {}}
+    if not section in store:
+        store[section] = {}
+
+    store[section][name] = {}
     store = store[section][name]
 
     r.parse(open_brace)
@@ -158,7 +169,7 @@ def if_statement(r, store):
 
     r.pop()
     r.parse(open_brace)
-    while r.peek() != '}':
+    while r.wait_for('}'):
         r.pop()
     r.parse(close_brace)
 
@@ -166,8 +177,9 @@ def if_statement(r, store):
         return
 
     r.pop()
-    while r.peek() != '}':
+    while r.wait_for('}'):
         r.pop()
+
     r.parse(close_brace)
 
 
