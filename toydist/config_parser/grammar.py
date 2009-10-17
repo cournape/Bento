@@ -5,7 +5,7 @@ from toydist.compat.pyparsing import \
         indentedBlock, OneOrMore, ZeroOrMore, OnlyOnce, \
         Group, empty, lineEnd, FollowedBy, col, alphanums, \
         Forward, Optional, delimitedList, \
-        ParseException, ParseFatalException, nums
+        ParseException, ParseFatalException, nums, Dict
 
 #---------------------------------
 #       Grammar definition
@@ -99,7 +99,7 @@ modules_definition = modules + colon + modules_names.setResultsName('modules')
 
 
 # Package section
-package = Literal("Package")
+package = Literal("Packages")
 package_names = Group(full_module_name) + ZeroOrMore(comma_sep + Group(full_module_name))
 package_definition = package + colon + package_names.setResultsName('packages')
         
@@ -128,17 +128,17 @@ extension_definition = \
         extension_name.setResultsName('extension_name') + \
         INDENT + extension_stmts + UNDENT
 
+#extensions = OneOrMore(extension_definition).setResultsName('extensions')
+
 # Library section
 library = Literal("Library")
-library_stmt = Forward()
-library_stmt.setParseAction(checkPeerIndent)
+library_stmts = Forward()
+library_stmts.setParseAction(checkPeerIndent)
 
 library_definition = library + colon + \
-        INDENT + library_stmt + UNDENT
+        INDENT + library_stmts + UNDENT
 
-library_stmt << ZeroOrMore(
-                    Group(extension_definition)
-                    ).setResultsName('extensions')
+library_stmts << ZeroOrMore(extension_definition | package_definition | \
+                            modules_definition)
 
-stmt << (metadata_field | modules_definition | package_definition | \
-         src_definition | library_definition)
+stmt << (metadata_field | library_definition)
