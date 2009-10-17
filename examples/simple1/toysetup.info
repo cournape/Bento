@@ -1,4 +1,5 @@
 Name: foo
 Version: 1.0
-Modules:
-    foo
+Library:
+    Modules:
+        foo
