@@ -1,3 +1,4 @@
+from pprint import pprint
 from distutils.version import \
         StrictVersion
 
@@ -46,6 +47,10 @@ class AST(object):
 
         self._set_ast()
 
+        self._cur_exts = []
+        self._cur_pkgs = []
+        self._cur_mods = []
+
     def _set_ast(self):
         name_definition.setParseAction(self.parse_name)
 
@@ -65,13 +70,10 @@ class AST(object):
 
         modules_definition.setParseAction(self.parse_modules)
 
-        #extension_definition.setParseAction(self.parse_extension)
+        extension_definition.setParseAction(self.parse_extension)
 
     def parse_string(self, data):
         return grammar.parseString(data)
-
-    def parse_string(self, data):
-        grammar.parseString(data)
 
     def parse_name(self, s, loc, toks):
         self.name = toks.asDict()['name']
@@ -103,25 +105,34 @@ class AST(object):
 
     def parse_modules(self, s, loc, toks):
         d = toks.asDict()
-        for module in d['modules']:
-            self.py_modules.append(_module_name(module))
+        for mod in d['modules']:
+            self._cur_mods.append(_module_name(mod))
 
     def parse_src(self, s, loc, toks):
         pass
 
     def parse_library(self, s, loc, toks):
         d = toks.asDict()
-        if d.has_key('extensions'):
-            for ext in d['extensions']:
-                ext_d = ext.asDict()
-                name = _module_name(ext_d['extension_name'])
-                src = [str(s) for s in ext_d['extension_src']]
-                self.library['extensions'].append(Extension(name, src))
+        if self._cur_exts:
+            self.library['extensions'].extend(self._cur_exts)
+            self._cur_exts = []
+        if self._cur_pkgs:
+            self.library['packages'].extend(self._cur_pkgs)
+            self._cur_pkgs = []
+        if self._cur_mods:
+            self.library['py_modules'].extend(self._cur_mods)
+            self._cur_mods = []
 
     def parse_package(self, s, loc, toks):
         d = toks.asDict()
         for pkg in d['packages']:
-            self.packages.append(_module_name(pkg))
+            self._cur_pkgs.append(_module_name(pkg))
+
+    def parse_extension(self, s, loc, toks):
+        d = toks.asDict()
+        name = _module_name(d['extension_name'])
+        sources = [str(s) for s in d['extension_src']]
+        self._cur_exts.append(Extension(name, sources))
 
     def to_dict(self):
         """Return the data as a dict."""
@@ -134,9 +145,9 @@ class AST(object):
             'maintainer': self.maintainer,
             'maintainer_email': self.maintainer_email,
             'description': self.description,
-            'packages': self.packages,
-            'py_modules': self.py_modules,
-            'extensions': self.extensions}
+            'packages': self.library['packages'],
+            'py_modules': self.library['py_modules'],
+            'extensions': self.library['extensions']}
 
         return d
 
@@ -158,13 +169,6 @@ Description:
     There are also basic facilities for discrete fourier transform,
     basic linear algebra and random number generation.
 Summary: array processing for numbers, strings, records, and objects.
-Package:
-    foo.bar,
-    foo.bar2,
-    foo.bar3
-Modules:
-    bar,
-    foobar
 Author: someone
 AuthorEmail: someone@example.com
 Maintainer: someonelse
@@ -176,9 +180,18 @@ Library:
     Extension: _foo.bar2
         sources:
             yo2
+    Packages:
+        foo.bar,
+        foo.bar2,
+        foo.bar3
+    Modules:
+        bar,
+        foobar
 """
 
-    ast.parse_string(data)
+    a = ast.parse_string(data)
+
+    print "============= Parsed structured ==========="
     print ast.name
     print ast.version
     print ast.summary
@@ -188,6 +201,4 @@ Library:
     print ast.maintainer_email
     print ast.description
 
-    print ast.library['extensions']
-    print ast.library['py_modules']
-    print ast.library['packages']
+    pprint(ast.library)
