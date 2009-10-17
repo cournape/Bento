@@ -6,7 +6,7 @@ class ParseError(Exception): pass
 
 def strip_indents(data):
     lines = [l.rstrip() for l in data]
-    indent = 0
+    cur_indent = 0
     out = []
     for l in lines:
         if l.strip():
@@ -16,18 +16,17 @@ def strip_indents(data):
 
             # If line is not a comment or a string, parse
             # its indentation
-            indentation = len(l) - len(l.lstrip())
-            if indentation == indent_width * (indent + 1):
-                out.append("{")
-                indent += 1
-            elif indentation == indent_width * (indent - 1):
-                indent -= 1
-                out.append("}")
+            indent = (len(l) - len(l.lstrip())) / indent_width - cur_indent
+            if indent > 0:
+                out.extend(["{"] * indent)
+            elif indent < 0:
+                out.extend(["}"] * -indent)
+
+            cur_indent += indent
 
         out.append(l.lstrip())
 
-    if indent > 0:
-        out.append("}")
+    out.extend(["}"] * cur_indent)
 
     return out
 
@@ -158,6 +157,7 @@ def section(r, store):
 
     r.parse(open_brace)
 
+    print r._data
     while r.wait_for('}'):
         r.parse((key_value, if_statement), store)
 
@@ -170,7 +170,7 @@ def if_statement(r, store):
     r.pop()
     r.parse(open_brace)
     while r.wait_for('}'):
-        r.pop()
+        r.parse(key_value, store)
     r.parse(close_brace)
 
     if r.peek() != 'else':
