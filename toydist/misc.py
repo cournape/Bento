@@ -3,4 +3,4 @@ from distutils.core import \
 
 class Extension(DistExtension):
     def __repr__(self):
-        return "Extension %s (sources are %s)" % (self.name, ",".join(self.sources))
+        return "Extension(%s, sources=%s)" % (self.name, self.sources)
