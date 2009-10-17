@@ -108,21 +108,25 @@ def static_representation(pkg):
         r.append("Author: %s" % pkg.maintainer)
     if pkg.maintainer_email:
         r.append("AuthorEmail: %s" % pkg.maintainer_email)
+
+    # Fix indentation handling instead of hardcoding it
+    r.append("Library:")
+
     if pkg.py_modules:
         r.append("""\
-Modules:
-    %s""" % "    \n,".join(pkg.py_modules))
+    Modules:
+        %s""" % "        \n,".join(pkg.py_modules))
     if pkg.packages:
         r.append("""\
-Package:
-    %s""" % "    \n,".join(pkg.packages))
+    Packages:
+        %s""" % "        \n,".join(pkg.packages))
 
     if pkg.extensions:
         for e in pkg.extensions:
             r.append("""\
-Extension: %s
-    sources:
-        %s""" % (e.name, "        \n,".join(e.sources)))
+    Extension: %s
+        sources:
+            %s""" % (e.name, "            \n,".join(e.sources)))
 
 
     return "\n".join(r)
