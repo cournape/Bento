@@ -81,7 +81,7 @@ class Reader(object):
 
         """
         lines = 0
-        for l in self._data[:self._idx+1]:
+        for l in self._data[:self._idx]:
             if not l in ['{', '}']:
                 lines += 1
         return lines
@@ -125,6 +125,9 @@ class Reader(object):
             else:
                 assert self.index > index_before
                 return True
+
+        if self.peek() in ['{', '}']:
+            self.parse_error("Unexpected indentation")
 
         self.parse_error("No matching parser found for this line")
 
