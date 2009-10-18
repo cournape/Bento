@@ -228,6 +228,10 @@ def key_value(r, store, opt_arg=None):
     else:
         value = ' '.join(fields[1:]).strip()
 
+    # Packages and modules are lists, handle them specially
+    if key in ['Packages', 'Modules']:
+        value = [v.strip() for v in value.split(',')]
+
     # If the key exists, append the new value, otherwise
     # create a new key-value pair
     if store.has_key(key):
