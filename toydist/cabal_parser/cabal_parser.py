@@ -38,38 +38,46 @@ class Reader(object):
     def __init__(self, data):
         self._data = data
         self._idx = 0
-        self.last_op = None
 
     def flush_empty(self):
+        """Read until a non-empty line is found."""
         while not (self.eof() or self._data[self._idx].strip()):
             self._idx += 1
 
     def pop(self):
-        if self.eof():
-            return ''
-
-        self.flush_empty()
+        """Return the next non-empty line and increment the line counter."""
+        line = self.peek()
         self._idx += 1
-        self.last_op = 'pop'
-        return self._data[self._idx - 1]
+        return line
 
     def peek(self):
+        """Return the next non-empty line without incrementing the
+        line counter.
+
+        """
         if self.eof():
             return ''
 
         self.flush_empty()
         return self._data[self._idx]
-        self.last_op = 'peek'
 
     def eof(self):
+        """Return True if the end of the file has been reached."""
         return self._idx >= len(self._data)
 
     @property
     def index(self):
+        """Return the line-counter to the pre-processed version of
+        the input file.
+
+        """
         return self._idx
 
     @property
     def line(self):
+        """Return the line-counter to the original input file.
+
+        """
         lines = 0
         for l in self._data[:self._idx+1]:
             if not l in ['{', '}']:
@@ -77,14 +85,24 @@ class Reader(object):
         return lines
 
     def parse_error(self, msg):
+        """Raise a parsing error with the given message."""
         raise ParseError('\n\nParsing error at line %s (%s):\n%s' %
                          (self.line, msg, self._data[self._idx]))
 
-    def expect(self, sym, err):
-        if not self.pop() == sym:
+    def expect(self, line, err):
+        """Ensure that the next line equals `line`.
+
+        """
+        if not self.pop() == line:
             self.parse_error(err)
 
     def parse(self, parsers, store=None, opt_arg=None):
+        """Given one or more parser functions, use these to parse the
+        next line.  The dict `store` is provided as an argument to the
+        parser, and is mainly used to store key-value pairs generated
+        while parsing.  `opt_arg` is an optional argument to the parser.
+
+        """
         if self.eof():
             return
 
@@ -108,10 +126,11 @@ class Reader(object):
 
         self.parse_error("No matching parser found for this line")
 
-    def wait_for(self, sym):
+    def wait_for(self, line):
+        """Keep reading until the given line has been seen."""
         if self.eof():
             return False
-        elif self.peek() != sym:
+        elif self.peek() != line:
             return True
         else:
             return False
@@ -131,20 +150,24 @@ def impl(comparison):
     return bool(comparison)
 
 class VersionCompare(object):
-    def __init__(self, ver):
-        self._ver = self.parse_ver(ver)
+    """Compare version strings, e.g., 2.6.1 >= 2.6.0.
 
-    def parse_ver(self, ver):
+    """
+    def __init__(self, ver):
+        self._ver = self._parse_ver(ver)
+
+    def _parse_ver(self, ver):
         if not isinstance(ver, tuple):
             ver = ver.split('.')
         ver = [int(v) for v in ver]
         return ver
 
     def __cmp__(self, ver):
-        new_ver = self.parse_ver(ver)
+        """Provide the comparison operators."""
+        new_ver = self._parse_ver(ver)
         if new_ver == self._ver:
             return 0
-        elif self._ver > self.parse_ver(ver):
+        elif self._ver > self._parse_ver(ver):
             return 1
         else:
             return -1
@@ -168,6 +191,8 @@ expr_constants = {'darwin': 'darwin',
                   'false': False}
 
 # --- parsers start -------------------------------------------------------
+
+# Refer to http://www.haskell.org/cabal/release/cabal-latest/doc/users-guide/
 
 def key_value(r, store, opt_arg=None):
     line = r.peek()
@@ -277,6 +302,11 @@ def if_statement(r, store, flags={}):
 # --- parsers end -------------------------------------------------------
 
 def get_flags(store, user_flags={}):
+    """Given the variables returned by the parser, return the
+    flags found.  If `user_flags` are provided, these override those
+    found during parsing.
+
+    """
     flag_defines = store.get('Flag', {})
     flags = {}
     for flag_name, flag_attr in flag_defines.items():
@@ -287,6 +317,11 @@ def get_flags(store, user_flags={}):
     return flags
 
 def parse(data, user_flags={}):
+    """Given lines from a config file, parse them.  `user_flags` may
+    optionally be given to override any flags found in the config
+    file.
+
+    """
     data = strip_indents(data)
     r = Reader(data)
 
