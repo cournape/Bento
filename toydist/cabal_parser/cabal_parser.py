@@ -361,6 +361,31 @@ def parse(data, user_flags={}):
     return info
 
 if __name__ == "__main__":
+    import textwrap
+
+    def print_dict(d, indent=0):
+        for (key, value) in d.items():
+            indent_str = indent * ' '
+            if isinstance(value, dict):
+                if key.strip():
+                    print '%s%s:' % (indent_str, key)
+                print_dict(value, indent=indent + indent_width)
+            else:
+                out = indent_str + '%s: %s' % (key, value)
+                if len(out) > 78:
+                    print '%s:' % key
+                    wrap = '\n\n'.join(
+                        [textwrap.fill(par, 78 - indent - indent_width)
+                         for par in value.split('\n\n')])
+                    for l in wrap.split('\n'):
+                        print indent_str + indent_width*' ' + l
+                else:
+                    print out
+
     f = open(sys.argv[1], 'r')
     data = f.readlines()
-    print parse(data, {'webfrontend': True})
+    meta_data = parse(data, {'webfrontend': True})
+
+    print_dict(meta_data)
+
+
