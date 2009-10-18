@@ -243,10 +243,10 @@ def key_value(r, store, opt_arg=None):
         store[key] = value
 
 def open_brace(r, opt_arg=None):
-    r.expect('{', 'Expected indentation')
+    r.expect('{', 'Expected indentation to increase')
 
 def close_brace(r, opt_arg=None):
-    r.expect('}', 'Expected de-indentation')
+    r.expect('}', 'Expected indentation to decrease')
 
 def section(r, store, flags={}):
     section_header = r.peek()
