@@ -1,5 +1,6 @@
 import sys
 import ast
+import re
 
 indent_width = 2
 
@@ -217,6 +218,16 @@ def section(r, store, flags={}):
     r.parse(close_brace)
 
 def eval_statement(expr, flags):
+    # replace version numbers with strings, e.g. 2.6.1 -> '2.6.1'
+    ver_descr = re.compile('[^\'\."0-9](\d+\.)+\d+')
+    match = ver_descr.search(expr)
+    while match:
+        start, end = match.start(), match.end()
+        expr = expr[:start + 1] + '"' + expr[start + 1:end] + '"' + \
+               expr[end:]
+        match = ver_descr.match(expr)
+
+    # Parse, compile and execute the expression
     expr_ast = ast.parse(expr, mode='eval')
     code = compile(expr_ast, filename=expr, mode='eval')
     expr_constants.update(flags)
