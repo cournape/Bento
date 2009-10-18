@@ -182,7 +182,18 @@ def key_value(r, store, opt_arg=None):
     if ' ' in fields[0]:
         r.parse_error('Key-value cannot contain spaces.')
 
-    store[fields[0]] = ' '.join(fields[1:]).strip()
+    key = fields[0]
+    value = ' '.join(fields[1:]).strip()
+
+    # If the key exists, append the new value, otherwise
+    # create a new key-value pair
+    if store.has_key(key):
+        if not isinstance(store[key], list):
+            store[key] = [store[key], value]
+        else:
+            store[key].append(value)
+    else:
+        store[key] = value
 
 def open_brace(r, opt_arg=None):
     r.expect('{', 'Expected indentation')
