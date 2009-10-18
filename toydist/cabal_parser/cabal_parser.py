@@ -233,16 +233,24 @@ def key_value(r, store, opt_arg=None):
     if ' ' in fields[0]:
         r.parse_error('key-value cannot contain spaces')
 
+    # Allow flexible text indentation
     key = fields[0]
-    if r.peek() == '{':
+    long_str_indentation = 0
+    while r.peek() == '{':
         r.parse(open_brace)
-        value = []
+        long_str_indentation += 1
+
+    value = fields[1]
+    for i in range(long_str_indentation):
         while r.wait_for('}'):
-            value.append(r.pop())
-        value = ' '.join(value)
+            this_line = r.pop(blank=True)
+            if not this_line.strip():
+                value += '\n\n'
+            else:
+                value += this_line + ' '
         r.parse(close_brace)
-    else:
-        value = ' '.join(fields[1:]).strip()
+
+    value = value.strip()
 
     # Packages and modules are lists, handle them specially
     if key in ['Packages', 'Modules']:
