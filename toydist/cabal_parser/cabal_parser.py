@@ -216,27 +216,38 @@ def section(r, store, flags={}):
 
     r.parse(close_brace)
 
+def eval_statement(expr, flags):
+    expr_ast = ast.parse(expr, mode='eval')
+    code = compile(expr_ast, filename=expr, mode='eval')
+    expr_constants.update(flags)
+    return eval(code, expr_funcs, expr_constants)
+
 def if_statement(r, store, flags={}):
     if not r.peek().startswith('if '):
         raise NextParser
 
     expr = r.pop().lstrip('if').strip()
-    expr_ast = ast.parse(expr, mode='eval')
-    code = compile(expr_ast, filename=expr, mode='eval')
-    expr_constants.update(flags)
-    eval(code, expr_funcs, expr_constants)
+    expr_true = eval_statement(expr, flags)
 
+    # Parse the contents of the if-statement
     r.parse(open_brace)
     while r.wait_for('}'):
-        r.parse(key_value, store)
+        if expr_true:
+            r.parse(key_value, store)
+        else:
+            r.pop()
     r.parse(close_brace)
 
     if r.peek() != 'else':
         return
 
     r.pop()
+    # Parse the else part of the statement
     while r.wait_for('}'):
-        r.pop()
+        if expr_true:
+            r.pop()
+        else:
+            r.parse(key_value, store)
 
     r.parse(close_brace)
 
@@ -246,7 +257,6 @@ def if_statement(r, store, flags={}):
 def get_flags(store, user_flags={}):
     flag_defines = store.get('Flag', {})
     flags = {}
-    print store
     for flag_name, flag_attr in flag_defines.items():
         if flag_attr.get('Default') is not None:
             flags[flag_name.lower()] = bool(flag_attr['Default'])
