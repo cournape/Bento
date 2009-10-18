@@ -2,7 +2,7 @@ import sys
 import ast
 import re
 
-indent_width = 2
+indent_width = 4
 
 class NextParser(Exception): pass
 
@@ -209,7 +209,14 @@ def key_value(r, store, opt_arg=None):
         r.parse_error('Key-value cannot contain spaces.')
 
     key = fields[0]
-    value = ' '.join(fields[1:]).strip()
+    if r.peek() == '{':
+        value = []
+        while r.wait_for('}'):
+            value.append(r.pop())
+        value = ''.join(value)
+        r.parse(close_brace)
+    else:
+        value = ' '.join(fields[1:]).strip()
 
     # If the key exists, append the new value, otherwise
     # create a new key-value pair
