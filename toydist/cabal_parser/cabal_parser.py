@@ -4,6 +4,7 @@ import re
 import platform
 
 indent_width = 4
+header_titles = ['Flag', 'Library', 'Executable', 'Extension']
 
 class NextParser(Exception): pass
 
@@ -205,20 +206,24 @@ def key_value(r, store, opt_arg=None):
     if not ':' in line:
         raise NextParser
 
+    if line.split(':')[0] in header_titles:
+        raise NextParser
+
     l = r.pop()
     fields = l.split(':')
     if not len(fields) >= 2:
-        r.parse_error('Invalid key-value pair')
+        r.parse_error('invalid key-value pair')
 
     if ' ' in fields[0]:
-        r.parse_error('Key-value cannot contain spaces.')
+        r.parse_error('key-value cannot contain spaces')
 
     key = fields[0]
     if r.peek() == '{':
+        r.parse(open_brace)
         value = []
         while r.wait_for('}'):
             value.append(r.pop())
-        value = ''.join(value)
+        value = ' '.join(value)
         r.parse(close_brace)
     else:
         value = ' '.join(fields[1:]).strip()
@@ -241,29 +246,29 @@ def close_brace(r, opt_arg=None):
 
 def section(r, store, flags={}):
     section_header = r.peek()
-    section_header = section_header.split()
-    if len(section_header) < 1: raise NextParser
-    if not section_header[0] in ['Flag', 'Library', 'Executable']:
+    if section_header.count(':') < 1: raise NextParser
+
+    section_header = [s.strip() for s in section_header.split(':')]
+    if not section_header[0] in header_titles:
         raise NextParser
 
     r.pop()
     if not len(section_header) == 2:
         r.parse_error('Invalid section header')
 
-    section = section_header[0]
+    section_type = section_header[0]
     name = section_header[1]
 
-    if not section in store:
-        store[section] = {}
+    if not section_type in store:
+        store[section_type] = {}
 
-    store[section][name] = {}
-    store = store[section][name]
+    store[section_type][name] = {}
+    store = store[section_type][name]
 
     r.parse(open_brace)
 
     while r.wait_for('}'):
-        r.parse((key_value, if_statement), store, opt_arg=flags)
-
+        r.parse((if_statement, section, key_value), store, opt_arg=flags)
     r.parse(close_brace)
 
 def eval_statement(expr, flags):
