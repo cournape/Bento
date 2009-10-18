@@ -1,3 +1,6 @@
+import sys
+import ast
+
 indent_width = 2
 
 class NextParser(Exception): pass
@@ -80,7 +83,7 @@ class Reader(object):
         if not self.pop() == sym:
             self.parse_error(err)
 
-    def parse(self, parsers, store=None):
+    def parse(self, parsers, store=None, opt_arg=None):
         if self.eof():
             return
 
@@ -93,9 +96,9 @@ class Reader(object):
         for p in parsers:
             try:
                 if store is not None:
-                    p(self, store=store)
+                    p(self, store, opt_arg)
                 else:
-                    p(self)
+                    p(self, opt_arg)
             except NextParser:
                 pass
             else:
@@ -112,9 +115,60 @@ class Reader(object):
         else:
             return False
 
+# --- expression functions ------------------------------------------------
+
+def flag(foo):
+    return bool(foo)
+
+def os(name):
+    return platform.platform().lower() == name
+
+def arch(name):
+    return platform.machine() == name
+
+def impl(comparison):
+    return bool(comparison)
+
+class VersionCompare(object):
+    def __init__(self, ver):
+        self._ver = self.parse_ver(ver)
+
+    def parse_ver(self, ver):
+        if not isinstance(ver, tuple):
+            ver = ver.split('.')
+        ver = [int(v) for v in ver]
+        return ver
+
+    def __cmp__(self, ver):
+        new_ver = self.parse_ver(ver)
+        if new_ver == self._ver:
+            return 0
+        elif self._ver > self.parse_ver(ver):
+            return 1
+        else:
+            return -1
+
+expr_funcs = {'flag': flag,
+              'os': os,
+              'arch': arch,
+              'impl': impl}
+
+expr_constants = {'darwin': 'darwin',
+                  'linux': 'linux',
+                  'windows': 'windows',
+                  'java': 'java',
+
+                  'i386': 'i386',
+                  'i686': 'i686',
+
+                  'python': VersionCompare(sys.version_info[:3]),
+
+                  'true': True,
+                  'false': False}
+
 # --- parsers start -------------------------------------------------------
 
-def key_value(r, store):
+def key_value(r, store, opt_arg=None):
     line = r.peek()
     if not ':' in line:
         raise NextParser
@@ -129,13 +183,13 @@ def key_value(r, store):
 
     store[fields[0]] = ' '.join(fields[1:]).strip()
 
-def open_brace(r):
+def open_brace(r, opt_arg=None):
     r.expect('{', 'Expected indentation')
 
-def close_brace(r):
+def close_brace(r, opt_arg=None):
     r.expect('}', 'Expected de-indentation')
 
-def section(r, store):
+def section(r, store, flags={}):
     section_header = r.peek()
     section_header = section_header.split()
     if len(section_header) < 1: raise NextParser
@@ -157,17 +211,21 @@ def section(r, store):
 
     r.parse(open_brace)
 
-    print r._data
     while r.wait_for('}'):
-        r.parse((key_value, if_statement), store)
+        r.parse((key_value, if_statement), store, opt_arg=flags)
 
     r.parse(close_brace)
 
-def if_statement(r, store):
+def if_statement(r, store, flags={}):
     if not r.peek().startswith('if '):
         raise NextParser
 
-    r.pop()
+    expr = r.pop().lstrip('if').strip()
+    expr_ast = ast.parse(expr, mode='eval')
+    code = compile(expr_ast, filename=expr, mode='eval')
+    expr_constants.update(flags)
+    eval(code, expr_funcs, expr_constants)
+
     r.parse(open_brace)
     while r.wait_for('}'):
         r.parse(key_value, store)
@@ -185,20 +243,30 @@ def if_statement(r, store):
 
 # --- parsers end -------------------------------------------------------
 
+def get_flags(store, user_flags={}):
+    flag_defines = store.get('Flag', {})
+    flags = {}
+    print store
+    for flag_name, flag_attr in flag_defines.items():
+        if flag_attr.get('Default') is not None:
+            flags[flag_name.lower()] = bool(flag_attr['Default'])
 
-def parse(data):
+    flags.update(user_flags)
+    return flags
+
+def parse(data, user_flags={}):
     data = strip_indents(data)
     r = Reader(data)
 
     info = {}
 
     while not r.eof():
-        r.parse([key_value, section], store=info)
+        r.parse([key_value, section], store=info,
+                                      opt_arg=get_flags(info, user_flags))
 
     return info
 
 if __name__ == "__main__":
-    import sys
     f = open(sys.argv[1], 'r')
     data = f.readlines()
-    print parse(data)
+    print parse(data, {'webfrontend': True})
