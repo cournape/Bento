@@ -1,6 +1,7 @@
 import sys
 import ast
 import re
+import platform
 
 indent_width = 4
 
@@ -142,7 +143,7 @@ def flag(foo):
     return bool(foo)
 
 def os(name):
-    return platform.platform().lower() == name
+    return platform.system().lower() == name
 
 def arch(name):
     return platform.machine() == name
@@ -179,6 +180,7 @@ expr_funcs = {'flag': flag,
               'impl': impl}
 
 expr_constants = {'darwin': 'darwin',
+                  'macosx': 'darwin',
                   'linux': 'linux',
                   'windows': 'windows',
                   'java': 'java',
