@@ -298,21 +298,27 @@ def if_statement(r, store, flags={}):
     r.parse(open_brace)
     while r.wait_for('}'):
         if expr_true:
-            r.parse(key_value, store)
+            use_store = store
         else:
-            r.pop()
+            use_store = {}
+
+        r.parse((if_statement, section, key_value), use_store)
+
     r.parse(close_brace)
 
     if r.peek() != 'else':
         return
 
     r.pop()
+    r.parse(open_brace)
     # Parse the else part of the statement
     while r.wait_for('}'):
         if expr_true:
-            r.pop()
+            use_store = store
         else:
-            r.parse(key_value, store)
+            use_store = {}
+
+        r.parse((if_statement, section, key_value), use_store)
 
     r.parse(close_brace)
 
