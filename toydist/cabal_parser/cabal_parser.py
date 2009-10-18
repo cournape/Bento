@@ -47,22 +47,38 @@ class Reader(object):
         while not (self.eof() or self._data[self._idx].strip()):
             self._idx += 1
 
-    def pop(self):
-        """Return the next non-empty line and increment the line counter."""
-        line = self.peek()
+    def pop(self, blank=False):
+        """Return the next non-empty line and increment the line
+        counter.  If `blank` is True, then also return blank lines.
+
+        """
+        if not blank:
+            # Skip to the next non-empty line if blank is not set
+            self.flush_empty()
+
+        line = self.peek(blank)
         self._idx += 1
+
         return line
 
-    def peek(self):
+    def peek(self, blank=False):
         """Return the next non-empty line without incrementing the
-        line counter.
+        line counter.  If `blank` is True, also return blank lines.
+
+        Peek is not allowed to touch _idx.
 
         """
         if self.eof():
             return ''
 
-        self.flush_empty()
-        return self._data[self._idx]
+        save_idx = self._idx
+        if not blank:
+            self.flush_empty()
+
+        peek_line = self._data[self._idx]
+        self._idx = save_idx
+
+        return peek_line
 
     def eof(self):
         """Return True if the end of the file has been reached."""
