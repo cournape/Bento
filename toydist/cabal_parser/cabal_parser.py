@@ -36,7 +36,8 @@ def strip_indents(data):
 
 class Reader(object):
     def __init__(self, data):
-        self._data = data
+        self._data = strip_indents(data)
+        self._original_data = data
         self._idx = 0
 
     def flush_empty(self):
@@ -87,7 +88,7 @@ class Reader(object):
     def parse_error(self, msg):
         """Raise a parsing error with the given message."""
         raise ParseError('\n\nParsing error at line %s (%s):\n%s' %
-                         (self.line, msg, self._data[self._idx]))
+                         (self.line, msg, self._original_data[self.line]))
 
     def expect(self, line, err):
         """Ensure that the next line equals `line`.
@@ -322,7 +323,6 @@ def parse(data, user_flags={}):
     file.
 
     """
-    data = strip_indents(data)
     r = Reader(data)
 
     info = {}
