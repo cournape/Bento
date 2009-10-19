@@ -41,6 +41,7 @@ class Reader(object):
         self._data = strip_indents(data)
         self._original_data = data
         self._idx = 0
+        self._traceback = ['root']
 
     def flush_empty(self):
         """Read until a non-empty line is found."""
@@ -105,8 +106,13 @@ class Reader(object):
 
     def parse_error(self, msg):
         """Raise a parsing error with the given message."""
-        raise ParseError('\n\nParsing error at line %s (%s):\n%s' %
-                         (self.line, msg, self._original_data[self.line]))
+        raise ParseError('''
+
+Parsing error at line %s (%s):
+%s
+Parser traceback: %s''' %
+                         (self.line, msg, self._original_data[self.line],
+                          ' -> '.join(self._traceback)))
 
     def expect(self, line, err):
         """Ensure that the next line equals `line`.
@@ -132,6 +138,7 @@ class Reader(object):
 
         index_before = self.index
         for p in parsers:
+            self._traceback.append(p.func_name)
             try:
                 if store is not None:
                     p(self, store, opt_arg)
@@ -142,6 +149,8 @@ class Reader(object):
             else:
                 assert self.index > index_before
                 return True
+            finally:
+                self._traceback.pop()
 
         if self.peek() in ['{', '}']:
             self.parse_error("Unexpected indentation")
