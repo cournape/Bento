@@ -2,11 +2,19 @@ from toydist.package import \
         PackageDescription
 
 def distutils_to_package_description(dist):
-    name = dist.get_name()
-    version = dist.get_version()
-    py_modules = dist.py_modules
-    packages = dist.packages
-    extensions = dist.ext_modules
+    data = {}
 
-    return PackageDescription(name, version=version, py_modules=py_modules,
-            packages=packages, extensions=extensions)
+    data['name'] = dist.get_name()
+    data['version'] = dist.get_version()
+    data['author'] = dist.get_author()
+    data['author_email'] = dist.get_author_email()
+    data['maintainer'] = dist.get_contact()
+    data['maintainer_email'] = dist.get_contact_email()
+    data['summary'] = dist.get_description()
+    data['description'] = dist.get_long_description()
+
+    data['py_modules'] = dist.py_modules
+    data['packages'] = dist.packages
+    data['extensions'] = dist.ext_modules
+
+    return PackageDescription(**data)
