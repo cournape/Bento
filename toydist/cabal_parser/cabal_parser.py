@@ -5,6 +5,7 @@ import platform
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension']
+list_fields = ['sources', 'packages', 'modules', 'buildrequires']
 
 class NextParser(Exception): pass
 
@@ -262,7 +263,7 @@ def key_value(r, store, opt_arg=None):
     value = value.strip()
 
     # Packages and modules are lists, handle them specially
-    if key in ['packages', 'modules', 'sources']:
+    if key in list_fields:
         value = [v.strip() for v in value.split(',')]
 
     # If the key exists, append the new value, otherwise
