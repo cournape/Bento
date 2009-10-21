@@ -1,0 +1,16 @@
+Name: hello
+Version: 1.0
+
+Library:
+    BuildRequires: paver, sphinx, numpy
+    if os(windows)
+        BuildRequires: pywin32
+    Packages:
+        hello
+    Extension: hello._bar
+        sources:
+            src/hellomodule.c
+    if os(linux)
+        Extension: hello._linux_backend
+            sources:
+                src/linbackend.c
