@@ -77,7 +77,8 @@ class PackageDescription:
             'platforms': self.platforms,
             'py_modules': self.py_modules,
             'ext_modules': self.extensions,
-            'packages': self.packages}
+            'packages': self.packages,
+            'install_requires': self.requires}
 
         return d
 
@@ -104,7 +105,8 @@ def _parse_static(cnt):
     res = parse(cnt)
 
     # Get metadata
-    for k in ['name', 'author', 'version']:
+    for k in ['name', 'author', 'version', 'url', 'license', 'maintainer',
+              'summary', 'description']:
         try:
             val = res[k]
             data[k] = val
