@@ -8,7 +8,8 @@ class PackageDescription:
     def __init__(self, name, version=None, summary=None, url=None,
             author=None, author_email=None, maintainer=None,
             maintainer_email=None, license=None, description=None,
-            platforms=None, packages=None, py_modules=None, extensions=None):
+            platforms=None, packages=None, py_modules=None, extensions=None,
+            install_requires=None, build_requires=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -29,6 +30,16 @@ class PackageDescription:
         self.maintainer_email = maintainer_email
         self.license = license
         self.description = description
+
+        if not install_requires:
+            self.requires = []
+        else:
+            self.requires = install_requires
+
+        if not build_requires:
+            self.build_requires = []
+        else:
+            self.build_requires = build_requires
 
         if not platforms:
             self.platforms = []
