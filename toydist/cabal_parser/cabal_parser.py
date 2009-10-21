@@ -264,7 +264,7 @@ def key_value(r, store, opt_arg=None):
 
     # Packages and modules are lists, handle them specially
     if key in list_fields:
-        value = [v.strip() for v in value.split(',')]
+        value = [v.strip() for v in value.split(',') if v.strip()]
 
     # If the key exists, append the new value, otherwise
     # create a new key-value pair
