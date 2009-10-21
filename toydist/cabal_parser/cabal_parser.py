@@ -4,7 +4,7 @@ import re
 import platform
 
 indent_width = 4
-header_titles = ['Flag', 'Library', 'Executable', 'Extension']
+header_titles = ['flag', 'library', 'executable', 'extension']
 
 class NextParser(Exception): pass
 
@@ -231,7 +231,7 @@ def key_value(r, store, opt_arg=None):
     if not ':' in line:
         raise NextParser
 
-    if line.split(':')[0] in header_titles:
+    if line.split(':')[0].lower() in header_titles:
         raise NextParser
 
     l = r.pop()
@@ -243,7 +243,7 @@ def key_value(r, store, opt_arg=None):
         r.parse_error('key-value cannot contain spaces')
 
     # Allow flexible text indentation
-    key = fields[0]
+    key = fields[0].lower()
     long_str_indentation = 0
     while r.peek() == '{':
         r.parse(open_brace)
@@ -262,7 +262,7 @@ def key_value(r, store, opt_arg=None):
     value = value.strip()
 
     # Packages and modules are lists, handle them specially
-    if key in ['Packages', 'Modules']:
+    if key in ['packages', 'modules', 'sources']:
         value = [v.strip() for v in value.split(',')]
 
     # If the key exists, append the new value, otherwise
@@ -286,14 +286,14 @@ def section(r, store, flags={}):
     if section_header.count(':') < 1: raise NextParser
 
     section_header = [s.strip() for s in section_header.split(':')]
-    if not section_header[0] in header_titles:
+    section_type = section_header[0].lower()
+    if not section_type in header_titles:
         raise NextParser
 
     r.pop()
     if not len(section_header) == 2:
         r.parse_error('Invalid section header')
 
-    section_type = section_header[0]
     name = section_header[1]
 
     if not section_type in store:
