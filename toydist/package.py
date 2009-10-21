@@ -94,7 +94,7 @@ def _parse_library(parsed_dict, package_dict):
                 ext = Extension(ext_name, src)
                 package_dict['extensions'].append(ext)
         if lib.has_key('modules'):
-            package_dict['modules'].extend(lib['modules'])
+            package_dict['py_modules'].extend(lib['modules'])
         if lib.has_key('packages'):
             package_dict['packages'].extend(lib['packages'])
 
