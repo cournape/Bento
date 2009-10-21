@@ -269,10 +269,11 @@ def key_value(r, store, opt_arg=None):
     # If the key exists, append the new value, otherwise
     # create a new key-value pair
     if store.has_key(key):
-        if not isinstance(store[key], list):
-            store[key] = [store[key], value]
+        if key in list_fields:
+            store[key].extend(value)
         else:
-            store[key].append(value)
+            raise ParseError("Double entry '%s' (old: %s, new: %s)" % \
+                             (key, store[key], value))
     else:
         store[key] = value
 
