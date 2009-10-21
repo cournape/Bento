@@ -15,7 +15,13 @@ def distutils_to_package_description(dist):
     data['license'] = dist.get_license()
     data['platforms'] = dist.get_platforms()
 
-    data['install_requires'] = dist.install_requires
+    # XXX: reliable way to detect whether Distribution was monkey-patched by
+    # setuptools
+    try:
+        reqs = getattr(dist, "install_requires")
+        data['install_requires'] = reqs
+    except AttributeError:
+        pass
 
     data['py_modules'] = dist.py_modules
     data['packages'] = dist.packages
