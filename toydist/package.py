@@ -129,6 +129,7 @@ def parse_static(filename):
 def static_representation(pkg):
     """Return the static representation of the given PackageDescription
     instance as a string."""
+    indent_level = 4
     r = []
     if pkg.name:
         r.append("Name: %s" % pkg.name)
@@ -139,7 +140,9 @@ def static_representation(pkg):
     if pkg.url:
         r.append("Url: %s" % pkg.url)
     if pkg.description:
-        r.append("Description: %s" % pkg.description)
+        r.append("Description: %s" %
+                 "\n".join([' ' * indent_level  + line 
+                            for line in pkg.description.splitlines()]))
     if pkg.author:
         r.append("Author: %s" % pkg.author)
     if pkg.author_email:
@@ -153,13 +156,11 @@ def static_representation(pkg):
     r.append("Library:")
 
     if pkg.py_modules:
-        r.append("""\
-    Modules:
-        %s""" % "        \n,".join(pkg.py_modules))
+        r.append(' ' * indent_level + "Modules:")
+        r.extend([' ' * (indent_level * 2) + p + ',' for p in pkg.py_modules])
     if pkg.packages:
-        r.append("""\
-    Packages:
-        %s""" % "        \n,".join(pkg.packages))
+        r.append(' ' * indent_level + "Packages:")
+        r.extend([' ' * (indent_level * 2) + p + ',' for p in pkg.packages])
 
     if pkg.extensions:
         for e in pkg.extensions:
