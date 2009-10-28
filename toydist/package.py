@@ -9,7 +9,8 @@ class PackageDescription:
             author=None, author_email=None, maintainer=None,
             maintainer_email=None, license=None, description=None,
             platforms=None, packages=None, py_modules=None, extensions=None,
-            install_requires=None, build_requires=None):
+            install_requires=None, build_requires=None,
+            download_url=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -24,6 +25,7 @@ class PackageDescription:
 
         self.summary = summary
         self.url = url
+        self.download_url = download_url
         self.author = author
         self.author_email = author_email
         self.maintainer = maintainer
@@ -139,6 +141,8 @@ def static_representation(pkg):
         r.append("Summary: %s" % pkg.summary)
     if pkg.url:
         r.append("Url: %s" % pkg.url)
+    if pkg.download_url:
+        r.append("DownloadUrl: %s" % pkg.download_url)
     if pkg.description:
         r.append("Description: %s" %
                  "\n".join([' ' * indent_level  + line 

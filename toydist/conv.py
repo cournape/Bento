@@ -15,6 +15,9 @@ def distutils_to_package_description(dist):
     data['license'] = dist.get_license()
     data['platforms'] = dist.get_platforms()
 
+    data['download_url'] = dist.get_download_url()
+    data['url'] = dist.get_url()
+
     # XXX: reliable way to detect whether Distribution was monkey-patched by
     # setuptools
     try:
