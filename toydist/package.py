@@ -151,6 +151,10 @@ def static_representation(pkg):
         r.append("Maintainer: %s" % pkg.maintainer)
     if pkg.maintainer_email:
         r.append("MaintainerEmail: %s" % pkg.maintainer_email)
+    if pkg.license:
+        r.append("License: %s" % pkg.license)
+    if pkg.platforms:
+        r.append("Platforms: %s" % ",".join(pkg.platforms))
 
     # Fix indentation handling instead of hardcoding it
     r.append("Library:")
