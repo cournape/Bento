@@ -34,9 +34,9 @@ class PackageDescription:
         self.description = description
 
         if not install_requires:
-            self.requires = []
+            self.install_requires = []
         else:
-            self.requires = install_requires
+            self.install_requires = install_requires
 
         if not build_requires:
             self.build_requires = []
@@ -80,7 +80,7 @@ class PackageDescription:
             'py_modules': self.py_modules,
             'ext_modules': self.extensions,
             'packages': self.packages,
-            'install_requires': self.requires}
+            'install_requires': self.install_requires}
 
         return d
 
@@ -163,6 +163,9 @@ def static_representation(pkg):
     # Fix indentation handling instead of hardcoding it
     r.append("Library:")
 
+    if pkg.install_requires:
+        r.append(' ' * indent_level + "InstallDepends:")
+        r.extend([' ' * (indent_level * 2) + p + ',' for p in pkg.install_requires])
     if pkg.py_modules:
         r.append(' ' * indent_level + "Modules:")
         r.extend([' ' * (indent_level * 2) + p + ',' for p in pkg.py_modules])
