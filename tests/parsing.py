@@ -1,5 +1,7 @@
 import os
 
+import unittest
+
 from nose.tools import \
     assert_equal
 
@@ -55,3 +57,49 @@ Platforms: any
 #    parsed = parse(meta_str.splitlines())
 #    for k in meta_ref:
 #        assert_equal(parsed[k], meta_ref[k])
+
+class TestExtension(unittest.TestCase):
+    def setUp(self):
+        self.meta_str = """\
+Name: hello
+Version: 1.0
+"""
+
+    def _test(self, main_data, expected):
+       data = self.meta_str + main_data
+       parsed = parse(data.splitlines())
+       assert_equal(parsed["library"][""], expected)
+
+    def test_simple(self):
+        data = """\
+Library:
+    Extension: _bar
+        sources:
+            hellomodule.c
+"""
+
+        expected = {"extension": {"_bar": {"sources": ["hellomodule.c"]}}}
+        self._test(data, expected)
+
+    def test_multi_sources(self):
+        data = """\
+Library:
+    Extension: _bar
+        sources:
+            foobar.c,
+            barfoo.c,
+"""
+
+        expected = {"extension": {"_bar": {"sources": ["foobar.c", "barfoo.c"]}}}
+        self._test(data, expected)
+
+    def test_multi_sources2(self):
+        data = """\
+Library:
+    Extension: _bar
+        sources:
+            foobar.c, barfoo.c
+"""
+
+        expected = {"extension": {"_bar": {"sources": ["foobar.c", "barfoo.c"]}}}
+        self._test(data, expected)
