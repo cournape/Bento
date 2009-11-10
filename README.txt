@@ -4,8 +4,34 @@ There isn't anything to see, as it is mostly used as a prototype to experiment
 with different ideas I have to improve the distribution mess in python
 community.
 
+What can it do
+==============
+
+Not much ATM. The following is implemented::
+
+	* Converting existing setup.py to a new static format
+	* Building and installing packages from the static format using
+	  distutils
+
 Static metadata
 ===============
+
+Rationale
+---------
+
+Being able to describe most python packages from a purely static file has the
+following advantages::
+
+	* No arbitrary code execution, you only have to trust toydist code
+	  instead of setup.py (which can do anything that python can)
+	* Inspection of packages becomes easier for third parties, like OS
+	  vendors.
+	* Also the current toydist implementation uses distutils to actually
+	  does the building and packaging from the static description,
+	  distutils becomes an implementation detail of the system, in the
+	  sense that another build system can be build on top of toydist. This
+	  gives a simple but powerful way forward for improving the situation
+	  of python packaging.
 
 Usage
 -----
@@ -40,11 +66,6 @@ from a standard setup.py::
         pkg = distutils_to_package_description(dist)
         open('setup.static', 'w').write(static_representation(pkg))
 
-Besides the usual advantages of a static file (declarative instead of
-imperative), it provides a clean and simple path toward a new build system
-which does not rely on the fragile distutils: a new sytem would simply use the
-static info (which can be queried from a simple API).
-
 Format
 ------
 
@@ -61,3 +82,4 @@ A simple static file looks like this::
 The format is strongly inspired by the _Cabal system from Haskell.
 
 .. _Cabal: http://www.haskell.org/cabal/release/cabal-latest/doc/users-guide/
+
