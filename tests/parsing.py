@@ -1,12 +1,17 @@
 import os
-
+import tempfile
+import shutil
 import unittest
 
+from os.path import \
+    join
 from nose.tools import \
     assert_equal
 
 from toydist.cabal_parser.cabal_parser import \
     parse
+from toydist.utils import \
+    validate_glob_pattern, expand_glob
 
 def test_metadata():
     meta_ref = {
@@ -103,3 +108,32 @@ Library:
 
         expected = {"extension": {"_bar": {"sources": ["foobar.c", "barfoo.c"]}}}
         self._test(data, expected)
+
+class TestParseGlob(unittest.TestCase):
+    def test_invalid(self):
+        # Test we raise a ValueError at unwanted pattern
+        for p in ["*/a", "src.*", "dir1/dir*/foo"]:
+            self.failUnlessRaises(ValueError, lambda: validate_glob_pattern(p))
+
+    def test_simple(self):
+        # Test simple pattern matching
+        d = tempfile.mkdtemp("flopflop")
+        try:
+            open(join(d, "foo1.py"), "w").close()
+            open(join(d, "foo2.py"), "w").close()
+            f = sorted(expand_glob("*.py", d))
+            assert_equal(f, ["foo1.py", "foo2.py"])
+        finally:
+            shutil.rmtree(d)
+
+    def test_simple2(self):
+        # Test another pattern matching, with pattern including directory
+        d = tempfile.mkdtemp("flopflop")
+        try:
+            os.makedirs(join(d, "common"))
+            open(join(d, "common", "foo1.py"), "w").close()
+            open(join(d, "common", "foo2.py"), "w").close()
+            f = sorted(expand_glob(join("common", "*.py"), d))
+            assert_equal(f, [join("common", "foo1.py"), join("common", "foo2.py")])
+        finally:
+            shutil.rmtree(d)
