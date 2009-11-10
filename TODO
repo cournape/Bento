@@ -1,4 +1,4 @@
-.. Thu, 15 Oct 2009 19:28:58 +0900
+..  Wed Nov 11 01:06:58 JST 2009
 
 What's needed for a first prototype
 ===================================
@@ -14,10 +14,11 @@ and we just use the config file as input instead of writing metadata in
 setup.py. Goal: building hello world packages with C extensions with a 2 lines
 setup.py and the package description entirely defined in the metadata.
 
-This requires::
+This is mostly done. What's missing::
 
-        .# Handle Extension, Package and Modules in the parser
-        .# Create a PackageDescription from a file
+	.# Documentation tagging
+	.# Data tagging
+	.# Data vs. extra: I should familiarize myself with pkg_resources
 
 Build and Install requirements sections
 ---------------------------------------
@@ -33,11 +34,20 @@ This requires::
         .# Writing a tool on top of pip to download the build or install
            requirements ala pip
 
-Basic configuration management
-------------------------------
+Simple build system
+-------------------
 
-Third step: add a few fixed variable, say os and arch, to handle .e.g
-system-dependent requirements.
+Need to think about this, but basically::
+
+	.# Use configure/build/install: no commands anymore, all steps knows
+	   about all options
+	.# Should support all autoconf dir-related options (includedir, etc...)
+	.# Should support building sphinx doc
+	.# Reuse distutils compiler classes here ? At least create an abstract
+	   description of compiler options (so that both MS and Unix compilers
+	   can be used consistently)
+	.# Ideally: should support building eggs, automatic testing, no-install
+	   (develop) mode
 
 Later
 =====
@@ -66,3 +76,9 @@ files to include. But some people want it::
         acceptable ?
         .# Description needs to be rich enough so that following the FSH is
         possible
+
+Export to 3rd party distribution tools
+--------------------------------------
+
+nsis, visual studio, deb, rpm, etc... What matters is how to plug-in new
+exporters.
