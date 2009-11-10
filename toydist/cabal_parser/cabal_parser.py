@@ -5,7 +5,7 @@ import platform
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension']
-list_fields = ['sources', 'packages', 'modules', 'buildrequires']
+list_fields = ['sources', 'packages', 'modules', 'buildrequires', 'platforms']
 
 class NextParser(Exception): pass
 
