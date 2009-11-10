@@ -1,0 +1,26 @@
+.. See http://svn.python.org/projects/sandbox/trunk/setuptools/doc/formats.txt
+
+This document gives the details of the egg file format, gathered from various
+sources (setuptools sources, egg format specification, etc...).
+
+Overview
+========
+
+An egg file is an importable zip file with some meta-data::
+
+	foo.egg/..
+	        EGG-INFO # metadata
+	        foo # importable package itself
+
+The metadata directory contains the following::
+
+	EGG-INFO/..
+		 PKG-INFO: as defined by the PEPs
+		 requirements.txt: list of requirements (as parsed by
+				   requirements functionalities of
+				   pkg_resources)
+		 dependency_links.txt: 
+		 depends.txt: obsolete
+		 namespace_packages.txt: list of namespace packages
+		 entry_points.txt: 
+		 native_libs.txt: list of native libraries (.pyd)
