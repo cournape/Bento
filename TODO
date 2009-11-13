@@ -3,8 +3,7 @@
 What's needed for a first prototype
 ===================================
 
-Obviously a lot. Before something which is worths putting out there, I would
-like to implement the following:
+Basic requirements are listed here
 
 Fully static package description
 --------------------------------
@@ -14,6 +13,10 @@ and we just use the config file as input instead of writing metadata in
 setup.py. Goal: building hello world packages with C extensions with a 2 lines
 setup.py and the package description entirely defined in the metadata.
 
+Status
+~~~~~~
+
+like to implement the following:
 This is mostly done. What's missing::
 
 	.# Documentation tagging
@@ -31,23 +34,16 @@ This requires::
 
         .# Version handling: see distutils and the new PEP 386.
         .# Parsing requirements in config file
-        .# Writing a tool on top of pip to download the build or install
-           requirements ala pip
 
 Simple build system
 -------------------
 
-Need to think about this, but basically::
-
-	.# Use configure/build/install: no commands anymore, all steps knows
-	   about all options
+    .# Use configure/build/install: no commands anymore, all steps know about
+       all options.
 	.# Should support all autoconf dir-related options (includedir, etc...)
-	.# Should support building sphinx doc
-	.# Reuse distutils compiler classes here ? At least create an abstract
-	   description of compiler options (so that both MS and Unix compilers
-	   can be used consistently)
 	.# Ideally: should support building eggs, automatic testing, no-install
 	   (develop) mode
+	.# Should support building sphinx doc
 
 Later
 =====
@@ -82,3 +78,6 @@ Export to 3rd party distribution tools
 
 nsis, visual studio, deb, rpm, etc... What matters is how to plug-in new
 exporters.
+
+Install/Reinstall/Rebuild/Clean problem
+---------------------------------------
