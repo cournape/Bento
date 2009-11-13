@@ -1,0 +1,12 @@
+Name: hello
+Version: 1.0
+
+ExtraSourceFiles:
+    sources:
+        data/*.dat
+        data/foo.src
+    target: path(pkgdata_dir)
+
+Library:
+    Packages:
+        hello
