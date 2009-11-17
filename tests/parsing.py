@@ -9,7 +9,7 @@ from nose.tools import \
     assert_equal
 
 from toydist.cabal_parser.cabal_parser import \
-    parse, CommaListLexer
+    parse, CommaListLexer, comma_list_split
 from toydist.utils import \
     validate_glob_pattern, expand_glob
 
@@ -151,9 +151,21 @@ bar"""]
             assert_equal(r, ['foo', 'bar'])
             assert lexer.get_token() == lexer.eof
 
-    def test_excape(self):
+    def test_escape(self):
         s = "foo\,bar"
         lexer = CommaListLexer(s)
         r = lexer.get_token().strip()
         assert_equal(r, 'foo,bar')
         assert lexer.get_token() == lexer.eof
+
+        s = "src\,/_foo.c, bar.c"
+        lexer = CommaListLexer(s)
+        r = [lexer.get_token().strip() for j in range(2)]
+        assert_equal(r, ['src,/_foo.c', 'bar.c'])
+        assert lexer.get_token() == lexer.eof
+
+def test_comma_list_split():
+    for test in [('foo', ['foo']), ('foo,bar', ['foo', 'bar']),
+            ('foo\,bar', ['foo,bar']),
+            ('foo.c\,bar.c', ['foo.c,bar.c'])]:
+        assert_equal(comma_list_split(test[0]), test[1])

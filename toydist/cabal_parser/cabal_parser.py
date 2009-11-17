@@ -235,10 +235,21 @@ class CommaListLexer(object):
         else:
             self._lexer = shlex.shlex(posix=True)
         self._lexer.whitespace += ','
+        self._lexer.wordchars += './'
         self.eof = self._lexer.eof
 
     def get_token(self):
         return self._lexer.get_token()
+
+def comma_list_split(str):
+    lexer = CommaListLexer(str)
+    ret = []
+    t = lexer.get_token()
+    while t != lexer.eof:
+        ret.append(t)
+        t = lexer.get_token()
+
+    return ret
 
 def key_value(r, store, opt_arg=None):
     line = r.peek()
