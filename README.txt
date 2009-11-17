@@ -6,11 +6,13 @@ community.
 
 The core design decisions are::
 
-        * simplicity, explicit and one obvious way to do it
-        * package description in a custom language, to avoid running untrusted
-          code
+        * simple, explicit and one obvious way to do it
+        * package description in a custom, limited language, to avoid running
+          untrusted code
         * easy and stable interface with 3rd party build tools like make or
           scons
+        * interoperate with existing python packaging infrastructure through
+          file format, tools and protocol, not API
 
 What can it do
 ==============
