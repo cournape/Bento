@@ -8,6 +8,7 @@ import shlex
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path']
 list_fields = ['sources', 'packages', 'modules', 'buildrequires', 'platforms']
+path_fields = ['sources', 'default', 'target']
 
 class NextParser(Exception): pass
 
@@ -312,7 +313,7 @@ def key_value(r, store, opt_arg=None):
         value = comma_list_split(value)
 
     # Handle path(path_variable). Ugly
-    if key in ['sources', 'default']:
+    if key in path_fields:
         if opt_arg:
             paths = opt_arg.get('paths')
         else:
