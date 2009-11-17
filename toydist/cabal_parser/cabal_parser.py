@@ -5,7 +5,7 @@ import platform
 import shlex
 
 indent_width = 4
-header_titles = ['flag', 'library', 'executable', 'extension']
+header_titles = ['flag', 'library', 'executable', 'extension', 'path']
 list_fields = ['sources', 'packages', 'modules', 'buildrequires', 'platforms']
 
 class NextParser(Exception): pass
@@ -258,6 +258,7 @@ _PATH_VAR_RE = re.compile(r"""path
         )\)""", re.VERBOSE)
 
 def parse_path(path, path_vars={}):
+    # XXX: this may be a bottlneck if many files. Profile this
     if 'path' in path:
         def matcher(match):
             name = match.group(1)
@@ -308,6 +309,17 @@ def key_value(r, store, opt_arg=None):
     # Packages and modules are lists, handle them specially
     if key in list_fields:
         value = comma_list_split(value)
+
+    # Handle path(path_variable). Ugly
+    if key in ['sources', 'default']:
+        if opt_arg:
+            paths = opt_arg.get('paths')
+        else:
+            paths = {}
+        if key == 'sources':
+            value = [parse_path(v, paths) for v in value]
+        else:
+            value = parse_path(value, paths)
 
     # If the key exists, append the new value, otherwise
     # create a new key-value pair
@@ -488,5 +500,3 @@ if __name__ == "__main__":
     meta_data = parse(data, {'webfrontend': True})
 
     print_dict(meta_data)
-
-
