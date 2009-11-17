@@ -1,0 +1,17 @@
+Name: var_example
+Version: 0.1
+
+Flag: debug
+    Description: build debug or not
+    Default: True
+
+Path: octave_dir
+    Description: Octave directory
+    Default: path(datarootdir)/octave/site/m
+
+Library:
+    if flag(debug)
+        Extension: _foo
+            sources: _foo.c
+    Extension: _bar
+        sources: src\,_foo.c, path(octave_dir)/src/bar.c

@@ -496,8 +496,17 @@ if __name__ == "__main__":
                 #else:
                 #    print out
 
+    # TODO: implement simple variable interpolation for default user_paths
+    user_paths = {
+            'prefix': '/usr/local',
+            'eprefix': '/usr/local',
+            'bindir': '/usr/local/bin',
+            'libdir': '/usr/local/lib',
+            'includedir': '/usr/local/include',
+            'datarootdir': '/usr/local/share',
+    }
     f = open(sys.argv[1], 'r')
     data = f.readlines()
-    meta_data = parse(data, {'webfrontend': True})
+    meta_data = parse(data, {'webfrontend': True}, user_paths)
 
     print_dict(meta_data)
