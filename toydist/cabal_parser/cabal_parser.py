@@ -266,7 +266,7 @@ def parse_path(path, path_vars={}):
             except KeyError:
                 msg = "%s path variable not defined" % name
                 msg += "\nDefined variables are: %s" % path_vars
-                raise ValueError(msg)
+                raise ParseError(msg)
         return _PATH_VAR_RE.sub(matcher, path)
     return path
 
