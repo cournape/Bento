@@ -485,15 +485,16 @@ if __name__ == "__main__":
                 print_dict(value, indent=indent + indent_width)
             else:
                 out = indent_str + '%s: %s' % (key, value)
-                if len(out) > 78:
-                    print '%s:' % key
-                    wrap = '\n\n'.join(
-                        [textwrap.fill(par, 78 - indent - indent_width)
-                         for par in value.split('\n\n')])
-                    for l in wrap.split('\n'):
-                        print indent_str + indent_width*' ' + l
-                else:
-                    print out
+                print out
+                #if len(out) > 78:
+                #    print '%s:' % key
+                #    wrap = '\n\n'.join(
+                #        [textwrap.fill(par, 78 - indent - indent_width)
+                #         for par in value.split('\n\n')])
+                #    for l in wrap.split('\n'):
+                #        print indent_str + indent_width*' ' + l
+                #else:
+                #    print out
 
     f = open(sys.argv[1], 'r')
     data = f.readlines()
