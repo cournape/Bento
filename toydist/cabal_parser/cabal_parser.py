@@ -370,11 +370,17 @@ def get_flags(store, user_flags={}):
     found during parsing.
 
     """
-    flag_defines = store.get('Flag', {})
+    flag_defines = store.get('flag', {})
     flags = {}
     for flag_name, flag_attr in flag_defines.items():
-        if flag_attr.get('Default') is not None:
-            flags[flag_name.lower()] = bool(flag_attr['Default'])
+        if flag_attr.get('default') is not None:
+            if flag_attr['default'] == 'True':
+                val = True
+            elif flag_attr['default'] == 'False':
+                val = False
+            else:
+                raise ValueError("Unrecognized bool value %s" % flag_attr['default'])
+            flags[flag_name.lower()] = val
 
     flags.update(user_flags)
     return flags
