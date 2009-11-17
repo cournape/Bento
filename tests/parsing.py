@@ -9,7 +9,7 @@ from nose.tools import \
     assert_equal
 
 from toydist.cabal_parser.cabal_parser import \
-    parse
+    parse, CommaListLexer
 from toydist.utils import \
     validate_glob_pattern, expand_glob
 
@@ -137,3 +137,23 @@ class TestParseGlob(unittest.TestCase):
             assert_equal(f, [join("common", "foo1.py"), join("common", "foo2.py")])
         finally:
             shutil.rmtree(d)
+
+class TestCommaListLexer(unittest.TestCase):
+    def test_simple(self):
+        s = ["foo, bar"]
+        s += ["""\
+foo,
+bar"""]
+
+        for i in s:
+            lexer = CommaListLexer(i)
+            r = [lexer.get_token().strip() for j in range(2)]
+            assert_equal(r, ['foo', 'bar'])
+            assert lexer.get_token() == lexer.eof
+
+    def test_excape(self):
+        s = "foo\,bar"
+        lexer = CommaListLexer(s)
+        r = lexer.get_token().strip()
+        assert_equal(r, 'foo,bar')
+        assert lexer.get_token() == lexer.eof

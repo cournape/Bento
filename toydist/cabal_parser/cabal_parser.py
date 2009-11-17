@@ -2,6 +2,7 @@ import sys
 import ast
 import re
 import platform
+import shlex
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension']
@@ -226,6 +227,18 @@ expr_constants = {'darwin': 'darwin',
 # --- parsers start -------------------------------------------------------
 
 # Refer to http://www.haskell.org/cabal/release/cabal-latest/doc/users-guide/
+
+class CommaListLexer(object):
+    def __init__(self, instream=None):
+        if instream is not None:
+            self._lexer = shlex.shlex(instream, posix=True)
+        else:
+            self._lexer = shlex.shlex(posix=True)
+        self._lexer.whitespace += ','
+        self.eof = self._lexer.eof
+
+    def get_token(self):
+        return self._lexer.get_token()
 
 def key_value(r, store, opt_arg=None):
     line = r.peek()
