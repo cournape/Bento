@@ -235,7 +235,7 @@ class CommaListLexer(object):
         else:
             self._lexer = shlex.shlex(posix=True)
         self._lexer.whitespace += ','
-        self._lexer.wordchars += './'
+        self._lexer.wordchars += './()'
         self.eof = self._lexer.eof
 
     def get_token(self):
@@ -250,6 +250,25 @@ def comma_list_split(str):
         t = lexer.get_token()
 
     return ret
+
+# Regex used to find and replace path(path_variable) by their value
+_PATH_VAR_RE = re.compile(r"""path
+        \((
+        .+? # Match any character, but stops at the first ) character
+        )\)""", re.VERBOSE)
+
+def parse_path(path, path_vars={}):
+    if 'path' in path:
+        def matcher(match):
+            name = match.group(1)
+            try:
+                return path_vars[name]
+            except KeyError:
+                msg = "%s path variable not defined" % name
+                msg += "\nDefined variables are: %s" % path_vars
+                raise ValueError(msg)
+        return _PATH_VAR_RE.sub(matcher, path)
+    return path
 
 def key_value(r, store, opt_arg=None):
     line = r.peek()
