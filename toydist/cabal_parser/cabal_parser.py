@@ -506,6 +506,7 @@ if __name__ == "__main__":
             'libdir': '/usr/local/lib',
             'includedir': '/usr/local/include',
             'datarootdir': '/usr/local/share',
+            'datadir': '/usr/local/share',
     }
     f = open(sys.argv[1], 'r')
     data = f.readlines()
