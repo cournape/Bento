@@ -4,6 +4,14 @@ There isn't anything to see, as it is mostly used as a prototype to experiment
 with different ideas I have to improve the distribution mess in python
 community.
 
+The core design decisions are::
+
+        * simplicity, explicit and one obvious way to do it
+        * package description in a custom language, to avoid running untrusted
+          code
+        * easy and stable interface with 3rd party build tools like make or
+          scons
+
 What can it do
 ==============
 
