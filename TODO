@@ -16,12 +16,48 @@ setup.py and the package description entirely defined in the metadata.
 Status
 ~~~~~~
 
-like to implement the following:
 This is mostly done. What's missing::
 
 	.# Documentation tagging
 	.# Data tagging
 	.# Data vs. extra: I should familiarize myself with pkg_resources
+
+Problems::
+
+        .# describing data files (ExtraSourceFiles field) in a Distribution
+           file (MANIFEST[.in] mess)
+        .# converting back from .info file to setup.py
+
+Simple build system
+-------------------
+
+Based on a configure/build/install-like scheme::
+
+        .# No support for compiled extension yet
+        .# Python files simply copied into install directory
+        .# No commands anymore, every step know about all options (through
+           configure)
+        .# Should support all autoconf dir-related options (includedir, etc...)
+        .# Think about extensibility from the start: pre/post hooks for each
+           step, how to add steps maybe ?
+
+More advanced features
+~~~~~~~~~~~~~~~~~~~~~~
+
+Things which are necessary for realistically replace distutils/setuptools::
+
+        .# building C/C++ extensions
+        .# building eggs
+        .# building wininst, msi
+        .# no-install (develop) mode
+        .# interoperation with pip-like tool ?
+
+Goodies::
+
+        .# Should support building sphinx doc
+        .# Should support check-like step (build sdist, build from sdist, and
+           test from sdist)
+        .# Add scons builders for simple scons-based build
 
 Build and Install requirements sections
 ---------------------------------------
@@ -34,16 +70,6 @@ This requires::
 
         .# Version handling: see distutils and the new PEP 386.
         .# Parsing requirements in config file
-
-Simple build system
--------------------
-
-    .# Use configure/build/install: no commands anymore, all steps know about
-       all options.
-	.# Should support all autoconf dir-related options (includedir, etc...)
-	.# Ideally: should support building eggs, automatic testing, no-install
-	   (develop) mode
-	.# Should support building sphinx doc
 
 Later
 =====
