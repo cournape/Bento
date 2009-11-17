@@ -422,7 +422,7 @@ def get_flags(store, user_flags={}):
             elif flag_attr['default'] == 'False':
                 val = False
             else:
-                raise ValueError("Unrecognized bool value %s" % flag_attr['default'])
+                raise ParseError("Unrecognized bool value %s" % flag_attr['default'])
             flags[flag_name.lower()] = val
 
     flags.update(user_flags)
