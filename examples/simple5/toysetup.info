@@ -5,7 +5,7 @@ ExtraSourceFiles:
     sources:
         data/*.dat
         data/foo.src
-    target: path(pkgdata_dir)
+    target: path(pkgdatadir)
 
 Library:
     Packages:

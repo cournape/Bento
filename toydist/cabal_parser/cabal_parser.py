@@ -6,7 +6,8 @@ import platform
 import shlex
 
 indent_width = 4
-header_titles = ['flag', 'library', 'executable', 'extension', 'path']
+header_titles = ['flag', 'library', 'executable', 'extension', 'path',
+                 'extrasourcefiles']
 list_fields = ['sources', 'packages', 'modules', 'buildrequires', 'platforms']
 path_fields = ['sources', 'default', 'target']
 
@@ -456,6 +457,14 @@ def get_paths(store, user_paths={}):
             raise ParseError("Path %s defined without default value" % path_name)
 
     paths.update(user_paths)
+
+    # Update paths vars which depend on package name
+    # XXX: doing it here is ugly
+    pkg_name = store.get('name')
+    if pkg_name:
+        pkgdatadir = paths.get('pkgdatadir')
+        if not pkgdatadir:
+            paths['pkgdatadir'] = os.path.join(paths['datadir'], pkg_name)
     return paths
 
 def parse(data, user_flags={}, user_paths={}):
