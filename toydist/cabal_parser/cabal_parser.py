@@ -1,3 +1,4 @@
+import os.path
 import sys
 import ast
 import re
@@ -173,7 +174,7 @@ Parser traceback: %s''' %
 def flag(foo):
     return bool(foo)
 
-def os(name):
+def os_var(name):
     return platform.system().lower() == name
 
 def arch(name):
@@ -206,7 +207,7 @@ class VersionCompare(object):
             return -1
 
 expr_funcs = {'flag': flag,
-              'os': os,
+              'os': os_var,
               'arch': arch,
               'impl': impl}
 
