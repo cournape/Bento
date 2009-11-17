@@ -353,7 +353,7 @@ def section(r, store, flags={}):
         r.parse((if_statement, section, key_value), store, opt_arg=flags)
     r.parse(close_brace)
 
-def eval_statement(expr, flags):
+def eval_statement(expr, vars):
     # replace version numbers with strings, e.g. 2.6.1 -> '2.6.1'
     ver_descr = re.compile('[^\'\."0-9](\d+\.)+\d+')
     match = ver_descr.search(expr)
@@ -366,7 +366,7 @@ def eval_statement(expr, flags):
     # Parse, compile and execute the expression
     expr_ast = ast.parse(expr, mode='eval')
     code = compile(expr_ast, filename=expr, mode='eval')
-    expr_constants.update(flags)
+    expr_constants.update(vars['flags'])
     return eval(code, expr_funcs, expr_constants)
 
 def if_statement(r, store, flags={}):
@@ -428,7 +428,23 @@ def get_flags(store, user_flags={}):
     flags.update(user_flags)
     return flags
 
-def parse(data, user_flags={}):
+def get_paths(store, user_paths={}):
+    """Given the variables returned by the parser, return the paths found. If
+    `user_paths` are provided, these override those found during parsing.
+    """
+    path_defines = store.get('path', {})
+    paths = {}
+    for path_name, path_attr in path_defines.items():
+        try:
+            val = path_attr['default']
+            paths[path_name.lower()] = val
+        except KeyError:
+            raise ParseError("Path %s defined without default value" % path_name)
+
+    paths.update(user_paths)
+    return paths
+
+def parse(data, user_flags={}, user_paths={}):
     """Given lines from a config file, parse them.  `user_flags` may
     optionally be given to override any flags found in the config
     file.
@@ -440,7 +456,8 @@ def parse(data, user_flags={}):
 
     while not r.eof():
         r.parse([key_value, section], store=info,
-                                      opt_arg=get_flags(info, user_flags))
+                opt_arg={'flags': get_flags(info, user_flags),
+                         'paths': get_paths(info, user_paths)})
 
     return info
 
