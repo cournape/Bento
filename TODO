@@ -41,6 +41,16 @@ Based on a configure/build/install-like scheme::
         .# Think about extensibility from the start: pre/post hooks for each
            step, how to add steps maybe ?
 
+Requires::
+
+        .# Make flag and paths input/output consistent in cabal_parser, so that
+           they can easily be used to describe options (to configure command
+           mostly)
+        .# Decide on internal representation of paths and possible stages of
+           substitution to interdependencies between paths
+        .# Decide of a format to dump/restore configure options
+        .# Implement build and install from package description
+
 More advanced features
 ~~~~~~~~~~~~~~~~~~~~~~
 
