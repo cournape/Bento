@@ -35,7 +35,7 @@ METADATA = {
 }
 
 PACKAGE_DATA = {
-    'packages': ['toydist', 'toydist.compat', 'toydist.config_parser', 'toydist.cabal_parser']
+    'packages': ['toydist', 'toydist.cabal_parser']
 }
 
 if __name__ == '__main__':
