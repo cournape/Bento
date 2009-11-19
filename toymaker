@@ -1,0 +1,171 @@
+#! /usr/bin/env python
+import sys
+import os
+import getopt
+import optparse
+
+TOYMAKER_DEBUG = True
+SCRIPT_NAME = 'toymaker'
+
+USAGE = """\
+%(name)s [command] [options]
+
+Main commands:
+%(cmds)s\
+"""
+
+class ToymakeException(Exception):
+    pass
+
+class UsageException(Exception):
+    pass
+
+class Command(object):
+    long_descr = None
+    short_descr = None
+    # XXX: decide how to deal with subcommands options
+    opts = []
+    def run(self, opts):
+        raise NotImplementedError("run method should be implemented by command classes.")
+
+
+class HelpCommand(Command):
+    long_descr = """\
+Purpose: Show help on a command or other topic.
+Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
+    short_descr = "gives help on a given topic or command."
+    def run(self, cmd_args):
+        if len(cmd_args) < 1:
+            print get_usage()
+            return
+
+        cmd_name = None
+        help_args = []
+        if not cmd_args[0].startswith('-'):
+            cmd_name = cmd_args[0]
+            cmd_args.pop(0)
+        else:
+            # eat all the help options
+            _args = [cmd_args.pop(0)]
+            while not _args[0].startswith('-') and len(cmd_args) > 0:
+                _args.append(cmd_args.pop(0))
+            help_args = _args
+            cmd_name = cmd_args[0]
+
+        # XXX: overkill as we don't support any options for now
+        try:
+            parser = optparse.OptionParser()
+            for o in self.opts:
+                parser.add_option(o)
+            parser.parse_args(help_args)
+        except optparse.OptionError, e:
+            raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
+
+        if not cmd_name in CMDS_TO_CLASS:
+            raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
+        cmd_class = CMDS_TO_CLASS[cmd_name]
+
+        parser = optparse.OptionParser(usage='')
+        for o in cmd_class.opts:
+            a = o.pop('opts')
+            kw = o
+            parser.add_option(*a, **kw)
+        print cmd_class.long_descr
+        print ""
+        parser.print_help()
+
+class ConfigureCommand(Command):
+    long_descr = """\
+Purpose: configure the project
+Usage:   toymaker configure [OPTIONS]."""
+    short_descr = "configure the project."
+    opts = [
+        {'opts': ['--prefix'],
+         'help': 'install architecture-independent files in PREFIX'}
+    ]
+    def run(self, opts):
+        pass
+
+class BuildCommand(Command):
+    long_descr = """\
+Purpose: build the project
+Usage:   toymaker build [OPTIONS]."""
+    short_descr = "build the project."
+
+CMDS_TO_CLASS = {
+    'help': HelpCommand,
+    'configure': ConfigureCommand,
+    'build': BuildCommand
+}
+
+def get_usage():
+    cmd_help = []
+    cmd_doc = {}
+    cmd_name = sorted(CMDS_TO_CLASS.keys())
+
+    for k, v in CMDS_TO_CLASS.items():
+        doc = v.short_descr
+        if doc is None:
+            doc = "undocumented"
+        cmd_doc[k] = doc
+
+    just = max([len(name) for name in cmd_name])
+
+    cmd_help = ['  %s: %s' % (name.ljust(just), cmd_doc[name]) for name in cmd_name]
+    return USAGE % {'cmds': "\n".join(cmd_help), 'name': SCRIPT_NAME}
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+
+    show_usage = False
+    cmd_name = None
+    cmd_opts = None
+
+    try:
+        opts, pargs = getopt.getopt(argv, "h", ["help"])
+        for opt, arg in opts:
+            if opt in ("--help", "-h"):
+                show_usage = True
+
+        if len(pargs) > 0:
+            cmd_name = pargs.pop(0)
+            cmd_opts = pargs
+    except getopt.GetoptError, e:
+        emsg = "%s: illegal global option -- %s" % (SCRIPT_NAME, e.opt)
+        print emsg
+        print get_usage()
+        return 1
+
+    if show_usage:
+        print get_usage()
+        return 0
+
+    if not cmd_name:
+        print "Type '%s help' for usage." % SCRIPT_NAME
+        return 1
+    else:
+        if not cmd_name in CMDS_TO_CLASS:
+            raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
+        else:
+            cmd = CMDS_TO_CLASS[cmd_name]()
+            cmd.run(cmd_opts)
+
+def noexc_main(argv=None):
+    try:
+        ret = main(argv)
+        sys.exit(ret)
+    except UsageException, e:
+        print e
+        sys.exit(1)
+    except Exception, e:
+        if TOYMAKER_DEBUG:
+            import traceback
+            tb = sys.exc_info()[2]
+            traceback.print_tb(tb)
+        print "%s: Error: %s crashed (uncaught exception: %s)." % \
+                (SCRIPT_NAME, SCRIPT_NAME, str(e))
+        sys.exit(1)
+
+if __name__ == '__main__':
+    noexc_main()
