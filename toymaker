@@ -98,6 +98,51 @@ CMDS_TO_CLASS = {
     'build': BuildCommand
 }
 
+class ParseCommand(Command):
+    long_descr = """\
+Purpose: print the parsed info file (debugging)
+Usage:   toymaker parse [OPTIONS] toysetup.info"""
+    short_descr = "parse a toysetup.info file and print the parsed tree dict."
+    def run(self, opts):
+        import textwrap
+        from toydist.cabal_parser.cabal_parser import \
+                parse, indent_width
+        filename = opts[0]
+
+        def print_dict(d, indent=0):
+            for (key, value) in d.items():
+                indent_str = indent * ' '
+                if isinstance(value, dict):
+                    if key.strip():
+                        print '%s%s:' % (indent_str, key)
+                    print_dict(value, indent=indent + indent_width)
+                else:
+                    out = indent_str + '%s: %s' % (key, value)
+                    print out
+
+        # TODO: implement simple variable interpolation for default user_paths
+        user_paths = {
+                'prefix': '/usr/local',
+                'eprefix': '/usr/local',
+                'bindir': '/usr/local/bin',
+                'libdir': '/usr/local/lib',
+                'includedir': '/usr/local/include',
+                'datarootdir': '/usr/local/share',
+                'datadir': '/usr/local/share',
+                'mandir': '/usr/local/share/man',
+        }
+        f = open(filename, 'r')
+        data = f.readlines()
+        meta_data = parse(data, {}, user_paths)
+        print_dict(meta_data)
+
+CMDS_TO_CLASS = {
+    'help': HelpCommand,
+    'configure': ConfigureCommand,
+    'build': BuildCommand,
+    'parse': ParseCommand,
+}
+
 def get_usage():
     cmd_help = []
     cmd_doc = {}
