@@ -136,17 +136,25 @@ Usage:   toymaker parse [OPTIONS] toysetup.info"""
         meta_data = parse(data, {}, user_paths)
         print_dict(meta_data)
 
-CMDS_TO_CLASS = {
+# Private commands
+PCMDS_TO_CLASS = {
+    'parse': ParseCommand,
+}
+
+# User-visible commands
+UCMDS_TO_CLASS = {
     'help': HelpCommand,
     'configure': ConfigureCommand,
     'build': BuildCommand,
-    'parse': ParseCommand,
 }
+
+CMDS_TO_CLASS = dict([(k, v) for k, v in PCMDS_TO_CLASS.items()])
+CMDS_TO_CLASS.update(UCMDS_TO_CLASS)
 
 def get_usage():
     cmd_help = []
     cmd_doc = {}
-    cmd_name = sorted(CMDS_TO_CLASS.keys())
+    cmd_name = UCMDS_TO_CLASS.keys()
 
     for k, v in CMDS_TO_CLASS.items():
         doc = v.short_descr
