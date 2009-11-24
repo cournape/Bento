@@ -6,7 +6,7 @@ import platform
 import shlex
 
 from toydist.cabal_parser.items import \
-        PathOption
+        PathOption, FlagOption
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',
@@ -356,7 +356,7 @@ def section(r, store, flags={}):
     section_header, type, name = _parse_section_header(section_header)
     if not type in header_titles:
         raise NextParser
-    elif type == 'path':
+    elif type in ['path', 'flag']:
         raise NextParser
 
     r.pop()
@@ -376,11 +376,13 @@ def section(r, store, flags={}):
     r.parse(close_brace)
 
 def path_parser(r, store, flags={}):
-    line = r.pop()
+    line = r.peek()
 
     section_header, type, name = _parse_section_header(line)
-    assert type == 'path'
+    if not type == 'path':
+        raise NextParser
 
+    line = r.pop()
     for key in ['path', 'path_options']:
         if not key in store:
             store[key] = {}
@@ -406,6 +408,40 @@ def path_parser(r, store, flags={}):
 
     store['path'][name] = default
     store['path_options'][name] = PathOption(name, default, descr)
+
+def flag_parser(r, store, flags={}):
+    line = r.peek()
+
+    section_header, type, name = _parse_section_header(line)
+    if not type == 'flag':
+        raise NextParser
+
+    line = r.pop()
+    for key in ['flag', 'flag_options']:
+        if not key in store:
+            store[key] = {}
+
+    if store['flag_options'].has_key(name):
+        raise ParseError("Flag %s already defined" % name)
+
+    f_store = {}
+    r.parse(open_brace)
+    while r.wait_for('}'):
+        r.parse((if_statement, key_value), f_store, opt_arg=flags)
+    r.parse(close_brace)
+
+    try:
+        default = f_store['default']
+    except KeyError:
+        raise ParseError("Flag %s has not default value" % name)
+
+    try:
+        descr = f_store['description']
+    except KeyError:
+        descr = None
+
+    store['flag'][name] = default
+    store['flag_options'][name] = FlagOption(name, default, descr)
 
 def eval_statement(expr, vars):
     # replace version numbers with strings, e.g. 2.6.1 -> '2.6.1'
@@ -467,20 +503,13 @@ def get_flags(store, user_flags={}):
     found during parsing.
 
     """
-    flag_defines = store.get('flag', {})
-    flags = {}
-    for flag_name, flag_attr in flag_defines.items():
-        if flag_attr.get('default') is not None:
-            if flag_attr['default'] == 'True':
-                val = True
-            elif flag_attr['default'] == 'False':
-                val = False
-            else:
-                raise ParseError("Unrecognized bool value %s" % flag_attr['default'])
-            flags[flag_name.lower()] = val
+    flag_options = store.get('flag_options', {})
+    for name, flag in flag_options.items():
+        user_flags[name] = flag.default_value
+    return user_flags
 
-    flags.update(user_flags)
-    return flags
+def get_flag_options(store):
+    return store.get('flag_options', {})
 
 def get_paths(store, user_paths={}):
     """Given the variables returned by the parser, return the paths found. If
@@ -505,8 +534,9 @@ def parse(data, user_flags={}, user_paths={}):
     info = {}
 
     while not r.eof():
-        r.parse([key_value, section, path_parser], store=info,
+        r.parse([key_value, section, path_parser, flag_parser], store=info,
                 opt_arg={'flags': get_flags(info, user_flags),
+                         'flag_options': get_flag_options(info),
                          'path_options': get_path_options(info),
                          'paths': get_paths(info, user_paths)})
 
