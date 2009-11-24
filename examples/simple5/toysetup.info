@@ -5,17 +5,17 @@ ExtraSourceFiles: data
     sources:
         data/*.dat
         data/foo.src
-    target: path(pkgdatadir)
+    target: $pkgdatadir
 
 ExtraSourceFiles: man1data
     sources:
         doc/foo.1
-    target: path(mandir)/man1
+    target: $mandir/man1
 
 ExtraSourceFiles: man3data
     sources:
         doc/foo.3
-    target: path(mandir)/man3
+    target: $mandir/man3
 
 Library:
     Packages:
