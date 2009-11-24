@@ -341,26 +341,28 @@ def open_brace(r, opt_arg=None):
 def close_brace(r, opt_arg=None):
     r.expect('}', 'Expected indentation to decrease')
 
+def _parse_section_header(line):
+    header = [s.strip() for s in line.split(':')]
+    type = header[0].lower()
+    return header, type, header[1]
+
 def section(r, store, flags={}):
     section_header = r.peek()
     if section_header.count(':') < 1: raise NextParser
 
-    section_header = [s.strip() for s in section_header.split(':')]
-    section_type = section_header[0].lower()
-    if not section_type in header_titles:
+    section_header, type, name = _parse_section_header(section_header)
+    if not type in header_titles:
         raise NextParser
 
     r.pop()
     if not len(section_header) == 2:
         r.parse_error('Invalid section header')
 
-    name = section_header[1]
+    if not type in store:
+        store[type] = {}
 
-    if not section_type in store:
-        store[section_type] = {}
-
-    store[section_type][name] = {}
-    store = store[section_type][name]
+    store[type][name] = {}
+    store = store[type][name]
 
     r.parse(open_brace)
 
