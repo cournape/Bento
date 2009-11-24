@@ -5,6 +5,9 @@ import re
 import platform
 import shlex
 
+from toydist.cabal_parser.items import \
+        PathOption
+
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',
                  'extrasourcefiles']
@@ -353,6 +356,8 @@ def section(r, store, flags={}):
     section_header, type, name = _parse_section_header(section_header)
     if not type in header_titles:
         raise NextParser
+    elif type == 'path':
+        raise NextParser
 
     r.pop()
     if not len(section_header) == 2:
@@ -369,6 +374,38 @@ def section(r, store, flags={}):
     while r.wait_for('}'):
         r.parse((if_statement, section, key_value), store, opt_arg=flags)
     r.parse(close_brace)
+
+def path_parser(r, store, flags={}):
+    line = r.pop()
+
+    section_header, type, name = _parse_section_header(line)
+    assert type == 'path'
+
+    for key in ['path', 'path_options']:
+        if not key in store:
+            store[key] = {}
+
+    if store['path_options'].has_key(name):
+        raise ParseError("Path %s already defined" % name)
+
+    p_store = {}
+    r.parse(open_brace)
+    while r.wait_for('}'):
+        r.parse((if_statement, key_value), p_store, opt_arg=flags)
+    r.parse(close_brace)
+
+    try:
+        default = p_store['default']
+    except KeyError:
+        raise ParseError("Path %s has not default value" % name)
+
+    try:
+        descr = p_store['description']
+    except KeyError:
+        descr = None
+
+    store['path'][name] = default
+    store['path_options'][name] = PathOption(name, default, descr)
 
 def eval_statement(expr, vars):
     # replace version numbers with strings, e.g. 2.6.1 -> '2.6.1'
@@ -449,25 +486,13 @@ def get_paths(store, user_paths={}):
     """Given the variables returned by the parser, return the paths found. If
     `user_paths` are provided, these override those found during parsing.
     """
-    path_defines = store.get('path', {})
-    paths = {}
-    for path_name, path_attr in path_defines.items():
-        try:
-            val = path_attr['default']
-            paths[path_name.lower()] = val
-        except KeyError:
-            raise ParseError("Path %s defined without default value" % path_name)
+    path_options = store.get('path_options', {})
+    for name, path in path_options.items():
+        user_paths[name] = path.default_value
+    return user_paths
 
-    paths.update(user_paths)
-
-    # Update paths vars which depend on package name
-    # XXX: doing it here is ugly
-    pkg_name = store.get('name')
-    if pkg_name:
-        pkgdatadir = paths.get('pkgdatadir')
-        if not pkgdatadir:
-            paths['pkgdatadir'] = os.path.join(paths['datadir'], pkg_name)
-    return paths
+def get_path_options(store):
+    return store.get('path_options', {})
 
 def parse(data, user_flags={}, user_paths={}):
     """Given lines from a config file, parse them.  `user_flags` may
@@ -480,8 +505,9 @@ def parse(data, user_flags={}, user_paths={}):
     info = {}
 
     while not r.eof():
-        r.parse([key_value, section], store=info,
+        r.parse([key_value, section, path_parser], store=info,
                 opt_arg={'flags': get_flags(info, user_flags),
+                         'path_options': get_path_options(info),
                          'paths': get_paths(info, user_paths)})
 
     return info
