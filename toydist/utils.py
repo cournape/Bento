@@ -54,7 +54,7 @@ def subst_vars (s, local_vars):
         if var_name in local_vars:
             return str(local_vars[var_name])
         else:
-            raise ValueError("Invalid variable '$%s'" % var)
+            raise ValueError("Invalid variable '$%s'" % var_name)
 
     def _do_subst(v):
         return re.sub(r'\$([a-zA-Z_][a-zA-Z_0-9]*)', _subst, v)
