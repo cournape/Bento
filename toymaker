@@ -4,6 +4,13 @@ import os
 import getopt
 import optparse
 
+from toydist.utils import \
+        subst_vars
+from toydist.sysconfig import \
+        get_scheme
+from toydist.cabal_parser.cabal_parser import \
+        parse
+
 TOYMAKER_DEBUG = True
 SCRIPT_NAME = 'toymaker'
 
@@ -20,11 +27,36 @@ class ToymakeException(Exception):
 class UsageException(Exception):
     pass
 
+class MyOptionParser(optparse.OptionParser):
+    def __init__(self, *a, **kw):
+        if not kw.has_key('add_help_option'):
+            kw['add_help_option'] = False
+        optparse.OptionParser.__init__(self, *a, **kw)
+
+    def error(self, msg):
+        raise UsageException("%s: ERROR: %s" % (SCRIPT_NAME, msg))
+
 class Command(object):
     long_descr = None
     short_descr = None
     # XXX: decide how to deal with subcommands options
-    opts = []
+    opts = [{'opts': ['-h', '--help'], "help": "Show this message and exits.",
+                                       "action": "store_true"}]
+
+    def __init__(self):
+        self.parser = None
+
+    def set_option_parser(self):
+        try:
+            parser = MyOptionParser(self.long_descr.splitlines()[1])
+            for o in self.opts:
+                a = o.pop('opts')
+                kw = o
+                parser.add_option(*a, **kw)
+            self.parser = parser
+        except getopt.GetoptError, e:
+            raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
+
     def run(self, opts):
         raise NotImplementedError("run method should be implemented by command classes.")
 
@@ -39,6 +71,7 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
             print get_usage()
             return
 
+        # Parse the options for help command itself
         cmd_name = None
         help_args = []
         if not cmd_args[0].startswith('-'):
@@ -54,18 +87,21 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
 
         # XXX: overkill as we don't support any options for now
         try:
-            parser = optparse.OptionParser()
+            parser = MyOptionParser()
             for o in self.opts:
-                parser.add_option(o)
+                kw = o.copy()
+                a = kw.pop('opts')
+                parser.add_option(*a, **kw)
             parser.parse_args(help_args)
         except optparse.OptionError, e:
             raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
 
+        # 
         if not cmd_name in CMDS_TO_CLASS:
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
         cmd_class = CMDS_TO_CLASS[cmd_name]
 
-        parser = optparse.OptionParser(usage='')
+        parser = MyOptionParser(usage='')
         for o in cmd_class.opts:
             a = o.pop('opts')
             kw = o
@@ -77,14 +113,73 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
 class ConfigureCommand(Command):
     long_descr = """\
 Purpose: configure the project
-Usage:   toymaker configure [OPTIONS]."""
+Usage: toymaker configure [OPTIONS] [package description file]."""
     short_descr = "configure the project."
-    opts = [
-        {'opts': ['--prefix'],
-         'help': 'install architecture-independent files in PREFIX'}
-    ]
+    #opts = Command.opts + [
+    #    {'opts': ['--prefix'],
+    #     'help': 'install architecture-independent files in PREFIX'}
+    #]
     def run(self, opts):
-        pass
+
+        # We need to obtain the package description ASAP, as we need to parse
+        # it to get the options (i.e. we cannot use the option handling mechanism).
+        if os.path.exists('toysetup.info'):
+            filename = 'toysetup.info'
+        else:
+            if len(opts) < 1 or opts[-1].startswith('-'):
+                msg = "%s: Error: No toysetup.info found, and no toydist " \
+                      "configuration file given at the command line." % SCRIPT_NAME
+                msg += "\nTry: %s help configure" % SCRIPT_NAME
+                raise UsageException(msg)
+            else:
+                filename = opts[-1]
+                if not os.path.exists(filename):
+                    msg = "%s: Error: configuration file %s not found." % \
+                            (SCRIPT_NAME, filename)
+                    raise UsageException(msg)
+
+        f = open(filename, 'r')
+        try:
+            data = f.readlines()
+            d = parse(data)
+            try:
+                path_options = d['path_options']
+            except KeyError:
+                path_options = {}
+
+            try:
+                flag_options = d['flag_options']
+            except KeyError:
+                flag_options = {}
+
+            pkg_name = d['name']
+        finally:
+            f.close()
+
+        scheme, scheme_opts = get_scheme(sys.platform, pkg_name)
+        # Add path options to the path scheme
+        for name, f in path_options.items():
+            scheme[name] = f.default_value
+            scheme_opts[name] = {'opts': ['--%s' % f.name],
+                                 'help': '%s [%s]' % (f.description, f.default_value)}
+
+        for name, opt in scheme_opts.items():
+            self.opts.append(opt)
+
+        self.set_option_parser()
+        o, a = self.parser.parse_args(opts)
+        if o.help:
+            self.parser.print_help()
+            return
+
+        for k in scheme:
+            if hasattr(o, k):
+                val = getattr(o, k)
+                if val:
+                    scheme[k] = val
+
+        for k in scheme:
+            print '%s: %s' % (k, subst_vars(scheme[k], scheme))
 
 class BuildCommand(Command):
     long_descr = """\
@@ -92,56 +187,59 @@ Purpose: build the project
 Usage:   toymaker build [OPTIONS]."""
     short_descr = "build the project."
 
-CMDS_TO_CLASS = {
-    'help': HelpCommand,
-    'configure': ConfigureCommand,
-    'build': BuildCommand
-}
-
 class ParseCommand(Command):
     long_descr = """\
-Purpose: print the parsed info file (debugging)
-Usage:   toymaker parse [OPTIONS] toysetup.info"""
-    short_descr = "parse a toysetup.info file and print the parsed tree dict."
+Purpose: query the given package description file (debugging tool)
+Usage:   toymaker parse [OPTIONS]"""
+    short_descr = "parse the package description file."
+    opts = Command.opts + [
+        {"opts": ["-f", "--flags"], "action": "store_true", "help": "print flags variables"},
+        {"opts": ["-p", "--path"], "action": "store_true", "help": "print paths variables"}
+    ]
+
     def run(self, opts):
-        import textwrap
-        from toydist.cabal_parser.cabal_parser import \
-                parse, indent_width
-        filename = opts[0]
+        self.set_option_parser()
+        o, a = self.parser.parse_args(opts)
+        if o.help:
+            self.parser.print_help()
+            return
 
-        def print_dict(d, indent=0):
-            for (key, value) in d.items():
-                indent_str = indent * ' '
-                if isinstance(value, dict):
-                    if key.strip():
-                        print '%s%s:' % (indent_str, key)
-                    print_dict(value, indent=indent + indent_width)
-                else:
-                    out = indent_str + '%s: %s' % (key, value)
-                    print out
+        if len(a) < 1:
+            raise UsageException("%s: error: %s subcommand require an argument" \
+                    % (SCRIPT_NAME, "parse"))
+        else:
+            filename = a[0]
+        from toydist.cabal_parser.cabal_parser import parse
 
-        # TODO: implement simple variable interpolation for default user_paths
-        user_paths = {
-                'prefix': '/usr/local',
-                'eprefix': '/usr/local',
-                'bindir': '/usr/local/bin',
-                'libdir': '/usr/local/lib',
-                'includedir': '/usr/local/include',
-                'datarootdir': '/usr/local/share',
-                'datadir': '/usr/local/share',
-                'mandir': '/usr/local/share/man',
-        }
-        f = open(filename, 'r')
-        data = f.readlines()
-        meta_data = parse(data, {}, user_paths)
-        print_dict(meta_data)
+        f = open(filename, "r")
+        try:
+            data = f.readlines()
+            parsed = parse(data, {}, {})
+            if o.flags:
+                try:
+                    flags = parsed["flag_options"]
+                    for flag in flags:
+                        print flags[flag]
+                except KeyError:
+                    pass
+            elif o.path:
+                try:
+                    paths = parsed["path_options"]
+                    for path in paths:
+                        print paths[path]
+                except KeyError:
+                    pass
+            else:
+                print parsed
+        finally:
+            f.close()
 
 # Private commands
 PCMDS_TO_CLASS = {
-    'parse': ParseCommand,
+    'parse': ParseCommand
 }
 
-# User-visible commands
+# Public commands
 UCMDS_TO_CLASS = {
     'help': HelpCommand,
     'configure': ConfigureCommand,
@@ -154,9 +252,9 @@ CMDS_TO_CLASS.update(UCMDS_TO_CLASS)
 def get_usage():
     cmd_help = []
     cmd_doc = {}
-    cmd_name = UCMDS_TO_CLASS.keys()
+    cmd_name = sorted(UCMDS_TO_CLASS.keys())
 
-    for k, v in CMDS_TO_CLASS.items():
+    for k, v in UCMDS_TO_CLASS.items():
         doc = v.short_descr
         if doc is None:
             doc = "undocumented"
@@ -207,7 +305,6 @@ def main(argv=None):
 def noexc_main(argv=None):
     try:
         ret = main(argv)
-        sys.exit(ret)
     except UsageException, e:
         print e
         sys.exit(1)
@@ -216,9 +313,10 @@ def noexc_main(argv=None):
             import traceback
             tb = sys.exc_info()[2]
             traceback.print_tb(tb)
-        print "%s: Error: %s crashed (uncaught exception: %s)." % \
-                (SCRIPT_NAME, SCRIPT_NAME, str(e))
+        print "%s: Error: %s crashed (uncaught exception %s: %s)." % \
+                (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e))
         sys.exit(1)
+    sys.exit(ret)
 
 if __name__ == '__main__':
     noexc_main()
