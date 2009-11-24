@@ -257,26 +257,6 @@ def comma_list_split(str):
 
     return ret
 
-# Regex used to find and replace path(path_variable) by their value
-_PATH_VAR_RE = re.compile(r"""path
-        \((
-        .+? # Match any character, but stops at the first ) character
-        )\)""", re.VERBOSE)
-
-def parse_path(path, path_vars={}):
-    # XXX: this may be a bottlneck if many files. Profile this
-    if 'path' in path:
-        def matcher(match):
-            name = match.group(1)
-            try:
-                return path_vars[name]
-            except KeyError:
-                msg = "%s path variable not defined" % name
-                msg += "\nDefined variables are: %s" % path_vars
-                raise ParseError(msg)
-        return _PATH_VAR_RE.sub(matcher, path)
-    return path
-
 def key_value(r, store, opt_arg=None):
     line = r.peek()
     if not ':' in line:
@@ -322,10 +302,6 @@ def key_value(r, store, opt_arg=None):
             paths = opt_arg.get('paths')
         else:
             paths = {}
-        if key == 'sources':
-            value = [parse_path(v, paths) for v in value]
-        else:
-            value = parse_path(value, paths)
 
     # If the key exists, append the new value, otherwise
     # create a new key-value pair

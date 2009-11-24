@@ -9,7 +9,7 @@ from nose.tools import \
     assert_equal
 
 from toydist.cabal_parser.cabal_parser import \
-    parse, CommaListLexer, comma_list_split, parse_path
+    parse, CommaListLexer, comma_list_split
 
 def test_metadata():
     meta_ref = {
@@ -138,10 +138,3 @@ def test_comma_list_split():
             ('foo\,bar', ['foo,bar']),
             ('foo.c\,bar.c', ['foo.c,bar.c'])]:
         assert_equal(comma_list_split(test[0]), test[1])
-
-def test_parse_path():
-    assert_equal(parse_path('foo/bar'), 'foo/bar')
-    assert_equal(parse_path('path(foo)/bar', {'foo': '/usr/share'}), '/usr/share/bar')
-    assert_equal(parse_path('path(foo)/bar/path(pkg)',
-        {'foo': '/usr/share', 'pkg': 'foo'}),
-        '/usr/share/bar/foo')
