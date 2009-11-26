@@ -1,0 +1,36 @@
+Introduction
+============
+
+A manifest to describe an installed package would be nice. It would be used as
+the main input for an install (and uninstall) command::
+
+	.# It should be easy (and fast) to parse
+	.# It would list all the files installed on the system + the basic
+	   metadata (at least the ones from PKG-INFO).
+	.# It should be as human-readable as possible (but not at the cost of
+	   speed)
+	.# It should be rich enough to create any binary installer: eggs, msi,
+	   wininst, pkg, etc...
+
+Problems::
+
+        .# How to encode filenames: fully resolved or relative to a base dir ?
+        .# Which category: eggs only make a difference between .py and .so, but
+           we need more than that
+        .# Think about the case where each category is installed in different
+           prefix.
+
+Use cases::
+
+	.# Actually install a package from the description (user vs global)
+	.# Convert the description to an egg
+	.# Convert the description to a bdist_wininst
+
+Format
+======
+
+It is an aggregation of three parts::
+
+        Metadata
+        Variables
+        Filelists
