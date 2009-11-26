@@ -1,3 +1,5 @@
+# Whenever you add a variable in _SCHEME, you should add one in _SCHEME_OPTS as
+# well, otherwise the it will not be customizable from configure.
 _SCHEME = {
     'unix': {
         'prefix': '/usr/local',
@@ -9,6 +11,7 @@ _SCHEME = {
         'datarootdir': '$prefix/share',
         'datadir': '$datarootdir',
         'mandir': '$datarootdir/man',
+        'sitedir': '$libdir/python$py_version_short/site-packages'
     }
 }
 
@@ -32,7 +35,9 @@ _SCHEME_OPTS = {
     'datadir': {'opts': ['--datadir'],
                'help': 'read-only arch.-independent data [%s]'},
     'mandir': {'opts': ['--mandir'],
-               'help': 'man documentation [%s]'}
+               'help': 'man documentation [%s]'},
+    'sitedir': {'opts': ['--sitedir'],
+                'help': 'python site-packages [%s]'}
 }
 
 
