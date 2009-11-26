@@ -43,7 +43,7 @@ class foo(object):
 COLORS = foo()
 
 def pprint(color, str):
-    sys.stderr.write('%s%s%s' % (COLORS(color), str, COLORS('NORMAL')))
+    sys.stderr.write('%s%s%s\n' % (COLORS(color), str, COLORS('NORMAL')))
 
 HAS_WILDCARD = re.compile("\*")
 
