@@ -12,7 +12,19 @@ _SCHEME = {
         'datadir': '$datarootdir',
         'mandir': '$datarootdir/man',
         'sitedir': '$libdir/python$py_version_short/site-packages'
-    }
+    },
+    'darwin': {
+        'prefix': '/usr/local',
+        'eprefix': '$prefix',
+        'bindir': '$eprefix/bin',
+        'sbindir': '$eprefix/sbin',
+        'libdir': '$eprefix/lib',
+        'includedir': '$prefix/include',
+        'datarootdir': '$prefix/share',
+        'datadir': '$datarootdir',
+        'mandir': '$datarootdir/man',
+        'sitedir': '$libdir/python$py_version_short/site-packages'
+    },
 }
 
 _SCHEME_OPTS = {
