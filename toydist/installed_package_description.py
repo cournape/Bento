@@ -31,19 +31,32 @@ paths
             for name, value in self.files.items():
                 if name in ["pythonfiles"]:
                     source = "$_srcrootdir"
-                section = """\
+                    target = value["target"]
+                    files = value["files"]
+                    fid.write(write_file_section(name, source, target, files))
+                elif name in ["datafiles"]:
+                    for dname, dvalue in self.files["datafiles"].items():
+                        source = dvalue["source"]
+                        target = dvalue["target"]
+                        files = dvalue["files"]
+                        fid.write(write_file_section(dname, source, target, files))
+                else:
+                    raise ValueError("Unknown section %s" % name)
+
+        finally:
+            fid.close()
+
+def write_file_section(name, source, target, files):
+    section = """\
 %(section)s
 %(source)s
 %(target)s
 %(files)s
 """ % {"section": name,
        "source": "\tsource=%s" % source,
-       "target": "\ttarget=%s" % value["target"],
-       "files": "\n".join(["\t%s" % f for f in value["files"]])}
-                fid.write(section)
-
-        finally:
-            fid.close()
+       "target": "\ttarget=%s" % target,
+       "files": "\n".join(["\t%s" % f for f in files])}
+    return section
 
 if __name__ == "__main__":
     files = {}
