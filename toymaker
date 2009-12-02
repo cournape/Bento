@@ -84,14 +84,14 @@ def noexc_main(argv=None):
     try:
         ret = main(argv)
     except UsageException, e:
-        print e
+        pprint('RED', e)
         sys.exit(1)
     except Exception, e:
         if TOYMAKER_DEBUG:
             tb = sys.exc_info()[2]
             traceback.print_tb(tb)
-        print "%s: Error: %s crashed (uncaught exception %s: %s)." % \
-                (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e))
+        pprint('RED', "%s: Error: %s crashed (uncaught exception %s: %s)." % \
+               (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e)))
         sys.exit(1)
     sys.exit(ret)
 
