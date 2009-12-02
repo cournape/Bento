@@ -124,10 +124,18 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
 
         pprint('PINK', "======================================================")
         pprint('PINK', " Analysing %s (running %s) .... " % (filename, filename))
+
+        # exec_globals contains the globals used to execute the setup.py
+        exec_globals = {}
+        exec_globals.update(globals())
+        # Some setup.py files call setup from their main, so execute them as if
+        # they were the main script
+        exec_globals["__name__"] = "__main__"
+
         _saved_argv = sys.argv[:]
         try:
             sys.argv = [filename, "-q", "-n", "build_py"]
-            execfile(filename, globals())
+            execfile(filename, exec_globals)
             if type == "distutils" and "setuptools" in sys.modules:
                 pprint("YELLOW", "Setuptools detected in distutils mode !!!")
         except Exception, e:
