@@ -3,6 +3,7 @@ import sys
 import os
 import getopt
 import optparse
+import traceback
 
 from toydist.utils import \
         subst_vars, pprint
@@ -90,7 +91,6 @@ def noexc_main(argv=None):
         sys.exit(1)
     except Exception, e:
         if TOYMAKER_DEBUG:
-            import traceback
             tb = sys.exc_info()[2]
             traceback.print_tb(tb)
         print "%s: Error: %s crashed (uncaught exception %s: %s)." % \
