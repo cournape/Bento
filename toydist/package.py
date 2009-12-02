@@ -197,11 +197,9 @@ def static_representation(pkg, options={}):
 
     if pkg.extensions:
         for e in pkg.extensions:
-            r.append("""\
-    Extension: %s
-        sources:
-            %s""" % (e.name, "            \n,".join(e.sources)))
-
+            r.append(' ' * indent_level + "Extension: %s" % e.name)
+            r.append(' ' * 2 * indent_level + "sources:")
+            r.extend([' ' * (indent_level * 3) + s + ',' for s in e.sources])
 
     return "\n".join(r)
 
