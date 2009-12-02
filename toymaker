@@ -32,9 +32,6 @@ from toydist.commands.core import \
 TOYMAKER_DEBUG = True
 SCRIPT_NAME = 'toymaker'
 
-class ToymakeException(Exception):
-    pass
-
 #================================
 #   Create the command line UI
 #================================
