@@ -128,7 +128,7 @@ def parse_static(filename):
     finally:
         f.close()
 
-def static_representation(pkg):
+def static_representation(pkg, options={}):
     """Return the static representation of the given PackageDescription
     instance as a string."""
     indent_level = 4
@@ -159,6 +159,28 @@ def static_representation(pkg):
         r.append("License: %s" % pkg.license)
     if pkg.platforms:
         r.append("Platforms: %s" % ",".join(pkg.platforms))
+
+    if options:
+        for k in options:
+            if k == "path_options":
+                for p in options["path_options"]:
+                    r.append('')
+                    r.append("Path: %s" % p.name)
+                    r.append(' ' * indent_level + "Description: %s" % p.description)
+                    r.append(' ' * indent_level + "Default: %s" % p.default_value)
+            else:
+                raise ValueError("Gne ? %s" % k)
+        r.append('')
+
+    if pkg.data_files:
+        for section in pkg.data_files:
+            v = pkg.data_files[section]
+            r.append("DataFiles: %s" % section)
+            r.append(' ' * indent_level + "source:%s" % v["source"])
+            r.append(' ' * indent_level + "target:%s" % v["target"])
+            r.append(' ' * indent_level + "files:")
+            r.extend([' ' * (indent_level * 2) + f + ',' for f in v["files"]])
+            r.append('')
 
     # Fix indentation handling instead of hardcoding it
     r.append("Library:")
