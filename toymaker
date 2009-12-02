@@ -17,6 +17,8 @@ from toydist.commands.configure import \
         ConfigureCommand
 from toydist.commands.build import \
         BuildCommand
+from toydist.commands.install import \
+        InstallCommand
 from toydist.commands.parse import \
         ParseCommand
 from toydist.commands.core import \
@@ -36,6 +38,7 @@ class ToymakeException(Exception):
 register_command("help", HelpCommand)
 register_command("configure", ConfigureCommand)
 register_command("build", BuildCommand)
+register_command("install", InstallCommand)
 
 register_command("parse", ParseCommand, public=False)
  
