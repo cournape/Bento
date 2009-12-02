@@ -22,6 +22,9 @@ def distutils_to_package_description(dist):
     # setuptools
     try:
         reqs = getattr(dist, "install_requires")
+        # FIXME: how to detect this correctly
+        if issubclass(type(reqs), (str, unicode)):
+            reqs = [reqs]
         data['install_requires'] = reqs
     except AttributeError:
         pass
