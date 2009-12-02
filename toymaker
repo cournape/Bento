@@ -97,9 +97,9 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
             raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
 
         # 
-        if not cmd_name in CMDS_TO_CLASS:
+        if not cmd_name in get_command_names():
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
-        cmd_class = CMDS_TO_CLASS[cmd_name]
+        cmd_class = get_command(cmd_name)
 
         parser = MyOptionParser(usage='')
         for o in cmd_class.opts:
@@ -238,35 +238,57 @@ Usage:   toymaker parse [OPTIONS]"""
         finally:
             f.close()
 
-# Private commands
-PCMDS_TO_CLASS = {
-    'parse': ParseCommand
-}
+# FIXME: better way to register commands
+_CMDS_TO_CLASS = {}
+_PCMDS_TO_CLASS = {}
+_UCMDS_TO_CLASS = {}
 
-# Public commands
-UCMDS_TO_CLASS = {
-    'help': HelpCommand,
-    'configure': ConfigureCommand,
-    'build': BuildCommand,
-}
+def get_command_names():
+    return _CMDS_TO_CLASS.keys()
 
-CMDS_TO_CLASS = dict([(k, v) for k, v in PCMDS_TO_CLASS.items()])
-CMDS_TO_CLASS.update(UCMDS_TO_CLASS)
+def get_public_command_names():
+    return _UCMDS_TO_CLASS.keys()
 
+def get_command(name):
+    return _CMDS_TO_CLASS[name]
+
+def register_command(name, klass, public=True):
+    global _CMDS_TO_CLASS
+    global _UCMDS_TO_CLASS
+    global _PCMDS_TO_CLASS
+
+    if public:
+        _UCMDS_TO_CLASS[name] = klass
+    else:
+        _PCMDS_TO_CLASS[name] = klass
+
+    _CMDS_TO_CLASS = dict([(k, v) for k, v in _PCMDS_TO_CLASS.items()])
+    _CMDS_TO_CLASS.update(_UCMDS_TO_CLASS)
+
+#================================
+#   Create the command line UI
+#================================
+register_command("help", HelpCommand)
+register_command("configure", ConfigureCommand)
+register_command("build", BuildCommand)
+
+register_command("parse", ParseCommand, public=False)
+ 
 def get_usage():
     cmd_help = []
     cmd_doc = {}
-    cmd_name = sorted(UCMDS_TO_CLASS.keys())
+    cmd_names = sorted(get_public_command_names())
 
-    for k, v in UCMDS_TO_CLASS.items():
+    for name in cmd_names:
+        v = get_command(name)
         doc = v.short_descr
         if doc is None:
             doc = "undocumented"
-        cmd_doc[k] = doc
+        cmd_doc[name] = doc
 
-    just = max([len(name) for name in cmd_name])
+    just = max([len(name) for name in cmd_names])
 
-    cmd_help = ['  %s: %s' % (name.ljust(just), cmd_doc[name]) for name in cmd_name]
+    cmd_help = ['  %s: %s' % (name.ljust(just), cmd_doc[name]) for name in cmd_names]
     return USAGE % {'cmds': "\n".join(cmd_help), 'name': SCRIPT_NAME}
 
 def main(argv=None):
@@ -300,10 +322,10 @@ def main(argv=None):
         print "Type '%s help' for usage." % SCRIPT_NAME
         return 1
     else:
-        if not cmd_name in CMDS_TO_CLASS:
+        if not cmd_name in get_command_names():
             raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
         else:
-            cmd = CMDS_TO_CLASS[cmd_name]()
+            cmd = get_command(cmd_name)()
             cmd.run(cmd_opts)
 
 def noexc_main(argv=None):
