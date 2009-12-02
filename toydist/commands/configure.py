@@ -4,12 +4,36 @@ import os
 from toydist.cabal_parser.cabal_parser import \
         parse
 from toydist.utils import \
-        subst_vars
+        subst_vars, pprint
 from toydist.sysconfig import \
         get_scheme
 
 from toydist.commands.core import \
         Command, UsageException, SCRIPT_NAME
+
+class ConfigureState(object):
+    def __init__(self):
+        self.flags = {}
+        self.paths = {}
+
+    def dump(self, file='.config.bin'):
+        import cPickle
+        f = open(file, 'wb')
+        try:
+            str = cPickle.dumps(self)
+            f.write(str)
+        finally:
+            f.close()
+
+    @classmethod
+    def from_dump(cls, file='.config.bin'):
+        import cPickle
+        f = open(file, 'rb')
+        try:
+            str = f.read()
+            return cPickle.loads(str)
+        finally:
+            f.close()
 
 class ConfigureCommand(Command):
     long_descr = """\
@@ -79,6 +103,9 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
                 if val:
                     scheme[k] = val
 
+        s = ConfigureState()
         for k in scheme:
-            print '%s: %s' % (k, subst_vars(scheme[k], scheme))
-
+            s.paths[k] = subst_vars(scheme[k], scheme)
+        s.package_description = filename
+        s.dump()
+        pprint('GREEN', "Writing configuration state in file %s" % '.config.bin')
