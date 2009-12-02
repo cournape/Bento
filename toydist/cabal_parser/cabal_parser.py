@@ -10,7 +10,7 @@ from toydist.cabal_parser.items import \
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',
-                 'extrasourcefiles']
+                 'datafiles']
 list_fields = ['sources', 'packages', 'modules', 'buildrequires', 'platforms']
 path_fields = ['sources', 'default', 'target']
 
@@ -332,7 +332,7 @@ def section(r, store, flags={}):
     section_header, type, name = _parse_section_header(section_header)
     if not type in header_titles:
         raise NextParser
-    elif type in ['path', 'flag']:
+    elif type in ['path', 'flag', 'datafiles']:
         raise NextParser
 
     r.pop()
@@ -350,6 +350,47 @@ def section(r, store, flags={}):
     while r.wait_for('}'):
         r.parse((if_statement, section, key_value), store, opt_arg=flags)
     r.parse(close_brace)
+
+def datafiles_parser(r, store, flags={}):
+    line = r.peek()
+
+    section_header, type, name = _parse_section_header(line)
+    if not type == 'datafiles':
+        raise NextParser
+
+    line = r.pop()
+
+    if not store.has_key("datafiles"):
+        store["datafiles"] = {}
+    elif store['datafiles'].has_key(name):
+        raise ParseError("DataFiles section %s already defined" % name)
+
+    d_store = {}
+    r.parse(open_brace)
+    while r.wait_for('}'):
+        r.parse((if_statement, key_value), d_store, opt_arg=flags)
+    r.parse(close_brace)
+
+    try:
+        source = d_store['source']
+    except KeyError:
+        source = "."
+
+    try:
+        target = d_store['target']
+    except KeyError:
+        target = "$sitedir"
+
+    try:
+        files = comma_list_split(d_store['files'])
+    except KeyError:
+        files = []
+
+    store["datafiles"][name] = {
+        "source": source,
+        "target": target,
+        "files": files
+    }
 
 def path_parser(r, store, flags={}):
     line = r.peek()
@@ -510,7 +551,7 @@ def parse(data, user_flags={}, user_paths={}):
     info = {}
 
     while not r.eof():
-        r.parse([key_value, section, path_parser, flag_parser], store=info,
+        r.parse([key_value, section, datafiles_parser, path_parser, flag_parser], store=info,
                 opt_arg={'flags': get_flags(info, user_flags),
                          'flag_options': get_flag_options(info),
                          'path_options': get_path_options(info),
