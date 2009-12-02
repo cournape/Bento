@@ -5,270 +5,40 @@ import getopt
 import optparse
 
 from toydist.utils import \
-        subst_vars
+        subst_vars, pprint
 from toydist.sysconfig import \
         get_scheme
 from toydist.cabal_parser.cabal_parser import \
         parse
 
+from toydist.commands.core import \
+        Command, HelpCommand
+from toydist.commands.configure import \
+        ConfigureCommand
+from toydist.commands.build import \
+        BuildCommand
+from toydist.commands.parse import \
+        ParseCommand
+from toydist.commands.core import \
+        register_command, UsageException, \
+        MyOptionParser, get_command_names, get_command, \
+        get_public_command_names
+
 TOYMAKER_DEBUG = True
 SCRIPT_NAME = 'toymaker'
-
-USAGE = """\
-%(name)s [command] [options]
-
-Main commands:
-%(cmds)s\
-"""
 
 class ToymakeException(Exception):
     pass
 
-class UsageException(Exception):
-    pass
+#================================
+#   Create the command line UI
+#================================
+register_command("help", HelpCommand)
+register_command("configure", ConfigureCommand)
+register_command("build", BuildCommand)
 
-class MyOptionParser(optparse.OptionParser):
-    def __init__(self, *a, **kw):
-        if not kw.has_key('add_help_option'):
-            kw['add_help_option'] = False
-        optparse.OptionParser.__init__(self, *a, **kw)
-
-    def error(self, msg):
-        raise UsageException("%s: ERROR: %s" % (SCRIPT_NAME, msg))
-
-class Command(object):
-    long_descr = None
-    short_descr = None
-    # XXX: decide how to deal with subcommands options
-    opts = [{'opts': ['-h', '--help'], "help": "Show this message and exits.",
-                                       "action": "store_true"}]
-
-    def __init__(self):
-        self.parser = None
-
-    def set_option_parser(self):
-        try:
-            parser = MyOptionParser(self.long_descr.splitlines()[1])
-            for o in self.opts:
-                a = o.pop('opts')
-                kw = o
-                parser.add_option(*a, **kw)
-            self.parser = parser
-        except getopt.GetoptError, e:
-            raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
-
-    def run(self, opts):
-        raise NotImplementedError("run method should be implemented by command classes.")
-
-
-class HelpCommand(Command):
-    long_descr = """\
-Purpose: Show help on a command or other topic.
-Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
-    short_descr = "gives help on a given topic or command."
-    def run(self, cmd_args):
-        if len(cmd_args) < 1:
-            print get_usage()
-            return
-
-        # Parse the options for help command itself
-        cmd_name = None
-        help_args = []
-        if not cmd_args[0].startswith('-'):
-            cmd_name = cmd_args[0]
-            cmd_args.pop(0)
-        else:
-            # eat all the help options
-            _args = [cmd_args.pop(0)]
-            while not _args[0].startswith('-') and len(cmd_args) > 0:
-                _args.append(cmd_args.pop(0))
-            help_args = _args
-            cmd_name = cmd_args[0]
-
-        # XXX: overkill as we don't support any options for now
-        try:
-            parser = MyOptionParser()
-            for o in self.opts:
-                kw = o.copy()
-                a = kw.pop('opts')
-                parser.add_option(*a, **kw)
-            parser.parse_args(help_args)
-        except optparse.OptionError, e:
-            raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
-
-        # 
-        if not cmd_name in CMDS_TO_CLASS:
-            raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
-        cmd_class = CMDS_TO_CLASS[cmd_name]
-
-        parser = MyOptionParser(usage='')
-        for o in cmd_class.opts:
-            a = o.pop('opts')
-            kw = o
-            parser.add_option(*a, **kw)
-        print cmd_class.long_descr
-        print ""
-        parser.print_help()
-
-class ConfigureCommand(Command):
-    long_descr = """\
-Purpose: configure the project
-Usage: toymaker configure [OPTIONS] [package description file]."""
-    short_descr = "configure the project."
-    #opts = Command.opts + [
-    #    {'opts': ['--prefix'],
-    #     'help': 'install architecture-independent files in PREFIX'}
-    #]
-    def run(self, opts):
-
-        # We need to obtain the package description ASAP, as we need to parse
-        # it to get the options (i.e. we cannot use the option handling mechanism).
-        if os.path.exists('toysetup.info'):
-            filename = 'toysetup.info'
-        else:
-            if len(opts) < 1 or opts[-1].startswith('-'):
-                msg = "%s: Error: No toysetup.info found, and no toydist " \
-                      "configuration file given at the command line." % SCRIPT_NAME
-                msg += "\nTry: %s help configure" % SCRIPT_NAME
-                raise UsageException(msg)
-            else:
-                filename = opts[-1]
-                if not os.path.exists(filename):
-                    msg = "%s: Error: configuration file %s not found." % \
-                            (SCRIPT_NAME, filename)
-                    raise UsageException(msg)
-
-        f = open(filename, 'r')
-        try:
-            data = f.readlines()
-            d = parse(data)
-            try:
-                path_options = d['path_options']
-            except KeyError:
-                path_options = {}
-
-            try:
-                flag_options = d['flag_options']
-            except KeyError:
-                flag_options = {}
-
-            pkg_name = d['name']
-        finally:
-            f.close()
-
-        scheme, scheme_opts = get_scheme(sys.platform, pkg_name)
-        # XXX: abstract away those, as it is copied from distutils
-        py_version = sys.version.split()[0]
-        scheme['py_version_short'] = py_version[0:3]
-
-        # Add path options to the path scheme
-        for name, f in path_options.items():
-            scheme[name] = f.default_value
-            scheme_opts[name] = {'opts': ['--%s' % f.name],
-                                 'help': '%s [%s]' % (f.description, f.default_value)}
-
-        for name, opt in scheme_opts.items():
-            self.opts.append(opt)
-
-        self.set_option_parser()
-        o, a = self.parser.parse_args(opts)
-        if o.help:
-            self.parser.print_help()
-            return
-
-        for k in scheme:
-            if hasattr(o, k):
-                val = getattr(o, k)
-                if val:
-                    scheme[k] = val
-
-        for k in scheme:
-            print '%s: %s' % (k, subst_vars(scheme[k], scheme))
-
-class BuildCommand(Command):
-    long_descr = """\
-Purpose: build the project
-Usage:   toymaker build [OPTIONS]."""
-    short_descr = "build the project."
-
-class ParseCommand(Command):
-    long_descr = """\
-Purpose: query the given package description file (debugging tool)
-Usage:   toymaker parse [OPTIONS]"""
-    short_descr = "parse the package description file."
-    opts = Command.opts + [
-        {"opts": ["-f", "--flags"], "action": "store_true", "help": "print flags variables"},
-        {"opts": ["-p", "--path"], "action": "store_true", "help": "print paths variables"}
-    ]
-
-    def run(self, opts):
-        self.set_option_parser()
-        o, a = self.parser.parse_args(opts)
-        if o.help:
-            self.parser.print_help()
-            return
-
-        if len(a) < 1:
-            raise UsageException("%s: error: %s subcommand require an argument" \
-                    % (SCRIPT_NAME, "parse"))
-        else:
-            filename = a[0]
-        from toydist.cabal_parser.cabal_parser import parse
-
-        f = open(filename, "r")
-        try:
-            data = f.readlines()
-            parsed = parse(data, {}, {})
-            if o.flags:
-                try:
-                    flags = parsed["flag_options"]
-                    for flag in flags:
-                        print flags[flag]
-                except KeyError:
-                    pass
-            elif o.path:
-                try:
-                    paths = parsed["path_options"]
-                    for path in paths:
-                        print paths[path]
-                except KeyError:
-                    pass
-            else:
-                print parsed
-        finally:
-            f.close()
-
-# Private commands
-PCMDS_TO_CLASS = {
-    'parse': ParseCommand
-}
-
-# Public commands
-UCMDS_TO_CLASS = {
-    'help': HelpCommand,
-    'configure': ConfigureCommand,
-    'build': BuildCommand,
-}
-
-CMDS_TO_CLASS = dict([(k, v) for k, v in PCMDS_TO_CLASS.items()])
-CMDS_TO_CLASS.update(UCMDS_TO_CLASS)
-
-def get_usage():
-    cmd_help = []
-    cmd_doc = {}
-    cmd_name = sorted(UCMDS_TO_CLASS.keys())
-
-    for k, v in UCMDS_TO_CLASS.items():
-        doc = v.short_descr
-        if doc is None:
-            doc = "undocumented"
-        cmd_doc[k] = doc
-
-    just = max([len(name) for name in cmd_name])
-
-    cmd_help = ['  %s: %s' % (name.ljust(just), cmd_doc[name]) for name in cmd_name]
-    return USAGE % {'cmds': "\n".join(cmd_help), 'name': SCRIPT_NAME}
-
+register_command("parse", ParseCommand, public=False)
+ 
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
@@ -300,10 +70,10 @@ def main(argv=None):
         print "Type '%s help' for usage." % SCRIPT_NAME
         return 1
     else:
-        if not cmd_name in CMDS_TO_CLASS:
+        if not cmd_name in get_command_names():
             raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
         else:
-            cmd = CMDS_TO_CLASS[cmd_name]()
+            cmd = get_command(cmd_name)()
             cmd.run(cmd_opts)
 
 def noexc_main(argv=None):
