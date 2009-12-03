@@ -11,7 +11,8 @@ Usage:   toymaker parse [OPTIONS]"""
     short_descr = "parse the package description file."
     opts = Command.opts + [
         {"opts": ["-f", "--flags"], "action": "store_true", "help": "print flags variables"},
-        {"opts": ["-p", "--path"], "action": "store_true", "help": "print paths variables"}
+        {"opts": ["-p", "--path"], "action": "store_true", "help": "print paths variables"},
+        {"opts": ["-m", "--meta-field"], "dest": "meta_field", "help": "print given meta field"}
     ]
 
     def run(self, opts):
@@ -50,6 +51,11 @@ Usage:   toymaker parse [OPTIONS]"""
                         print paths[path]
                 except KeyError:
                     pass
+            elif o.meta_field:
+                try:
+                    print parsed[o.meta_field]
+                except KeyError, e:
+                    raise ValueError("Field %s not found in metadata" % o.meta_field)
             else:
                 print parsed
         finally:
