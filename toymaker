@@ -10,7 +10,7 @@ from toydist.utils import \
 from toydist.sysconfig import \
         get_scheme
 from toydist.cabal_parser.cabal_parser import \
-        parse
+        parse, ParseError
 
 from toydist.commands.core import \
         Command, HelpCommand
@@ -86,6 +86,9 @@ def noexc_main(argv=None):
     except UsageException, e:
         pprint('RED', e)
         sys.exit(1)
+    except ParseError, e:
+        pprint('RED', "".join(e.args))
+        sys.exit(2)
     except Exception, e:
         if TOYMAKER_DEBUG:
             tb = sys.exc_info()[2]

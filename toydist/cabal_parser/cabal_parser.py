@@ -320,8 +320,10 @@ def open_brace(r, opt_arg=None):
 def close_brace(r, opt_arg=None):
     r.expect('}', 'Expected indentation to decrease')
 
-def _parse_section_header(line):
+def _parse_section_header(r, line):
     header = [s.strip() for s in line.split(':')]
+    if not len(header) == 2:
+        r.parse_error("Invalid section header")
     type = header[0].lower()
     return header, type, header[1]
 
@@ -329,7 +331,7 @@ def section(r, store, flags={}):
     section_header = r.peek()
     if section_header.count(':') < 1: raise NextParser
 
-    section_header, type, name = _parse_section_header(section_header)
+    section_header, type, name = _parse_section_header(r, section_header)
     if not type in header_titles:
         raise NextParser
     elif type in ['path', 'flag', 'datafiles']:
@@ -354,7 +356,7 @@ def section(r, store, flags={}):
 def datafiles_parser(r, store, flags={}):
     line = r.peek()
 
-    section_header, type, name = _parse_section_header(line)
+    section_header, type, name = _parse_section_header(r, line)
     if not type == 'datafiles':
         raise NextParser
 
@@ -395,7 +397,7 @@ def datafiles_parser(r, store, flags={}):
 def path_parser(r, store, flags={}):
     line = r.peek()
 
-    section_header, type, name = _parse_section_header(line)
+    section_header, type, name = _parse_section_header(r, line)
     if not type == 'path':
         raise NextParser
 
@@ -429,7 +431,7 @@ def path_parser(r, store, flags={}):
 def flag_parser(r, store, flags={}):
     line = r.peek()
 
-    section_header, type, name = _parse_section_header(line)
+    section_header, type, name = _parse_section_header(r, line)
     if not type == 'flag':
         raise NextParser
 

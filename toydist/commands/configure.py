@@ -2,7 +2,7 @@ import sys
 import os
 
 from toydist.cabal_parser.cabal_parser import \
-        parse
+        parse, ParseError
 from toydist.utils import \
         subst_vars, pprint
 from toydist.sysconfig import \
@@ -62,7 +62,13 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
         f = open(filename, 'r')
         try:
             data = f.readlines()
-            d = parse(data)
+            try:
+                d = parse(data)
+            except ParseError, e:
+                msg = "Error while parsing file %s\n" % filename
+                e.args = (msg,) +  e.args
+                raise e
+
             try:
                 path_options = d['path_options']
             except KeyError:

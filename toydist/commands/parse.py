@@ -1,8 +1,8 @@
 from toydist.commands.core import \
-        Command, SCRIPT_NAME
+        Command, SCRIPT_NAME, UsageException
 
 from toydist.cabal_parser.cabal_parser import \
-        parse
+        parse, ParseError
 
 class ParseCommand(Command):
     long_descr = """\
@@ -30,7 +30,12 @@ Usage:   toymaker parse [OPTIONS]"""
         f = open(filename, "r")
         try:
             data = f.readlines()
-            parsed = parse(data, {}, {})
+            try:
+                parsed = parse(data, {}, {})
+            except ParseError, e:
+                msg = "Error while parsing file %s\n" % filename
+                e.args = (msg,) +  e.args
+                raise e
             if o.flags:
                 try:
                     flags = parsed["flag_options"]
