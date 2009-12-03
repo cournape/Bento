@@ -12,6 +12,55 @@ from toydist.commands.core import \
 from toydist.commands.configure import \
         ConfigureState
 
+USE_NUMPY_DISTUTILS = True
+
+def build_extensions(extensions):
+    # FIXME: import done here to avoid clashing with monkey-patch as done by
+    # the convert subcommand.
+    if USE_NUMPY_DISTUTILS:
+        from numpy.distutils.extension import Extension
+        from numpy.distutils.numpy_distribution import NumpyDistribution as Distribution
+        from numpy.distutils.command.build_ext import build_ext
+        from numpy.distutils.command.build_src import build_src
+        from numpy.distutils.command.scons import scons
+        from numpy.distutils import log
+    else:
+        from distutils.extension import Extension
+        from distutils.dist import Distribution
+        from distutils.command.build_ext import build_ext
+        from distutils import log
+
+    log.set_verbosity(1)
+
+    dist = Distribution()
+    if USE_NUMPY_DISTUTILS:
+        dist.cmdclass['build_src'] = build_src
+        dist.cmdclass['scons'] = scons
+
+    for name, value in extensions.items():
+        e = Extension(name, sources=value["sources"])
+        dist.ext_modules = [e]
+
+    bld_cmd = build_ext(dist)
+    bld_cmd.initialize_options()
+    bld_cmd.finalize_options()
+    bld_cmd.run()
+
+    outputs = {}
+    for ext in bld_cmd.extensions:
+        # FIXME: do package -> location translation correctly
+        pkg_dir = os.path.dirname(ext.name.replace('.', os.path.sep))
+        target = os.path.join('$sitedir', pkg_dir)
+        fullname = bld_cmd.get_ext_fullname(ext.name)
+        ext_target = os.path.join(bld_cmd.build_lib,
+                                 bld_cmd.get_ext_filename(fullname))
+        source = os.path.dirname(ext_target)
+        ext_descr = {'files': [os.path.basename(ext_target)],
+                     'source': source,
+                     'target': target}
+        outputs[ext.name] = ext_descr
+    return outputs
+
 class BuildCommand(Command):
     long_descr = """\
 Purpose: build the project
@@ -75,6 +124,10 @@ Usage:   toymaker build [OPTIONS]."""
                         "source": val["source"],
                         "target": val["target"]}
                 sections["datafiles"] = datafiles
+
+            # handle extensions
+            if library.has_key("extension"):
+                sections["extensions"] = build_extensions(library["extension"])
 
             p = InstalledPkgDescription(sections, scheme)
             p.write('installed-pkg-info')
