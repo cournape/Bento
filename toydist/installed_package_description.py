@@ -40,6 +40,12 @@ paths
                         target = dvalue["target"]
                         files = dvalue["files"]
                         fid.write(write_file_section(dname, source, target, files))
+                elif name in ["extensions"]:
+                    for ename, evalue in self.files["extensions"].items():
+                        source = evalue["source"]
+                        target = evalue["target"]
+                        files = evalue["files"]
+                        fid.write(write_file_section("extension", source, target, files))
                 else:
                     raise ValueError("Unknown section %s" % name)
 
