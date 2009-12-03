@@ -13,6 +13,7 @@ header_titles = ['flag', 'library', 'executable', 'extension', 'path',
                  'datafiles']
 list_fields = ['sources', 'packages', 'modules', 'buildrequires', 'platforms']
 path_fields = ['sources', 'default', 'target']
+multiline_fields = ['description']
 
 class NextParser(Exception): pass
 
@@ -275,22 +276,40 @@ def key_value(r, store, opt_arg=None):
 
     # Allow flexible text indentation
     key = fields[0].lower()
-    long_str_indentation = 0
-    while r.peek() == '{':
-        r.parse(open_brace)
-        long_str_indentation += 1
-
     value = fields[1]
-    for i in range(long_str_indentation):
-        while r.wait_for('}'):
-            this_line = r.pop(blank=True)
-            if not this_line.strip():
-                value += '\n\n'
-            else:
-                value += this_line + ' '
-        r.parse(close_brace)
 
-    value = value.strip()
+    if key in multiline_fields:
+        long_field = []
+        istack = []
+        while r.peek() == '{':
+            istack.append(r.pop())
+
+        while istack and not r.eof():
+            line = r.pop(blank=True)
+            if line == '{':
+                istack.append(line)
+            elif line == '}':
+                istack.pop(-1)
+            else:
+                raw_line = r._original_data[r.line-1]
+                long_field.append(raw_line)
+        value = "".join(long_field)
+    else:
+        long_str_indentation = 0
+        while r.peek() == '{':
+            r.parse(open_brace)
+            long_str_indentation += 1
+
+        for i in range(long_str_indentation):
+            while r.wait_for('}'):
+                this_line = r.pop(blank=True)
+                if not this_line.strip():
+                    value += '\n\n'
+                else:
+                    value += this_line + ' '
+            r.parse(close_brace)
+
+        value = value.strip()
 
     # Packages and modules are lists, handle them specially
     if key in list_fields:
