@@ -131,6 +131,7 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
         # Some setup.py files call setup from their main, so execute them as if
         # they were the main script
         exec_globals["__name__"] = "__main__"
+        exec_globals["__file__"] = os.path.abspath(filename)
 
         _saved_argv = sys.argv[:]
         try:
