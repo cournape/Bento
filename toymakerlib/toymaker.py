@@ -67,7 +67,8 @@ def main(argv=None):
         return 1
 
     if show_usage:
-        print get_usage()
+        cmd = get_command('help')()
+        cmd.run([])
         return 0
 
     if not cmd_name:
