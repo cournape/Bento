@@ -5,6 +5,8 @@ import getopt
 import optparse
 import traceback
 
+import toydist
+
 from toydist.utils import \
         subst_vars, pprint
 from toydist.sysconfig import \
@@ -48,14 +50,17 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     show_usage = False
+    show_version = False
     cmd_name = None
     cmd_opts = None
 
     try:
-        opts, pargs = getopt.getopt(argv, "h", ["help"])
+        opts, pargs = getopt.getopt(argv, "hv", ["help", "version"])
         for opt, arg in opts:
             if opt in ("--help", "-h"):
                 show_usage = True
+            if opt in ("--version", "-v"):
+                show_version = True
 
         if len(pargs) > 0:
             cmd_name = pargs.pop(0)
@@ -65,6 +70,10 @@ def main(argv=None):
         print emsg
         print get_usage()
         return 1
+
+    if show_version:
+        print toydist.__version__
+        return 0
 
     if show_usage:
         cmd = get_command('help')()
