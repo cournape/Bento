@@ -3,7 +3,7 @@ Version: 1.0
 
 DataFiles: data
     srcdir: data
-    targetdir: $pkgdatadir
+    target: $pkgdatadir
     files:
         *.dat
         foo.src
@@ -16,7 +16,7 @@ DataFiles: man1data
 
 DataFiles: man3data
     srcdir: doc
-    target: $mandir/man1
+    target: $mandir/man3
     files:
         foo.3
 
