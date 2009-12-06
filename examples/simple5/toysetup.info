@@ -5,8 +5,12 @@ DataFiles: data
     srcdir: data
     target: $pkgdatadir
     files:
-        *.dat
         foo.src
+
+DataFiles: data2
+    target: $pkgdatadir
+    files:
+        data/*.dat
 
 DataFiles: man1data
     srcdir: doc
