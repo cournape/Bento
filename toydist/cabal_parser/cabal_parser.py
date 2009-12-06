@@ -393,9 +393,9 @@ def datafiles_parser(r, store, flags={}):
     r.parse(close_brace)
 
     try:
-        source = d_store['source']
+        srcdir = d_store['srcdir']
     except KeyError:
-        source = "."
+        srcdir = "."
 
     try:
         target = d_store['target']
@@ -408,7 +408,7 @@ def datafiles_parser(r, store, flags={}):
         files = []
 
     store["datafiles"][name] = {
-        "source": source,
+        "srcdir": srcdir,
         "target": target,
         "files": files
     }

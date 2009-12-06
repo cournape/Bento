@@ -32,36 +32,36 @@ paths
 
             for name, value in self.files.items():
                 if name in ["pythonfiles"]:
-                    source = "$_srcrootdir"
+                    srcdir = "$_srcrootdir"
                     target = value["target"]
                     files = value["files"]
-                    fid.write(write_file_section(name, source, target, files))
+                    fid.write(write_file_section(name, srcdir, target, files))
                 elif name in ["datafiles"]:
                     for dname, dvalue in self.files["datafiles"].items():
-                        source = dvalue["source"]
+                        srcdir = dvalue["srcdir"]
                         target = dvalue["target"]
                         files = dvalue["files"]
-                        fid.write(write_file_section(dname, source, target, files))
+                        fid.write(write_file_section(dname, srcdir, target, files))
                 elif name in ["extensions"]:
                     for ename, evalue in self.files["extensions"].items():
-                        source = evalue["source"]
+                        srcdir = evalue["srcdir"]
                         target = evalue["target"]
                         files = evalue["files"]
-                        fid.write(write_file_section("extension", source, target, files))
+                        fid.write(write_file_section("extension", srcdir, target, files))
                 else:
                     raise ValueError("Unknown section %s" % name)
 
         finally:
             fid.close()
 
-def write_file_section(name, source, target, files):
+def write_file_section(name, srcdir, target, files):
     section = """\
 %(section)s
-%(source)s
+%(srcdir)s
 %(target)s
 %(files)s
 """ % {"section": name,
-       "source": "\tsource=%s" % source,
+       "srcdir": "\tsrcdir=%s" % srcdir,
        "target": "\ttarget=%s" % target,
        "files": "\n".join(["\t%s" % f for f in files])}
     return section
@@ -93,21 +93,21 @@ def read_installed_pkg_description(filename):
             line = r.pop()
             section_name = line.strip()
 
-            source = r.pop().strip()
+            srcdir = r.pop().strip()
             target = r.pop().strip()
-            assert source.startswith("source=")
+            assert srcdir.startswith("srcdir=")
             assert target.startswith("target=")
-            source = source.split("=")[1]
+            srcdir = srcdir.split("=")[1]
             target = target.split("=")[1]
 
-            source = subst_vars(source, path_vars)
+            srcdir = subst_vars(srcdir, path_vars)
             target = subst_vars(target, path_vars)
 
             files = []
             line = r.peek()
             while line and line[0] in FIELD_DELIM:
                 file = r.pop().strip()
-                files.append((os.path.join(source, file), os.path.join(target, file)))
+                files.append((os.path.join(srcdir, file), os.path.join(target, file)))
                 line = r.peek()
 
             return section_name, files
