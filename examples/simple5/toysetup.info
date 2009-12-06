@@ -1,21 +1,24 @@
 Name: hello
 Version: 1.0
 
-ExtraSourceFiles: data
-    sources:
-        data/*.dat
-        data/foo.src
-    target: $pkgdatadir
+DataFiles: data
+    srcdir: data
+    targetdir: $pkgdatadir
+    files:
+        *.dat
+        foo.src
 
-ExtraSourceFiles: man1data
-    sources:
-        doc/foo.1
+DataFiles: man1data
+    srcdir: doc
     target: $mandir/man1
+    files:
+        foo.1
 
-ExtraSourceFiles: man3data
-    sources:
-        doc/foo.3
-    target: $mandir/man3
+DataFiles: man3data
+    srcdir: doc
+    target: $mandir/man1
+    files:
+        foo.3
 
 Library:
     Packages:
