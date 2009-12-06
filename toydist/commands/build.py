@@ -121,7 +121,7 @@ Usage:   toymaker build [OPTIONS]."""
                 for sec, val in data_sec.items():
                     datafiles[sec] = {
                         "files": val["files"],
-                        "source": val["source"],
+                        "srcdir": val["srcdir"],
                         "target": val["target"]}
                 sections["datafiles"] = datafiles
 
