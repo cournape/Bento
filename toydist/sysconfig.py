@@ -11,7 +11,8 @@ _SCHEME = {
         'datarootdir': '$prefix/share',
         'datadir': '$datarootdir',
         'mandir': '$datarootdir/man',
-        'sitedir': '$libdir/python$py_version_short/site-packages'
+        'sitedir': '$libdir/python$py_version_short/site-packages',
+        'pkgdatadir': '$datadir/$pkgname'
     },
     'darwin': {
         'prefix': '/usr/local',
@@ -23,7 +24,8 @@ _SCHEME = {
         'datarootdir': '$prefix/share',
         'datadir': '$datarootdir',
         'mandir': '$datarootdir/man',
-        'sitedir': '$libdir/python$py_version_short/site-packages'
+        'sitedir': '$libdir/python$py_version_short/site-packages',
+        'pkgdatadir': '$datadir/$pkgname'
     },
 }
 
@@ -49,11 +51,13 @@ _SCHEME_OPTS = {
     'mandir': {'opts': ['--mandir'],
                'help': 'man documentation [%s]'},
     'sitedir': {'opts': ['--sitedir'],
-                'help': 'python site-packages [%s]'}
+                'help': 'python site-packages [%s]'},
+    'pkgdatadir': {'opts': ['--pkgdatadir'],
+                'help': 'package-specific data dir [%s]'}
 }
 
 
-def get_scheme(platform, pkg_name):
+def get_scheme(platform):
     if platform.startswith('linux'):
         pkg_platform = 'unix'
     else:

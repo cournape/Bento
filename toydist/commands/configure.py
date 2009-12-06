@@ -83,10 +83,12 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
         finally:
             f.close()
 
-        scheme, scheme_opts = get_scheme(sys.platform, pkg_name)
+        scheme, scheme_opts = get_scheme(sys.platform)
         # XXX: abstract away those, as it is copied from distutils
         py_version = sys.version.split()[0]
         scheme['py_version_short'] = py_version[0:3]
+
+        scheme['pkgname'] = d["name"]
 
         # Add path options to the path scheme
         for name, f in path_options.items():
