@@ -1,7 +1,7 @@
 import os
 
 from toydist.utils import \
-        pprint
+        pprint, expand_glob
 from toydist.cabal_parser.cabal_parser import \
         parse
 from toydist.installed_package_description import \
@@ -119,10 +119,15 @@ Usage:   toymaker build [OPTIONS]."""
                 data_sec = d["datafiles"]
                 datafiles = {}
                 for sec, val in data_sec.items():
+                    srcdir = val["srcdir"]
+                    target = val["target"]
+                    files = []
+                    for p in val["files"]:
+                        files.extend(expand_glob(p, srcdir))
                     datafiles[sec] = {
-                        "files": val["files"],
-                        "srcdir": val["srcdir"],
-                        "target": val["target"]}
+                        "files": files,
+                        "srcdir": srcdir,
+                        "target": target}
                 sections["datafiles"] = datafiles
 
             # handle extensions
