@@ -114,3 +114,19 @@ def subst_vars (s, local_vars):
 
 if __name__ == "__main__":
     print expand_glob("*.py", dirname(__file__))
+
+def find_package(pkg_name, basedir=''):
+    """Given a python package name, find all its modules relatively to basedir.
+
+    If basedir is not given, look relatively to the current directory."""
+    # XXX: this function is wrong - use the code from setuptools
+    pkg_dir = pkg_name.replace(".", os.path.sep)
+    basedir = os.path.join(basedir, pkg_dir)
+    init = os.path.join(basedir, '__init__.py')
+    if not os.path.exists(init):
+        raise ValueError(
+                "Missing __init__.py in package %s (in directory %s)"
+                % (pkg_name, basedir))
+    return [os.path.join(basedir, f)
+                for f in
+                    os.listdir(os.path.dirname(init)) if f.endswith('.py')]
