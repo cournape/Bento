@@ -130,3 +130,21 @@ def find_package(pkg_name, basedir=''):
     return [os.path.join(basedir, f)
                 for f in
                     os.listdir(os.path.dirname(init)) if f.endswith('.py')]
+
+def prune_file_list(files, redundant):
+    """Prune a list of files relatively to a second list.
+
+    Return a subsequence of `files' which contains only files not in
+    `redundant'
+
+    Parameters
+    ----------
+    files: seq
+        list of files to prune.
+    redundant: seq
+        list of candidate files to prune.
+    """
+    files_set = set([os.path.normpath(f) for f in files])
+    redundant_set = set([os.path.normpath(f) for f in redundant])
+
+    return list(files_set.difference(redundant_set))
