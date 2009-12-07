@@ -2,7 +2,7 @@ import os
 import sys
 
 from toydist.utils import \
-        pprint
+        pprint, find_package, prune_file_list
 from toydist.package import \
         static_representation
 from toydist.conv import \
@@ -197,9 +197,10 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
                     ))
             pkg.data_files.update(gendatafiles)
 
-        pkg.extra_source_files = []
+        extra_source_files = []
         if LIVE_OBJECTS["extra_data"]:
-            pkg.extra_source_files.extend(LIVE_OBJECTS["extra_data"])
+            extra_source_files.extend(LIVE_OBJECTS["extra_data"])
+        pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg))
 
         options = {"path_options": path_options}
         out = static_representation(pkg, options)
@@ -214,3 +215,18 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
             finally:
                 fid.close()
 
+def prune_extra_files(files, pkg):
+
+    package_files = []
+    for p in pkg.packages:
+        package_files.extend(find_package(p))
+
+    data_files = []
+    for sec in pkg.data_files:
+        srcdir_field = pkg.data_files[sec]['srcdir']
+        files_field = pkg.data_files[sec]['files']
+        data_files.extend([os.path.join(srcdir_field, f) for f in files_field])
+
+    redundant = package_files + data_files + pkg.py_modules
+
+    return prune_file_list(files, redundant)
