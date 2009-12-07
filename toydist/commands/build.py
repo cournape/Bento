@@ -54,9 +54,9 @@ def build_extensions(extensions):
         fullname = bld_cmd.get_ext_fullname(ext.name)
         ext_target = os.path.join(bld_cmd.build_lib,
                                  bld_cmd.get_ext_filename(fullname))
-        source = os.path.dirname(ext_target)
+        srcdir = os.path.dirname(ext_target)
         ext_descr = {'files': [os.path.basename(ext_target)],
-                     'source': source,
+                     'srcdir': srcdir,
                      'target': target}
         outputs[ext.name] = ext_descr
     return outputs
