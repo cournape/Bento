@@ -172,6 +172,11 @@ def static_representation(pkg, options={}):
                 raise ValueError("Gne ? %s" % k)
         r.append('')
 
+    if pkg.extra_source_files:
+        r.append("ExtraSourceFiles:")
+        r.extend([' ' * (indent_level * 1) + f + ',' for f in pkg.extra_source_files])
+        r.append('')
+
     if pkg.data_files:
         for section in pkg.data_files:
             v = pkg.data_files[section]

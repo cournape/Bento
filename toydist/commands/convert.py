@@ -28,24 +28,49 @@ def _process_data_files(seq):
 
 # XXX: this is where the magic happens. This is highly dependent on the
 # setup.py, whether it uses distutils, numpy.distutils, setuptools and whatnot.
-def monkey_patch(type):
     supported = ["distutils", "setuptools", "setuptools_numpy"]
+def monkey_patch(type, filename):
     
     if type == "distutils":
         from distutils.core import setup as old_setup
         from distutils.command.build_py import build_py as old_build_py
+        from distutils.dist import Distribution as _Distribution
+        from distutils.filelist import FileList
     elif type == "setuptools":
         from setuptools import setup as old_setup
         from setuptools.command.build_py import build_py as old_build_py
+        from setuptools.command.sdist import sdist as old_sdist
+        from distutils.dist import Distribution as _Distribution
+        from distutils.filelist import FileList
     elif type == "setuptools_numpy":
         import setuptools
         import numpy.distutils
         import distutils.core
         from numpy.distutils.core import setup as old_setup
         from numpy.distutils.command.build_py import build_py as old_build_py
+        from numpy.distutils.command.sdist import sdist as old_sdist
+        from numpy.distutils.numpy_distribution import NumpyDistribution as _Distribution
+        from distutils.filelist import FileList
     else:
         raise UsageException("Unknown converter: %s (known converters are %s)" % 
                          (type, ", ".join(supported)))
+
+    def get_data_files():
+        # FIXME: handle redundancies between data files, package data files
+        # (i.e. installed data files) and files included as part of modules,
+        # packages, extensions, .... Given the giant mess that distutils makes
+        # of things here, it may not be possible to get everything right,
+        # though.
+        dist = _Distribution()
+        sdist = old_sdist(dist)
+        sdist.initialize_options()
+        sdist.finalize_options()
+        sdist.manifest_only = True
+        sdist.filelist = FileList()
+        sdist.distribution.script_name = filename
+        sdist.get_file_list()
+        return sdist.filelist.files
+
 
     def new_setup(**kw):
         cmdclass = kw.get("cmdclass", {})
@@ -61,6 +86,8 @@ def monkey_patch(type):
                 else:
                     LIVE_OBJECTS["package_data"] = []
                 _build_py.run(self)
+
+                LIVE_OBJECTS["extra_data"] = get_data_files()
 
         cmdclass["build_py"] = build_py_recorder
         kw["cmdclass"] = cmdclass
@@ -120,7 +147,7 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
             raise UsageException("file %s exists, not overwritten" % output)
 
         tp = o.type
-        monkey_patch(tp)
+        monkey_patch(tp, filename)
 
         pprint('PINK', "======================================================")
         pprint('PINK', " Analysing %s (running %s) .... " % (filename, filename))
@@ -169,6 +196,10 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
                     "Directory for datafiles obtained from distutils conversion"
                     ))
             pkg.data_files.update(gendatafiles)
+
+        pkg.extra_source_files = []
+        if LIVE_OBJECTS["extra_data"]:
+            pkg.extra_source_files.extend(LIVE_OBJECTS["extra_data"])
 
         options = {"path_options": path_options}
         out = static_representation(pkg, options)
