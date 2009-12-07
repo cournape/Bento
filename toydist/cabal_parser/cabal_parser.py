@@ -11,8 +11,8 @@ from toydist.cabal_parser.items import \
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',
                  'datafiles']
-list_fields = ['sources', 'packages', 'modules', 'buildrequires', 'platforms']
-path_fields = ['sources', 'default', 'target']
+list_fields = ['sources', 'packages', 'modules', 'buildrequires', 'platforms', 'extrasourcefiles']
+path_fields = ['sources', 'default', 'target', 'extrasourcefiles']
 multiline_fields = ['description']
 
 class NextParser(Exception): pass
