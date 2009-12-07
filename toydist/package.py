@@ -1,16 +1,67 @@
+import os
+
 from toydist.misc import \
         Extension
 
+from toydist.utils import \
+        find_package
 from toydist.cabal_parser.cabal_parser import \
         parse
 
 class PackageDescription:
+    @classmethod
+    def from_file(cls, filename):
+        """Create a PackageDescription from a toysetup.info file."""
+        info_file = open(filename, 'r')
+        try:
+            data = info_file.readlines()
+            d = parse(data)
+
+            kw = {}
+            for k in ['name', 'version', 'summary', 'url', 'author',
+                    'maintainer', 'maintainer_email', 'license',
+                    'author_email', 'description', 'platforms',
+                    'install_requires', 'build_requires', 'download_url']:
+                # FIXME: consolidate this naming mess
+                data_key = k.replace('_', '')
+                if not d.has_key(data_key):
+                    kw[k] = None
+                else:
+                    kw[k] = d[data_key]
+
+            if d.has_key('extrasourcefiles'):
+                kw['extra_source_files'] = d['extrasourcefiles']
+            else:
+                kw['extra_source_files'] = []
+
+            if d.has_key('datafiles'):
+                kw['data_files'] = d['datafiles']
+            else:
+                kw['data_files'] = []
+
+            if d.has_key('library'):
+                library = d['library'][""]
+
+                if library.has_key('packages'):
+                    kw['packages'] = library['packages']
+                else:
+                    kw['packages'] = []
+
+                if library.has_key('modules'):
+                    kw['py_modules'] = library['modules']
+                else:
+                    kw['py_modules'] = []
+
+            return cls(**kw)
+        finally:
+            info_file.close()
+
     def __init__(self, name, version=None, summary=None, url=None,
             author=None, author_email=None, maintainer=None,
             maintainer_email=None, license=None, description=None,
             platforms=None, packages=None, py_modules=None, extensions=None,
             install_requires=None, build_requires=None,
-            download_url=None):
+            download_url=None, extra_source_files=None, data_files=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -64,6 +115,16 @@ class PackageDescription:
         else:
             self.extensions = extensions
 
+        if not extra_source_files:
+            self.extra_source_files = []
+        else:
+            self.extra_source_files = extra_source_files
+
+        if not data_files:
+            self.data_files = []
+        else:
+            self.data_files = data_files
+
     def to_dict(self):
         """Return a distutils.core.setup compatible dict."""
         d = {'name': self.name,
@@ -83,6 +144,24 @@ class PackageDescription:
             'install_requires': self.install_requires}
 
         return d
+
+def file_list(pkg, root_src=""):
+    # FIXME: root_src
+    files = []
+    files.extend(pkg.extra_source_files)
+
+    for p in pkg.packages:
+        files.extend(find_package(p, root_src))
+
+    for m in pkg.py_modules:
+        files.append(os.path.join(root_src, '%s.py' % m))
+
+    for section in pkg.data_files.values():
+        srcdir_field = section['srcdir']
+        files_field = section['files']
+        files.extend([os.path.join(srcdir_field, f) for f in files_field])
+
+    return files
 
 def _parse_library(parsed_dict, package_dict):
     package_dict['extensions'] = []

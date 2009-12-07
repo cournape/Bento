@@ -2,9 +2,9 @@ import os
 import tarfile
 
 from toydist.utils import \
-        pprint, expand_glob, find_package
-from toydist.cabal_parser.cabal_parser import \
-        parse
+        pprint
+from toydist.package import \
+        PackageDescription, file_list
 
 from toydist.commands.core import \
     Command, UsageException
@@ -32,49 +32,15 @@ Usage:   toymaker sdist [OPTIONS]."""
             if not os.path.exists(filename):
                 raise UsageException("Missing %s file" % "toysetup.info")
 
-        info_file = open(filename, 'r')
+        pkg = PackageDescription.from_file(filename)
+
+        basename = tarball_basename(pkg.name, pkg.version)
+        topname = "%s-%s" % (pkg.name, pkg.version)
+        tarname = "%s.tar.gz" % basename
+
+        tf = tarfile.open(tarname, "w:gz")
         try:
-            data = info_file.readlines()
-            d = parse(data)
-
-            sourcefiles = []
-
-            basename = tarball_basename(d['name'], d['version'])
-            topname = "%s-%s" % (d['name'], d['version'])
-            tarname = "%s.tar.gz" % basename
-
-            tf = tarfile.open(tarname, "w:gz")
-            try:
-                for name in d["extrasourcefiles"]:
-                    tf.add(name, os.path.join(topname, name))
-                library = d["library"][""]
-
-                python_files = []
-                # FIXME: root_src
-                root_src = ""
-                if library.has_key('packages'):
-                    for p in library['packages']:
-                        python_files.extend(find_package(p, root_src))
-                if library.has_key('modules'):
-                    for m in library['modules']:
-                        python_files.append(os.path.join(root_src, '%s.py' % m))
-
-                for p in python_files:
-                    tf.add(p, os.path.join(topname, p))
-
-                data_files =[]
-                if d.has_key('datafiles'):
-                    sections = d['datafiles']
-                    for section in sections.values():
-                        srcdir = section['srcdir']
-                        files = section['files']
-                        data_files.extend([os.path.join(srcdir, f) for f in files])
-
-                for p in data_files:
-                    tf.add(p, os.path.join(topname, p))
-
-            finally:
-                tf.close()
-
+            for file in file_list(pkg):
+                tf.add(file, os.path.join(topname, file))
         finally:
-            info_file.close()
+            tf.close()
