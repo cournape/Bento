@@ -24,6 +24,7 @@ def build_extensions(extensions):
         from numpy.distutils.command.build_src import build_src
         from numpy.distutils.command.scons import scons
         from numpy.distutils import log
+        import distutils.core
     else:
         from distutils.extension import Extension
         from distutils.dist import Distribution
@@ -36,6 +37,7 @@ def build_extensions(extensions):
     if USE_NUMPY_DISTUTILS:
         dist.cmdclass['build_src'] = build_src
         dist.cmdclass['scons'] = scons
+        distutils.core._setup_distribution = dist
 
     for name, value in extensions.items():
         e = Extension(name, sources=value["sources"])
