@@ -26,6 +26,8 @@ from toydist.commands.parse import \
         ParseCommand
 from toydist.commands.convert import \
         ConvertCommand
+from toydist.commands.sdist import \
+        SdistCommand
 from toydist.commands.core import \
         register_command, UsageException, \
         MyOptionParser, get_command_names, get_command, \
@@ -42,6 +44,7 @@ register_command("configure", ConfigureCommand)
 register_command("build", BuildCommand)
 register_command("install", InstallCommand)
 register_command("convert", ConvertCommand)
+register_command("sdist", SdistCommand)
 
 register_command("parse", ParseCommand, public=False)
  
