@@ -22,8 +22,8 @@ def _process_data_files(seq):
     for i in seq:
         # FIXME: use package_dir to translate package to path
         target = i[0].replace(".", os.path.sep)
-        source = i[1]
-        ret.append({"files": i[3], "source": source, "target": target})
+        srcdir = i[1]
+        ret.append({"files": i[3], "srcdir": srcdir, "target": target})
     return ret
 
 # XXX: this is where the magic happens. This is highly dependent on the
@@ -188,7 +188,7 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
                 if len(d["files"]) > 0:
                     name = "gendata_%s" % d["target"].replace(os.path.sep, "_")
                     gendatafiles[name] = {
-                        "source": d["source"],
+                        "srcdir": d["srcdir"],
                         "target": os.path.join("$gendatadir", d["target"]),
                         "files": d["files"]
                     }

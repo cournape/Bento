@@ -181,7 +181,7 @@ def static_representation(pkg, options={}):
         for section in pkg.data_files:
             v = pkg.data_files[section]
             r.append("DataFiles: %s" % section)
-            r.append(' ' * indent_level + "source:%s" % v["source"])
+            r.append(' ' * indent_level + "srcdir:%s" % v["srcdir"])
             r.append(' ' * indent_level + "target:%s" % v["target"])
             r.append(' ' * indent_level + "files:")
             r.extend([' ' * (indent_level * 2) + f + ',' for f in v["files"]])
