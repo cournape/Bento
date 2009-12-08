@@ -47,7 +47,7 @@ paths
                         srcdir = evalue["srcdir"]
                         target = evalue["target"]
                         files = evalue["files"]
-                        fid.write(write_file_section("extension", srcdir, target, files))
+                        fid.write(write_file_section(ename, srcdir, target, files))
                 else:
                     raise ValueError("Unknown section %s" % name)
 

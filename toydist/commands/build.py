@@ -39,9 +39,10 @@ def build_extensions(extensions):
         dist.cmdclass['scons'] = scons
         distutils.core._setup_distribution = dist
 
+    dist.ext_modules = []
     for name, value in extensions.items():
         e = Extension(name, sources=value["sources"])
-        dist.ext_modules = [e]
+        dist.ext_modules.append(e)
 
     bld_cmd = build_ext(dist)
     bld_cmd.initialize_options()
@@ -60,7 +61,7 @@ def build_extensions(extensions):
         ext_descr = {'files': [os.path.basename(ext_target)],
                      'srcdir': srcdir,
                      'target': target}
-        outputs[ext.name] = ext_descr
+        outputs[fullname] = ext_descr
     return outputs
 
 class BuildCommand(Command):
@@ -121,7 +122,8 @@ Usage:   toymaker build [OPTIONS]."""
 
             # handle extensions
             if library.has_key("extension"):
-                sections["extensions"] = build_extensions(library["extension"])
+                extensions = build_extensions(library["extension"])
+                sections["extensions"] = extensions
 
             p = InstalledPkgDescription(sections, scheme)
             p.write('installed-pkg-info')
