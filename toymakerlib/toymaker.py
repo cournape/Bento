@@ -28,6 +28,8 @@ from toydist.commands.convert import \
         ConvertCommand
 from toydist.commands.sdist import \
         SdistCommand
+from toydist.commands.detect_type import \
+        DetectTypeCommand
 from toydist.commands.core import \
         register_command, UsageException, \
         MyOptionParser, get_command_names, get_command, \
@@ -47,6 +49,7 @@ register_command("convert", ConvertCommand)
 register_command("sdist", SdistCommand)
 
 register_command("parse", ParseCommand, public=False)
+register_command("detect_type", DetectTypeCommand, public=False)
  
 def main(argv=None):
     if argv is None:
