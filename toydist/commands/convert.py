@@ -82,13 +82,21 @@ def monkey_patch(type, filename):
 
         class build_py_recorder(_build_py):
             def run(self):
+                # package_data: data files which correspond to packages (and
+                # are installed)
+
+                # setuptools has its own logic to deal with package_data, and
+                # do so in build_py
                 if type == "setuptools":
                     LIVE_OBJECTS["package_data"] = _process_data_files(self._get_data_files())
                 else:
                     LIVE_OBJECTS["package_data"] = []
                 _build_py.run(self)
 
+                # extra_data
                 LIVE_OBJECTS["extra_data"] = get_data_files()
+
+                LIVE_OBJECTS["data_files"] = self.distribution.data_files
 
         cmdclass["build_py"] = build_py_recorder
         kw["cmdclass"] = cmdclass
@@ -225,6 +233,9 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
             extra_source_files.extend(LIVE_OBJECTS["extra_data"])
         pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg))
 
+        if LIVE_OBJECTS["data_files"]:
+            pkg.data_files = combine_groups(LIVE_OBJECTS["data_files"])
+
         # numpy.distutils bug: packages are appended twice to the Distribution
         # instance, so we prune the list here
         pkg.packages = sorted(list(set(pkg.packages)))
@@ -293,3 +304,46 @@ def detect_monkeys(setup_py, show_output):
         return "setuptools_numpy"
     else:
         raise ValueError("Unsupported converter")
+
+def combine_groups(data_files):
+    """Given a list of tuple (target, files), combine files together per
+    target/srcdir.
+    
+    Example
+    -------
+    
+    data_files = [('foo', ['src/file1', 'src/file2'])]
+    
+    combine_groups returns:
+        {'foo_src': {
+            'target': 'foo',
+            'srcdir': 'src',
+            'files':
+                ['file1', 'file2']}
+        }.
+    """
+
+    ret = {}
+    for e in data_files:
+        # FIXME: install policies should not be handled here
+        target = os.path.join("$sitedir", e[0])
+        sources = e[1]
+
+        for s in sources:
+            srcdir = os.path.dirname(s)
+            name = os.path.basename(s)
+
+            # Generate a unique key for target/source combination
+            key = "%s_%s" % (target.replace(os.path.sep, "_"), srcdir.replace(os.path.sep, "_"))
+            if ret.has_key(key):
+                if not (ret[key]["srcdir"] == srcdir and ret[key]["target"] == target):
+                    raise ValueError("BUG: mismatch for key %s ?" % key)
+                ret[key]["files"].append(name)
+            else:
+                d = {}
+                d["srcdir"] = srcdir
+                d["target"] = target
+                d["files"] = [name]
+                ret[key] = d
+
+    return ret
