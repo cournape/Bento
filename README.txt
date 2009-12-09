@@ -21,7 +21,7 @@ may be described as follows::
             hello
 
 Assuming the file is named toysetup.info, the command line interface toymaker
-can be used to configure, build, install, etc... the distribution:
+can be used to configure, build, install, etc... the distribution::
 
     toymaker configure --prefix=/usr/local
     toymaker build
@@ -37,7 +37,7 @@ community. The core principles are drawn from my own experience using and
 extending complex build systems, as well as maintaining numpy.distutils
 extensions.
 
-The core design decisions are::
+The core design decisions are:
 
     * simple, explicit and one obvious way to do it
     * package description in a custom, limited language, to avoid running
@@ -52,10 +52,10 @@ The core design decisions are::
 What can it do
 ==============
 
-Not much ATM. The following is implemented::
+Not much ATM. The following is implemented:
 
     * Basic library to parse the static format. The format support the
-      following::
+      following:
 
         * Most (all?) metadata from PKG-INFO format 1.2
         * Command line options for additional path and flags
@@ -107,7 +107,7 @@ Installed data files are declared as follows::
             config.cfg
 
 This means that the file config.cfg will be installed in /etc. The full name of
-the files entries are used when installing, e.g.
+the files entries are used when installing, e.g.::
 
     Datafiles:
         target=/etc
@@ -115,7 +115,7 @@ the files entries are used when installing, e.g.
             config/config.cfg
 
 Will install config/config.cfg as /etc/config/config.cfg. To install it as
-/etc/config.cfg, you should use the srcdir argument:
+/etc/config.cfg, you should use the srcdir argument::
 
     Datafiles:
         srcdir=config
@@ -123,7 +123,7 @@ Will install config/config.cfg as /etc/config/config.cfg. To install it as
         files:
             config.cfg
 
-Any data file which is not installed is declared as follows:
+Any data file which is not installed is declared as follows::
 
     ExtraSourceFiles:
         foo.cfg,
@@ -135,13 +135,13 @@ Path options
 ~~~~~~~~~~~~
 
 Additional path options may be added. For example, toydist does not handle
-documentation yet, so to install e.g. a manpage, you could do as follows:
+documentation yet, so to install e.g. a manpage, you could do as follows::
 
     Path: mandir1
         Description: man 1 directory
         Default: $datadir/man/man1
 
-The path can then be used as follows:
+The path can then be used as follows::
 
     DataFiles:
         srcdir=doc/man
@@ -150,7 +150,7 @@ The path can then be used as follows:
             foo.1
 
 And will install the file doc/man/foo.1 into $mandir. The toymaker utility can
-be used to customize the path, e.g.
+be used to customize the path, e.g.::
 
     toymaker configure -h # list the option --mandir1 with its description
     toymaker configure --mandir1=/usr/local/share/man/man1
@@ -159,7 +159,7 @@ Rationale
 =========
 
 Being able to describe most python packages from a purely static file has the
-following advantages::
+following advantages:
 
     * No arbitrary code execution, you only have to trust toydist code
       instead of setup.py (which can do anything that python can)
