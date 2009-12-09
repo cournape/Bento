@@ -178,8 +178,13 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
         exec_globals["__file__"] = os.path.abspath(filename)
 
         _saved_argv = sys.argv[:]
+        _saved_sys_path = sys.path
         try:
             sys.argv = [filename, "-q", "-n", "build_py"]
+            # XXX: many packages import themselves to get version at build
+            # time, and setuptools screw this up by inserting stuff first. Is
+            # there a better way ?
+            sys.path.insert(0, os.path.dirname(filename))
             execfile(filename, exec_globals)
             if type == "distutils" and "setuptools" in sys.modules:
                 pprint("YELLOW", "Setuptools detected in distutils mode !!!")
@@ -187,7 +192,8 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
             pprint('RED', "Got exception: %s" % e)
             raise e
         finally:
-            sys.path = _saved_argv
+            sys.argv = _saved_argv
+            sys.path = _saved_sys_path
 
         if not "dist" in LIVE_OBJECTS:
             raise ValueError("setup monkey-patching failed")
