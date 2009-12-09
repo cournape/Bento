@@ -28,9 +28,9 @@ def _process_data_files(seq):
 
 # XXX: this is where the magic happens. This is highly dependent on the
 # setup.py, whether it uses distutils, numpy.distutils, setuptools and whatnot.
-    supported = ["distutils", "setuptools", "setuptools_numpy"]
 def monkey_patch(type, filename):
-    
+    supported = ["distutils", "setuptools", "setuptools_numpy"]
+
     if type == "distutils":
         from distutils.core import setup as old_setup
         from distutils.command.build_py import build_py as old_build_py
