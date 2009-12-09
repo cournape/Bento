@@ -34,6 +34,7 @@ def monkey_patch(type, filename):
     if type == "distutils":
         from distutils.core import setup as old_setup
         from distutils.command.build_py import build_py as old_build_py
+        from distutils.command.sdist import sdist as old_sdist
         from distutils.dist import Distribution as _Distribution
         from distutils.filelist import FileList
     elif type == "setuptools":
