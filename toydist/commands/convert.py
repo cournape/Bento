@@ -101,12 +101,6 @@ def monkey_patch(type, filename):
         cmdclass["build_py"] = build_py_recorder
         kw["cmdclass"] = cmdclass
 
-        #if type == "setuptools_numpy":
-        #    # XXX: Remove configuration to avoid executing the setup twice in
-        #    # numpy.distutils (see setup code in numpy.distutils.core)
-        #    if kw.has_key("configuration"):
-        #        kw.pop("configuration")
-
         dist = old_setup(**kw)
         LIVE_OBJECTS["dist"] = dist
         return dist
