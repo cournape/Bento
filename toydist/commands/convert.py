@@ -125,9 +125,10 @@ Purpose: convert a setup.py to an .info file
 Usage:   toymaker convert [OPTIONS] setup.py"""
     short_descr = "convert the project to toydist."
     opts = Command.opts + [
-        {"opts": ["-t"], "help": "TODO", "default": "distutils", "dest": "type"},
+        {"opts": ["-t"], "help": "TODO", "default": "automatic", "dest": "type"},
         {"opts": ["-o", "--output"], "help": "output file", "default": "toysetup.info",
                   "dest": "output_filename"},
+        {"opts": ["-v", "--verbose"], "help": "verbose run", "action" : "store_true"},
     ]
 
     def run(self, opts):
@@ -147,7 +148,22 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
         if os.path.exists(output):
             raise UsageException("file %s exists, not overwritten" % output)
 
+        if o.verbose:
+            show_output = True
+        else:
+            show_output = False
+
         tp = o.type
+        if tp == "automatic":
+            try:
+                pprint("PINK",
+                       "Detecting monkey patches (this may take a while) ...")
+                tp = detect_monkeys(filename, show_output)
+                pprint("PINK", "Detected mode: %s" % tp)
+            except ValueError, e:
+                raise UsageException("Error while detecting setup.py type " \
+                                     "(original error: %s)" % str(e))
+
         monkey_patch(tp, filename)
 
         pprint('PINK', "======================================================")
@@ -231,3 +247,39 @@ def prune_extra_files(files, pkg):
     redundant = package_files + data_files + pkg.py_modules
 
     return prune_file_list(files, redundant)
+
+def detect_monkeys(setup_py, show_output):
+    from toydist.commands.convert_utils import \
+        test_distutils, test_setuptools, test_numpy, test_setuptools_numpy, \
+        test_can_run
+
+    if not test_can_run(setup_py, show_output):
+        raise  SetupCannotRun()
+
+    def print_delim(string):
+        if show_output:
+            pprint("YELLOW", string)
+
+    print_delim("----------------- Testing distutils ------------------")
+    use_distutils = test_distutils(setup_py, show_output)
+    print_delim("----------------- Testing setuptools -----------------")
+    use_setuptools = test_setuptools(setup_py, show_output)
+    print_delim("------------ Testing numpy.distutils -----------------")
+    use_numpy = test_numpy(setup_py, show_output)
+    print_delim("--- Testing numpy.distutils patched by setuptools ----")
+    use_setuptools_numpy = test_setuptools_numpy(setup_py, show_output)
+    print_delim("Is distutils ? %s" % use_distutils)
+    print_delim("Is setuptools ? %s" % use_setuptools)
+    print_delim("Is numpy distutils ? %s" % use_numpy)
+    print_delim("Is setuptools numpy ? %s" % use_setuptools_numpy)
+
+    if use_distutils and not (use_setuptools or use_numpy or use_setuptools_numpy):
+        return "distutils"
+    elif use_setuptools  and not (use_numpy or use_setuptools_numpy):
+        return "setuptools"
+    elif use_numpy  and not use_setuptools_numpy:
+        return "numpy"
+    elif use_setuptools_numpy:
+        return "setuptools_numpy"
+    else:
+        raise ValueError("Unsupported converter")
