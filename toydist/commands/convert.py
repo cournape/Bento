@@ -225,6 +225,10 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
             extra_source_files.extend(LIVE_OBJECTS["extra_data"])
         pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg))
 
+        # numpy.distutils bug: packages are appended twice to the Distribution
+        # instance, so we prune the list here
+        pkg.packages = sorted(list(set(pkg.packages)))
+
         options = {"path_options": path_options}
         out = static_representation(pkg, options)
 
