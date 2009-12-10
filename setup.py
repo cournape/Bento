@@ -5,7 +5,7 @@ import re
 import setuptools
 from distutils.core import setup
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 RELEASED = False
 if not RELEASED:
     if os.path.exists(".git"):
@@ -55,7 +55,7 @@ CLASSIFIERS = [
 
 METADATA = {
     'name': 'toydist',
-    'version': VERSION,
+    'version': FULL_VERSION,
     'description': 'A toy distribution tool',
     'url': 'http://github.com/cournape/toydist',
     'author': 'David Cournapeau',
