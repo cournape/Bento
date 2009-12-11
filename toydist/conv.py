@@ -35,3 +35,34 @@ def distutils_to_package_description(dist):
     data['classifiers'] = dist.get_classifiers()
 
     return PackageDescription(**data)
+
+_DIST_CONV_DICT = {
+    "long_description": lambda meta: meta.description,
+    "description": lambda meta: meta.summary,
+    # TODO: keywords not implemented yet
+    "keywords": lambda meta: [],
+    "fullname": lambda meta: "%s-%s" % (meta.name, meta.version),
+    "contact": lambda meta: (meta.maintainer or
+                             meta.author or
+                             "UNKNOWN"),
+    "contact_email": lambda meta: (meta.maintainer_email or
+                                   meta.author_email or
+                                   "UNKNOWN"),
+    "requires": lambda meta: meta.install_requires
+}
+
+def to_distutils_meta(meta):
+    from distutils.dist import DistributionMetadata
+    ret = DistributionMetadata()
+    for m in ret._METHOD_BASENAMES:
+        try:
+            val = _DIST_CONV_DICT[m](meta)
+        except KeyError:
+            val = getattr(meta, m)
+        setattr(ret, m, val)
+
+    return ret
+
+def write_pkg_info(pkg, file):
+    dist_meta = to_distutils_meta(pkg)
+    dist_meta.write_pkg_file(file)
