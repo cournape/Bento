@@ -21,7 +21,8 @@ class PackageDescription:
             for k in ['name', 'version', 'summary', 'url', 'author',
                     'maintainer', 'maintainer_email', 'license',
                     'author_email', 'description', 'platforms',
-                    'install_requires', 'build_requires', 'download_url']:
+                    'install_requires', 'build_requires', 'download_url',
+                    'classifiers']:
                 # FIXME: consolidate this naming mess
                 data_key = k.replace('_', '')
                 if not d.has_key(data_key):
@@ -61,7 +62,8 @@ class PackageDescription:
             maintainer_email=None, license=None, description=None,
             platforms=None, packages=None, py_modules=None, extensions=None,
             install_requires=None, build_requires=None,
-            download_url=None, extra_source_files=None, data_files=None):
+            download_url=None, extra_source_files=None, data_files=None,
+            classifiers=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -98,6 +100,11 @@ class PackageDescription:
             self.platforms = []
         else:
             self.platforms = platforms
+
+        if not classifiers:
+            self.classifiers = []
+        else:
+            self.classifiers = classifiers
 
         # Package content
         if not packages:
@@ -238,6 +245,10 @@ def static_representation(pkg, options={}):
         r.append("License: %s" % pkg.license)
     if pkg.platforms:
         r.append("Platforms: %s" % ",".join(pkg.platforms))
+    if pkg.classifiers:
+        r.append("Classifiers:")
+        r.extend([' ' * (indent_level * 1) + f + ',' for f in pkg.classifiers])
+        r.append('')
 
     if options:
         for k in options:
