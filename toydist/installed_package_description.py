@@ -69,19 +69,20 @@ def write_file_section(name, srcdir, target, files):
 def read_installed_pkg_description(filename):
     f = open(filename)
     try:
-        meta = []
+        vars = []
         r = Reader(f.readlines())
+
         while r.wait_for("!- FILELIST\n"):
-            meta.append(r.pop())
+            vars.append(r.pop())
         if r.eof():
             r.parse_error("Missing filelist section")
         r.pop()
 
-        if not meta[0].strip() == "paths":
+        if not vars[0].strip() == "paths":
             raise ValueError("no path ?")
 
         path_vars = {}
-        for i in meta[1:]:
+        for i in vars[1:]:
             name, value = [j.strip() for j in i.split("=")]
             path_vars[name] = value
 
