@@ -2,8 +2,8 @@ import os
 
 from toydist.utils import \
         pprint, expand_glob, find_package
-from toydist.cabal_parser.cabal_parser import \
-        parse
+from toydist.package import \
+        PackageDescription
 from toydist.installed_package_description import \
         InstalledPkgDescription, read_installed_pkg_description
 
@@ -85,47 +85,33 @@ Usage:   toymaker build [OPTIONS]."""
         filename = s.package_description
         scheme = dict([(k, s.paths[k]) for k in s.paths])
 
-        f = open(filename, 'r')
-        try:
-            # FIXME: root_src
-            root_src = ""
-            data = f.readlines()
-            d = parse(data)
-            library = d["library"][""]
+        pkg = PackageDescription.from_file(filename)
 
-            python_files = []
-            if library.has_key('packages'):
-                for p in library['packages']:
-                    python_files.extend(find_package(p, root_src))
-            if library.has_key('modules'):
-                for m in library['modules']:
-                    python_files.append(os.path.join(root_src, '%s.py' % m))
+        # FIXME: root_src
+        root_src = ""
+        python_files = []
+        for p in pkg.packages:
+            python_files.extend(find_package(p, root_src))
+        for m in pkg.py_modules:
+            python_files.append(os.path.join(root_src, '%s.py' % m))
 
-            sections = {"pythonfiles": {"files": python_files,
-                                        "target": "$sitedir"}}
+        sections = {"pythonfiles": {"files": python_files,
+                                    "target": "$sitedir"}}
 
-            # Get data files
-            if d.has_key("datafiles"):
-                data_sec = d["datafiles"]
-                datafiles = {}
-                for sec, val in data_sec.items():
-                    srcdir = val["srcdir"]
-                    target = val["target"]
-                    files = []
-                    for p in val["files"]:
-                        files.extend(expand_glob(p, srcdir))
-                    datafiles[sec] = {
-                        "files": files,
-                        "srcdir": srcdir,
-                        "target": target}
-                sections["datafiles"] = datafiles
+        # Get data files
+        datafiles = pkg.data_files
+        for s, v in datafiles.items():
+            srcdir = v["srcdir"]
+            files = []
+            for f in v["files"]:
+                files.extend(expand_glob(f, srcdir))
+            v["files"] = files
+        sections["datafiles"] = datafiles
 
-            # handle extensions
-            if library.has_key("extension"):
-                extensions = build_extensions(library["extension"])
-                sections["extensions"] = extensions
+        # handle extensions
+        if pkg.extensions:
+            extensions = build_extensions(pkg.extensions)
+            sections["extensions"] = extensions
 
-            p = InstalledPkgDescription(sections, scheme)
-            p.write('installed-pkg-info')
-        finally:
-            f.close()
+        p = InstalledPkgDescription(sections, scheme)
+        p.write('installed-pkg-info')
