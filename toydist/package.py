@@ -248,7 +248,6 @@ def static_representation(pkg, options={}):
     if pkg.classifiers:
         r.append("Classifiers:")
         r.extend([' ' * (indent_level * 1) + f + ',' for f in pkg.classifiers])
-        r.append('')
 
     if options:
         for k in options:
