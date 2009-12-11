@@ -11,7 +11,8 @@ from toydist.cabal_parser.items import \
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',
                  'datafiles']
-list_fields = ['sources', 'packages', 'modules', 'buildrequires', 'platforms', 'extrasourcefiles']
+list_fields = ['sources', 'packages', 'modules', 'buildrequires', 'platforms',
+               'extrasourcefiles']
 path_fields = ['sources', 'default', 'target', 'extrasourcefiles']
 multiline_fields = ['description']
 
@@ -267,7 +268,7 @@ def key_value(r, store, opt_arg=None):
         raise NextParser
 
     l = r.pop()
-    fields = l.split(':')
+    fields = l.split(':', 1)
     if not len(fields) >= 2:
         r.parse_error('invalid key-value pair')
 
@@ -314,6 +315,8 @@ def key_value(r, store, opt_arg=None):
     # Packages and modules are lists, handle them specially
     if key in list_fields:
         value = comma_list_split(value)
+    elif key == "classifiers":
+        value = [v.strip() for v in value.split(",")]
 
     # Handle path(path_variable). Ugly
     if key in path_fields:
