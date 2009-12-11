@@ -1,3 +1,6 @@
+from pprint import \
+        pprint
+
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException
 
@@ -57,7 +60,7 @@ Usage:   toymaker parse [OPTIONS]"""
                 except KeyError, e:
                     raise ValueError("Field %s not found in metadata" % o.meta_field)
             else:
-                print parsed
+                pprint(parsed)
         finally:
             f.close()
 
