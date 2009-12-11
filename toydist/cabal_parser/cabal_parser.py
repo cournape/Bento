@@ -316,7 +316,7 @@ def key_value(r, store, opt_arg=None):
     if key in list_fields:
         value = comma_list_split(value)
     elif key == "classifiers":
-        value = [v.strip() for v in value.split(",")]
+        value = [v.strip() for v in value.split(",") if v.strip()]
 
     # Handle path(path_variable). Ugly
     if key in path_fields:
