@@ -10,8 +10,9 @@ META_DELIM = "!- FILELIST"
 FIELD_DELIM = ("\t", " ")
 
 class InstalledPkgDescription(object):
-    def __init__(self, files, path_options):
+    def __init__(self, files, path_options, meta):
         self.files = files
+        self._meta = meta
         self._path_variables = path_options
 
         self._path_variables['_srcrootdir'] = "."
@@ -19,6 +20,20 @@ class InstalledPkgDescription(object):
     def write(self, filename):
         fid = open(filename, "w")
         try:
+            meta = []
+            for k, v in self._meta.items():
+                if k == "description":
+                    for line in v.splitlines():
+                        meta.append("description=%s" % line)
+                elif k in ["classifiers", "platforms"]:
+                    for i in v:
+                        meta.append("%s=%s" % (k, i))
+                else:
+                    meta.append("%s=%s" % (k, v))
+
+            fid.write("\n".join(meta))
+            fid.write("\n!- VARIABLES\n")
+
             path_fields = "\n".join([
                 "\t%s=%s" % (name, value) for name, value in
                                               self._path_variables.items()])
@@ -70,7 +85,25 @@ def read_installed_pkg_description(filename):
     f = open(filename)
     try:
         vars = []
+        meta = []
         r = Reader(f.readlines())
+
+        meta_vars = {}
+        while r.wait_for("!- VARIABLES\n"):
+            line = r.pop().strip()
+            s = line.split("=", 1)
+            k = s[0]
+            if k == "description":
+                v = []
+                while r.peek().startswith("\t"):
+                    v.append(r.pop().strip())
+            else:
+                v = s[1]
+            meta_vars[k] = v
+
+        if r.eof():
+            r.parse_error("Missing variables section")
+        r.pop()
 
         while r.wait_for("!- FILELIST\n"):
             vars.append(r.pop())

@@ -4,6 +4,8 @@ from toydist.utils import \
         pprint, expand_glob, find_package
 from toydist.package import \
         PackageDescription
+from toydist.conv import \
+        to_distutils_meta, write_pkg_info
 from toydist.installed_package_description import \
         InstalledPkgDescription, read_installed_pkg_description
 
@@ -113,5 +115,10 @@ Usage:   toymaker build [OPTIONS]."""
             extensions = build_extensions(pkg.extensions)
             sections["extensions"] = extensions
 
-        p = InstalledPkgDescription(sections, scheme)
+        meta = {}
+        for m in ["name", "version", "summary", "url", "author", "author_email",
+                  "license", "download_url", "description", "platforms", "classifiers"]:
+            meta[m] = getattr(pkg, m)
+
+        p = InstalledPkgDescription(sections, scheme, meta)
         p.write('installed-pkg-info')
