@@ -317,6 +317,8 @@ def key_value(r, store, opt_arg=None):
         value = comma_list_split(value)
     elif key == "classifiers":
         value = [v.strip() for v in value.split(",") if v.strip()]
+    elif key in ["installdepends"]:
+        value = [v.strip() for v in value.split(",") if v.strip()]
 
     # Handle path(path_variable). Ugly
     if key in path_fields:
