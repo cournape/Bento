@@ -68,7 +68,7 @@ class PackageDescription:
             platforms=None, packages=None, py_modules=None, extensions=None,
             install_requires=None, build_requires=None,
             download_url=None, extra_source_files=None, data_files=None,
-            classifiers=None):
+            classifiers=None, provides=None, obsoletes=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -110,6 +110,16 @@ class PackageDescription:
             self.classifiers = []
         else:
             self.classifiers = classifiers
+
+        if not obsoletes:
+            self.obsoletes = []
+        else:
+            self.obsoletes = obsoletes
+
+        if not provides:
+            self.provides = []
+        else:
+            self.provides = provides
 
         # Package content
         if not packages:
