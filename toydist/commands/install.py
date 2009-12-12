@@ -2,7 +2,7 @@ import os
 import shutil
 
 from toydist.installed_package_description import \
-    InstalledPkgDescription, read_installed_pkg_description
+    InstalledPkgDescription
 
 from toydist.commands.core import \
     Command
@@ -39,8 +39,8 @@ Usage:   toymaker install [OPTIONS]."""
             msg = "No installed-pkg-info file found ! (Did you run build ?)"
             raise UsageException(msg)
 
-        sections = read_installed_pkg_description("installed-pkg-info")
+        ipkg = InstalledPkgDescription.from_file("installed-pkg-info")
+        file_sections = ipkg.resolve_paths()
 
         #install_sections(sections, installer=installer)
-        install_sections(sections, installer=shutil.copy)
-
+        install_sections(file_sections, installer=shutil.copy)

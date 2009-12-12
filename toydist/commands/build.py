@@ -7,7 +7,7 @@ from toydist.package import \
 from toydist.conv import \
         to_distutils_meta, write_pkg_info
 from toydist.installed_package_description import \
-        InstalledPkgDescription, read_installed_pkg_description
+        InstalledPkgDescription
 
 from toydist.commands.core import \
         Command
