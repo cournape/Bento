@@ -53,6 +53,11 @@ class PackageDescription:
                 else:
                     kw['py_modules'] = []
 
+                if library.has_key('installdepends'):
+                    kw['install_requires'] = library['installdepends']
+                else:
+                    kw['install_requires'] = []
+
             return cls(**kw)
         finally:
             info_file.close()
