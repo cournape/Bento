@@ -112,8 +112,7 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
                     scheme[k] = val
 
         s = ConfigureState()
-        for k in scheme:
-            s.paths[k] = subst_vars(scheme[k], scheme)
+        s.paths = scheme
         s.package_description = filename
         s.dump()
         pprint('GREEN', "Writing configuration state in file %s" % '.config.bin')
