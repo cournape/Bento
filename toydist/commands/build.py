@@ -117,7 +117,8 @@ Usage:   toymaker build [OPTIONS]."""
 
         meta = {}
         for m in ["name", "version", "summary", "url", "author", "author_email",
-                  "license", "download_url", "description", "platforms", "classifiers"]:
+                  "license", "download_url", "description", "platforms", "classifiers",
+                  "install_requires"]:
             meta[m] = getattr(pkg, m)
 
         p = InstalledPkgDescription(sections, scheme, meta)
