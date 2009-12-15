@@ -7,7 +7,7 @@ class PackageMetadata(object):
             author=None, author_email=None, maintainer=None,
             maintainer_email=None, license=None, description=None,
             platforms=None, install_requires=None, build_requires=None,
-            download_url=None, classifiers=None):
+            download_url=None, classifiers=None, top_levels=None):
         self.name = name
 
         if not version:
@@ -45,6 +45,11 @@ class PackageMetadata(object):
             self.classifiers = []
         else:
             self.classifiers = classifiers
+
+        if not top_levels:
+            self.top_levels = []
+        else:
+            self.top_levels = top_levels
 
         # FIXME: not implemented yet
         self.provides = []

@@ -147,6 +147,11 @@ class PackageDescription:
         else:
             self.data_files = data_files
 
+    @property
+    def top_levels(self):
+        pkgs = list(set([k.split(".", 1)[0] for k in self.packages]))
+        return pkgs
+
     def to_dict(self):
         """Return a distutils.core.setup compatible dict."""
         d = {'name': self.name,

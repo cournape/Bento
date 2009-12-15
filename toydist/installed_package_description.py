@@ -23,10 +23,12 @@ class InstalledPkgDescription(object):
             meta_vars["classifiers"] = []
             meta_vars["platforms"] = []
             meta_vars["install_requires"] = []
+            meta_vars["top_levels"] = []
             while r.wait_for("!- VARIABLES\n"):
                 line = r.pop().strip()
                 k, v = line.split("=", 1)
-                if k in ["description", "classifiers", "platforms", "install_requires"]:
+                if k in ["description", "classifiers", "platforms",
+                         "install_requires", "top_levels"]:
                     meta_vars[k].append(v)
                 else:
                     meta_vars[k] = v
@@ -95,7 +97,7 @@ class InstalledPkgDescription(object):
                 if k == "description":
                     for line in v.splitlines():
                         meta.append("description=%s" % line)
-                elif k in ["classifiers", "platforms", "install_requires"]:
+                elif k in ["classifiers", "platforms", "install_requires", "top_levels"]:
                     for i in v:
                         meta.append("%s=%s" % (k, i))
                 else:

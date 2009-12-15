@@ -121,5 +121,7 @@ Usage:   toymaker build [OPTIONS]."""
                   "install_requires"]:
             meta[m] = getattr(pkg, m)
 
+        meta["top_levels"] = pkg.top_levels
+
         p = InstalledPkgDescription(sections, scheme, meta)
         p.write('installed-pkg-info')
