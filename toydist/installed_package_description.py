@@ -84,14 +84,14 @@ class InstalledPkgDescription(object):
 
     def __init__(self, files, path_options, meta):
         self.files = files
-        self._meta = meta
-        self._path_variables = path_options
+        self.meta = meta
+        self.path_variables = path_options
 
     def write(self, filename):
         fid = open(filename, "w")
         try:
             meta = []
-            for k, v in self._meta.items():
+            for k, v in self.meta.items():
                 if k == "description":
                     for line in v.splitlines():
                         meta.append("description=%s" % line)
@@ -106,7 +106,7 @@ class InstalledPkgDescription(object):
 
             path_fields = "\n".join([
                 "\t%s=%s" % (name, value) for name, value in
-                                              self._path_variables.items()])
+                                              self.path_variables.items()])
 
             path_section = """\
 paths
@@ -140,15 +140,15 @@ paths
             fid.close()
 
     def resolve_paths(self, src_root_dir="."):
-        self._path_variables['_srcrootdir'] = src_root_dir
+        self.path_variables['_srcrootdir'] = src_root_dir
 
         file_sections = {}
         for name, value in self.files.items():
             srcdir = value["srcdir"]
             target = value["target"]
 
-            srcdir = subst_vars(srcdir, self._path_variables)
-            target = subst_vars(target, self._path_variables)
+            srcdir = subst_vars(srcdir, self.path_variables)
+            target = subst_vars(target, self.path_variables)
 
             files = [(os.path.join(srcdir, file), os.path.join(target, file))
                      for file in value["files"]]

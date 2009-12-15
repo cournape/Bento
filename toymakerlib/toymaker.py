@@ -32,6 +32,8 @@ from toydist.commands.detect_type import \
         DetectTypeCommand
 from toydist.commands.build_pkg_info import \
         BuildPkgInfoCommand
+from toydist.commands.build_egg import \
+        BuildEggCommand
 from toydist.commands.core import \
         register_command, UsageException, \
         MyOptionParser, get_command_names, get_command, \
@@ -49,6 +51,7 @@ register_command("build", BuildCommand)
 register_command("install", InstallCommand)
 register_command("convert", ConvertCommand)
 register_command("sdist", SdistCommand)
+register_command("build_egg", BuildEggCommand)
 
 register_command("build_pkg_info", BuildPkgInfoCommand, public=False)
 register_command("parse", ParseCommand, public=False)
