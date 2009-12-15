@@ -24,9 +24,8 @@ This is mostly done. What's missing::
 
 Problems::
 
-        .# describing data files (ExtraSourceFiles field) in a Distribution
-           file (MANIFEST[.in] mess)
         .# converting back from .info file to setup.py
+	.# names consistency
 
 Simple build system
 -------------------
