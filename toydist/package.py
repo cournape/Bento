@@ -143,7 +143,7 @@ class PackageDescription:
             self.extra_source_files = extra_source_files
 
         if not data_files:
-            self.data_files = []
+            self.data_files = {}
         else:
             self.data_files = data_files
 
