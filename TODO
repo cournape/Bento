@@ -19,14 +19,6 @@ Status
 This is mostly done. What's missing::
 
 	.# Documentation tagging
-	.# Data tagging
-	.# Data vs. extra: I should familiarize myself with pkg_resources
-
-Problems::
-
-        .# describing data files (ExtraSourceFiles field) in a Distribution
-           file (MANIFEST[.in] mess)
-        .# converting back from .info file to setup.py
 
 Simple build system
 -------------------
@@ -34,9 +26,6 @@ Simple build system
 Based on a configure/build/install-like scheme::
 
         .# No support for compiled extension yet
-        .# Python files simply copied into install directory
-        .# No commands anymore, every step know about all options (through
-           configure)
         .# Should support all autoconf dir-related options (includedir, etc...)
         .# Think about extensibility from the start: pre/post hooks for each
            step, how to add steps maybe ?
@@ -117,3 +106,11 @@ exporters.
 
 Install/Reinstall/Rebuild/Clean problem
 ---------------------------------------
+
+Documentation
+=============
+
+Things to think about:
+
+	- Documenting the .info file
+	- Formal Grammar
