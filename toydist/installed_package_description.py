@@ -202,12 +202,12 @@ class Reader(object):
         Peek is not allowed to touch _idx.
 
         """
-        if self.eof():
-            return ''
-
         save_idx = self._idx
         if not blank:
             self.flush_empty()
+
+        if self.eof():
+            return ''
 
         peek_line = self._data[self._idx]
         self._idx = save_idx
