@@ -1,14 +1,30 @@
 import os
+import shutil
+import sys
+import zipfile
 
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+
+from toydist.utils import \
+        pprint
 from toydist.package import \
         PackageDescription
 from toydist.conv import \
         to_distutils_meta
 from toydist.installed_package_description import \
         InstalledPkgDescription
+from toydist.meta import PackageMetadata
 
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException
+
+def egg_filename(fullname, pyver=None):
+    if not pyver:
+        pyver = ".".join([str(i) for i in sys.version_info[:2]])
+    return "%s-py%s.egg" % (fullname, pyver)
 
 class BuildEggCommand(Command):
     long_descr = """\
@@ -29,45 +45,71 @@ Usage:   toymaker build_egg [OPTIONS]"""
                     % (SCRIPT_NAME, "build_egg"))
 
         ipkg = InstalledPkgDescription.from_file(filename)
-
-        import shutil
-        basedir = "tmpdist"
-        egg_info = os.path.join(basedir, "EGG-INFO")
-
-        if os.path.exists(basedir):
-            shutil.rmtree(basedir)
-        os.makedirs(basedir)
-        os.makedirs(egg_info)
-
-        # Write PKG-INFO
-        from toydist.meta import PackageMetadata
-
         meta = PackageMetadata.from_installed_pkg_description(ipkg)
 
-        dmeta = to_distutils_meta(meta)
-        fid = open(os.path.join(egg_info, "PKG-INFO"), "w")
-        try:
-            dmeta.write_pkg_file(fid)
-        finally:
-            fid.close()
+        # FIXME: fix egg name
+        egg = egg_filename(os.path.join("toydist", meta.fullname))
+        egg_dir = os.path.dirname(egg)
+        if egg_dir:
+            if not os.path.exists(egg_dir):
+                os.makedirs(egg_dir)
 
-        # Write SOURCES.txt
-        # XXX: bdist_egg includes extra source files here. Should we do the
-        # same for compatibility ?
-        files = []
-        file_sections = ipkg.resolve_paths()
-        for name, value in file_sections.items():
-            files.extend([f[0] for f in value])
-        fid = open(os.path.join(egg_info, "SOURCES.txt"), "w")
+        zid = zipfile.ZipFile(egg, "w")
         try:
-            fid.writelines("\n".join([os.path.normpath(f) for f in files]))
-        finally:
-            fid.close()
+            ret = write_egg_info(ipkg)
+            try:
+                for k, v in ret.items():
+                    v.seek(0)
+                    zid.writestr(os.path.join("EGG-INFO", k), v.getvalue())
+            finally:
+                for v in ret.values():
+                    v.close()
 
-        # Write requires.txt
-        fid = open(os.path.join(egg_info, "requires.txt"), "w")
-        try:
-            fid.write("\n".join(meta.install_requires))
-        finally:
-            fid.close()
+            ipkg.path_variables["sitedir"] = "."
+            file_sections = ipkg.resolve_paths()
+            for value in file_sections.values():
+                for f in value:
+                    zid.write(f[0], f[1])
 
+            pprint("PINK", "Byte-compiling ...")
+            for source, target in file_sections["pythonfiles"]:
+                zid.writestr("%sc" % target, compile(source))
+        finally:
+            zid.close()
+
+        return 
+
+def write_egg_info(ipkg):
+    ret = {}
+
+    meta = PackageMetadata.from_installed_pkg_description(ipkg)
+    dmeta = to_distutils_meta(meta)
+
+    ret["PKG-INFO"] = StringIO()
+    dmeta.write_pkg_file(ret["PKG-INFO"])
+
+    # XXX: bdist_egg includes extra source files here. Should we do the
+    # same for compatibility ?
+    ret["SOURCES.txt"] = StringIO()
+    files = []
+    file_sections = ipkg.resolve_paths()
+    for name, value in file_sections.items():
+        files.extend([f[0] for f in value])
+    ret["SOURCES.txt"].writelines("\n".join([os.path.normpath(f) for f in files]))
+
+    ret["requires.txt"] = StringIO()
+    ret["requires.txt"].write("\n".join(meta.install_requires))
+
+    ret["top_level.txt"] = StringIO()
+    ret["top_level.txt"].write("\n".join(meta.top_levels))
+    ret["top_level.txt"].write("\n")
+
+    # Write not-zip-safe
+    # FIXME: handle this, assume not zip safe for now
+    ret["not-zip-safe"] = StringIO()
+    ret["not-zip-safe"].write("\n")
+
+    ret["dependency_links.txt"] = StringIO()
+    ret["dependency_links.txt"].write("\n")
+
+    return ret
