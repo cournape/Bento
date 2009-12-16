@@ -13,6 +13,9 @@ from toydist.cabal_parser.items import \
 from toydist.commands.core import \
         Command, UsageException
 
+class SetupCannotRun(Exception):
+    pass
+
 # ====================================================
 # Code to convert existing setup.py to toysetup.info
 # ====================================================
@@ -269,7 +272,7 @@ def detect_monkeys(setup_py, show_output):
         test_can_run
 
     if not test_can_run(setup_py, show_output):
-        raise  SetupCannotRun()
+        raise SetupCannotRun()
 
     def print_delim(string):
         if show_output:
