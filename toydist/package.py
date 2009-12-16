@@ -53,6 +53,11 @@ class PackageDescription:
                 else:
                     kw['py_modules'] = []
 
+                if library.has_key('installdepends'):
+                    kw['install_requires'] = library['installdepends']
+                else:
+                    kw['install_requires'] = []
+
             return cls(**kw)
         finally:
             info_file.close()
@@ -63,7 +68,7 @@ class PackageDescription:
             platforms=None, packages=None, py_modules=None, extensions=None,
             install_requires=None, build_requires=None,
             download_url=None, extra_source_files=None, data_files=None,
-            classifiers=None):
+            classifiers=None, provides=None, obsoletes=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -106,6 +111,16 @@ class PackageDescription:
         else:
             self.classifiers = classifiers
 
+        if not obsoletes:
+            self.obsoletes = []
+        else:
+            self.obsoletes = obsoletes
+
+        if not provides:
+            self.provides = []
+        else:
+            self.provides = provides
+
         # Package content
         if not packages:
             self.packages = []
@@ -131,6 +146,11 @@ class PackageDescription:
             self.data_files = []
         else:
             self.data_files = data_files
+
+    @property
+    def top_levels(self):
+        pkgs = list(set([k.split(".", 1)[0] for k in self.packages]))
+        return pkgs
 
     def to_dict(self):
         """Return a distutils.core.setup compatible dict."""

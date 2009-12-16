@@ -285,16 +285,19 @@ def key_value(r, store, opt_arg=None):
         while r.peek() == '{':
             istack.append(r.pop())
 
-        while istack and not r.eof():
-            line = r.pop(blank=True)
-            if line == '{':
-                istack.append(line)
-            elif line == '}':
-                istack.pop(-1)
-            else:
-                raw_line = r._original_data[r.line-1]
-                long_field.append(raw_line)
-        value = "".join(long_field)
+        if istack:
+            while istack and not r.eof():
+                line = r.pop(blank=True)
+                if line == '{':
+                    istack.append(line)
+                elif line == '}':
+                    istack.pop(-1)
+                else:
+                    raw_line = r._original_data[r.line-1]
+                    long_field.append(raw_line)
+            value = "".join(long_field)
+        else:
+            value = value.strip()
     else:
         long_str_indentation = 0
         while r.peek() == '{':
@@ -316,6 +319,8 @@ def key_value(r, store, opt_arg=None):
     if key in list_fields:
         value = comma_list_split(value)
     elif key == "classifiers":
+        value = [v.strip() for v in value.split(",") if v.strip()]
+    elif key in ["installdepends"]:
         value = [v.strip() for v in value.split(",") if v.strip()]
 
     # Handle path(path_variable). Ugly

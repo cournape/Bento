@@ -10,18 +10,105 @@ META_DELIM = "!- FILELIST"
 FIELD_DELIM = ("\t", " ")
 
 class InstalledPkgDescription(object):
-    def __init__(self, files, path_options):
-        self.files = files
-        self._path_variables = path_options
+    @classmethod
+    def from_file(cls, filename):
+        f = open(filename)
+        try:
+            vars = []
+            meta = []
+            r = Reader(f.readlines())
 
-        self._path_variables['_srcrootdir'] = "."
+            meta_vars = {}
+            meta_vars["description"] = []
+            meta_vars["classifiers"] = []
+            meta_vars["platforms"] = []
+            meta_vars["install_requires"] = []
+            meta_vars["top_levels"] = []
+            while r.wait_for("!- VARIABLES\n"):
+                line = r.pop().strip()
+                k, v = line.split("=", 1)
+                if k in ["description", "classifiers", "platforms",
+                         "install_requires", "top_levels"]:
+                    meta_vars[k].append(v)
+                else:
+                    meta_vars[k] = v
+
+            if r.eof():
+                r.parse_error("Missing variables section")
+            r.pop()
+            meta_vars["description"] = "\n".join(meta_vars["description"])
+
+            while r.wait_for("!- FILELIST\n"):
+                vars.append(r.pop())
+            if r.eof():
+                r.parse_error("Missing filelist section")
+            r.pop()
+
+            if not vars[0].strip() == "paths":
+                raise ValueError("no path ?")
+
+            path_vars = {}
+            for i in vars[1:]:
+                name, value = [j.strip() for j in i.split("=")]
+                path_vars[name] = value
+
+            def read_section():
+                r.flush_empty()
+                line = r.peek()
+                if line and line[0] in FIELD_DELIM:
+                    r.parse_error("No section found ?")
+                line = r.pop()
+                section_name = line.strip()
+
+                srcdir = r.pop().strip()
+                target = r.pop().strip()
+                assert srcdir.startswith("srcdir=")
+                assert target.startswith("target=")
+                srcdir = srcdir.split("=")[1]
+                target = target.split("=")[1]
+
+                files = []
+                line = r.peek()
+                while line and line[0] in FIELD_DELIM:
+                    files.append(r.pop().strip())
+                    line = r.peek()
+
+                return section_name, {'files': files, 'srcdir': srcdir, 'target': target}
+
+            file_sections = {}
+            while not r.eof():
+                name, files = read_section()
+                file_sections[name] = files
+
+            return cls(file_sections, path_vars, meta_vars)
+        finally:
+            f.close()
+
+    def __init__(self, files, path_options, meta):
+        self.files = files
+        self.meta = meta
+        self.path_variables = path_options
 
     def write(self, filename):
         fid = open(filename, "w")
         try:
+            meta = []
+            for k, v in self.meta.items():
+                if k == "description":
+                    for line in v.splitlines():
+                        meta.append("description=%s" % line)
+                elif k in ["classifiers", "platforms", "install_requires", "top_levels"]:
+                    for i in v:
+                        meta.append("%s=%s" % (k, i))
+                else:
+                    meta.append("%s=%s" % (k, v))
+
+            fid.write("\n".join(meta))
+            fid.write("\n!- VARIABLES\n")
+
             path_fields = "\n".join([
                 "\t%s=%s" % (name, value) for name, value in
-                                              self._path_variables.items()])
+                                              self.path_variables.items()])
 
             path_section = """\
 paths
@@ -54,6 +141,23 @@ paths
         finally:
             fid.close()
 
+    def resolve_paths(self, src_root_dir="."):
+        self.path_variables['_srcrootdir'] = src_root_dir
+
+        file_sections = {}
+        for name, value in self.files.items():
+            srcdir = value["srcdir"]
+            target = value["target"]
+
+            srcdir = subst_vars(srcdir, self.path_variables)
+            target = subst_vars(target, self.path_variables)
+
+            files = [(os.path.join(srcdir, file), os.path.join(target, file))
+                     for file in value["files"]]
+            file_sections[name] = files
+
+        return file_sections 
+
 def write_file_section(name, srcdir, target, files):
     section = """\
 %(section)s
@@ -65,60 +169,6 @@ def write_file_section(name, srcdir, target, files):
        "target": "\ttarget=%s" % target,
        "files": "\n".join(["\t%s" % f for f in files])}
     return section
-
-def read_installed_pkg_description(filename):
-    f = open(filename)
-    try:
-        meta = []
-        r = Reader(f.readlines())
-        while r.wait_for("!- FILELIST\n"):
-            meta.append(r.pop())
-        if r.eof():
-            r.parse_error("Missing filelist section")
-        r.pop()
-
-        if not meta[0].strip() == "paths":
-            raise ValueError("no path ?")
-
-        path_vars = {}
-        for i in meta[1:]:
-            name, value = [j.strip() for j in i.split("=")]
-            path_vars[name] = value
-
-        def read_section():
-            r.flush_empty()
-            line = r.peek()
-            if line and line[0] in FIELD_DELIM:
-                r.parse_error("No section found ?")
-            line = r.pop()
-            section_name = line.strip()
-
-            srcdir = r.pop().strip()
-            target = r.pop().strip()
-            assert srcdir.startswith("srcdir=")
-            assert target.startswith("target=")
-            srcdir = srcdir.split("=")[1]
-            target = target.split("=")[1]
-
-            srcdir = subst_vars(srcdir, path_vars)
-            target = subst_vars(target, path_vars)
-
-            files = []
-            line = r.peek()
-            while line and line[0] in FIELD_DELIM:
-                file = r.pop().strip()
-                files.append((os.path.join(srcdir, file), os.path.join(target, file)))
-                line = r.peek()
-
-            return section_name, files
-
-        file_sections = {}
-        while not r.eof():
-            name, files = read_section()
-            file_sections[name] = files
-        return file_sections
-    finally:
-        f.close()
 
 # XXX: abstract this with the reader in cabal_parser
 class Reader(object):
