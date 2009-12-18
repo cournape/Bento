@@ -1,5 +1,7 @@
 from toydist.package import \
         PackageDescription
+from toydist.cabal_parser.misc import \
+        parse_executable
 
 def distutils_to_package_description(dist):
     data = {}
@@ -33,6 +35,19 @@ def distutils_to_package_description(dist):
     data['packages'] = dist.packages
     data['extensions'] = dist.ext_modules
     data['classifiers'] = dist.get_classifiers()
+
+    data["executables"] = {}
+    if hasattr(dist, "entry_points"):
+        try:
+            console_scripts = dist.entry_points["console_scripts"]
+        except KeyError:
+            console_scripts = []
+        for entry in console_scripts:
+            if not "=" in entry:
+                raise ValueError("Could not parse entry in console_scripts %s" % entry)
+            name, value = [i.strip() for i in entry.split("=", 1)]
+            module, func = parse_executable(value)
+            data["executables"][name] = {"module": module, "func": func}
 
     return PackageDescription(**data)
 
