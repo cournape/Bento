@@ -7,6 +7,8 @@ import shlex
 
 from toydist.cabal_parser.items import \
         PathOption, FlagOption
+from toydist.cabal_parser.misc import \
+        parse_executable
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',
@@ -361,7 +363,7 @@ def section(r, store, flags={}):
     section_header, type, name = _parse_section_header(r, section_header)
     if not type in header_titles:
         raise NextParser
-    elif type in ['path', 'flag', 'datafiles']:
+    elif type in ['path', 'flag', 'datafiles', 'executable']:
         raise NextParser
 
     r.pop()
@@ -379,6 +381,38 @@ def section(r, store, flags={}):
     while r.wait_for('}'):
         r.parse((if_statement, section, key_value), store, opt_arg=flags)
     r.parse(close_brace)
+
+def executable_parser(r, store, flags={}):
+    line = r.peek()
+
+    section_header, type, name = _parse_section_header(r, line)
+    if not type == 'executable':
+        raise NextParser
+
+    line = r.pop()
+
+    if not store.has_key("executables"):
+        store["executables"] = {}
+    elif store["executables"].has_key(name):
+        raise ParseError("Executable %s already defined" % name)
+
+    e_store = {}
+    r.parse(open_brace)
+    while r.wait_for('}'):
+        r.parse((if_statement, key_value), e_store, opt_arg=flags)
+    r.parse(close_brace)
+
+    try:
+        func = e_store['function']
+    except KeyError:
+        r.parse_error("Each executable section should have a function field.")
+
+    try:
+        module = e_store['module']
+    except KeyError:
+        r.parse_error("Each executable section should have a module field.")
+
+    store["executables"][name] = {"function": func, "module": module}
 
 def datafiles_parser(r, store, flags={}):
     line = r.peek()
@@ -580,11 +614,12 @@ def parse(data, user_flags={}, user_paths={}):
     info = {}
 
     while not r.eof():
-        r.parse([key_value, section, datafiles_parser, path_parser, flag_parser], store=info,
-                opt_arg={'flags': get_flags(info, user_flags),
-                         'flag_options': get_flag_options(info),
-                         'path_options': get_path_options(info),
-                         'paths': get_paths(info, user_paths)})
+        r.parse([key_value, section, executable_parser, datafiles_parser,
+                 path_parser, flag_parser], store=info,
+                 opt_arg={'flags': get_flags(info, user_flags),
+                          'flag_options': get_flag_options(info),
+                          'path_options': get_path_options(info),
+                          'paths': get_paths(info, user_paths)})
 
     return info
 
