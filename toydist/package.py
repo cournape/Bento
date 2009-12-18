@@ -58,6 +58,14 @@ class PackageDescription:
                 else:
                     kw['install_requires'] = []
 
+            if d.has_key('executables'):
+                executables = {}
+                for name, value in d["executables"].items():
+                    executables[name] = value
+                kw["executables"] = executables
+            else:
+                kw["executables"] = {}
+
             return cls(**kw)
         finally:
             info_file.close()
@@ -68,7 +76,7 @@ class PackageDescription:
             platforms=None, packages=None, py_modules=None, extensions=None,
             install_requires=None, build_requires=None,
             download_url=None, extra_source_files=None, data_files=None,
-            classifiers=None, provides=None, obsoletes=None):
+            classifiers=None, provides=None, obsoletes=None, executables=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -146,6 +154,11 @@ class PackageDescription:
             self.data_files = {}
         else:
             self.data_files = data_files
+
+        if not executables:
+            self.executables = {}
+        else:
+            self.executables = executables
 
     @property
     def top_levels(self):
