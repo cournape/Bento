@@ -332,7 +332,8 @@ def static_representation(pkg, options={}):
     r.append("")
 
     for name, value in pkg.executables.items():
-        r.append("Executable:")
-        r.append(' ' * indent_level + "main: %s" % executable_meta_string(**value))
+        r.append("Executable: %s" % name)
+        r.append(' ' * indent_level + "module: %s" % value["module"])
+        r.append(' ' * indent_level + "function: %s" % value["function"])
         r.append("")
     return "\n".join(r)
