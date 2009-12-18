@@ -4,6 +4,11 @@ import re
 import glob
 import marshal
 
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+
 from os.path import \
     join, split, splitext, dirname, relpath
 # XXX: implementation details from py_compile

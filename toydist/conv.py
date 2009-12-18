@@ -46,8 +46,8 @@ def distutils_to_package_description(dist):
             if not "=" in entry:
                 raise ValueError("Could not parse entry in console_scripts %s" % entry)
             name, value = [i.strip() for i in entry.split("=", 1)]
-            module, func = parse_executable(value)
-            data["executables"][name] = {"module": module, "func": func}
+            module, function = parse_executable(value)
+            data["executables"][name] = {"module": module, "function": function}
 
     return PackageDescription(**data)
 
