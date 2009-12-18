@@ -12,10 +12,17 @@ def install_sections(sections, installer=None):
         installer = shutil.copy
 
     for section in sections:
+        if ":" in section:
+            type,  name = section.split(":", 1)
+        else:
+            type = None
+
         for source, target in sections[section]:
             if not os.path.exists(os.path.dirname(target)):
                 os.makedirs(os.path.dirname(target))
             installer(source, target)
+            if type == "executable":
+                os.chmod(target, 0555)
 
 def installer(source, target):
     cmd = ["install", "-m", "644", source, target]
