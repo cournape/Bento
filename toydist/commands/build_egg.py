@@ -97,8 +97,9 @@ def write_egg_info(ipkg):
         files.extend([f[0] for f in value])
     ret["SOURCES.txt"].writelines("\n".join([os.path.normpath(f) for f in files]))
 
-    ret["requires.txt"] = StringIO()
-    ret["requires.txt"].write("\n".join(meta.install_requires))
+    if meta.install_requires:
+        ret["requires.txt"] = StringIO()
+        ret["requires.txt"].write("\n".join(meta.install_requires))
 
     ret["top_level.txt"] = StringIO()
     ret["top_level.txt"].write("\n".join(meta.top_levels))
