@@ -3,12 +3,13 @@ import sys
 import ast
 import re
 import platform
-import shlex
 
 from toydist.cabal_parser.items import \
         PathOption, FlagOption
 from toydist.cabal_parser.misc import \
         parse_executable
+from toydist.cabal_parser.utils import \
+        comma_list_split
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',
@@ -237,29 +238,6 @@ expr_constants = {'darwin': 'darwin',
 # --- parsers start -------------------------------------------------------
 
 # Refer to http://www.haskell.org/cabal/release/cabal-latest/doc/users-guide/
-
-class CommaListLexer(object):
-    def __init__(self, instream=None):
-        if instream is not None:
-            self._lexer = shlex.shlex(instream, posix=True)
-        else:
-            self._lexer = shlex.shlex(posix=True)
-        self._lexer.whitespace += ','
-        self._lexer.wordchars += './()*-'
-        self.eof = self._lexer.eof
-
-    def get_token(self):
-        return self._lexer.get_token()
-
-def comma_list_split(str):
-    lexer = CommaListLexer(str)
-    ret = []
-    t = lexer.get_token()
-    while t != lexer.eof:
-        ret.append(t)
-        t = lexer.get_token()
-
-    return ret
 
 def key_value(r, store, opt_arg=None):
     line = r.peek()
