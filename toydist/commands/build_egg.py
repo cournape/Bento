@@ -9,7 +9,7 @@ except ImportError:
     from StringIO import StringIO
 
 from toydist.utils import \
-        pprint
+        pprint, compile
 from toydist.package import \
         PackageDescription
 from toydist.conv import \
