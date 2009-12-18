@@ -7,6 +7,8 @@ from toydist.utils import \
         find_package
 from toydist.cabal_parser.cabal_parser import \
         parse
+from toydist.cabal_parser.misc import \
+        executable_meta_string
 
 class PackageDescription:
     @classmethod
@@ -329,4 +331,8 @@ def static_representation(pkg, options={}):
             r.extend([' ' * (indent_level * 3) + s + ',' for s in e.sources])
     r.append("")
 
+    for name, value in pkg.executables.items():
+        r.append("Executable:")
+        r.append(' ' * indent_level + "main: %s" % executable_meta_string(**value))
+        r.append("")
     return "\n".join(r)
