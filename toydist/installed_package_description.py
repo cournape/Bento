@@ -59,13 +59,13 @@ class InstalledPkgDescription(object):
 
             vars = read_var_section("paths")
             path_vars = {}
-            for i in vars[1:]:
+            for i in vars:
                 name, value = [j.strip() for j in i.split("=")]
                 path_vars[name] = value
 
             vars = read_var_section("executables")
             executables = {}
-            for i in vars[1:]:
+            for i in vars:
                 name, value = [j.strip() for j in i.split("=")]
                 executables[name] = value
 
