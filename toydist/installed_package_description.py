@@ -5,6 +5,8 @@ from toydist.utils import \
     subst_vars
 from toydist.cabal_parser.cabal_parser import \
     ParseError
+from toydist.cabal_parser.misc import \
+    executable_meta_string, parse_executable
 
 META_DELIM = "!- FILELIST"
 FIELD_DELIM = ("\t", " ")
@@ -38,19 +40,39 @@ class InstalledPkgDescription(object):
             r.pop()
             meta_vars["description"] = "\n".join(meta_vars["description"])
 
-            while r.wait_for("!- FILELIST\n"):
-                vars.append(r.pop())
+            def read_var_section(section_name):
+                r.flush_empty()
+                line = r.peek()
+                if line and line[0] in FIELD_DELIM:
+                    r.parse_error("No section found ?")
+                line = r.pop()
+                if section_name != line.strip():
+                    r.parse_error("Expected section %s, got %s" % section_name, line.strip())
+
+                fields = []
+                line = r.peek()
+                while line and line[0] in FIELD_DELIM:
+                    fields.append(r.pop().strip())
+                    line = r.peek()
+
+                return fields
+
+            vars = read_var_section("paths")
+            path_vars = {}
+            for i in vars:
+                name, value = [j.strip() for j in i.split("=")]
+                path_vars[name] = value
+
+            vars = read_var_section("executables")
+            executables = {}
+            for i in vars:
+                name, value = [j.strip() for j in i.split("=")]
+                module, function = parse_executable(value)
+                executables[name] = {"module": module, "function": function}
+
             if r.eof():
                 r.parse_error("Missing filelist section")
             r.pop()
-
-            if not vars[0].strip() == "paths":
-                raise ValueError("no path ?")
-
-            path_vars = {}
-            for i in vars[1:]:
-                name, value = [j.strip() for j in i.split("=")]
-                path_vars[name] = value
 
             def read_section():
                 r.flush_empty()
@@ -80,14 +102,15 @@ class InstalledPkgDescription(object):
                 name, files = read_section()
                 file_sections[name] = files
 
-            return cls(file_sections, path_vars, meta_vars)
+            return cls(file_sections, meta_vars, path_vars, executables)
         finally:
             f.close()
 
-    def __init__(self, files, path_options, meta):
+    def __init__(self, files, meta, path_options, executables):
         self.files = files
         self.meta = meta
         self.path_variables = path_options
+        self.executables = executables
 
     def write(self, filename):
         fid = open(filename, "w")
@@ -100,6 +123,9 @@ class InstalledPkgDescription(object):
                 elif k in ["classifiers", "platforms", "install_requires", "top_levels"]:
                     for i in v:
                         meta.append("%s=%s" % (k, i))
+                elif k == "console_scripts":
+                    for name, kw in v.items():
+                        meta.append("console_script=%s" % executable_meta_string(name, **kw))
                 else:
                     meta.append("%s=%s" % (k, v))
 
@@ -113,9 +139,19 @@ class InstalledPkgDescription(object):
             path_section = """\
 paths
 %s
-%s
-""" % (path_fields, META_DELIM)
+""" % path_fields
             fid.write(path_section)
+
+            executables_fields = "\n".join(["\t%s=%s" % \
+                                            (name, executable_meta_string(**value)) 
+                                            for name, value in 
+                                                self.executables.items()])
+            executables_section = """\
+executables
+%s
+""" % executables_fields
+            fid.write(executables_section)
+            fid.write(META_DELIM + "\n")
 
             for name, value in self.files.items():
                 if name in ["pythonfiles"]:
@@ -131,6 +167,12 @@ paths
                         fid.write(write_file_section(dname, srcdir, target, files))
                 elif name in ["extensions"]:
                     for ename, evalue in self.files["extensions"].items():
+                        srcdir = evalue["srcdir"]
+                        target = evalue["target"]
+                        files = evalue["files"]
+                        fid.write(write_file_section(ename, srcdir, target, files))
+                elif name in ["executables"]:
+                    for ename, evalue in self.files["executables"].items():
                         srcdir = evalue["srcdir"]
                         target = evalue["target"]
                         files = evalue["files"]
