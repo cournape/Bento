@@ -112,4 +112,10 @@ def write_egg_info(ipkg):
     ret["dependency_links.txt"] = StringIO()
     ret["dependency_links.txt"].write("\n")
 
+    ret["entry_points.txt"] = StringIO()
+    ret["entry_points.txt"].write("[console_scripts]\n")
+    for name, pkg in ipkg.executables.items():
+        ret["entry_points.txt"].write("%s = %s:%s\n" % (name, pkg["module"], pkg["function"]))
+    ret["entry_points.txt"].write("\n")
+
     return ret

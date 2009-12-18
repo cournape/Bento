@@ -6,7 +6,7 @@ from toydist.utils import \
 from toydist.cabal_parser.cabal_parser import \
     ParseError
 from toydist.cabal_parser.misc import \
-    executable_meta_string
+    executable_meta_string, parse_executable
 
 META_DELIM = "!- FILELIST"
 FIELD_DELIM = ("\t", " ")
@@ -67,7 +67,8 @@ class InstalledPkgDescription(object):
             executables = {}
             for i in vars:
                 name, value = [j.strip() for j in i.split("=")]
-                executables[name] = value
+                module, function = parse_executable(value)
+                executables[name] = {"module": module, "function": function}
 
             if r.eof():
                 r.parse_error("Missing filelist section")
