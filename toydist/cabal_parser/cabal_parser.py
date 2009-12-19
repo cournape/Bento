@@ -10,6 +10,8 @@ from toydist.cabal_parser.misc import \
         parse_executable
 from toydist.cabal_parser.utils import \
         comma_list_split
+from toydist.cabal_parser.nodes import \
+        DataFiles
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',
@@ -412,26 +414,7 @@ def datafiles_parser(r, store, flags={}):
         r.parse((if_statement, key_value), d_store, opt_arg=flags)
     r.parse(close_brace)
 
-    try:
-        srcdir = d_store['srcdir']
-    except KeyError:
-        srcdir = "."
-
-    try:
-        target = d_store['target']
-    except KeyError:
-        target = "$sitedir"
-
-    try:
-        files = comma_list_split(d_store['files'])
-    except KeyError:
-        files = []
-
-    store["datafiles"][name] = {
-        "srcdir": srcdir,
-        "target": target,
-        "files": files
-    }
+    store["datafiles"][name] = DataFiles.from_parse_dict(name, d_store)
 
 def path_parser(r, store, flags={}):
     line = r.peek()

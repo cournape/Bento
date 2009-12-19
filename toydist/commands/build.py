@@ -102,14 +102,9 @@ Usage:   toymaker build [OPTIONS]."""
                                     "target": "$sitedir"}}
 
         # Get data files
-        datafiles = pkg.data_files
-        for s, v in datafiles.items():
-            srcdir = v["srcdir"]
-            files = []
-            for f in v["files"]:
-                files.extend(expand_glob(f, srcdir))
-            v["files"] = files
-        sections["datafiles"] = datafiles
+        for data_section in pkg.data_files.values():
+            data_section.files = data_section.resolve_glob()
+        sections["datafiles"] = pkg.data_files
 
         # handle extensions
         if pkg.extensions:

@@ -161,10 +161,8 @@ executables
                     fid.write(write_file_section(name, srcdir, target, files))
                 elif name in ["datafiles"]:
                     for dname, dvalue in self.files["datafiles"].items():
-                        srcdir = dvalue["srcdir"]
-                        target = dvalue["target"]
-                        files = dvalue["files"]
-                        fid.write(write_file_section(dname, srcdir, target, files))
+                        fid.write(write_file_section(dname,
+                                                     dvalue.srcdir, dvalue.target, dvalue.files))
                 elif name in ["extensions"]:
                     for ename, evalue in self.files["extensions"].items():
                         srcdir = evalue["srcdir"]
