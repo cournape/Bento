@@ -117,7 +117,7 @@ class InstalledPkgDescription(object):
         try:
             meta = []
             for k, v in self.meta.items():
-                if k == "description":
+                if k == "description" and v is not None:
                     for line in v.splitlines():
                         meta.append("description=%s" % line)
                 elif k in ["classifiers", "platforms", "install_requires", "top_levels"]:
