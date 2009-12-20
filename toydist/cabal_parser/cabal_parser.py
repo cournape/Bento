@@ -3,12 +3,13 @@ import sys
 import ast
 import re
 import platform
-import shlex
 
 from toydist.cabal_parser.items import \
         PathOption, FlagOption
-from toydist.cabal_parser.misc import \
-        parse_executable
+from toydist.cabal_parser.utils import \
+        comma_list_split
+from toydist.cabal_parser.nodes import \
+        DataFiles, Executable
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',
@@ -238,29 +239,6 @@ expr_constants = {'darwin': 'darwin',
 
 # Refer to http://www.haskell.org/cabal/release/cabal-latest/doc/users-guide/
 
-class CommaListLexer(object):
-    def __init__(self, instream=None):
-        if instream is not None:
-            self._lexer = shlex.shlex(instream, posix=True)
-        else:
-            self._lexer = shlex.shlex(posix=True)
-        self._lexer.whitespace += ','
-        self._lexer.wordchars += './()*-'
-        self.eof = self._lexer.eof
-
-    def get_token(self):
-        return self._lexer.get_token()
-
-def comma_list_split(str):
-    lexer = CommaListLexer(str)
-    ret = []
-    t = lexer.get_token()
-    while t != lexer.eof:
-        ret.append(t)
-        t = lexer.get_token()
-
-    return ret
-
 def key_value(r, store, opt_arg=None):
     line = r.peek()
     if not ':' in line:
@@ -402,17 +380,11 @@ def executable_parser(r, store, flags={}):
         r.parse((if_statement, key_value), e_store, opt_arg=flags)
     r.parse(close_brace)
 
-    try:
-        func = e_store['function']
-    except KeyError:
-        r.parse_error("Each executable section should have a function field.")
+    for k in ["function", "module"]:
+        if not e_store.has_key(k):
+            r.parse_error("Each executable section should have a %s field." % k)
 
-    try:
-        module = e_store['module']
-    except KeyError:
-        r.parse_error("Each executable section should have a module field.")
-
-    store["executables"][name] = {"function": func, "module": module}
+    store["executables"][name] = Executable.from_parse_dict(name, e_store)
 
 def datafiles_parser(r, store, flags={}):
     line = r.peek()
@@ -434,26 +406,7 @@ def datafiles_parser(r, store, flags={}):
         r.parse((if_statement, key_value), d_store, opt_arg=flags)
     r.parse(close_brace)
 
-    try:
-        srcdir = d_store['srcdir']
-    except KeyError:
-        srcdir = "."
-
-    try:
-        target = d_store['target']
-    except KeyError:
-        target = "$sitedir"
-
-    try:
-        files = comma_list_split(d_store['files'])
-    except KeyError:
-        files = []
-
-    store["datafiles"][name] = {
-        "srcdir": srcdir,
-        "target": target,
-        "files": files
-    }
+    store["datafiles"][name] = DataFiles.from_parse_dict(name, d_store)
 
 def path_parser(r, store, flags={}):
     line = r.peek()

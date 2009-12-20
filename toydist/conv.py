@@ -1,7 +1,7 @@
 from toydist.package import \
         PackageDescription
-from toydist.cabal_parser.misc import \
-        parse_executable
+from toydist.cabal_parser.nodes import \
+        Executable
 
 def distutils_to_package_description(dist):
     data = {}
@@ -43,11 +43,8 @@ def distutils_to_package_description(dist):
         except KeyError:
             console_scripts = []
         for entry in console_scripts:
-            if not "=" in entry:
-                raise ValueError("Could not parse entry in console_scripts %s" % entry)
-            name, value = [i.strip() for i in entry.split("=", 1)]
-            module, function = parse_executable(value)
-            data["executables"][name] = {"module": module, "function": function}
+            exe = Executable.from_representation(entry)
+            data["executables"][exe.name] = exe
 
     return PackageDescription(**data)
 
