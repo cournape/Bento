@@ -5,8 +5,8 @@ from toydist.utils import \
     subst_vars
 from toydist.cabal_parser.cabal_parser import \
     ParseError
-from toydist.cabal_parser.misc import \
-    executable_meta_string, parse_executable
+from toydist.cabal_parser.nodes import \
+    Executable
 
 META_DELIM = "!- FILELIST"
 FIELD_DELIM = ("\t", " ")
@@ -65,10 +65,9 @@ class InstalledPkgDescription(object):
 
             vars = read_var_section("executables")
             executables = {}
-            for i in vars:
-                name, value = [j.strip() for j in i.split("=")]
-                module, function = parse_executable(value)
-                executables[name] = {"module": module, "function": function}
+            for var in vars:
+                exe = Executable.from_representation(var)
+                executables[name] = exe
 
             if r.eof():
                 r.parse_error("Missing filelist section")
@@ -124,8 +123,7 @@ class InstalledPkgDescription(object):
                     for i in v:
                         meta.append("%s=%s" % (k, i))
                 elif k == "console_scripts":
-                    for name, kw in v.items():
-                        meta.append("console_script=%s" % executable_meta_string(name, **kw))
+                    raise ValueError("Using console_scripts is not supported anymore")
                 else:
                     meta.append("%s=%s" % (k, v))
 
@@ -143,7 +141,7 @@ paths
             fid.write(path_section)
 
             executables_fields = "\n".join(["\t%s=%s" % \
-                                            (name, executable_meta_string(**value)) 
+                                            (name, value.representation()) 
                                             for name, value in 
                                                 self.executables.items()])
             executables_section = """\

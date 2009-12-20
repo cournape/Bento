@@ -6,12 +6,10 @@ import platform
 
 from toydist.cabal_parser.items import \
         PathOption, FlagOption
-from toydist.cabal_parser.misc import \
-        parse_executable
 from toydist.cabal_parser.utils import \
         comma_list_split
 from toydist.cabal_parser.nodes import \
-        DataFiles
+        DataFiles, Executable
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',
@@ -382,17 +380,11 @@ def executable_parser(r, store, flags={}):
         r.parse((if_statement, key_value), e_store, opt_arg=flags)
     r.parse(close_brace)
 
-    try:
-        func = e_store['function']
-    except KeyError:
-        r.parse_error("Each executable section should have a function field.")
+    for k in ["function", "module"]:
+        if not e_store.has_key(k):
+            r.parse_error("Each executable section should have a %s field." % k)
 
-    try:
-        module = e_store['module']
-    except KeyError:
-        r.parse_error("Each executable section should have a module field.")
-
-    store["executables"][name] = {"function": func, "module": module}
+    store["executables"][name] = Executable.from_parse_dict(name, e_store)
 
 def datafiles_parser(r, store, flags={}):
     line = r.peek()

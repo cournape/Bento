@@ -155,8 +155,8 @@ def build_executables(executables):
     bdir = build_dir()
     ret = {}
 
-    for name, prop in executables.items():
-        cnt = create_script(name, **prop)
+    for name, executable in executables.items():
+        cnt = create_script(name, executable.module, executable.function)
         target = os.path.join(bdir, name)
         # FIXME: deal with win32 stuff here
         mode = "b"
