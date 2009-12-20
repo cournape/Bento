@@ -1,7 +1,7 @@
 """toydist version of setup.py."""
 from distutils.core import setup
 
-from toydist import parse_static
+from toydist import PackageDescription
 
-info_dict = parse_static('toysetup.info').to_dict()
+info_dict = PackageDescription.form_file('toysetup.info').to_dict()
 setup(**info_dict)

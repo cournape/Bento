@@ -203,50 +203,6 @@ def file_list(pkg, root_src=""):
 
     return files
 
-def _parse_library(parsed_dict, package_dict):
-    package_dict['extensions'] = []
-    package_dict['py_modules'] = []
-    package_dict['packages'] = []
-
-    for libname, lib in parsed_dict.items():
-        if lib.has_key('extension'):
-            for ext_name, ext_package_dict in lib['extension'].items():
-                src =  ext_package_dict['sources']
-                ext = Extension(ext_name, src)
-                package_dict['extensions'].append(ext)
-        if lib.has_key('modules'):
-            package_dict['py_modules'].extend(lib['modules'])
-        if lib.has_key('packages'):
-            package_dict['packages'].extend(lib['packages'])
-
-def _parse_static(cnt):
-    """Parse a static file. cnt is assumed to be the content of the static file
-    in a list of strings"""
-    data = {}
-    res = parse(cnt)
-
-    # Get metadata
-    for k in ['name', 'author', 'version', 'url', 'license', 'maintainer',
-              'summary', 'description']:
-        try:
-            val = res[k]
-            data[k] = val
-            del res[k]
-        except KeyError:
-            pass
-
-    # Get library section
-    if res.has_key('library'):
-        _parse_library(res['library'], data)
-    return PackageDescription(**data)
-
-def parse_static(filename):
-    f = open(filename)
-    try:
-        return _parse_static(f.readlines())
-    finally:
-        f.close()
-
 def static_representation(pkg, options={}):
     """Return the static representation of the given PackageDescription
     instance as a string."""
