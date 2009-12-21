@@ -259,8 +259,19 @@ def key_value(r, store, opt_arg=None):
     key = fields[0].lower()
     value = fields[1]
 
+    # FIXME: this whole stuff to maintain formatting in multi-line is a mess
     if key in multiline_fields:
         long_field = []
+        # FIXME: hack to get raw first line of description if the multiline
+        # string starts at the same line as the field, i.e.
+        # description: some long
+        #      string
+        oline = r._original_data[r.line-1]
+        if ":" in oline:
+            value = oline.split(":", 1)[1]
+            if value.lstrip():
+                long_field.append(value.lstrip())
+
         istack = []
         while r.peek() == '{':
             istack.append(r.pop())
@@ -274,7 +285,13 @@ def key_value(r, store, opt_arg=None):
                     istack.pop(-1)
                 else:
                     raw_line = r._original_data[r.line-1]
-                    long_field.append(raw_line)
+                    # FIXME: remove leading indentation only, do this correctly
+                    if raw_line.startswith(" " * indent_width):
+                        pline = raw_line[4:]
+                    else:
+                        pline = raw_line
+                    long_field.append(pline)
+            long_field[-1] = long_field[-1].rstrip()
             value = "".join(long_field)
         else:
             value = value.strip()

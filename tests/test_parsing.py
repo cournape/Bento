@@ -9,7 +9,11 @@ from nose.tools import \
     assert_equal
 
 from toydist.cabal_parser.cabal_parser import \
-    parse, CommaListLexer, comma_list_split
+    parse
+from toydist.cabal_parser.utils import \
+    CommaListLexer, comma_list_split
+
+from toydist import PackageDescription, static_representation
 
 def test_metadata():
     meta_ref = {
@@ -138,3 +142,75 @@ def test_comma_list_split():
             ('foo\,bar', ['foo,bar']),
             ('foo.c\,bar.c', ['foo.c,bar.c'])]:
         assert_equal(comma_list_split(test[0]), test[1])
+
+class TestPackage(unittest.TestCase):
+    __meta_simple = {
+            "name": "Sphinx",
+            "version": "0.6.3",
+            "summary": "Python documentation generator",
+            "url": "http://sphinx.pocoo.org/",
+            "download_url": "http://pypi.python.org/pypi/Sphinx",
+            "description": "Some long description.",
+            "author": "Georg Brandl",
+            "author_email": "georg@python.org",
+            "maintainer": "Georg Brandl",
+            "maintainer_email": "georg@python.org",
+            "license": "BSD",
+            "platforms": ["any"],
+            "classifiers": [
+                "Development Status :: 4 - Beta",
+                "Environment :: Console",
+                "Environment :: Web Environment",
+                "Intended Audience :: Developers",
+                "License :: OSI Approved :: BSD License",
+                "Operating System :: OS Independent",
+                "Programming Language :: Python",
+                "Topic :: Documentation",
+                "Topic :: Utilities",]
+        }
+
+    def _test_roundtrip(self, data):
+        r_pkg = PackageDescription(**data)
+        static = static_representation(r_pkg)
+        fid, filename = tempfile.mkstemp("yo")
+        try:
+            os.write(fid, static)
+            pkg = PackageDescription.from_file(filename)
+        finally:
+            os.close(fid)
+            os.remove(filename)
+            
+        for k in pkg.__dict__:
+            assert_equal(pkg.__dict__[k], r_pkg.__dict__[k])
+
+    def test_roundrip_meta(self):
+        data = self.__meta_simple
+        data["description"] = """\
+Sphinx is a tool that makes it easy to create intelligent and beautiful
+documentation for Python projects (or other documents consisting of
+multiple reStructuredText sources), written by Georg Brandl.
+It was originally created to translate the new Python documentation,
+but has now been cleaned up in the hope that it will be useful to many
+other projects.
+
+Sphinx uses reStructuredText as its markup language, and many of its strengths
+come from the power and straightforwardness of reStructuredText and its
+parsing and translating suite, the Docutils.
+
+Although it is still under constant development, the following features
+are already present, work fine and can be seen "in action" in the Python docs:
+
+* Output formats: HTML (including Windows HTML Help), plain text and LaTeX,
+  for printable PDF versions
+* Extensive cross-references: semantic markup and automatic links
+  for functions, classes, glossary terms and similar pieces of information
+* Hierarchical structure: easy definition of a document tree, with automatic
+  links to siblings, parents and children
+* Automatic indices: general index as well as a module index
+* Code handling: automatic highlighting using the Pygments highlighter
+* Various extensions are available, e.g. for automatic testing of snippets
+  and inclusion of appropriately formatted docstrings.
+
+A development egg can be found `here
+<http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_."""
+        self._test_roundtrip(data)
