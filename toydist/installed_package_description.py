@@ -79,7 +79,7 @@ class InstalledPkgDescription(object):
                 if line and line[0] in FIELD_DELIM:
                     r.parse_error("No section found ?")
                 line = r.pop()
-                section_name = line.strip()
+                type, section_name = line.strip().split(":", 1)
 
                 srcdir = r.pop().strip()
                 target = r.pop().strip()
@@ -151,30 +151,33 @@ executables
             fid.write(executables_section)
             fid.write(META_DELIM + "\n")
 
-            for name, value in self.files.items():
-                if name in ["pythonfiles"]:
-                    srcdir = "$_srcrootdir"
-                    target = value["target"]
-                    files = value["files"]
-                    fid.write(write_file_section(name, srcdir, target, files))
-                elif name in ["datafiles"]:
-                    for dname, dvalue in self.files["datafiles"].items():
-                        fid.write(write_file_section(dname,
+            for type, value in self.files.items():
+                if type in ["pythonfiles"]:
+                    for pname, pvalue in value.items():
+                        srcdir = "$_srcrootdir"
+                        target = pvalue["target"]
+                        files = pvalue["files"]
+                        name = "%s:%s" % (type, pname)
+                        fid.write(write_file_section(name, srcdir, target, files))
+                elif type in ["datafiles"]:
+                    for dname, dvalue in value.items():
+                        name = "%s:%s" % (type, dname)
+                        fid.write(write_file_section(name,
                                                      dvalue.srcdir, dvalue.target, dvalue.files))
                 elif name in ["extensions"]:
-                    for ename, evalue in self.files["extensions"].items():
+                    srcdir = evalue["srcdir"]
+                    target = evalue["target"]
+                    files = evalue["files"]
+                    fid.write(write_file_section(name, srcdir, target, files))
+                elif type in ["executables"]:
+                    for ename, evalue in value.items():
                         srcdir = evalue["srcdir"]
                         target = evalue["target"]
                         files = evalue["files"]
-                        fid.write(write_file_section(ename, srcdir, target, files))
-                elif name in ["executables"]:
-                    for ename, evalue in self.files["executables"].items():
-                        srcdir = evalue["srcdir"]
-                        target = evalue["target"]
-                        files = evalue["files"]
-                        fid.write(write_file_section(ename, srcdir, target, files))
+                        name = "%s:%s" % (type, ename)
+                        fid.write(write_file_section(name, srcdir, target, files))
                 else:
-                    raise ValueError("Unknown section %s" % name)
+                    raise ValueError("Unknown section %s" % type)
 
         finally:
             fid.close()

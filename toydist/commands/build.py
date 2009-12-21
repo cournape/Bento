@@ -98,22 +98,26 @@ Usage:   toymaker build [OPTIONS]."""
         for m in pkg.py_modules:
             python_files.append(os.path.join(root_src, '%s.py' % m))
 
-        sections = {"pythonfiles": {"files": python_files,
-                                    "target": "$sitedir"}}
+        sections = {"pythonfiles": {"library":
+                        {"files": python_files,
+                         "target": "$sitedir"}}}
 
         # Get data files
-        for data_section in pkg.data_files.values():
+        sections["datafiles"] = {}
+        for name, data_section in pkg.data_files.items():
             data_section.files = data_section.resolve_glob()
-        sections["datafiles"] = pkg.data_files
+            sections["datafiles"][name] = data_section
 
         # handle extensions
         if pkg.extensions:
             extensions = build_extensions(pkg.extensions)
-            sections["extensions"] = extensions
+            sections["extension"] = extensions
 
+        sections["executables"] = {}
         if pkg.executables:
             executables = build_executables(pkg.executables)
-            sections["executables"] = executables
+            for ename, evalue in executables.items():
+                sections["executables"][ename] = evalue
 
         meta = {}
         for m in ["name", "version", "summary", "url", "author", "author_email",
@@ -169,7 +173,6 @@ def build_executables(executables):
         finally:
             f.close()
 
-        name = "executable:%s" % name
         ret[name] = {"files": [os.path.basename(target)],
                      "srcdir": d,
                      "target": "$bindir"}
