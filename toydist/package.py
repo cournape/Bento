@@ -10,63 +10,73 @@ from toydist.cabal_parser.cabal_parser import \
 
 class PackageDescription:
     @classmethod
+    def __from_data(cls, data):
+        d = parse(data)
+
+        kw = {}
+        for k in ['name', 'version', 'summary', 'url', 'author',
+                'maintainer', 'maintainer_email', 'license',
+                'author_email', 'description', 'platforms',
+                'install_requires', 'build_requires', 'download_url',
+                'classifiers']:
+            # FIXME: consolidate this naming mess
+            data_key = k.replace('_', '')
+            if not d.has_key(data_key):
+                kw[k] = None
+            else:
+                kw[k] = d[data_key]
+
+        if d.has_key('extrasourcefiles'):
+            kw['extra_source_files'] = d['extrasourcefiles']
+        else:
+            kw['extra_source_files'] = []
+
+        if d.has_key('datafiles'):
+            kw['data_files'] = d['datafiles']
+        else:
+            kw['data_files'] = []
+
+        if d.has_key('library'):
+            library = d['library'][""]
+
+            if library.has_key('packages'):
+                kw['packages'] = library['packages']
+            else:
+                kw['packages'] = []
+
+            if library.has_key('modules'):
+                kw['py_modules'] = library['modules']
+            else:
+                kw['py_modules'] = []
+
+            if library.has_key('installdepends'):
+                kw['install_requires'] = library['installdepends']
+            else:
+                kw['install_requires'] = []
+
+        if d.has_key('executables'):
+            executables = {}
+            for name, value in d["executables"].items():
+                executables[name] = value
+            kw["executables"] = executables
+        else:
+            kw["executables"] = {}
+
+        return cls(**kw)
+
+    @classmethod
+    def from_string(cls, s):
+        """Create a PackageDescription from a string containing the package
+        description."""
+        return cls.__from_data(s.splitlines())
+
+    @classmethod
     def from_file(cls, filename):
         """Create a PackageDescription from a toysetup.info file."""
         info_file = open(filename, 'r')
         try:
             data = info_file.readlines()
-            d = parse(data)
-
-            kw = {}
-            for k in ['name', 'version', 'summary', 'url', 'author',
-                    'maintainer', 'maintainer_email', 'license',
-                    'author_email', 'description', 'platforms',
-                    'install_requires', 'build_requires', 'download_url',
-                    'classifiers']:
-                # FIXME: consolidate this naming mess
-                data_key = k.replace('_', '')
-                if not d.has_key(data_key):
-                    kw[k] = None
-                else:
-                    kw[k] = d[data_key]
-
-            if d.has_key('extrasourcefiles'):
-                kw['extra_source_files'] = d['extrasourcefiles']
-            else:
-                kw['extra_source_files'] = []
-
-            if d.has_key('datafiles'):
-                kw['data_files'] = d['datafiles']
-            else:
-                kw['data_files'] = []
-
-            if d.has_key('library'):
-                library = d['library'][""]
-
-                if library.has_key('packages'):
-                    kw['packages'] = library['packages']
-                else:
-                    kw['packages'] = []
-
-                if library.has_key('modules'):
-                    kw['py_modules'] = library['modules']
-                else:
-                    kw['py_modules'] = []
-
-                if library.has_key('installdepends'):
-                    kw['install_requires'] = library['installdepends']
-                else:
-                    kw['install_requires'] = []
-
-            if d.has_key('executables'):
-                executables = {}
-                for name, value in d["executables"].items():
-                    executables[name] = value
-                kw["executables"] = executables
-            else:
-                kw["executables"] = {}
-
-            return cls(**kw)
+            return cls.__from_data(data)
         finally:
             info_file.close()
 
