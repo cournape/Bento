@@ -64,10 +64,11 @@ Not much ATM. The following is implemented:
           included in sdist)
         * Packages, modules and simple C extensions
 
-    * Building and installing packages simple packages from the static
+    * Building and installing simple packages from the static
       format (Linux and Mac OS X only for now), sdist generation
     * Experimental automatic convertion of existing setup.py to a new
       static format
+    * Basic egg generation
 
 Static metadata
 ===============
