@@ -2,6 +2,7 @@ import os
 import tempfile
 import shutil
 import unittest
+import sys
 
 from os.path import \
     join
@@ -14,6 +15,13 @@ from toydist.cabal_parser.utils import \
     CommaListLexer, comma_list_split
 
 from toydist import PackageDescription, static_representation
+
+old = sys.path[:]
+try:
+    sys.path.insert(0, "pkgdescr")
+    from simple_package import PKG, DESCR
+finally:
+    sys.path = old
 
 def test_metadata():
     meta_ref = {
@@ -214,3 +222,8 @@ are already present, work fine and can be seen "in action" in the Python docs:
 A development egg can be found `here
 <http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_."""
         self._test_roundtrip(data)
+
+    #def test_simple_package(self):
+    #    pkg = PackageDescription.from_string(DESCR)
+    #    for k in PKG.__dict__:
+    #        assert_equal(PKG.__dict__[k], pkg.__dict__[k])
