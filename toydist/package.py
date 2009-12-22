@@ -207,9 +207,7 @@ def file_list(pkg, root_src=""):
         files.append(os.path.join(root_src, '%s.py' % m))
 
     for section in pkg.data_files.values():
-        srcdir_field = section['srcdir']
-        files_field = section['files']
-        files.extend([os.path.join(srcdir_field, f) for f in files_field])
+        files.extend([os.path.join(section.srcdir, f) for f in section.files])
 
     return files
 
