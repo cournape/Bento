@@ -67,7 +67,7 @@ class InstalledPkgDescription(object):
             executables = {}
             for var in vars:
                 exe = Executable.from_representation(var)
-                executables[name] = exe
+                executables[exe.name] = exe
 
             if r.eof():
                 r.parse_error("Missing filelist section")
