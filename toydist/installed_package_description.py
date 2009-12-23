@@ -94,12 +94,17 @@ class InstalledPkgDescription(object):
                     files.append(r.pop().strip())
                     line = r.peek()
 
-                return section_name, {'files': files, 'srcdir': srcdir, 'target': target}
+                return type, section_name, {'files': files, 'srcdir': srcdir, 'target': target}
 
             file_sections = {}
             while not r.eof():
-                name, files = read_section()
-                file_sections[name] = files
+                type, name, files = read_section()
+                if type in file_sections:
+                    if name in file_sections[type]:
+                        raise ValueError("section %s of type %s already exists !" % (name, type))
+                    file_sections[type][name] = files
+                else:
+                    file_sections[type] = {name: files}
 
             return cls(file_sections, meta_vars, path_vars, executables)
         finally:
@@ -186,16 +191,15 @@ executables
         self.path_variables['_srcrootdir'] = src_root_dir
 
         file_sections = {}
-        for name, value in self.files.items():
-            srcdir = value["srcdir"]
-            target = value["target"]
+        for type in self.files:
+            file_sections[type] = {}
+            for name, value in self.files[type].items():
+                srcdir = subst_vars(value["srcdir"], self.path_variables)
+                target = subst_vars(value["target"], self.path_variables)
 
-            srcdir = subst_vars(srcdir, self.path_variables)
-            target = subst_vars(target, self.path_variables)
-
-            files = [(os.path.join(srcdir, file), os.path.join(target, file))
-                     for file in value["files"]]
-            file_sections[name] = files
+                files = [(os.path.join(srcdir, file), os.path.join(target, file))
+                         for file in value["files"]]
+                file_sections[type][name] = files
 
         return file_sections 
 
