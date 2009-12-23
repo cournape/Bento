@@ -117,8 +117,8 @@ def write_egg_info(ipkg):
 
     ret["entry_points.txt"] = StringIO()
     ret["entry_points.txt"].write("[console_scripts]\n")
-    for exe in ipkg.executables.values():
-        ret["entry_points.txt"].write(exe.full_representation())
+    ret["entry_points.txt"].write(
+        "\n".join([exe.full_representation() for exe in ipkg.executables.values()]))
     ret["entry_points.txt"].write("\n")
 
     return ret
