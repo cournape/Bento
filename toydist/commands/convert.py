@@ -144,8 +144,9 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
             return
 
         if len(a) < 1:
-            raise UsageException("convert command requires an argument.")
-        filename = a[0]
+            filename = "setup.py"
+        else:
+            filename = a[0]
         if not os.path.exists(filename):
             raise ValueError("file %s not found" % filename)
 

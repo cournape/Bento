@@ -1,3 +1,5 @@
+import os
+
 from pprint import \
         pprint
 
@@ -26,10 +28,12 @@ Usage:   toymaker parse [OPTIONS]"""
             return
 
         if len(a) < 1:
-            raise UsageException("%s: error: %s subcommand require an argument" \
-                    % (SCRIPT_NAME, "parse"))
+            filename = "toysetup.info"
         else:
             filename = a[0]
+
+        if not os.path.exists(filename):
+            raise UsageException("%s: error: file %s does not exist" % SCRIPT_NAME)
 
         f = open(filename, "r")
         try:
