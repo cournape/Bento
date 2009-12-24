@@ -13,6 +13,26 @@ from toydist.cabal_parser.nodes import \
 META_DELIM = "!- FILELIST"
 FIELD_DELIM = ("\t", " ")
 
+class InstalledSection(object):
+    @classmethod
+    def from_data_files(cls, name, data_files):
+        return cls("datafiles", name, data_files.srcdir, data_files.target,
+                   data_files.files)
+        
+    def __init__(self, tp, name, srcdir, target, files):
+        self.tp = tp
+        self.name = name
+        self.srcdir = srcdir
+        self.target = target
+        self.files = files
+
+    @property
+    def fullname(self):
+        return self.tp + ":" + self.name
+
+    def write_section(self, fid):
+        fid.write(write_file_section(self.fullname, self.srcdir, self.target, self.files))
+
 class InstalledPkgDescription(object):
     @classmethod
     def from_file(cls, filename):
@@ -160,29 +180,12 @@ executables
 
             for type, value in self.files.items():
                 if type in ["pythonfiles"]:
-                    for pname, pvalue in value.items():
-                        srcdir = "$_srcrootdir"
-                        target = pvalue["target"]
-                        files = pvalue["files"]
-                        name = "%s:%s" % (type, pname)
-                        fid.write(write_file_section(name, srcdir, target, files))
-                elif type in ["datafiles"]:
-                    for dname, dvalue in value.items():
-                        name = "%s:%s" % (type, dname)
-                        fid.write(write_file_section(name,
-                                                     dvalue.srcdir, dvalue.target, dvalue.files))
-                elif name in ["extensions"]:
-                    srcdir = evalue["srcdir"]
-                    target = evalue["target"]
-                    files = evalue["files"]
-                    fid.write(write_file_section(name, srcdir, target, files))
-                elif type in ["executables"]:
-                    for ename, evalue in value.items():
-                        srcdir = evalue["srcdir"]
-                        target = evalue["target"]
-                        files = evalue["files"]
-                        name = "%s:%s" % (type, ename)
-                        fid.write(write_file_section(name, srcdir, target, files))
+                    for i in value.values():
+                        i.srcdir = "$_srcrootdir"
+                        i.write_section(fid)
+                elif type in ["datafiles", "extensions", "executables"]:
+                    for i in value.values():
+                        i.write_section(fid)
                 else:
                     raise ValueError("Unknown section %s" % type)
 
