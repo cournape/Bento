@@ -1,6 +1,8 @@
 import shutil
 import os
 
+from toydist.core.reader import \
+        Reader, NextParser, ParseError
 from toydist.utils import \
     subst_vars
 from toydist.cabal_parser.cabal_parser import \
@@ -214,90 +216,3 @@ def write_file_section(name, srcdir, target, files):
        "target": "\ttarget=%s" % target,
        "files": "\n".join(["\t%s" % f for f in files])}
     return section
-
-# XXX: abstract this with the reader in cabal_parser
-class Reader(object):
-    def __init__(self, data):
-        self._data = data
-        self._idx = 0
-
-    def flush_empty(self):
-        """Read until a non-empty line is found."""
-        while not (self.eof() or self._data[self._idx].strip()):
-            self._idx += 1
-
-    def pop(self, blank=False):
-        """Return the next non-empty line and increment the line
-        counter.  If `blank` is True, then also return blank lines.
-
-        """
-        if not blank:
-            # Skip to the next non-empty line if blank is not set
-            self.flush_empty()
-
-        line = self.peek(blank)
-        self._idx += 1
-
-        return line
-
-    def peek(self, blank=False):
-        """Return the next non-empty line without incrementing the
-        line counter.  If `blank` is True, also return blank lines.
-
-        Peek is not allowed to touch _idx.
-
-        """
-        save_idx = self._idx
-        if not blank:
-            self.flush_empty()
-
-        if self.eof():
-            return ''
-
-        peek_line = self._data[self._idx]
-        self._idx = save_idx
-
-        return peek_line
-
-    def eof(self):
-        """Return True if the end of the file has been reached."""
-        return self._idx >= len(self._data)
-
-    @property
-    def index(self):
-        """Return the line-counter to the pre-processed version of
-        the input file.
-
-        """
-        return self._idx
-
-    @property
-    def line(self):
-        """Return the line-counter to the original input file.
-
-        """
-        lines = 0
-        for l in self._data[:self._idx]:
-            if not l in ['{', '}']:
-                lines += 1
-        return lines
-
-    def wait_for(self, line):
-        """Keep reading until the given line has been seen."""
-        if self.eof():
-            return False
-        elif self.peek() != line:
-            return True
-        else:
-            return False
-
-    def parse_error(self, msg):
-        """Raise a parsing error with the given message."""
-        raise ParseError('''
-
-Parsing error at line %s (%s):
-%s
-Parser traceback: %s''' %
-                         (self.line, msg, self._original_data[self.line],
-                          ' -> '.join(self._traceback)))
-
