@@ -11,7 +11,7 @@ from toydist.installed_package_description import \
         InstalledPkgDescription
 
 from toydist.commands.core import \
-        Command
+        Command, SCRIPT_NAME, UsageException
 from toydist.commands.configure import \
         ConfigureState
 
@@ -81,7 +81,7 @@ Usage:   toymaker build [OPTIONS]."""
             return
 
         if not os.path.exists('.config.bin'):
-            pprint('RED', 
+            raise UsageException(
                    "You need to run %s configure before building" % SCRIPT_NAME)
         s = ConfigureState.from_dump('.config.bin')
 
