@@ -7,11 +7,9 @@ import platform
 from toydist.core.reader import \
         Reader, NextParser, ParseError
 from toydist.cabal_parser.items import \
-        PathOption, FlagOption
+        PathOption, FlagOption, DataFiles, Executable
 from toydist.cabal_parser.utils import \
         comma_list_split
-from toydist.cabal_parser.nodes import \
-        DataFiles, Executable
 
 indent_width = 4
 header_titles = ['flag', 'library', 'executable', 'extension', 'path',

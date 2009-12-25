@@ -7,7 +7,7 @@ from toydist.utils import \
     subst_vars
 from toydist.cabal_parser.cabal_parser import \
     ParseError
-from toydist.cabal_parser.nodes import \
+from toydist.cabal_parser.items import \
     Executable
 
 META_DELIM = "!- FILELIST"
