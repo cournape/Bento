@@ -5,7 +5,7 @@ from toydist.cabal_parser.cabal_parser import \
         parse, ParseError
 from toydist.utils import \
         subst_vars, pprint
-from toydist.sysconfig import \
+from toydist.core.platforms import \
         get_scheme
 
 from toydist.commands.core import \

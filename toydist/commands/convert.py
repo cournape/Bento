@@ -163,7 +163,7 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
         if tp == "automatic":
             try:
                 pprint("PINK",
-                       "Detecting monkey patches (this may take a while) ...")
+                       "Catching monkey (this may take a while) ...")
                 tp = detect_monkeys(filename, show_output)
                 pprint("PINK", "Detected mode: %s" % tp)
             except ValueError, e:
