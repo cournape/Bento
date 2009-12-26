@@ -1,6 +1,6 @@
 import os
 
-from toydist.utils import \
+from toydist.core.utils import \
         pprint
 
 from toydist.commands.core import \

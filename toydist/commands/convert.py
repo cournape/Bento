@@ -1,7 +1,7 @@
 import os
 import sys
 
-from toydist.utils import \
+from toydist.core.utils import \
         pprint, find_package, prune_file_list
 from toydist.package import \
         static_representation

@@ -3,7 +3,7 @@ import os
 from toydist.misc import \
         Extension
 
-from toydist.utils import \
+from toydist.core.utils import \
         find_package
 from toydist.cabal_parser.cabal_parser import \
         parse

@@ -1,6 +1,6 @@
 from toydist.cabal_parser.utils import \
     comma_list_split
-from toydist.utils import \
+from toydist.core.utils import \
     expand_glob
 
 class FlagOption(object):

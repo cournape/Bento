@@ -1,7 +1,7 @@
 import os
 import tarfile
 
-from toydist.utils import \
+from toydist.core.utils import \
         pprint
 from toydist.package import \
         PackageDescription, file_list

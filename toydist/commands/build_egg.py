@@ -8,7 +8,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from toydist.utils import \
+from toydist.core.utils import \
         pprint, compile
 from toydist.package import \
         PackageDescription

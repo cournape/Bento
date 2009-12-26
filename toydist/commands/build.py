@@ -1,7 +1,7 @@
 import os
 import sys
 
-from toydist.utils import \
+from toydist.core.utils import \
         pprint, expand_glob, find_package
 from toydist.package import \
         PackageDescription

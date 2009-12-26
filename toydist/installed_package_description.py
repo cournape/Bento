@@ -3,7 +3,7 @@ import os
 
 from toydist.core.reader import \
         Reader, NextParser, ParseError
-from toydist.utils import \
+from toydist.core.utils import \
     subst_vars
 from toydist.cabal_parser.cabal_parser import \
     ParseError

@@ -3,7 +3,7 @@ import os
 
 from toydist.cabal_parser.cabal_parser import \
         parse, ParseError
-from toydist.utils import \
+from toydist.core.utils import \
         subst_vars, pprint
 from toydist.core.platforms import \
         get_scheme

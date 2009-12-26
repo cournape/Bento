@@ -7,7 +7,7 @@ import traceback
 
 import toydist
 
-from toydist.utils import \
+from toydist.core.utils import \
         subst_vars, pprint
 from toydist.core.platforms import \
         get_scheme
