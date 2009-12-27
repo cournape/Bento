@@ -1,3 +1,6 @@
+from distutils.core import \
+        Extension as DistExtension
+
 from toydist.cabal_parser.utils import \
     comma_list_split
 from toydist.core.utils import \
@@ -104,3 +107,7 @@ class Executable(object):
 
     def __repr__(self):
         return repr({"name": self.name, "module": self.module, "function": self.function})
+
+class Extension(DistExtension):
+    def __repr__(self):
+        return "Extension(%s, sources=%s)" % (self.name, self.sources)

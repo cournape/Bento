@@ -1,8 +1,7 @@
 import os
 
-from toydist.misc import \
+from toydist.cabal_parser.items import \
         Extension
-
 from toydist.core.utils import \
         find_package
 from toydist.cabal_parser.cabal_parser import \
