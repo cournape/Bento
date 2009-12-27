@@ -8,8 +8,10 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+from toydist.private.bytecode import \
+        compile
 from toydist.core.utils import \
-        pprint, compile
+        pprint
 from toydist.package import \
         PackageDescription
 from toydist.conv import \
