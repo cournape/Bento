@@ -3,7 +3,7 @@ import sys
 
 from toydist.core.utils import \
         pprint, find_package, prune_file_list
-from toydist.package import \
+from toydist.core.package import \
         static_representation
 from toydist.conv import \
         distutils_to_package_description

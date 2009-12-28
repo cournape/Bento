@@ -2,7 +2,7 @@ import os
 
 from toydist.cabal_parser.items import \
         Extension
-from toydist.meta import \
+from toydist.core.meta import \
         _set_metadata, _METADATA_FIELDS
 from toydist.core.utils import \
         find_package

@@ -3,7 +3,7 @@ import tarfile
 
 from toydist.core.utils import \
         pprint
-from toydist.package import \
+from toydist.core.package import \
         PackageDescription, file_list
 
 from toydist.commands.core import \

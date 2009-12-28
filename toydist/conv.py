@@ -1,4 +1,4 @@
-from toydist.package import \
+from toydist.core import \
         PackageDescription
 from toydist.cabal_parser.items import \
         Executable

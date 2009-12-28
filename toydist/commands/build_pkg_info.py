@@ -1,4 +1,4 @@
-from toydist.package import \
+from toydist.core.package import \
         PackageDescription
 from toydist.conv import \
         write_pkg_info

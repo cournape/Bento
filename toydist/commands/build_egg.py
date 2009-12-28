@@ -12,13 +12,12 @@ from toydist.private.bytecode import \
         compile
 from toydist.core.utils import \
         pprint
-from toydist.package import \
-        PackageDescription
+from toydist.core import \
+        PackageDescription, PackageMetadata
 from toydist.conv import \
         to_distutils_meta
 from toydist.installed_package_description import \
         InstalledPkgDescription
-from toydist.meta import PackageMetadata
 
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException

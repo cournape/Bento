@@ -1,4 +1,4 @@
-from toydist.package import \
+from toydist.core.package import \
         PackageDescription, static_representation
 from toydist.conv import \
         distutils_to_package_description
