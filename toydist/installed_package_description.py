@@ -1,12 +1,9 @@
-import shutil
 import os
 
 from toydist.core.reader import \
-        Reader, NextParser, ParseError
+        Reader
 from toydist.core.utils import \
     subst_vars
-from toydist.core.descr_parser import \
-    ParseError
 from toydist.core.pkg_objects import \
     Executable
 
@@ -39,7 +36,6 @@ class InstalledPkgDescription(object):
         f = open(filename)
         try:
             vars = []
-            meta = []
             r = Reader(f.readlines())
 
             meta_vars = {}

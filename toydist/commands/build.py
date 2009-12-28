@@ -2,11 +2,9 @@ import os
 import sys
 
 from toydist.core.utils import \
-        pprint, expand_glob, find_package
+        find_package
 from toydist.core import \
         PackageDescription
-from toydist.conv import \
-        to_distutils_meta, write_pkg_info
 from toydist.installed_package_description import \
         InstalledPkgDescription, InstalledSection
 

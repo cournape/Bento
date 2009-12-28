@@ -1,5 +1,4 @@
 import os
-import shutil
 import sys
 import zipfile
 
@@ -13,7 +12,7 @@ from toydist.private.bytecode import \
 from toydist.core.utils import \
         pprint
 from toydist.core import \
-        PackageDescription, PackageMetadata
+        PackageMetadata
 from toydist.conv import \
         to_distutils_meta
 from toydist.installed_package_description import \

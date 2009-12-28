@@ -1,10 +1,11 @@
-import os
-
 from toydist.core.utils import \
         pprint
 
 from toydist.commands.core import \
-        Command, UsageException
+        Command
+from toydist.commands.convert_utils import \
+        whole_test
+
 
 class DetectTypeCommand(Command):
     long_descr = """\
@@ -17,8 +18,6 @@ Usage:   toymaker detect_type [OPTIONS]."""
         {"opts": ["-v", "--verbose"], "help": "verbose run", "action" : "store_true"},
     ]
     def run(self, opts):
-        from toydist.commands.convert_utils import whole_test
-
         self.set_option_parser()
         o, a = self.parser.parse_args(opts)
         if o.help:

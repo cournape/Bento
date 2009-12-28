@@ -3,7 +3,7 @@ import sys
 import tempfile
 
 from subprocess import \
-        PIPE, Popen, call, STDOUT
+        PIPE, call
 
 from toydist.core.utils import \
         pprint

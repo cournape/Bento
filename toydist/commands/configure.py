@@ -2,7 +2,7 @@ import sys
 import os
 
 from toydist.core.utils import \
-        subst_vars, pprint
+        pprint
 from toydist.core.platforms import \
         get_scheme
 from toydist.core import \

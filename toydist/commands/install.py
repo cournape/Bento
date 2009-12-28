@@ -5,7 +5,7 @@ from toydist.installed_package_description import \
     InstalledPkgDescription
 
 from toydist.commands.core import \
-    Command
+    Command, UsageException
 
 def install_sections(sections, installer=None):
     if not installer:

@@ -49,4 +49,4 @@ class PackageOptions(object):
         if not flag_options:
             self.flag_options = {}
         else:
-            self.flag_options = flags_options
+            self.flag_options = flag_options
