@@ -6,7 +6,7 @@ import platform
 
 from toydist.core.reader import \
         Reader, NextParser, ParseError
-from toydist.cabal_parser.items import \
+from toydist.core.pkg_objects import \
         PathOption, FlagOption, DataFiles, Executable
 from toydist.cabal_parser.utils import \
         comma_list_split

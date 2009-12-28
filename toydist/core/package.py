@@ -1,6 +1,6 @@
 import os
 
-from toydist.cabal_parser.items import \
+from toydist.core.pkg_objects import \
         Extension
 from toydist.core.meta import \
         _set_metadata, _METADATA_FIELDS

@@ -7,7 +7,7 @@ from toydist.core.package import \
         static_representation
 from toydist.conv import \
         distutils_to_package_description
-from toydist.cabal_parser.items import \
+from toydist.core.pkg_objects import \
         PathOption
 
 from toydist.commands.core import \

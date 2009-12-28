@@ -1,6 +1,6 @@
 from toydist.core import \
         PackageDescription
-from toydist.cabal_parser.items import \
+from toydist.core.pkg_objects import \
         Executable
 
 def distutils_to_package_description(dist):
