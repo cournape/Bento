@@ -8,7 +8,7 @@ from toydist.core.package import \
 from toydist.conv import \
         distutils_to_package_description
 from toydist.cabal_parser.items import \
-        FlagOption
+        PathOption
 
 from toydist.commands.core import \
         Command, UsageException
@@ -221,7 +221,7 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
                         "target": os.path.join("$gendatadir", d["target"]),
                         "files": d["files"]
                     }
-            path_options.append(FlagOption("gendatadir", "$sitedir",
+            path_options.append(PathOption("gendatadir", "$sitedir",
                     "Directory for datafiles obtained from distutils conversion"
                     ))
             pkg.data_files.update(gendatafiles)
