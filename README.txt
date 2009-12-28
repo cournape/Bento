@@ -3,8 +3,21 @@ system.
 
 .. _Cabal: http://www.haskell.org/cabal/release/cabal-latest/doc/users-guide/
 
-Simple example
-==============
+Simple examples
+===============
+
+From existing setup.py
+----------------------
+
+toymaker, the toydist command line interface has an experimental convert
+command to convert existing setup.py::
+
+    toymaker convert
+
+If successfull, it will write a file toysetup.info
+
+From scratch
+------------
 
 A simple python distribution named hello, with one package hello::
 
@@ -19,6 +32,13 @@ may be described as follows::
     Library:
         Packages:
             hello
+
+Note that for now, you *have* to use 4 spaces for indentation, always. This is
+an arbitrary limitation which will be removed at some point once the parser is
+improved.
+
+Building, installing
+--------------------
 
 Assuming the file is named toysetup.info, the command line interface toymaker
 can be used to configure, build, install, etc... the distribution::
