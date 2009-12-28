@@ -1,11 +1,12 @@
 import os
 
-from toydist.misc import \
+from toydist.core.pkg_objects import \
         Extension
-
-from toydist.utils import \
+from toydist.core.meta import \
+        _set_metadata, _METADATA_FIELDS
+from toydist.core.utils import \
         find_package
-from toydist.cabal_parser.cabal_parser import \
+from toydist.core.descr_parser import \
         parse
 
 class PackageDescription:
@@ -91,53 +92,9 @@ class PackageDescription:
         # (py_modules, etc...) ?
 
         # Package metadata
-        self.name = name
-
-        if not version:
-            # Distutils default
-            self.version = '0.0.0'
-        else:
-            self.version = version
-
-        self.summary = summary
-        self.url = url
-        self.download_url = download_url
-        self.author = author
-        self.author_email = author_email
-        self.maintainer = maintainer
-        self.maintainer_email = maintainer_email
-        self.license = license
-        self.description = description
-
-        if not install_requires:
-            self.install_requires = []
-        else:
-            self.install_requires = install_requires
-
-        if not build_requires:
-            self.build_requires = []
-        else:
-            self.build_requires = build_requires
-
-        if not platforms:
-            self.platforms = []
-        else:
-            self.platforms = platforms
-
-        if not classifiers:
-            self.classifiers = []
-        else:
-            self.classifiers = classifiers
-
-        if not obsoletes:
-            self.obsoletes = []
-        else:
-            self.obsoletes = obsoletes
-
-        if not provides:
-            self.provides = []
-        else:
-            self.provides = provides
+        _args = locals()
+        kw = dict([(k, _args[k]) for k in _METADATA_FIELDS if k in _args])
+        _set_metadata(self, **kw)
 
         # Package content
         if not packages:

@@ -3,9 +3,9 @@ import sys
 import tempfile
 
 from subprocess import \
-        PIPE, Popen, call, STDOUT
+        PIPE, call
 
-from toydist.utils import \
+from toydist.core.utils import \
         pprint
 
 distutils_code = """\

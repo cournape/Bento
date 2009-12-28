@@ -2,19 +2,9 @@ import os
 import sys
 import re
 import glob
-import marshal
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
 from os.path import \
     join, split, splitext, dirname, relpath
-# XXX: implementation details from py_compile
-from py_compile import \
-    wr_long, MAGIC
-import __builtin__
 
 # Color handling for terminals (taken from waf)
 COLORS_LST = {
@@ -159,42 +149,3 @@ def prune_file_list(files, redundant):
 
     return list(files_set.difference(redundant_set))
 
-# Utils to compile .py to .pyc inside zip file
-# XXX: this is implementation detail of .pyc, copied from py_compile.py.
-# Unfortunately, there is no way that I know of to write the bytecode into a
-# string to be used by ZipFile (using compiler is way too slow). Also, the
-# py_compile code has not changed much for 10 years.
-def compile(source):
-    """Return the compiled bytecode from the given filename as a string ."""
-    f = open(source, 'U')
-    try:
-        try:
-            timestamp = long(os.fstat(f.fileno()).st_mtime)
-        except AttributeError:
-            timestamp = long(os.stat(file).st_mtime)
-        codestring = f.read()
-        f.close()
-        if codestring and codestring[-1] != '\n':
-            codestring = codestring + '\n'
-        try:
-            codeobject = __builtin__.compile(codestring, source, 'exec')
-        except Exception,err:
-            py_exc = PyCompileError(err.__class__, err.args, source)
-            if doraise:
-                raise py_exc
-            else:
-                sys.stderr.write(py_exc.msg + '\n')
-                return
-        fc = StringIO()
-        try:
-            fc.write('\0\0\0\0')
-            wr_long(fc, timestamp)
-            fc.write(marshal.dumps(codeobject))
-            fc.flush()
-            fc.seek(0, 0)
-            fc.write(MAGIC)
-            return fc.getvalue()
-        finally:
-            fc.close()
-    finally:
-        f.close()

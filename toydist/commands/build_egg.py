@@ -1,5 +1,4 @@
 import os
-import shutil
 import sys
 import zipfile
 
@@ -8,15 +7,16 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from toydist.utils import \
-        pprint, compile
-from toydist.package import \
-        PackageDescription
+from toydist.private.bytecode import \
+        compile
+from toydist.core.utils import \
+        pprint
+from toydist.core import \
+        PackageMetadata
 from toydist.conv import \
         to_distutils_meta
 from toydist.installed_package_description import \
         InstalledPkgDescription
-from toydist.meta import PackageMetadata
 
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException

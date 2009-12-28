@@ -1,15 +1,34 @@
-import shutil
 import os
 
-from toydist.utils import \
+from toydist.core.reader import \
+        Reader
+from toydist.core.utils import \
     subst_vars
-from toydist.cabal_parser.cabal_parser import \
-    ParseError
-from toydist.cabal_parser.nodes import \
+from toydist.core.pkg_objects import \
     Executable
 
 META_DELIM = "!- FILELIST"
 FIELD_DELIM = ("\t", " ")
+
+class InstalledSection(object):
+    @classmethod
+    def from_data_files(cls, name, data_files):
+        return cls("datafiles", name, data_files.srcdir, data_files.target,
+                   data_files.files)
+        
+    def __init__(self, tp, name, srcdir, target, files):
+        self.tp = tp
+        self.name = name
+        self.srcdir = srcdir
+        self.target = target
+        self.files = files
+
+    @property
+    def fullname(self):
+        return self.tp + ":" + self.name
+
+    def write_section(self, fid):
+        fid.write(write_file_section(self.fullname, self.srcdir, self.target, self.files))
 
 class InstalledPkgDescription(object):
     @classmethod
@@ -17,7 +36,6 @@ class InstalledPkgDescription(object):
         f = open(filename)
         try:
             vars = []
-            meta = []
             r = Reader(f.readlines())
 
             meta_vars = {}
@@ -158,29 +176,12 @@ executables
 
             for type, value in self.files.items():
                 if type in ["pythonfiles"]:
-                    for pname, pvalue in value.items():
-                        srcdir = "$_srcrootdir"
-                        target = pvalue["target"]
-                        files = pvalue["files"]
-                        name = "%s:%s" % (type, pname)
-                        fid.write(write_file_section(name, srcdir, target, files))
-                elif type in ["datafiles"]:
-                    for dname, dvalue in value.items():
-                        name = "%s:%s" % (type, dname)
-                        fid.write(write_file_section(name,
-                                                     dvalue.srcdir, dvalue.target, dvalue.files))
-                elif name in ["extensions"]:
-                    srcdir = evalue["srcdir"]
-                    target = evalue["target"]
-                    files = evalue["files"]
-                    fid.write(write_file_section(name, srcdir, target, files))
-                elif type in ["executables"]:
-                    for ename, evalue in value.items():
-                        srcdir = evalue["srcdir"]
-                        target = evalue["target"]
-                        files = evalue["files"]
-                        name = "%s:%s" % (type, ename)
-                        fid.write(write_file_section(name, srcdir, target, files))
+                    for i in value.values():
+                        i.srcdir = "$_srcrootdir"
+                        i.write_section(fid)
+                elif type in ["datafiles", "extensions", "executables"]:
+                    for i in value.values():
+                        i.write_section(fid)
                 else:
                     raise ValueError("Unknown section %s" % type)
 
@@ -214,90 +215,3 @@ def write_file_section(name, srcdir, target, files):
        "target": "\ttarget=%s" % target,
        "files": "\n".join(["\t%s" % f for f in files])}
     return section
-
-# XXX: abstract this with the reader in cabal_parser
-class Reader(object):
-    def __init__(self, data):
-        self._data = data
-        self._idx = 0
-
-    def flush_empty(self):
-        """Read until a non-empty line is found."""
-        while not (self.eof() or self._data[self._idx].strip()):
-            self._idx += 1
-
-    def pop(self, blank=False):
-        """Return the next non-empty line and increment the line
-        counter.  If `blank` is True, then also return blank lines.
-
-        """
-        if not blank:
-            # Skip to the next non-empty line if blank is not set
-            self.flush_empty()
-
-        line = self.peek(blank)
-        self._idx += 1
-
-        return line
-
-    def peek(self, blank=False):
-        """Return the next non-empty line without incrementing the
-        line counter.  If `blank` is True, also return blank lines.
-
-        Peek is not allowed to touch _idx.
-
-        """
-        save_idx = self._idx
-        if not blank:
-            self.flush_empty()
-
-        if self.eof():
-            return ''
-
-        peek_line = self._data[self._idx]
-        self._idx = save_idx
-
-        return peek_line
-
-    def eof(self):
-        """Return True if the end of the file has been reached."""
-        return self._idx >= len(self._data)
-
-    @property
-    def index(self):
-        """Return the line-counter to the pre-processed version of
-        the input file.
-
-        """
-        return self._idx
-
-    @property
-    def line(self):
-        """Return the line-counter to the original input file.
-
-        """
-        lines = 0
-        for l in self._data[:self._idx]:
-            if not l in ['{', '}']:
-                lines += 1
-        return lines
-
-    def wait_for(self, line):
-        """Keep reading until the given line has been seen."""
-        if self.eof():
-            return False
-        elif self.peek() != line:
-            return True
-        else:
-            return False
-
-    def parse_error(self, msg):
-        """Raise a parsing error with the given message."""
-        raise ParseError('''
-
-Parsing error at line %s (%s):
-%s
-Parser traceback: %s''' %
-                         (self.line, msg, self._original_data[self.line],
-                          ' -> '.join(self._traceback)))
-

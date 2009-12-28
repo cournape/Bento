@@ -1,7 +1,36 @@
-from toydist.cabal_parser.utils import \
+from distutils.core import \
+        Extension as DistExtension
+
+from toydist.core.parse_utils import \
     comma_list_split
-from toydist.utils import \
+from toydist.core.utils import \
     expand_glob
+
+class FlagOption(object):
+    def __init__(self, name, default_value, description=None):
+        self.name = name
+        self.default_value = default_value
+        self.description = description
+
+    def __str__(self):
+        r = """\
+Flag %s
+    default value: %s
+    description: %s"""
+        return r % (self.name, self.default_value, self.description)
+
+class PathOption(object):
+    def __init__(self, name, default_value, description=None):
+        self.name = name
+        self.default_value = default_value
+        self.description = description
+
+    def __str__(self):
+        r = """\
+Customizable path: %s
+    default value: %s
+    description: %s"""
+        return r % (self.name, self.default_value, self.description)
 
 class DataFiles(object):
     @classmethod
@@ -78,3 +107,7 @@ class Executable(object):
 
     def __repr__(self):
         return repr({"name": self.name, "module": self.module, "function": self.function})
+
+class Extension(DistExtension):
+    def __repr__(self):
+        return "Extension(%s, sources=%s)" % (self.name, self.sources)

@@ -1,14 +1,14 @@
 import os
 import sys
 
-from toydist.utils import \
+from toydist.core.utils import \
         pprint, find_package, prune_file_list
-from toydist.package import \
+from toydist.core.package import \
         static_representation
 from toydist.conv import \
         distutils_to_package_description
-from toydist.cabal_parser.items import \
-        FlagOption
+from toydist.core.pkg_objects import \
+        PathOption
 
 from toydist.commands.core import \
         Command, UsageException
@@ -163,7 +163,7 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
         if tp == "automatic":
             try:
                 pprint("PINK",
-                       "Detecting monkey patches (this may take a while) ...")
+                       "Catching monkey (this may take a while) ...")
                 tp = detect_monkeys(filename, show_output)
                 pprint("PINK", "Detected mode: %s" % tp)
             except ValueError, e:
@@ -221,7 +221,7 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
                         "target": os.path.join("$gendatadir", d["target"]),
                         "files": d["files"]
                     }
-            path_options.append(FlagOption("gendatadir", "$sitedir",
+            path_options.append(PathOption("gendatadir", "$sitedir",
                     "Directory for datafiles obtained from distutils conversion"
                     ))
             pkg.data_files.update(gendatafiles)

@@ -1,14 +1,12 @@
 import os
 import sys
 
-from toydist.utils import \
-        pprint, expand_glob, find_package
-from toydist.package import \
+from toydist.core.utils import \
+        find_package
+from toydist.core import \
         PackageDescription
-from toydist.conv import \
-        to_distutils_meta, write_pkg_info
 from toydist.installed_package_description import \
-        InstalledPkgDescription
+        InstalledPkgDescription, InstalledSection
 
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException
@@ -61,10 +59,8 @@ def build_extensions(extensions):
         ext_target = os.path.join(bld_cmd.build_lib,
                                  bld_cmd.get_ext_filename(fullname))
         srcdir = os.path.dirname(ext_target)
-        ext_descr = {'files': [os.path.basename(ext_target)],
-                     'srcdir': srcdir,
-                     'target': target}
-        outputs[fullname] = ext_descr
+        outputs[fullname] = InstalledSection("extensions", fullname, srcdir,
+                                             target, [os.path.basename(ext_target)])
     return outputs
 
 class BuildCommand(Command):
@@ -99,14 +95,14 @@ Usage:   toymaker build [OPTIONS]."""
             python_files.append(os.path.join(root_src, '%s.py' % m))
 
         sections = {"pythonfiles": {"library":
-                        {"files": python_files,
-                         "target": "$sitedir"}}}
+                    InstalledSection("pythonfiles", "library", root_src,
+                                     "$sitedir", python_files)}}
 
         # Get data files
         sections["datafiles"] = {}
         for name, data_section in pkg.data_files.items():
             data_section.files = data_section.resolve_glob()
-            sections["datafiles"][name] = data_section
+            sections["datafiles"][name] = InstalledSection.from_data_files(name, data_section)
 
         # handle extensions
         if pkg.extensions:
@@ -173,7 +169,6 @@ def build_executables(executables):
         finally:
             f.close()
 
-        ret[name] = {"files": [os.path.basename(target)],
-                     "srcdir": d,
-                     "target": "$bindir"}
+        ret[name] = InstalledSection("executables", name, d, "$bindir",
+                                     [os.path.basename(target)])
     return ret

@@ -1,12 +1,12 @@
 import sys
 import os
 
-from toydist.cabal_parser.cabal_parser import \
-        parse, ParseError
-from toydist.utils import \
-        subst_vars, pprint
-from toydist.sysconfig import \
+from toydist.core.utils import \
+        pprint
+from toydist.core.platforms import \
         get_scheme
+from toydist.core import \
+        PackageOptions
 
 from toydist.commands.core import \
         Command, UsageException, SCRIPT_NAME
@@ -59,39 +59,17 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
                             (SCRIPT_NAME, filename)
                     raise UsageException(msg)
 
-        f = open(filename, 'r')
-        try:
-            data = f.readlines()
-            try:
-                d = parse(data)
-            except ParseError, e:
-                msg = "Error while parsing file %s\n" % filename
-                e.args = (msg,) +  e.args
-                raise e
-
-            try:
-                path_options = d['path_options']
-            except KeyError:
-                path_options = {}
-
-            try:
-                flag_options = d['flag_options']
-            except KeyError:
-                flag_options = {}
-
-            pkg_name = d['name']
-        finally:
-            f.close()
+        pkg_opts = PackageOptions.from_file(filename)
 
         scheme, scheme_opts = get_scheme(sys.platform)
         # XXX: abstract away those, as it is copied from distutils
         py_version = sys.version.split()[0]
         scheme['py_version_short'] = py_version[0:3]
 
-        scheme['pkgname'] = d["name"]
+        scheme['pkgname'] = pkg_opts.name
 
         # Add path options to the path scheme
-        for name, f in path_options.items():
+        for name, f in pkg_opts.path_options.items():
             scheme[name] = f.default_value
             scheme_opts[name] = {'opts': ['--%s' % f.name],
                                  'help': '%s [%s]' % (f.description, f.default_value)}

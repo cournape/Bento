@@ -7,12 +7,12 @@ import traceback
 
 import toydist
 
-from toydist.utils import \
+from toydist.core.utils import \
         subst_vars, pprint
-from toydist.sysconfig import \
+from toydist.core.platforms import \
         get_scheme
-from toydist.cabal_parser.cabal_parser import \
-        parse, ParseError
+from toydist.core.descr_parser import \
+        ParseError
 
 from toydist.commands.core import \
         Command, HelpCommand
