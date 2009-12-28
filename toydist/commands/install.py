@@ -20,11 +20,11 @@ def install_sections(sections, installer=None):
                 if type == "executables":
                     os.chmod(target, 0555)
 
-def installer(source, target):
-    cmd = ["install", "-m", "644", source, target]
-    strcmd = "INSTALL %s -> %s" % (source, target)
-    pprint('GREEN', strcmd)
-    subprocess.check_call(cmd)
+# def installer(source, target):
+#     cmd = ["install", "-m", "644", source, target]
+#     strcmd = "INSTALL %s -> %s" % (source, target)
+#     pprint('GREEN', strcmd)
+#     subprocess.check_call(cmd)
 
 class InstallCommand(Command):
     long_descr = """\
