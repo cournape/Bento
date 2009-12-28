@@ -5,7 +5,7 @@ from toydist.core.reader import \
         Reader, NextParser, ParseError
 from toydist.core.utils import \
     subst_vars
-from toydist.cabal_parser.cabal_parser import \
+from toydist.core.descr_parser import \
     ParseError
 from toydist.core.pkg_objects import \
     Executable

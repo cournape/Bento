@@ -8,7 +8,7 @@ from toydist.core.reader import \
         Reader, NextParser, ParseError
 from toydist.core.pkg_objects import \
         PathOption, FlagOption, DataFiles, Executable
-from toydist.cabal_parser.utils import \
+from toydist.core.parse_utils import \
         comma_list_split
 
 indent_width = 4

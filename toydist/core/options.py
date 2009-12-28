@@ -1,4 +1,4 @@
-from toydist.cabal_parser.cabal_parser import \
+from toydist.core.descr_parser import \
         parse
 
 class PackageOptions(object):

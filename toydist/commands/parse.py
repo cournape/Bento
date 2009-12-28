@@ -6,7 +6,7 @@ from pprint import \
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException
 
-from toydist.cabal_parser.cabal_parser import \
+from toydist.core.descr_parser import \
         parse, ParseError
 
 class ParseCommand(Command):

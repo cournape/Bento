@@ -1,7 +1,7 @@
 from distutils.core import \
         Extension as DistExtension
 
-from toydist.cabal_parser.utils import \
+from toydist.core.parse_utils import \
     comma_list_split
 from toydist.core.utils import \
     expand_glob

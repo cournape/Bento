@@ -6,7 +6,7 @@ from toydist.core.meta import \
         _set_metadata, _METADATA_FIELDS
 from toydist.core.utils import \
         find_package
-from toydist.cabal_parser.cabal_parser import \
+from toydist.core.descr_parser import \
         parse
 
 class PackageDescription:
