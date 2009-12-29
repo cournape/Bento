@@ -5,7 +5,7 @@ from toydist.core.pkg_objects import \
 from toydist.core.meta import \
         _set_metadata, _METADATA_FIELDS
 from toydist.core.utils import \
-        find_package
+        find_package, expand_glob
 from toydist.core.descr_parser import \
         parse
 
@@ -160,7 +160,8 @@ class PackageDescription:
 def file_list(pkg, root_src=""):
     # FIXME: root_src
     files = []
-    files.extend(pkg.extra_source_files)
+    for entry in pkg.extra_source_files:
+        files.extend(expand_glob(entry))
 
     for p in pkg.packages:
         files.extend(find_package(p, root_src))
@@ -169,7 +170,8 @@ def file_list(pkg, root_src=""):
         files.append(os.path.join(root_src, '%s.py' % m))
 
     for section in pkg.data_files.values():
-        files.extend([os.path.join(section.srcdir, f) for f in section.files])
+        for entry in section.files:
+            files.extend([os.path.join(section.srcdir, f) for f in expand_glob(entry)])
 
     return files
 
