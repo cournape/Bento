@@ -179,7 +179,7 @@ executables
                     for i in value.values():
                         i.srcdir = "$_srcrootdir"
                         i.write_section(fid)
-                elif type in ["datafiles", "extensions", "executables"]:
+                elif type in ["datafiles", "extension", "executable"]:
                     for i in value.values():
                         i.write_section(fid)
                 else:

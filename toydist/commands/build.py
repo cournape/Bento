@@ -109,11 +109,11 @@ Usage:   toymaker build [OPTIONS]."""
             extensions = build_extensions(pkg.extensions)
             sections["extension"] = extensions
 
-        sections["executables"] = {}
+        sections["executable"] = {}
         if pkg.executables:
             executables = build_executables(pkg.executables)
             for ename, evalue in executables.items():
-                sections["executables"][ename] = evalue
+                sections["executable"][ename] = evalue
 
         meta = {}
         for m in ["name", "version", "summary", "url", "author", "author_email",
