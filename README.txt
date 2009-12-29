@@ -191,3 +191,8 @@ following advantages:
       the system, in the sense that another build system can be build on
       top of toydist. This gives a simple but powerful way forward for
       improving the situation of python packaging.
+
+Useful discussions which are related to toydist design:
+
+    * BUILDS (never passed the design stage AFAIK): http://mail.python.org/pipermail/distutils-sig/2008-October/010343.html
+    * Going away from setup.py: http://www.mail-archive.com/distutils-sig@python.org/msg08031.html
