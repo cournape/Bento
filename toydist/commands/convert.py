@@ -324,8 +324,13 @@ def combine_groups(data_files):
     ret = {}
     for e in data_files:
         # FIXME: install policies should not be handled here
-        target = os.path.join("$sitedir", e[0])
-        sources = e[1]
+        # FIXME: find the cases when entries' length are 2 vs 3
+        if len(e) == 2:
+            target = os.path.join("$sitedir", e[0])
+            sources = e[1]
+        elif len(e) == 3:
+            target = os.path.join("$prefix", e[1])
+            sources = e[2]
 
         for s in sources:
             srcdir = os.path.dirname(s)
