@@ -50,6 +50,11 @@ class PackageDescription:
             else:
                 kw['py_modules'] = []
 
+            if library.has_key('extension'):
+                kw['extensions'] = library['extension']
+            else:
+                kw['extensions'] = []
+
             if library.has_key('installdepends'):
                 kw['install_requires'] = library['installdepends']
             else:
