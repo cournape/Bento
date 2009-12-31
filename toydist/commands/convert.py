@@ -3,6 +3,8 @@ import sys
 
 from toydist.core.utils import \
         pprint, find_package, prune_file_list
+from toydist.core.parse_utils import \
+        comma_list_split
 from toydist.core.package import \
         static_representation
 from toydist.conv import \
@@ -134,6 +136,10 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
         {"opts": ["-o", "--output"], "help": "output file", "default": "toysetup.info",
                   "dest": "output_filename"},
         {"opts": ["-v", "--verbose"], "help": "verbose run", "action" : "store_true"},
+        {"opts": ["--setup-arguments"], "help": "arguments to give to setup. " \
+                  "For example, --setup-arguments=-q,-n,--with-speedup will " \
+                  "call python setup.py -q -n --with-speedup",
+                  "dest" : "setup_args"},
     ]
 
     def run(self, opts):
@@ -158,6 +164,11 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
             show_output = True
         else:
             show_output = False
+
+        if o.setup_args:
+            setup_args = comma_list_split(o.setup_args)
+        else:
+            setup_args = ["-q", "-n"]
 
         tp = o.type
         if tp == "automatic":
@@ -186,7 +197,7 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
         _saved_argv = sys.argv[:]
         _saved_sys_path = sys.path
         try:
-            sys.argv = [filename, "-q", "-n", "build_py"]
+            sys.argv = [filename] + setup_args + ["build_py"]
             # XXX: many packages import themselves to get version at build
             # time, and setuptools screw this up by inserting stuff first. Is
             # there a better way ?
