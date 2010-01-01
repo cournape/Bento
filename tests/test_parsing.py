@@ -227,3 +227,29 @@ A development egg can be found `here
     #    pkg = PackageDescription.from_string(DESCR)
     #    for k in PKG.__dict__:
     #        assert_equal(PKG.__dict__[k], pkg.__dict__[k])
+
+class TestFlags(unittest.TestCase):
+    def test_simple(self):
+        text = """\
+Name: foo
+
+Flag: flag1
+    description: flag1 description
+    default: false
+"""
+        m = parse(text.splitlines())
+        self.failUnless(m["flags"], "false")
+
+    def test_user_custom(self):
+        text = """\
+Name: foo
+
+Flag: flag1
+    description: flag1 description
+    default: false
+"""
+        m = parse(text.splitlines(), user_flags={"flag1": False})
+        self.failUnless(m["flags"], "false")
+
+        m = parse(text.splitlines(), user_flags={"flag1": True})
+        self.failUnless(m["flags"], "true")
