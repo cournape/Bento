@@ -458,51 +458,30 @@ def parse(data, user_flags={}, user_paths={}):
     info = {}
 
     while not r.eof():
+        opt_arg = {'flags': get_flags(info, user_flags),
+                   'flag_options': get_flag_options(info),
+                   'path_options': get_path_options(info),
+                   'paths': get_paths(info, user_paths)}
         r.parse([key_value, section, executable_parser, datafiles_parser,
-                 path_parser, flag_parser], store=info,
-                 opt_arg={'flags': get_flags(info, user_flags),
-                          'flag_options': get_flag_options(info),
-                          'path_options': get_path_options(info),
-                          'paths': get_paths(info, user_paths)})
+                 path_parser, flag_parser], store=info, opt_arg=opt_arg)
 
     return info
 
-# if __name__ == "__main__":
-#     import textwrap
-# 
-#     def print_dict(d, indent=0):
-#         for (key, value) in d.items():
-#             indent_str = indent * ' '
-#             if isinstance(value, dict):
-#                 if key.strip():
-#                     print '%s%s:' % (indent_str, key)
-#                 print_dict(value, indent=indent + indent_width)
-#             else:
-#                 out = indent_str + '%s: %s' % (key, value)
-#                 print out
-#                 #if len(out) > 78:
-#                 #    print '%s:' % key
-#                 #    wrap = '\n\n'.join(
-#                 #        [textwrap.fill(par, 78 - indent - indent_width)
-#                 #         for par in value.split('\n\n')])
-#                 #    for l in wrap.split('\n'):
-#                 #        print indent_str + indent_width*' ' + l
-#                 #else:
-#                 #    print out
-# 
-#     # TODO: implement simple variable interpolation for default user_paths
-#     user_paths = {
-#             'prefix': '/usr/local',
-#             'eprefix': '/usr/local',
-#             'bindir': '/usr/local/bin',
-#             'libdir': '/usr/local/lib',
-#             'includedir': '/usr/local/include',
-#             'datarootdir': '/usr/local/share',
-#             'datadir': '/usr/local/share',
-#             'mandir': '/usr/local/share/man',
-#     }
-#     f = open(sys.argv[1], 'r')
-#     data = f.readlines()
-#     meta_data = parse(data, {'webfrontend': True}, user_paths)
-# 
-#     print_dict(meta_data)
+if __name__ == "__main__":
+
+    def print_dict(d, indent=0):
+        for (key, value) in d.items():
+            indent_str = indent * ' '
+            if isinstance(value, dict):
+                if key.strip():
+                    print '%s%s:' % (indent_str, key)
+                print_dict(value, indent=indent + indent_width)
+            else:
+                out = indent_str + '%s: %s' % (key, value)
+                print out
+
+    f = open(sys.argv[1], 'r')
+    data = f.readlines()
+    meta_data = parse(data, {'flag1': False}, {})
+
+    print_dict(meta_data)
