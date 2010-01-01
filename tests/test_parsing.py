@@ -9,9 +9,9 @@ from os.path import \
 from nose.tools import \
     assert_equal
 
-from toydist.cabal_parser.cabal_parser import \
+from toydist.core.descr_parser import \
     parse
-from toydist.cabal_parser.utils import \
+from toydist.core.parse_utils import \
     CommaListLexer, comma_list_split
 
 from toydist import PackageDescription, static_representation

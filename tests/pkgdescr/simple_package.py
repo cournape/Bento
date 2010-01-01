@@ -1,6 +1,6 @@
-from toydist import \
+from toydist.core import \
         PackageDescription
-from toydist.misc import \
+from toydist.core.pkg_objects import \
         Extension
 
 DESCR = """\
