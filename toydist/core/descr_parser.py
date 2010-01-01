@@ -332,7 +332,7 @@ def flag_parser(r, store, flags={}):
         raise NextParser
 
     line = r.pop()
-    for key in ['flag', 'flag_options']:
+    for key in ['flags', 'flag_options']:
         if not key in store:
             store[key] = {}
 
@@ -355,7 +355,13 @@ def flag_parser(r, store, flags={}):
     except KeyError:
         descr = None
 
-    store['flag'][name] = default
+    # Override default with user customization if customized
+    if name in flags["flags"]:
+        value = flags["flags"][name]
+    else:
+        value = default
+
+    store['flags'][name] = value
     store['flag_options'][name] = FlagOption(name, default, descr)
 
 def eval_statement(expr, vars):
@@ -418,10 +424,12 @@ def get_flags(store, user_flags={}):
     found during parsing.
 
     """
-    flag_options = store.get('flag_options', {})
-    for name, flag in flag_options.items():
-        user_flags[name] = flag.default_value
-    return user_flags
+    ret = {}
+    flags = store.get('flags', {})
+    for name, flag in flags.items():
+        ret[name] = flag
+    ret.update(user_flags)
+    return ret
 
 def get_flag_options(store):
     return store.get('flag_options', {})
