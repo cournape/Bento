@@ -13,7 +13,11 @@ from toydist.commands.core import \
 from toydist.commands.configure import \
         ConfigureState
 
-USE_NUMPY_DISTUTILS = True
+try:
+    import numpy
+    USE_NUMPY_DISTUTILS = True
+except ImportError:
+    USE_NUMPY_DISTUTILS = False
 
 def build_extensions(extensions):
     # FIXME: import done here to avoid clashing with monkey-patch as done by
