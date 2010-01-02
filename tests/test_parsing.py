@@ -263,6 +263,28 @@ Flag: flag1
         m = parse(text.splitlines(), user_flags={"flag1": True})
         self.failUnless(m["flags"], "true")
 
+class TestConditional(unittest.TestCase):
+    def test_simple(self):
+        text = """\
+Name: foo
+
+Flag: debug
+    description: debug flag
+    default: true
+
+Library:
+    packages:
+        foo
+    if flag(debug)
+        packages: bar
+"""
+        pkg = PackageDescription.from_string(text, user_flags={"debug": False})
+        self.failUnless("foo" in pkg.packages)
+        self.failUnless("bar" not in pkg.packages)
+
+        pkg = PackageDescription.from_string(text, user_flags={"debug": True})
+        self.failUnless("foo" in pkg.packages)
+        self.failUnless("bar" in pkg.packages)
 class TestOptions(unittest.TestCase):
     def test_simple(self):
         text = """\
