@@ -468,7 +468,6 @@ def parse(data, user_flags={}, user_paths={}):
     return info
 
 if __name__ == "__main__":
-
     def print_dict(d, indent=0):
         for (key, value) in d.items():
             indent_str = indent * ' '
@@ -483,5 +482,4 @@ if __name__ == "__main__":
     f = open(sys.argv[1], 'r')
     data = f.readlines()
     meta_data = parse(data, {'flag1': False}, {})
-
     print_dict(meta_data)
