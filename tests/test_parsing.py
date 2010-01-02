@@ -17,7 +17,7 @@ finally:
 from toydist.core.descr_parser import \
     parse, ParseError
 from toydist.core.pkg_objects import \
-    PathOption, FlagOption, Executable
+    PathOption, FlagOption, Executable, DataFiles
 from toydist.core.parse_utils import \
     CommaListLexer, comma_list_split
 from toydist.core.options import \
@@ -342,6 +342,21 @@ Executable: foo-cmd
 """
         PackageDescription.from_string(text)
 
+class TestDataFiles(unittest.TestCase):
+    def test_simple(self):
+        text = """\
+Name: foo
+
+DataFiles: data
+    target: $datadir
+    files:
+        foo.data
+"""
+        r_data = DataFiles("data", files=["foo.data"], target="$datadir")
+        pkg = PackageDescription.from_string(text)
+        self.failUnless("data" in pkg.data_files)
+        assert_equal(pkg.data_files["data"].__dict__, r_data.__dict__)
+    
 class TestOptions(unittest.TestCase):
     simple_text = """\
 Name: foo
