@@ -76,12 +76,38 @@ def expand_glob(pattern, ref_dir=None):
     else:
         return matched
 
+_IDPATTERN = "[a-zA-Z_][a-zA-Z_0-9]*"
+_DELIM = "$"
+
+def _simple_subst_vars(s, local_vars):
+    """Like subst_vars, but does not handle escaping."""
+    def _subst(m):
+        var_name = m.group(1)
+        if var_name in local_vars:
+            return local_vars[var_name]
+        else:
+            raise ValueError("%s not defined" % var_name)
+        
+    def _resolve(d):
+        ret = {}
+        for k, v in d.items():
+            ret[k] = re.sub("\%s(%s)" % (_DELIM, _IDPATTERN), _subst, v)
+        return ret
+
+    ret = _resolve(s)
+    while not ret == s:
+        s = ret
+        ret = _resolve(s)
+    return ret
+
 def subst_vars (s, local_vars):
     """Perform shell/Perl-style variable substitution.
 
     Every occurrence of '$' followed by a name is considered a variable, and
     variable is substituted by the value found in the `local_vars' dictionary.
     Raise ValueError for any variables not found in `local_vars'.
+
+    '$' may be escaped by using '$$'
 
     Parameters
     ----------
@@ -90,27 +116,33 @@ def subst_vars (s, local_vars):
     local_vars: dict
         dict of variables
     """
-    def _subst (match, local_vars=local_vars):
-        var_name = match.group(1)
-        if var_name in local_vars:
-            return str(local_vars[var_name])
-        else:
-            raise ValueError("Invalid variable '$%s'" % var_name)
+    # Resolve variable substitution within the local_vars dict
+    local_vars = _simple_subst_vars(local_vars, local_vars)
+
+    def _subst (match):
+        named = match.group("named")
+        if named is not None:
+            if named in local_vars:
+                return str(local_vars[named])
+            else:
+                raise ValueError("Invalid variable '%s'" % named)
+        if match.group("escaped") is not None:
+            return _DELIM
+        raise ValueError("This should not happen")
 
     def _do_subst(v):
-        return re.sub(r'\$([a-zA-Z_][a-zA-Z_0-9]*)', _subst, v)
+        pattern_s = r"""
+        %(delim)s(?:
+            (?P<escaped>%(delim)s) |
+            (?P<named>%(id)s)
+        )""" % {"delim": r"\%s" % _DELIM, "id": _IDPATTERN}
+        pattern = re.compile(pattern_s, re.VERBOSE)
+        return pattern.sub(_subst, v)
 
     try:
-        ret = _do_subst(s)
-        # Brute force: we keep interpolating until the returned string is the
-        # same as the input to handle recursion
-        while not ret == s:
-            s = ret
-            ret = _do_subst(s)
-        return ret
+        return _do_subst(s)
     except KeyError, var:
         raise ValueError("invalid variable '$%s'" % var)
-
 
 if __name__ == "__main__":
     print expand_glob("*.py", dirname(__file__))

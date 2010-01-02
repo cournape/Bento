@@ -51,3 +51,11 @@ def test_subst_vars_recursive():
          'datadir': '$datarootdir'}
     assert_equal(subst_vars('$eprefix', d), '/usr/local')
     assert_equal(subst_vars('$datadir', d), '/usr/local/share')
+
+def test_subst_vars_escaped():
+    d = {'prefix': '/usr/local',
+         'eprefix': '$prefix',
+         'datarootdir': '$prefix/share',
+         'datadir': '$datarootdir'}
+    assert_equal(subst_vars('$datadir', d), '/usr/local/share')
+    assert_equal(subst_vars('$$datadir', d), '$datadir')
