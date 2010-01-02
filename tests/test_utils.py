@@ -44,7 +44,7 @@ def test_subst_vars_simple():
     d = {'prefix': '/usr/local'}
     assert_equal(subst_vars('$prefix', d), d['prefix'])
 
-def test_subst_vars_recusrive():
+def test_subst_vars_recursive():
     d = {'prefix': '/usr/local',
          'eprefix': '$prefix',
          'datarootdir': '$prefix/share',
