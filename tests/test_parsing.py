@@ -7,7 +7,7 @@ import sys
 from os.path import \
     join
 from nose.tools import \
-    assert_equal
+    assert_equal, raises
 
 try:
     from cStringIO import StringIO
@@ -15,9 +15,9 @@ finally:
     from StringIO import StringIO
 
 from toydist.core.descr_parser import \
-    parse
+    parse, ParseError
 from toydist.core.pkg_objects import \
-    PathOption, FlagOption
+    PathOption, FlagOption, Executable
 from toydist.core.parse_utils import \
     CommaListLexer, comma_list_split
 from toydist.core.options import \
@@ -285,6 +285,41 @@ Library:
         pkg = PackageDescription.from_string(text, user_flags={"debug": True})
         self.failUnless("foo" in pkg.packages)
         self.failUnless("bar" in pkg.packages)
+
+class TestExecutable(unittest.TestCase):
+    def test_simple(self):
+        text = """\
+Name: foo
+
+Executable: foo-cmd
+    module: foo
+    function: main
+"""
+        r_exe = Executable("foo-cmd", module="foo", function="main")
+        pkg = PackageDescription.from_string(text)
+        self.failUnless("foo-cmd" in pkg.executables)
+        assert_equal(pkg.executables["foo-cmd"].__dict__, r_exe.__dict__)
+    
+    @raises(ParseError)
+    def test_invalid1(self):
+        text = """\
+Name: foo
+
+Executable: foo-cmd
+    function: main
+"""
+        PackageDescription.from_string(text)
+
+    @raises(ParseError)
+    def test_invalid2(self):
+        text = """\
+Name: foo
+
+Executable: foo-cmd
+    module: main
+"""
+        PackageDescription.from_string(text)
+
 class TestOptions(unittest.TestCase):
     def test_simple(self):
         text = """\
