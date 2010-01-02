@@ -407,9 +407,9 @@ def if_statement(r, store, flags={}):
     # Parse the else part of the statement
     while r.wait_for('}'):
         if expr_true:
-            use_store = store
-        else:
             use_store = {}
+        else:
+            use_store = store
 
         r.parse((if_statement, section, key_value), use_store)
 
@@ -467,19 +467,22 @@ def parse(data, user_flags={}, user_paths={}):
 
     return info
 
-if __name__ == "__main__":
-    def print_dict(d, indent=0):
-        for (key, value) in d.items():
-            indent_str = indent * ' '
-            if isinstance(value, dict):
-                if key.strip():
-                    print '%s%s:' % (indent_str, key)
-                print_dict(value, indent=indent + indent_width)
-            else:
-                out = indent_str + '%s: %s' % (key, value)
-                print out
+def print_parsed_dict(d, indent=0):
+    for (key, value) in d.items():
+        indent_str = indent * ' '
+        if isinstance(value, dict):
+            if key.strip():
+                print '%s%s:' % (indent_str, key)
+            print_parsed_dict(value, indent=indent + indent_width)
+        else:
+            out = indent_str + '%s: %s' % (key, value)
+            print out
 
-    f = open(sys.argv[1], 'r')
-    data = f.readlines()
-    meta_data = parse(data, {'flag1': False}, {})
-    print_dict(meta_data)
+if __name__ == "__main__":
+    f = open(sys.argv[1])
+    try:
+        data = f.readlines()
+        meta_data = parse(data, {'flag1': False}, {})
+        print_parsed_dict(meta_data)
+    finally:
+        f.close()

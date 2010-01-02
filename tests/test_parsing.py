@@ -286,6 +286,28 @@ Library:
         self.failUnless("foo" in pkg.packages)
         self.failUnless("bar" in pkg.packages)
 
+    def test_simple_else(self):
+        text = """\
+Name: foo
+
+Flag: debug
+    description: debug flag
+    default: true
+
+Library:
+    packages:
+        foo
+    if flag(debug)
+        packages: bar
+    else
+        packages: fubar
+"""
+        pkg = PackageDescription.from_string(text, user_flags={"debug": True})
+        assert_equal(sorted(pkg.packages), ["bar", "foo"])
+
+        pkg = PackageDescription.from_string(text, user_flags={"debug": False})
+        assert_equal(sorted(pkg.packages), ["foo", "fubar"])
+
 class TestExecutable(unittest.TestCase):
     def test_simple(self):
         text = """\
