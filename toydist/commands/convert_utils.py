@@ -30,6 +30,7 @@ globals["__file__"] = filename
 
 sys.argv = [filename, "config"]
 distutils.core.setup = new_setup
+sys.path.insert(0, '%(odir)s')
 execfile(filename, globals)
 
 if DIST is None:
@@ -64,6 +65,7 @@ globals["__file__"] = filename
 
 sys.argv = [filename, "-q", "--help"]
 setuptools.setup = new_setup
+sys.path.insert(0, '%(odir)s')
 execfile(filename, globals)
 print DIST.__module__
 
@@ -98,6 +100,7 @@ try:
 
     sys.argv = [filename, "-q", "--name"]
     numpy.distutils.core.setup = new_setup
+    sys.path.insert(0, '%(odir)s')
     execfile(filename, globals)
 
     print DIST
@@ -135,6 +138,7 @@ try:
 
     sys.argv = [filename, "-q", "--name"]
     numpy.distutils.core.setup = new_setup
+    sys.path.insert(0, '%(odir)s')
     execfile(filename, globals)
 
     if DIST is None:
@@ -159,6 +163,7 @@ globals["__name__"] = "__main__"
 globals["__file__"] = filename
 
 sys.argv = [filename, "-q", "--name"]
+sys.path.insert(0, '%(odir)s')
 execfile(filename, globals)
 """
 
@@ -181,22 +186,27 @@ def _test(code, setup_py, show_output=False):
         os.remove(filename_out)
 
 def test_distutils(setup_py, show_output):
-    return _test(distutils_code % {"filename": setup_py}, setup_py,
+    odir = os.path.dirname(os.path.abspath(setup_py))
+    return _test(distutils_code % {"filename": setup_py, "odir": odir}, setup_py,
                  show_output)
 
 def test_setuptools(setup_py, show_output):
-    return _test(setuptools_code % {"filename": setup_py}, setup_py,
+    odir = os.path.dirname(os.path.abspath(setup_py))
+    return _test(setuptools_code % {"filename": setup_py, "odir": odir}, setup_py,
                  show_output)
 
 def test_numpy(setup_py, show_output):
-    return _test(numpy_code % {"filename": setup_py}, setup_py, show_output)
+    odir = os.path.dirname(os.path.abspath(setup_py))
+    return _test(numpy_code % {"filename": setup_py, "odir": odir}, setup_py, show_output)
 
 def test_setuptools_numpy(setup_py, show_output):
-    return _test(setuptools_numpy_code % {"filename": setup_py}, setup_py,
+    odir = os.path.dirname(os.path.abspath(setup_py))
+    return _test(setuptools_numpy_code % {"filename": setup_py, "odir": odir}, setup_py,
                  show_output)
 
 def test_can_run(setup_py, show_output):
-    return _test(can_run_code % {"filename": setup_py}, setup_py, show_output)
+    odir = os.path.dirname(os.path.abspath(setup_py))
+    return _test(can_run_code % {"filename": setup_py, "odir": odir}, setup_py, show_output)
 
 def whole_test(setup_py, verbose=True):
     if verbose:
