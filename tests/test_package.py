@@ -54,3 +54,4 @@ class TestPackage(unittest.TestCase):
         finally:
             clean_tree(files)
             os.rmdir(d)
+

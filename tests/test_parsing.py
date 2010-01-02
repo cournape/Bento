@@ -321,8 +321,7 @@ Executable: foo-cmd
         PackageDescription.from_string(text)
 
 class TestOptions(unittest.TestCase):
-    def test_simple(self):
-        text = """\
+    simple_text = """\
 Name: foo
 
 Flag: flag1
@@ -333,18 +332,32 @@ Path: foo
     description: foo description
     default: /usr/lib
 """
-        s = StringIO(text)
+    def _test_simple(self, opts):
+        self.failUnless(opts.name, "foo")
+
+        flag = FlagOption("flag1", "false", "flag1 description")
+        self.failUnless(opts.flag_options.keys(), ["flags"])
+        self.failUnless(opts.flag_options["flag1"].__dict__, flag.__dict__)
+
+        path = PathOption("foo", "/usr/lib", "foo description")
+        self.failUnless(opts.path_options.keys(), ["foo"])
+        self.failUnless(opts.path_options["foo"].__dict__, path.__dict__)
+
+    def test_simple_from_string(self):
+        s = StringIO(self.simple_text)
         try:
             opts = PackageOptions.from_string(s)
-            self.failUnless(opts.name, "foo")
-            self.failUnless(opts.flag_options.keys(), ["flags"])
-            self.failUnless(opts.flag_options["flag1"].name, "flag1")
-            self.failUnless(opts.flag_options["flag1"].default_value, "false")
-            self.failUnless(opts.flag_options["flag1"].description, "flag1 description")
-
-            self.failUnless(opts.path_options.keys(), ["foo"])
-            self.failUnless(opts.path_options["foo"].name, "foo")
-            self.failUnless(opts.path_options["foo"].default_value, "/usr/lib")
-            self.failUnless(opts.path_options["foo"].description, "foo description")
+            self._test_simple(opts)
         finally:
             s.close()
+
+    def test_simple_from_file(self):
+        fid, filename = tempfile.mkstemp(suffix=".info")
+        try:
+            os.write(fid, self.simple_text)
+            opts = PackageOptions.from_file(filename)
+            self._test_simple(opts)
+        finally:
+            os.close(fid)
+            os.remove(filename)
+#
