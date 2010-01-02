@@ -64,23 +64,22 @@ Platforms: any
     for k in meta_ref:
         assert_equal(parsed[k], meta_ref[k])
 
-# XXX: known failure
-#def test_url_metadata():
-#    meta_ref = {
-#        "name": "foo",
-#        "summary": "A summary",
-#        "downloadurl": "http://www.example.com",
-#    }
-#
-#    meta_str = """\
-#Name: foo
-#Summary: A summary
-#DownloadUrl: http://www.example.com
-#"""
-#
-#    parsed = parse(meta_str.splitlines())
-#    for k in meta_ref:
-#        assert_equal(parsed[k], meta_ref[k])
+def test_url_metadata():
+    meta_ref = {
+        "name": "foo",
+        "summary": "A summary",
+        "downloadurl": "http://www.example.com",
+    }
+
+    meta_str = """\
+Name: foo
+Summary: A summary
+DownloadUrl: http://www.example.com
+"""
+
+    parsed = parse(meta_str.splitlines())
+    for k in meta_ref:
+        assert_equal(parsed[k], meta_ref[k])
 
 class TestExtension(unittest.TestCase):
     def setUp(self):
