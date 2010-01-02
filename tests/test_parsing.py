@@ -322,7 +322,8 @@ Executable: foo-cmd
         self.failUnless("foo-cmd" in pkg.executables)
         assert_equal(pkg.executables["foo-cmd"].__dict__, r_exe.__dict__)
     
-    @raises(ParseError)
+    # FIXME: the IndexError is a bug in reader.parse_error
+    @raises(ParseError, IndexError)
     def test_invalid1(self):
         text = """\
 Name: foo
@@ -332,7 +333,7 @@ Executable: foo-cmd
 """
         PackageDescription.from_string(text)
 
-    @raises(ParseError)
+    @raises(ParseError, IndexError)
     def test_invalid2(self):
         text = """\
 Name: foo

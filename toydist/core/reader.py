@@ -81,7 +81,7 @@ Parsing error at line %s: %s:
     line is:
     %s
 Parser traceback: %s''' %
-                         (self.line, msg, self._original_data[self.line-1],
+                         (self.line, msg, self._original_data[self.line],
                           ' -> '.join(self._traceback)))
 
     def expect(self, line, err):
