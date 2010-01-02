@@ -139,31 +139,11 @@ class PackageDescription:
         pkgs = list(set([k.split(".", 1)[0] for k in self.packages]))
         return pkgs
 
-    def to_dict(self):
-        """Return a distutils.core.setup compatible dict."""
-        d = {'name': self.name,
-            'version': self.version,
-            'description': self.summary,
-            'url': self.url,
-            'author': self.author,
-            'author_email': self.author_email,
-            'maintainer': self.maintainer,
-            'maintainer_email': self.maintainer_email,
-            'license': self.license,
-            'long_description': self.description,
-            'platforms': self.platforms,
-            'py_modules': self.py_modules,
-            'ext_modules': self.extensions,
-            'packages': self.packages,
-            'install_requires': self.install_requires}
-
-        return d
-
 def file_list(pkg, root_src=""):
     # FIXME: root_src
     files = []
     for entry in pkg.extra_source_files:
-        files.extend(expand_glob(entry))
+        files.extend(expand_glob(entry, root_src))
 
     for p in pkg.packages:
         files.extend(find_package(p, root_src))
@@ -173,7 +153,8 @@ def file_list(pkg, root_src=""):
 
     for section in pkg.data_files.values():
         for entry in section.files:
-            files.extend([os.path.join(section.srcdir, f) for f in expand_glob(entry)])
+            files.extend([os.path.join(root_src, section.srcdir, f) 
+                          for f in expand_glob(entry, root_src)])
 
     return files
 
