@@ -77,10 +77,11 @@ class Reader(object):
         """Raise a parsing error with the given message."""
         raise ParseError('''
 
-Parsing error at line %s (%s):
-%s
+Parsing error at line %s: %s:
+    line is:
+    %s
 Parser traceback: %s''' %
-                         (self.line, msg, self._original_data[self.line],
+                         (self.line, msg, self._original_data[self.line-1],
                           ' -> '.join(self._traceback)))
 
     def expect(self, line, err):
