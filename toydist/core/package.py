@@ -11,8 +11,10 @@ from toydist.core.descr_parser import \
 
 class PackageDescription:
     @classmethod
-    def __from_data(cls, data):
-        d = parse(data)
+    def __from_data(cls, data, user_flags):
+        if not user_flags:
+            user_flags = {}
+        d = parse(data, user_flags)
 
         kw = {}
         for k in ['name', 'version', 'summary', 'url', 'author',
@@ -71,18 +73,18 @@ class PackageDescription:
         return cls(**kw)
 
     @classmethod
-    def from_string(cls, s):
+    def from_string(cls, s, user_flags=None):
         """Create a PackageDescription from a string containing the package
         description."""
-        return cls.__from_data(s.splitlines())
+        return cls.__from_data(s.splitlines(), user_flags)
 
     @classmethod
-    def from_file(cls, filename):
+    def from_file(cls, filename, user_flags=None):
         """Create a PackageDescription from a toysetup.info file."""
         info_file = open(filename, 'r')
         try:
             data = info_file.readlines()
-            return cls.__from_data(data)
+            return cls.__from_data(data, user_flags)
         finally:
             info_file.close()
 
