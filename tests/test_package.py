@@ -7,6 +7,7 @@ from nose.tools import \
 
 from toydist import PackageDescription
 from toydist.core.package import file_list
+from toydist.core.meta import PackageMetadata
 from toydist.core.pkg_objects import DataFiles
 
 def create_file(file, makedirs=True):
@@ -55,3 +56,10 @@ class TestPackage(unittest.TestCase):
             clean_tree(files)
             os.rmdir(d)
 
+class TestPackageMetadata(unittest.TestCase):
+    def test_ctor(self):
+        meta = PackageMetadata(name="foo", version="1.0", author="John Doe",
+                               author_email="john@doe.com")
+        assert_equal(meta.fullname, "foo-1.0")
+        assert_equal(meta.contact, "John Doe")
+        assert_equal(meta.contact_email, "john@doe.com")
