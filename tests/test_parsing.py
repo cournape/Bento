@@ -9,10 +9,19 @@ from os.path import \
 from nose.tools import \
     assert_equal
 
+try:
+    from cStringIO import StringIO
+finally:
+    from StringIO import StringIO
+
 from toydist.core.descr_parser import \
     parse
+from toydist.core.pkg_objects import \
+    PathOption, FlagOption
 from toydist.core.parse_utils import \
     CommaListLexer, comma_list_split
+from toydist.core.options import \
+    PackageOptions
 
 from toydist import PackageDescription, static_representation
 
@@ -253,3 +262,32 @@ Flag: flag1
 
         m = parse(text.splitlines(), user_flags={"flag1": True})
         self.failUnless(m["flags"], "true")
+
+class TestOptions(unittest.TestCase):
+    def test_simple(self):
+        text = """\
+Name: foo
+
+Flag: flag1
+    description: flag1 description
+    default: false
+
+Path: foo
+    description: foo description
+    default: /usr/lib
+"""
+        s = StringIO(text)
+        try:
+            opts = PackageOptions.from_string(s)
+            self.failUnless(opts.name, "foo")
+            self.failUnless(opts.flag_options.keys(), ["flags"])
+            self.failUnless(opts.flag_options["flag1"].name, "flag1")
+            self.failUnless(opts.flag_options["flag1"].default_value, "false")
+            self.failUnless(opts.flag_options["flag1"].description, "flag1 description")
+
+            self.failUnless(opts.path_options.keys(), ["foo"])
+            self.failUnless(opts.path_options["foo"].name, "foo")
+            self.failUnless(opts.path_options["foo"].default_value, "/usr/lib")
+            self.failUnless(opts.path_options["foo"].description, "foo description")
+        finally:
+            s.close()

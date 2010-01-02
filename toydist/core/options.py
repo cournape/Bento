@@ -18,6 +18,11 @@ class PackageOptions(object):
         return cls(**kw)
 
     @classmethod
+    def from_string(cls, str):
+        """Create a PackageOptions instance from a toysetup.info content."""
+        return cls.__from_data(str.readlines())
+
+    @classmethod
     def from_file(cls, filename):
         """Create a PackageOptions instance from a toysetup.info file."""
         fid = open(filename, 'r')
