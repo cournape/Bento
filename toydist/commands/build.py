@@ -84,7 +84,7 @@ Usage:   toymaker build [OPTIONS]."""
         filename = s.package_description
         scheme = dict([(k, s.paths[k]) for k in s.paths])
 
-        pkg = PackageDescription.from_file(filename)
+        pkg = PackageDescription.from_file(filename, user_flags=s.flags)
 
         # FIXME: root_src
         root_src = ""

@@ -77,6 +77,13 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
         for name, opt in scheme_opts.items():
             self.opts.append(opt)
 
+        flag_opts = {}
+        for name, v in pkg_opts.flag_options.items():
+            flag_opts[name] = {
+                    "opts": ["--with-%s" % v.name],
+                    "help": "%s [default=%s]" % (v.description, v.default_value)}
+            self.opts.append(flag_opts[name])
+
         self.set_option_parser()
         o, a = self.parser.parse_args(opts)
         if o.help:
@@ -89,8 +96,24 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
                 if val:
                     scheme[k] = val
 
+        # FIXME: fix this mess
+        flag_vals = {}
+        for k in flag_opts:
+            opt_name = "with_" + k
+            if hasattr(o, opt_name):
+                val = getattr(o, opt_name)
+                if val:
+                    if val == "true":
+                        flag_vals[k] = True
+                    elif val == "false":
+                        flag_vals[k] = False
+                    else:
+                        msg = """Error: %s: option %s expects a true or false argument"""
+                        raise UsageException(msg % (SCRIPT_NAME, "--with-%s" % k))
+
         s = ConfigureState()
         s.paths = scheme
+        s.flags = flag_vals
         s.package_description = filename
         s.dump()
         pprint('GREEN', "Writing configuration state in file %s" % '.config.bin')
