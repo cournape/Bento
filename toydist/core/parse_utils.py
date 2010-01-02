@@ -7,7 +7,7 @@ class CommaListLexer(object):
         else:
             self._lexer = shlex.shlex(posix=True)
         self._lexer.whitespace += ','
-        self._lexer.wordchars += './()*-'
+        self._lexer.wordchars += './()*-$'
         self.eof = self._lexer.eof
 
     def get_token(self):

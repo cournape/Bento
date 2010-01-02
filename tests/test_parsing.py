@@ -156,7 +156,8 @@ bar"""]
 def test_comma_list_split():
     for test in [('foo', ['foo']), ('foo,bar', ['foo', 'bar']),
             ('foo\,bar', ['foo,bar']),
-            ('foo.c\,bar.c', ['foo.c,bar.c'])]:
+            ('foo.c\,bar.c', ['foo.c,bar.c']),
+            ('foo$var', ["foo$var"])]:
         assert_equal(comma_list_split(test[0]), test[1])
 
 class TestPackage(unittest.TestCase):
