@@ -264,7 +264,7 @@ def executable_parser(r, store, flags={}):
 
     for k in ["function", "module"]:
         if not e_store.has_key(k):
-            r.parse_error("Each executable section should have a %s field." % k)
+            r.parse_error("Each executable section should have a %s field" % k)
 
     store["executables"][name] = Executable.from_parse_dict(name, e_store)
 
