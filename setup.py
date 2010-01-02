@@ -8,12 +8,15 @@ from distutils.core import setup
 VERSION = "0.0.2"
 RELEASED = False
 if not RELEASED:
-    if os.path.exists(".git"):
-        s = subprocess.Popen(["git", "rev-parse", "HEAD"],
-                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out = s.communicate()[0]
-        GIT_VERSION = out.strip()
-    else:
+    try:
+        if os.path.exists(".git"):
+            s = subprocess.Popen(["git", "rev-parse", "HEAD"],
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            out = s.communicate()[0]
+            GIT_VERSION = out.strip()
+        else:
+            GIT_VERSION = ""
+    except WindowsError:
         GIT_VERSION = ""
     FULL_VERSION = VERSION + "dev" + GIT_VERSION
 else:
