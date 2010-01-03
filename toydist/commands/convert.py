@@ -228,9 +228,9 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
                 if len(d["files"]) > 0:
                     name = "gendata_%s" % d["target"].replace(os.path.sep, "_")
                     gendatafiles[name] = {
-                        "srcdir": d["srcdir"],
-                        "target": os.path.join("$gendatadir", d["target"]),
-                        "files": d["files"]
+                        "srcdir": canonalize_path(d["srcdir"]),
+                        "target": posjoin("$gendatadir", canonalize_path(d["target"])),
+                        "files": [canonalize_path(f) for f in d["files"]]
                     }
             path_options.append(PathOption("gendatadir", "$sitedir",
                     "Directory for datafiles obtained from distutils conversion"
@@ -239,11 +239,13 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
 
         extra_source_files = []
         if LIVE_OBJECTS["extra_data"]:
-            extra_source_files.extend(LIVE_OBJECTS["extra_data"])
+            extra_source_files.extend([canonalize_path(f) 
+                                      for f in LIVE_OBJECTS["extra_data"]])
         pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg))
 
         if LIVE_OBJECTS["data_files"]:
-            pkg.data_files = combine_groups(LIVE_OBJECTS["data_files"])
+            data_files = [canonalize_path(f) for f in LIVE_OBJECTS["data_files"]]
+            pkg.data_files = combine_groups(data_files)
 
         # numpy.distutils bug: packages are appended twice to the Distribution
         # instance, so we prune the list here
