@@ -244,8 +244,7 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
         pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg))
 
         if LIVE_OBJECTS["data_files"]:
-            data_files = [canonalize_path(f) for f in LIVE_OBJECTS["data_files"]]
-            pkg.data_files = combine_groups(data_files)
+            pkg.data_files = combine_groups(LIVE_OBJECTS["data_files"])
 
         # numpy.distutils bug: packages are appended twice to the Distribution
         # instance, so we prune the list here
@@ -316,6 +315,12 @@ def detect_monkeys(setup_py, show_output):
     else:
         raise ValueError("Unsupported converter")
 
+# Functions below should always produce posix-style paths, even on windows
+from ntpath import \
+    join as ntjoin, split as ntsplit
+from posixpath import \
+    join as posjoin, normpath as posnormpath
+
 def combine_groups(data_files):
     """Given a list of tuple (target, files), combine files together per
     target/srcdir.
@@ -339,15 +344,15 @@ def combine_groups(data_files):
         # FIXME: install policies should not be handled here
         # FIXME: find the cases when entries' length are 2 vs 3
         if len(e) == 2:
-            target = os.path.join("$sitedir", e[0])
+            target = posjoin("$sitedir", e[0])
             sources = e[1]
         elif len(e) == 3:
-            target = os.path.join("$prefix", e[1])
+            target = posjoin("$prefix", e[1])
             sources = e[2]
 
         for s in sources:
             srcdir = os.path.dirname(s)
-            name = os.path.basename(s)
+            name = canonalize_path(os.path.basename(s))
 
             # Generate a unique key for target/source combination
             key = "%s_%s" % (target.replace(os.path.sep, "_"), srcdir.replace(os.path.sep, "_"))
@@ -363,11 +368,6 @@ def combine_groups(data_files):
                 ret[key] = d
 
     return ret
-
-from ntpath import \
-    join as ntjoin, split as ntsplit
-from posixpath import \
-    join as posjoin, normpath as posnormpath
 
 def prune_file_list(files, redundant):
     """Prune a list of files relatively to a second list.
