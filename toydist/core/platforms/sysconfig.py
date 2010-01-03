@@ -1,3 +1,5 @@
+import sys
+
 # Whenever you add a variable in _SCHEME, you should add one in _SCHEME_OPTS as
 # well, otherwise the it will not be customizable from configure.
 _SCHEME = {
@@ -49,6 +51,30 @@ _SCHEME = {
         'sitedir': '$libdir/python$py_version_short/site-packages',
         'pkgdatadir': '$datadir/$pkgname'
     },
+    'win32': {
+        'prefix': sys.prefix,
+        'eprefix': r'$prefix',
+        'bindir': r'$eprefix\Scripts',
+        'sbindir': r'$eprefix\Scripts',
+        'libexecdir': r'$eprefix\Scripts',
+        'sysconfdir': r'$prefix\etc',
+        'sharedstatedir': r'$prefix\com',
+        'localstatedir': r'$prefix\var',
+        'libdir': r'$eprefix\lib',
+        'includedir': r'$prefix\include',
+        'datarootdir': r'$prefix\share',
+        'datadir': r'$datarootdir',
+        'mandir': r'$datarootdir\man',
+        'infodir': r'$datarootdir\info',
+        'localedir': r'$datarootdir\locale',
+        'docdir': r'$datarootdir\doc\$pkgname',
+        'htmldir': r'$docdir',
+        'dvidir': r'$docdir',
+        'psdir': r'$docdir',
+        'pdfdir': r'$docdir',
+        'sitedir': r'$prefix\Lib\site-packages',
+        'pkgdatadir': r'$datadir\$pkgname'
+    }
 }
 
 _SCHEME_OPTS = {
