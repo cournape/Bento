@@ -40,8 +40,8 @@ DESCR = """\
 Toydist is a toy distribution tool for python packages, The goal are
 extensibility, flexibility, and easy interoperation with external tools.
 
-As its name indicate, that's a toy packaging tool, which is only used as a
-'straw' man for experimentation
+Toydist is still in infancy; discussions happen on the NumPy Mailing list
+(http://mail.scipy.org/pipermail/numpy-discussion/).
 """
 
 CLASSIFIERS = [
