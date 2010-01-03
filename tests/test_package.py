@@ -32,10 +32,10 @@ class TestPackage(unittest.TestCase):
         # Create a simple package in temp dir, and check file_list(pkg) is what
         # we expect
         _files = [
-            "foo/pkg/__init__.py",
-            "foo/pkg/yo.py",
-            "foo/module.py",
-            "foo/data/foo.dat",
+            os.path.join("foo", "pkg", "__init__.py"),
+            os.path.join("foo", "pkg", "yo.py"),
+            os.path.join("foo", "module.py"),
+            os.path.join("foo", "data", "foo.dat"),
         ]
 
         d = tempfile.mkdtemp()
