@@ -196,3 +196,4 @@ Useful discussions which are related to toydist design:
 
     * BUILDS (never passed the design stage AFAIK): http://mail.python.org/pipermail/distutils-sig/2008-October/010343.html
     * Going away from setup.py: http://www.mail-archive.com/distutils-sig@python.org/msg08031.html
+    * `Just use debian' on distutils-sig: http://mail.python.org/pipermail/distutils-sig/2008-September/010129.html
