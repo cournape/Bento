@@ -2,7 +2,7 @@ import os
 import sys
 
 from toydist.core.utils import \
-        pprint, find_package, prune_file_list
+        pprint, find_package
 from toydist.core.parse_utils import \
         comma_list_split
 from toydist.core.package import \
@@ -361,3 +361,39 @@ def combine_groups(data_files):
                 ret[key] = d
 
     return ret
+
+from ntpath import \
+    join as ntjoin, split as ntsplit
+from posixpath import \
+    join as posjoin, normpath as posnormpath
+
+def prune_file_list(files, redundant):
+    """Prune a list of files relatively to a second list.
+
+    Return a subsequence of `files' which contains only files not in
+    `redundant'
+
+    Parameters
+    ----------
+    files: seq
+        list of files to prune.
+    redundant: seq
+        list of candidate files to prune.
+    """
+    files_set = set([posnormpath(f) for f in files])
+    redundant_set = set([posnormpath(f) for f in redundant])
+
+    return list(files_set.difference(redundant_set))
+
+def canonalize_path(path):
+    """Convert a win32 path to unix path."""
+    if os.path.sep == "/":
+        return path
+    head, tail = ntsplit(path)
+    lst = [tail]
+    while head and tail:
+        head, tail = ntsplit(head)
+        lst.insert(0, tail)
+    lst.insert(0, head)
+
+    return posjoin(*lst)
