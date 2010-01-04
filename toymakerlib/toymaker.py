@@ -39,7 +39,11 @@ from toydist.commands.core import \
         MyOptionParser, get_command_names, get_command, \
         get_public_command_names
 
-TOYMAKER_DEBUG = True
+if os.environ.get("TOYMAKER_DEBUG", None) is not None:
+    TOYMAKER_DEBUG = True
+else:
+    TOYMAKER_DEBUG = False
+
 SCRIPT_NAME = 'toymaker'
 
 #================================
