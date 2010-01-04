@@ -144,7 +144,92 @@ form of globbing, in particular recursive ones are purposedly not supported to
 avoid cluttering the tarball by accident.
 
 Installed data files
-~~~~~~~~~~~~~~~~~~~~
+--------------------
+
+It is often needed to install data files within the rest of the package.
+Toydist's system is both simple and flexible enough so that any file in your
+sources can be installed anywhere. The most simple syntax for data files is as
+follows::
+
+    DataFiles:
+        target: /etc
+        files:
+            somefile.conf
+
+This installs the file somefile.conf into /etc. Using hardcoded paths should be
+avoided, though. Toydist allows you to use "dynamic" path instead. This scheme
+should be familiar to people who have used autotools::
+
+    DataFiles:
+        target: $sysconfdir
+        files:
+            somefile.conf
+
+$sysconfigdir is a path variable: toydist defines several path variables
+(available on every platform), which may be customized at the configure stage.
+For example, on Unix, $sysconfdir is defined as $prefix/etc, and prefix is
+itself defined as /usr/local. If prefix is changed, sysconfdir will be changed
+accordingly. Of course, sysconfdir itself may be customized as well. This
+allows for very flexible installation layout, and every particular install
+scheme (distutils --user, self-contained as in GoboLinux or Mac OS X) may be
+implemented on top.
+
+It is also possible to define your own path variables (see `Path option`_
+section).
+
+Srcdir field
+~~~~~~~~~~~~
+
+By default, the installed name is the concatenation of target and the values in
+files, e.g.::
+
+    DataFiles:
+        target: $includedir
+        files:
+            foo/bar.h
+
+will be installed as $includedir/foo/bar.h. If instead, you want to install
+foo/bar.h as $includedir/bar.h, you need to use the srcdir field::
+
+    DataFiles:
+        target: $includedir
+        srcdir: foo
+        files:
+            bar.h
+
+Named data files section
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can define as many DataFiles sections as you want, as long as you name
+them, i.e.::
+
+    DataFiles: man1
+        target: $mandir/man1
+        srcdir: doc/man
+        files:
+            *.1
+
+    DataFiles: man3
+        target: $mandir/man3
+        srcdir: doc/man
+        files:
+            *.3
+
+is ok, but::
+
+    DataFiles:
+        target: $mandir/man1
+        srcdir: doc/man
+        files:
+            *.1
+
+    DataFiles:
+        target: $mandir/man3
+        srcdir: doc/man
+        files:
+            *.3
+
+is not.
 
 TODO.
 
