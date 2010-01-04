@@ -15,7 +15,7 @@ from toydist.core.descr_parser import \
         ParseError
 
 from toydist.commands.core import \
-        Command, HelpCommand
+        Command, HelpCommand, get_usage
 from toydist.commands.configure import \
         ConfigureCommand
 from toydist.commands.build import \
