@@ -140,7 +140,7 @@ limited form of globbing is allowed::
         doc/source/chapter1/*.rst
 
 that is globbing on every file with the same extension is allowed. Any other
-form of globbing, in particular recursive ones are not supported on purpose, to
+form of globbing, in particular recursive ones are purposedly not supported to
 avoid cluttering the tarball by accident.
 
 Installed data files
