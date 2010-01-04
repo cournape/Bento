@@ -67,16 +67,19 @@ def main(argv=None):
 
     show_usage = False
     show_version = False
+    show_full_version = False
     cmd_name = None
     cmd_opts = None
 
     try:
-        opts, pargs = getopt.getopt(argv, "hv", ["help", "version"])
+        opts, pargs = getopt.getopt(argv, "hv", ["help", "version", "full-version"])
         for opt, arg in opts:
             if opt in ("--help", "-h"):
                 show_usage = True
             if opt in ("--version", "-v"):
                 show_version = True
+            if opt in ("--full-version"):
+                show_full_version = True
 
         if len(pargs) > 0:
             cmd_name = pargs.pop(0)
@@ -89,6 +92,10 @@ def main(argv=None):
 
     if show_version:
         print toydist.__version__
+        return 0
+
+    if show_full_version:
+        print toydist.__version__ + "git" + toydist.__git_revision__
         return 0
 
     if show_usage:
