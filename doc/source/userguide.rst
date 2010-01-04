@@ -231,13 +231,26 @@ is ok, but::
 
 is not.
 
-TODO.
-
-Adding custom path options
---------------------------
-
 Conditionals
-------------
+============
+
+It is not always possible to have one same package description for every
+platform. It may also be desirable to enable/disable some parts of a package
+depending on some option. For this reason, the .info file supports a limited
+form of conditional. For example::
+
+    Library:
+        InstallDepends:
+            docutils,
+            sphinx
+            if os(windows)
+                pywin32
+
+The following conditional forms are available:
+
+    - os(value): condition on the OS
+    - arch(value): conditional on the architecture
+    - flag(value): user-defined flag, boolean
 
 Adding custom flags
 -------------------
