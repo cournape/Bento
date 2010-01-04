@@ -13,11 +13,7 @@ from toydist.commands.core import \
 from toydist.commands.configure import \
         ConfigureState
 
-try:
-    import numpy
-    USE_NUMPY_DISTUTILS = True
-except ImportError:
-    USE_NUMPY_DISTUTILS = False
+USE_NUMPY_DISTUTILS = False
 
 def build_extensions(extensions):
     # FIXME: import done here to avoid clashing with monkey-patch as done by
@@ -83,6 +79,16 @@ Usage:   toymaker build [OPTIONS]."""
         if not os.path.exists('.config.bin'):
             raise UsageException(
                    "You need to run %s configure before building" % SCRIPT_NAME)
+
+        # XXX: import here because numpy import time slows down everything
+        # otherwise. This is ugly, but using numpy.distutils is temporary
+        # anyway
+        try:
+            import numpy
+            USE_NUMPY_DISTUTILS = True
+        except ImportError:
+            USE_NUMPY_DISTUTILS = False
+
         s = ConfigureState.from_dump('.config.bin')
 
         filename = s.package_description
