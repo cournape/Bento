@@ -1,8 +1,9 @@
+==========
 User guide
 ==========
 
 Package description
--------------------
+===================
 
 The package description is a text file, by default named toysetup.info. Its
 syntax is indentation-based, and lines starting with `#` are ignored (comments).
@@ -26,7 +27,7 @@ Each section consists of field:value pairs:
       spaces is on the TODO list, tab will not be supported.
 
 Package metadata
-~~~~~~~~~~~~~~~~
+----------------
 
 Almost every metadata supported in distutils/setuptools is supported in toydist
 file format. For a simple package containing one module hello, the
@@ -45,16 +46,16 @@ toysetup.info metadata definition would look like::
     License: BSD
 
 Library section
-~~~~~~~~~~~~~~~
+---------------
 
 Executable section
-~~~~~~~~~~~~~~~~~~
+------------------
 
 User-options declaration
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 Pure python packages
---------------------
+====================
 
 Assuming a package with the following layout::
 
@@ -87,7 +88,7 @@ as well as::
         packages: hello.pkg1, hello.pkg2, hello
 
 Packages containing C extensions
---------------------------------
+================================
 
 For a simple extension hello._foo, built from sources src/foo.c and src/bar.c,
 the declaration is as follows::
@@ -102,7 +103,7 @@ Note: none of the other distutils Extension arguments (macro definitions,
 etc...) are supported yet.
 
 Packages with data files
-------------------------
+========================
 
 Adding data files in toydist is easy. By data files, we mean any file other
 than C extension sources and python files. There are two kinds of data files in toydist:
@@ -116,7 +117,7 @@ than C extension sources and python files. There are two kinds of data files in 
       VCS in setuptools, etc...)
 
 Extra source files
-~~~~~~~~~~~~~~~~~~
+------------------
 
 Extra source files are simply declared in the section ExtraSourceFiles (outside
 any Library section)::
