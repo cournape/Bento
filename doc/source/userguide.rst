@@ -1,9 +1,16 @@
+.. toctree::
+   :maxdepth: 2
+
 ==========
 User guide
 ==========
 
+-------------------
 Package description
-===================
+-------------------
+
+Introduction
+============
 
 The package description is a text file, by default named toysetup.info. Its
 syntax is indentation-based, and lines starting with `#` are ignored (comments).
@@ -278,5 +285,93 @@ A new flag option may be added::
 
 Toymaker automatically adds an --octavedir option (with help taken from the
 description), and $octavedir may be used inside the .info file.
+
+-----------------------------------------------
+Toymaker, the command line interface to toydist
+-----------------------------------------------
+
+Introduction
+============
+
+Toymaker is a simple python package which uses toydist API to configure, build
+and install packages. A simple install with toymaker looks like this::
+
+    toymaker configure --prefix=/home/david/local
+    toymaker build
+    toymaker install
+
+Toymaker has a basic help facility::
+
+    toymaker help
+
+will list all available commands. Once the project is configured, every
+installation path and user customization is setup, and cannot be changed
+(except by reconfiguring the package, of course). Toymaker is still in infancy,
+and quite limited:
+
+    - it will complain when you try to install without having run build first (it
+      will not automatically run build for you).
+    - Both build and install commands are simplistic: no dependency checking is
+      done (everything is rebuilt everytime you run build, every install
+      installs everything), everything is built in sources, etc...
+    - As a starting point, building C extensions is still done through distutils
+
+Available commands
+==================
+
+configure
+---------
+
+This commands must be run before any build/install command. It is similar to
+the well-known configure script from autoconf. Every customizable option is
+available from the command help::
+
+    toymaker configure -h
+
+build
+-----
+
+This simply builds the package. For pure-python packages, it does almost
+nothing, except producing a `Build manifest`_. For packages with C extensions,
+the C extensions are built (through distutils ATM).
+
+install
+-------
+
+build_egg
+---------
+
+This command builds an egg from the package description. It currently requires
+that configure and build commands have been run.
+
+*This is experimental - although I intend to produce eggs which are as backward
+compatible as possible with existing tools (in particular enstaller, and
+hopefully virtualenv and buildout), eggs are implementation defined, and depend
+a lot on distutils idiosyncraties.*
+
+sdist
+-----
+
+This simply produces a source tarball. Currently, only .tar.gz is supported.
+
+convert
+-------
+
+This convert a package built from distutils, setuptools or numpy.distutils::
+
+    toymaker convert
+
+If successful, it will produce a toysetup.info file.
+
+*This is experimental, and may not work. Also, it cannot convert every package
+accurately, as it is based on inspecting setup.py's execution*. Nevertheless,
+it can already convert simple, but non trivial packages such as sphinx pretty
+accurately.
+
+Implementation details
+======================
+
+Build manifest
+--------------
 
 .. _sphinx: http://sphinx.pocoo.org
