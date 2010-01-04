@@ -252,7 +252,31 @@ The following conditional forms are available:
     - arch(value): conditional on the architecture
     - flag(value): user-defined flag, boolean
 
-Adding custom flags
--------------------
+Adding custom options
+=====================
+
+Path option
+-----------
+
+A new path option may be added::
+
+    Path: octavedir
+        Description: octave directory
+        Default: $datadir/octave
+
+Toymaker automatically adds an --octavedir option (with help taken from the
+description), and $octavedir may be used inside the .info file.
+
+Flag option
+-----------
+
+A new flag option may be added::
+
+    Flag: debug
+        Description: build debug
+        Default: false
+
+Toymaker automatically adds an --octavedir option (with help taken from the
+description), and $octavedir may be used inside the .info file.
 
 .. _sphinx: http://sphinx.pocoo.org
