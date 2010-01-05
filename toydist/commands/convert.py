@@ -175,31 +175,37 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
 
         tp = o.type
 
-        if tp == "automatic":
-            try:
-                pprint("PINK",
-                       "Catching monkey (this may take a while) ...")
-                tp = detect_monkeys(filename, show_output)
-                pprint("PINK", "Detected mode: %s" % tp)
-            except ValueError, e:
-                raise UsageException("Error while detecting setup.py type " \
-                                     "(original error: %s)" % str(e))
+        log = open("convert.log", "w")
+        try:
+            if tp == "automatic":
+                try:
+                    pprint("PINK",
+                           "Catching monkey (this may take a while) ...")
+                    tp = detect_monkeys(filename, show_output, log)
+                    pprint("PINK", "Detected mode: %s" % tp)
+                except ValueError, e:
+                    raise UsageException("Error while detecting setup.py type " \
+                                         "(original error: %s)" % str(e))
 
-        monkey_patch(tp, filename)
-        # analyse_setup_py put results in LIVE_OBJECTS
-        dist = analyse_setup_py(filename, setup_args)
-        pkg, options = build_pkg(dist, LIVE_OBJECTS)
+            monkey_patch(tp, filename)
+            # analyse_setup_py put results in LIVE_OBJECTS
+            dist = analyse_setup_py(filename, setup_args)
+            pkg, options = build_pkg(dist, LIVE_OBJECTS)
 
-        out = static_representation(pkg, options)
-        if output == '-':
-            for line in out.splitlines():
-                pprint("YELLOW", line)
-        else:
-            fid = open(output, "w")
-            try:
-                fid.write(out)
-            finally:
-                fid.close()
+            out = static_representation(pkg, options)
+            if output == '-':
+                for line in out.splitlines():
+                    pprint("YELLOW", line)
+            else:
+                fid = open(output, "w")
+                try:
+                    fid.write(out)
+                finally:
+                    fid.close()
+        finally:
+            log.flush()
+            log.close()
+            pprint("PINK", "Details about the conversion are in convert.log")
 
 def analyse_setup_py(filename, setup_args):
     pprint('PINK', "======================================================")
@@ -291,12 +297,12 @@ def prune_extra_files(files, pkg):
 
     return prune_file_list(files, redundant)
 
-def detect_monkeys(setup_py, show_output):
+def detect_monkeys(setup_py, show_output, log):
     from toydist.commands.convert_utils import \
         test_distutils, test_setuptools, test_numpy, test_setuptools_numpy, \
         test_can_run
 
-    if not test_can_run(setup_py, show_output):
+    if not test_can_run(setup_py, show_output, log):
         raise SetupCannotRun()
 
     def print_delim(string):
@@ -304,13 +310,13 @@ def detect_monkeys(setup_py, show_output):
             pprint("YELLOW", string)
 
     print_delim("----------------- Testing distutils ------------------")
-    use_distutils = test_distutils(setup_py, show_output)
+    use_distutils = test_distutils(setup_py, show_output, log)
     print_delim("----------------- Testing setuptools -----------------")
-    use_setuptools = test_setuptools(setup_py, show_output)
+    use_setuptools = test_setuptools(setup_py, show_output, log)
     print_delim("------------ Testing numpy.distutils -----------------")
-    use_numpy = test_numpy(setup_py, show_output)
+    use_numpy = test_numpy(setup_py, show_output, log)
     print_delim("--- Testing numpy.distutils patched by setuptools ----")
-    use_setuptools_numpy = test_setuptools_numpy(setup_py, show_output)
+    use_setuptools_numpy = test_setuptools_numpy(setup_py, show_output, log)
     print_delim("Is distutils ? %s" % use_distutils)
     print_delim("Is setuptools ? %s" % use_setuptools)
     print_delim("Is numpy distutils ? %s" % use_numpy)
