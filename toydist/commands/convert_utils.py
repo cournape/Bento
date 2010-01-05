@@ -70,9 +70,9 @@ globals["__file__"] = filename
 
 sys.argv = [filename, "-q", "--help"]
 setuptools.setup = new_setup
+distutils.core.setup = new_setup
 sys.path.insert(0, '%(odir)s')
 execfile(filename, globals)
-print DIST.__module__
 
 if DIST is None:
     sys.exit(-2)
