@@ -2,8 +2,13 @@ import os
 import sys
 import tempfile
 
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+
 from subprocess import \
-        PIPE, call
+        PIPE, call, STDOUT, Popen
 
 from toydist.core.utils import \
         pprint
@@ -167,63 +172,91 @@ sys.path.insert(0, '%(odir)s')
 execfile(filename, globals)
 """
 
-def _test(code, setup_py, show_output=False):
-    fake_out, filename_out = tempfile.mkstemp(suffix=".out", text=True)
+def logged_run(cmd, buffer):
+    """Return exit code."""
+    pid = Popen(cmd, stdout=PIPE, stderr=STDOUT)
+    pid.wait()
+
+    buffer.write(pid.stdout.read())
+    return pid.returncode
+    
+def _test(code, setup_py, show_output, log):
+    fid, filename = tempfile.mkstemp(suffix=".py", text=True)
     try:
-        fid, filename = tempfile.mkstemp(suffix=".py", text=True)
-        try:
-            os.write(fid, code)
-            if show_output:
-                return call([sys.executable, filename]) == 0
-            else:
-                return call([sys.executable, filename], stdout=fake_out,
-                            stderr=PIPE) == 0
-        finally:
-            os.close(fid)
-            os.remove(filename)
+        cmd = [sys.executable, filename]
+        log.write(" | Running %s, content below\n" % " ".join(cmd))
+        log.writelines([" | | %s\n" % line for line in code.splitlines()])
+
+        os.write(fid, code)
+
+        buf = StringIO()
+        st = logged_run(cmd, buf)
+
+        # FIXME: handle this correctly
+        log.write(" | return of the command is %d and output is\n" % st)
+        val = buf.getvalue()
+        if val:
+            log.writelines([" | | %s\n" % line for line in val.splitlines()])
+            log.write("\n")
+        else:
+            log.write(" | (None)\n")
+        log.write("\n")
+        return st == 0
     finally:
-        os.close(fake_out)
-        os.remove(filename_out)
+        os.close(fid)
+        os.remove(filename)
 
-def test_distutils(setup_py, show_output):
+def test_distutils(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))
+    log.write("toymaker: convert\n")
+    log.write(" -> testing straight distutils\n")
     return _test(distutils_code % {"filename": setup_py, "odir": odir}, setup_py,
-                 show_output)
+                 show_output, log)
 
-def test_setuptools(setup_py, show_output):
+def test_setuptools(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))
+    log.write("toymaker: convert\n")
+    log.write(" -> testing setuptools\n")
     return _test(setuptools_code % {"filename": setup_py, "odir": odir}, setup_py,
-                 show_output)
+                 show_output, log)
 
-def test_numpy(setup_py, show_output):
+def test_numpy(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))
-    return _test(numpy_code % {"filename": setup_py, "odir": odir}, setup_py, show_output)
+    log.write("toymaker: convert\n")
+    log.write(" -> testing straight numpy.distutils\n")
+    return _test(numpy_code % {"filename": setup_py, "odir": odir}, setup_py,
+                 show_output, log)
 
-def test_setuptools_numpy(setup_py, show_output):
+def test_setuptools_numpy(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))
+    log.write("toymaker: convert\n")
+    log.write(" -> testing numpy.distutils monkey-patched by setuptools\n")
     return _test(setuptools_numpy_code % {"filename": setup_py, "odir": odir}, setup_py,
-                 show_output)
+                 show_output, log)
 
-def test_can_run(setup_py, show_output):
+def test_can_run(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))
-    return _test(can_run_code % {"filename": setup_py, "odir": odir}, setup_py, show_output)
+    log.write("toymaker: convert\n")
+    log.write(" -> testing whether setup.py can be executed without errors\n")
+    return _test(can_run_code % {"filename": setup_py, "odir": odir}, setup_py,
+                 show_output, log)
 
-def whole_test(setup_py, verbose=True):
+def whole_test(setup_py, verbose, log):
     if verbose:
         show_output = True
     else:
         show_output = False
 
-    if not test_can_run(setup_py, show_output):
+    if not test_can_run(setup_py, show_output, log):
         pass
     pprint("YELLOW", "----------------- Testing distutils ------------------")
-    use_distutils = test_distutils(setup_py, show_output)
+    use_distutils = test_distutils(setup_py, show_output, log)
     pprint("YELLOW", "----------------- Testing setuptools -----------------")
-    use_setuptools = test_setuptools(setup_py, show_output)
+    use_setuptools = test_setuptools(setup_py, show_output, log)
     pprint("YELLOW", "------------ Testing numpy.distutils -----------------")
-    use_numpy = test_numpy(setup_py, show_output)
+    use_numpy = test_numpy(setup_py, show_output, log)
     pprint("YELLOW", "--- Testing numpy.distutils patched by setuptools ----")
-    use_setuptools_numpy = test_setuptools_numpy(setup_py, show_output)
+    use_setuptools_numpy = test_setuptools_numpy(setup_py, show_output, log)
     if verbose:
         print "Is distutils ?", use_distutils
         print "Is setuptools ?", use_setuptools

@@ -1,6 +1,9 @@
 import os
 import sys
 
+from cStringIO import \
+        StringIO
+
 from toydist.core.utils import \
         pprint, find_package
 from toydist.core.parse_utils import \
@@ -171,97 +174,112 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
             setup_args = ["-q", "-n"]
 
         tp = o.type
-        if tp == "automatic":
-            try:
-                pprint("PINK",
-                       "Catching monkey (this may take a while) ...")
-                tp = detect_monkeys(filename, show_output)
-                pprint("PINK", "Detected mode: %s" % tp)
-            except ValueError, e:
-                raise UsageException("Error while detecting setup.py type " \
-                                     "(original error: %s)" % str(e))
 
-        monkey_patch(tp, filename)
-
-        pprint('PINK', "======================================================")
-        pprint('PINK', " Analysing %s (running %s) .... " % (filename, filename))
-
-        # exec_globals contains the globals used to execute the setup.py
-        exec_globals = {}
-        exec_globals.update(globals())
-        # Some setup.py files call setup from their main, so execute them as if
-        # they were the main script
-        exec_globals["__name__"] = "__main__"
-        exec_globals["__file__"] = os.path.abspath(filename)
-
-        _saved_argv = sys.argv[:]
-        _saved_sys_path = sys.path
+        log = open("convert.log", "w")
         try:
-            sys.argv = [filename] + setup_args + ["build_py"]
-            # XXX: many packages import themselves to get version at build
-            # time, and setuptools screw this up by inserting stuff first. Is
-            # there a better way ?
-            sys.path.insert(0, os.path.dirname(filename))
-            execfile(filename, exec_globals)
-            if type == "distutils" and "setuptools" in sys.modules:
-                pprint("YELLOW", "Setuptools detected in distutils mode !!!")
-        except Exception, e:
-            pprint('RED', "Got exception: %s" % e)
-            raise e
+            if tp == "automatic":
+                try:
+                    pprint("PINK",
+                           "Catching monkey (this may take a while) ...")
+                    tp = detect_monkeys(filename, show_output, log)
+                    pprint("PINK", "Detected mode: %s" % tp)
+                except ValueError, e:
+                    raise UsageException("Error while detecting setup.py type " \
+                                         "(original error: %s)" % str(e))
+
+            monkey_patch(tp, filename)
+            # analyse_setup_py put results in LIVE_OBJECTS
+            dist = analyse_setup_py(filename, setup_args)
+            pkg, options = build_pkg(dist, LIVE_OBJECTS)
+
+            out = static_representation(pkg, options)
+            if output == '-':
+                for line in out.splitlines():
+                    pprint("YELLOW", line)
+            else:
+                fid = open(output, "w")
+                try:
+                    fid.write(out)
+                finally:
+                    fid.close()
         finally:
-            sys.argv = _saved_argv
-            sys.path = _saved_sys_path
+            log.flush()
+            log.close()
+            pprint("PINK", "Details about the conversion are in convert.log")
 
-        if not "dist" in LIVE_OBJECTS:
-            raise ValueError("setup monkey-patching failed")
-        dist = LIVE_OBJECTS["dist"]
+def analyse_setup_py(filename, setup_args):
+    pprint('PINK', "======================================================")
+    pprint('PINK', " Analysing %s (running %s) .... " % (filename, filename))
 
-        pprint('PINK', " %s analyse done " % filename)
-        pprint('PINK', "======================================================")
+    # exec_globals contains the globals used to execute the setup.py
+    exec_globals = {}
+    exec_globals.update(globals())
+    # Some setup.py files call setup from their main, so execute them as if
+    # they were the main script
+    exec_globals["__name__"] = "__main__"
+    exec_globals["__file__"] = os.path.abspath(filename)
 
-        pkg = distutils_to_package_description(dist)
-        path_options = []
-        pkg.data_files = {}
-        if LIVE_OBJECTS["package_data"]:
-            gendatafiles = {}
-            for d in LIVE_OBJECTS["package_data"]:
-                if len(d["files"]) > 0:
-                    name = "gendata_%s" % d["target"].replace(os.path.sep, "_")
-                    gendatafiles[name] = {
-                        "srcdir": canonalize_path(d["srcdir"]),
-                        "target": posjoin("$gendatadir", canonalize_path(d["target"])),
-                        "files": [canonalize_path(f) for f in d["files"]]
-                    }
-            path_options.append(PathOption("gendatadir", "$sitedir",
-                    "Directory for datafiles obtained from distutils conversion"
-                    ))
-            pkg.data_files.update(gendatafiles)
+    _saved_argv = sys.argv[:]
+    _saved_sys_path = sys.path
+    try:
+        sys.argv = [filename] + setup_args + ["build_py"]
+        # XXX: many packages import themselves to get version at build
+        # time, and setuptools screw this up by inserting stuff first. Is
+        # there a better way ?
+        sys.path.insert(0, os.path.dirname(filename))
+        execfile(filename, exec_globals)
+        if type == "distutils" and "setuptools" in sys.modules:
+            pprint("YELLOW", "Setuptools detected in distutils mode !!!")
+    except Exception, e:
+        pprint('RED', "Got exception: %s" % e)
+        raise e
+    finally:
+        sys.argv = _saved_argv
+        sys.path = _saved_sys_path
 
-        extra_source_files = []
-        if LIVE_OBJECTS["extra_data"]:
-            extra_source_files.extend([canonalize_path(f) 
-                                      for f in LIVE_OBJECTS["extra_data"]])
-        pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg))
+    if not "dist" in LIVE_OBJECTS:
+        raise ValueError("setup monkey-patching failed")
+    dist = LIVE_OBJECTS["dist"]
 
-        if LIVE_OBJECTS["data_files"]:
-            pkg.data_files = combine_groups(LIVE_OBJECTS["data_files"])
+    pprint('PINK', " %s analyse done " % filename)
+    pprint('PINK', "======================================================")
 
-        # numpy.distutils bug: packages are appended twice to the Distribution
-        # instance, so we prune the list here
-        pkg.packages = sorted(list(set(pkg.packages)))
+    return dist
 
-        options = {"path_options": path_options}
-        out = static_representation(pkg, options)
+def build_pkg(dist, live_objects):
+    pkg = distutils_to_package_description(dist)
+    path_options = []
+    pkg.data_files = {}
+    if live_objects["package_data"]:
+        gendatafiles = {}
+        for d in live_objects["package_data"]:
+            if len(d["files"]) > 0:
+                name = "gendata_%s" % d["target"].replace(os.path.sep, "_")
+                gendatafiles[name] = {
+                    "srcdir": canonalize_path(d["srcdir"]),
+                    "target": posjoin("$gendatadir", canonalize_path(d["target"])),
+                    "files": [canonalize_path(f) for f in d["files"]]
+                }
+        path_options.append(PathOption("gendatadir", "$sitedir",
+                "Directory for datafiles obtained from distutils conversion"
+                ))
+        pkg.data_files.update(gendatafiles)
 
-        if output == '-':
-            for line in out.splitlines():
-                pprint("YELLOW", line)
-        else:
-            fid = open(output, "w")
-            try:
-                fid.write(out)
-            finally:
-                fid.close()
+    extra_source_files = []
+    if live_objects["extra_data"]:
+        extra_source_files.extend([canonalize_path(f) 
+                                  for f in live_objects["extra_data"]])
+    pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg))
+
+    if live_objects["data_files"]:
+        pkg.data_files = combine_groups(live_objects["data_files"])
+
+    # numpy.distutils bug: packages are appended twice to the Distribution
+    # instance, so we prune the list here
+    pkg.packages = sorted(list(set(pkg.packages)))
+    options = {"path_options": path_options}
+    
+    return pkg, options
 
 def prune_extra_files(files, pkg):
 
@@ -279,12 +297,12 @@ def prune_extra_files(files, pkg):
 
     return prune_file_list(files, redundant)
 
-def detect_monkeys(setup_py, show_output):
+def detect_monkeys(setup_py, show_output, log):
     from toydist.commands.convert_utils import \
         test_distutils, test_setuptools, test_numpy, test_setuptools_numpy, \
         test_can_run
 
-    if not test_can_run(setup_py, show_output):
+    if not test_can_run(setup_py, show_output, log):
         raise SetupCannotRun()
 
     def print_delim(string):
@@ -292,13 +310,13 @@ def detect_monkeys(setup_py, show_output):
             pprint("YELLOW", string)
 
     print_delim("----------------- Testing distutils ------------------")
-    use_distutils = test_distutils(setup_py, show_output)
+    use_distutils = test_distutils(setup_py, show_output, log)
     print_delim("----------------- Testing setuptools -----------------")
-    use_setuptools = test_setuptools(setup_py, show_output)
+    use_setuptools = test_setuptools(setup_py, show_output, log)
     print_delim("------------ Testing numpy.distutils -----------------")
-    use_numpy = test_numpy(setup_py, show_output)
+    use_numpy = test_numpy(setup_py, show_output, log)
     print_delim("--- Testing numpy.distutils patched by setuptools ----")
-    use_setuptools_numpy = test_setuptools_numpy(setup_py, show_output)
+    use_setuptools_numpy = test_setuptools_numpy(setup_py, show_output, log)
     print_delim("Is distutils ? %s" % use_distutils)
     print_delim("Is setuptools ? %s" % use_setuptools)
     print_delim("Is numpy distutils ? %s" % use_numpy)
