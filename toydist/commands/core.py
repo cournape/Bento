@@ -41,6 +41,9 @@ def register_command(name, klass, public=True):
 class UsageException(Exception):
     pass
 
+class ConvertionError(Exception):
+    pass
+
 class MyOptionParser(optparse.OptionParser):
     def __init__(self, *a, **kw):
         if not kw.has_key('add_help_option'):

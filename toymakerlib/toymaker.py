@@ -37,7 +37,7 @@ from toydist.commands.build_egg import \
 from toydist.commands.core import \
         register_command, UsageException, \
         MyOptionParser, get_command_names, get_command, \
-        get_public_command_names
+        get_public_command_names, ConvertionError
 
 if os.environ.get("TOYMAKER_DEBUG", None) is not None:
     TOYMAKER_DEBUG = True
@@ -122,6 +122,9 @@ def noexc_main(argv=None):
     except ParseError, e:
         pprint('RED', "".join(e.args))
         sys.exit(2)
+    except ConvertionError, e:
+        pprint('RED', "".join(e.args))
+        sys.exit(3)
     except Exception, e:
         if TOYMAKER_DEBUG:
             tb = sys.exc_info()[2]

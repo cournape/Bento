@@ -16,7 +16,7 @@ from toydist.core.pkg_objects import \
         PathOption
 
 from toydist.commands.core import \
-        Command, UsageException
+        Command, UsageException, ConvertionError
 
 class SetupCannotRun(Exception):
     pass
@@ -202,10 +202,13 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
                     fid.write(out)
                 finally:
                     fid.close()
+        except Exception, e:
+            msg = "Error while converting %s - you may look at config.log for " \
+                  "details (Original exception: %s %s)" 
+            raise ConvertionError(msg % (filename, type(e), str(e)))
         finally:
             log.flush()
             log.close()
-            pprint("PINK", "Details about the conversion are in convert.log")
 
 def analyse_setup_py(filename, setup_args):
     pprint('PINK', "======================================================")
