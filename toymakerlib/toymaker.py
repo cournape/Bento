@@ -129,7 +129,9 @@ def noexc_main(argv=None):
         if TOYMAKER_DEBUG:
             tb = sys.exc_info()[2]
             traceback.print_tb(tb)
-        pprint('RED', "%s: Error: %s crashed (uncaught exception %s: %s)." % \
+        pprint('RED', "%s: Error: %s crashed (uncaught exception %s: %s).\n"
+                "Please report this on toydist issue tracker: \n" \
+                "\thttp://github.com/cournape/toydist/issues" %
                (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e)))
         sys.exit(1)
     sys.exit(ret)
