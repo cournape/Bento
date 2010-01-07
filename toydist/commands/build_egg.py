@@ -26,6 +26,11 @@ def egg_filename(fullname, pyver=None):
         pyver = ".".join([str(i) for i in sys.version_info[:2]])
     return "%s-py%s.egg" % (fullname, pyver)
 
+def egg_info_dirname(fullname, pyver=None):
+    if not pyver:
+        pyver = ".".join([str(i) for i in sys.version_info[:2]])
+    return "%s-py%s.egg-info" % (fullname, pyver)
+
 class BuildEggCommand(Command):
     long_descr = """\
 Purpose: build egg
