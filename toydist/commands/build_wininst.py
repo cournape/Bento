@@ -2,6 +2,7 @@ import os
 import sys
 import string
 import zipfile
+import tempfile
 
 try:
     from cStringIO import StringIO
@@ -48,7 +49,7 @@ Usage:   toymaker build_wininst [OPTIONS]"""
         meta = PackageMetadata.from_installed_pkg_description(ipkg)
 
         # XXX: do this correctly, maybe use same as distutils ?
-        arcname = os.path.join("toydist", "yoyo.zip")
+        fid, arcname = tempfile.mkstemp(prefix="zip")
 
         wininst = wininst_filename(os.path.join("toydist", meta.fullname))
         wininst_dir = os.path.dirname(wininst)
@@ -95,8 +96,11 @@ Usage:   toymaker build_wininst [OPTIONS]"""
                     for value in file_sections[type].values():
                         for f in value:
                             zid.write(f[0], f[1])
+
+            create_exe(ipkg, arcname, wininst)
         finally:
             zid.close()
+            os.close(fid)
+            os.remove(arcname)
 
-        create_exe(ipkg, arcname, wininst)
         return 
