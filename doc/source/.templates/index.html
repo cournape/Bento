@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+{% set title = 'Home' %}
+
+
+{% block body %}
+  <h1>{{ docstitle }}</h1>
+
+  <p>Welcome to toydist main documentation. Toydist is a tool to package python
+  packages, without using distutils or setuptools. </p>
+
+  <h2>Sections</h2>
+<!--
+  <table class="contentstable" align="center" style="margin-left: 30px"><tr>
+    <td width="33%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("contents") }}">Contents</a><br/>
+         <span class="linkdescr">for a complete overview</span></p>
+    </td><td width="34%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("search") }}">Search page</a><br/>
+         <span class="linkdescr">search the documentation</span></p>
+    </td><td width="34%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("genindex") }}">General Index</a><br/>
+         <span class="linkdescr">all functions, classes, terms</span></p>
+    </td></tr>
+  </table>
+-->
+   <table class="contentstable" align="center">
+      <tr valign="top"><td width="50%">
+      <p class="biglink">
+         <a class="biglink" href="{{ pathto('overview') }}">
+            Overview</a><br/>
+         <span class="linkdescr">
+            Introduction to {{project}}.
+         </span></p>
+
+     <p class="biglink">
+         <a class="biglink" href="{{ pathto('userguide') }}">
+            User Guide</a><br/>
+         <span class="linkdescr">
+             Usage guidelines.
+         </span></p>
+
+     <p class="biglink">
+         <a class="biglink" href="{{ pathto('features') }}">
+            Features</a><br/>
+         <span class="linkdescr">
+             Features.
+         </span></p>
+
+   </td><td width="50%">
+
+     <p class="biglink">
+         <a class="biglink" href="{{ pathto('faq') }}">
+            FAQ</a><br/>
+         <span class="linkdescr">
+             FAQ.
+         </span></p>
+
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto('contribute') }}">
+            Contribute</a><br/>
+        <span class="linkdescr">
+            Take part in development.
+        </span></p>
+
+   </td></tr></table>
+
+   <h2>Indices and Tables</h2>
+
+   <table class="contentstable" align="center">
+      <tr valign="top"><td width="50%">
+      <p class="biglink">
+         <a class="biglink" href="{{ pathto('contents') }}">
+            Table of Contents</a><br/>
+         <span class="linkdescr">
+            Lists all sections and subsections.
+         </span></p>
+
+      <p class="biglink">
+         <a class="biglink" href="{{ pathto('search') }}">
+            Search Page</a><br/>
+         <span class="linkdescr">
+            Search this documentation.
+         </span></p>
+
+      </td><td width="50%">
+
+      <p class="biglink">
+         <a class="biglink" href="{{ pathto('genindex') }}">
+            Index</a><br/>
+         <span class="linkdescr">
+            All functions, classes, terms.
+         </span></p>
+
+    </td></tr></table>
+<!--
+  <h2>Get toydist</h2>
+
+  <p>Download toydist from the
+  <a href="http://github.com/cournape/toydist">github project page</a> (but first take a look at the
+  <a href="{{ pathto('installation') }}">installation</a> page).</p>
+
+  <p>The code can be found in a git repository, at
+    <tt>http://github.com/cournape/toydist</tt>.</p>
+-->
+
+{% endblock %}

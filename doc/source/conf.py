@@ -130,15 +130,18 @@ html_static_path = ['.static']
 # typographically correct entities.
 #html_use_smartypants = True
 
+# Content template for the index page.
+html_index = 'index.html'
+
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {'index': 'indexsidebar.html'}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-#html_additional_pages = {}
+html_additional_pages = {'index': 'index.html'}
 
 # If false, no module index is generated.
-#html_use_modindex = True
+html_use_modindex = True
 
 # If false, no index is generated.
 #html_use_index = True
