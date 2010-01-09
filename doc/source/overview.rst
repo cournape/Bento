@@ -24,11 +24,13 @@ Overview
 ..     - Simpler, and more obvious behavior compared to distutils/setuptools for
 ..       simple projects
 
+Toydist is based on a declarative package description, which is parsed by the
+different build tools to do the actual work. There are currently two ways to
+create such a package description: by writing it from scratch, or by converting
+existing setup.py.
+
 Simple example
 --------------
-
-There are two ways to try out toydist: for a package written from scratch, or
-from conversion from existing setup.py.
 
 From scratch
 ~~~~~~~~~~~~
