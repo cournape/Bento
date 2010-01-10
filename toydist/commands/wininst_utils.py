@@ -1,6 +1,7 @@
 import sys
 import os
 import string
+import time
 
 from distutils.util import \
         get_platform
@@ -9,6 +10,7 @@ from distutils.sysconfig import \
 
 from toydist.core import \
         PackageMetadata
+import toydist
 
 def wininst_filename(fullname, pyver=None):
     if not pyver:
@@ -16,6 +18,8 @@ def wininst_filename(fullname, pyver=None):
     return "%s-py%s.win32.exe" % (fullname, pyver)
 
 # Stolen from distutils.commands.bdist_wininst
+# FIXME: improve this code, in particular integration with
+# InstalledPkgDescription
 
 # FIXME: deal with this correctly, in particular MSVC - most likely we will
 # need to hardcode things depending on python versions
@@ -121,11 +125,10 @@ def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="toydist"):
 
 def get_inidata(ipkg):
     # Return data describing the installation.
-
-    lines = []
     meta = PackageMetadata.from_installed_pkg_description(ipkg)
 
     # Write the [metadata] section.
+    lines = []
     lines.append("[metadata]")
 
     # 'info' will be displayed in the installer's dialog box,
@@ -160,8 +163,6 @@ def get_inidata(ipkg):
 
     title = meta.fullname
     lines.append("title=%s" % escape(title))
-    import time
-    import toydist
     build_info = "Built %s with distutils-%s" % \
                  (time.ctime(time.time()), toydist.__version__)
     lines.append("build_info=%s" % build_info)
