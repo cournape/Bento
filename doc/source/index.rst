@@ -19,8 +19,10 @@ use. Discussions on toydist design happens on the NumPy Mailing List.
 
    overview
    features
-   userguide
+   reference
    faq
+   TODO
+   contribute
 
 Indices and tables
 ==================

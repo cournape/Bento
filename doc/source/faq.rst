@@ -10,8 +10,8 @@ complex build issues in NumPy and SciPy. I found distutils poorly documented,
 being tightly coupled internally, and inflexible. Other tools built on top only
 made it worse by making putting more cruft over distutils instead of fixing it.
 
-Why not extending distutils/setuptools/distribute/etc... ?
-==========================================================
+Why not extending existing tools (distutils, etc...) ?
+======================================================
 
 There is a general consensus at least in the scientific python community that
 distutils is deeply flawed:
@@ -45,7 +45,7 @@ elsewhere is much more likely to be successfull.
 Finally, the current development happening on distutils-sig is mainly the work
 of web-developers, who have a different vision of what packaging means.  Most
 of their goals are specific to web-development needs, often against known good
-practices in packaging in general.
+practices for packaging.
 
 What are the goals of toydist ?
 ===============================
@@ -99,3 +99,4 @@ The main inspirations for toydist current design are taken from:
 .. _RPM: http://rpm5.org/docs/api/specfile.html
 .. _Cabal: http://www.haskell.org/cabal
 .. _Scons: http://www.scons.org
+.. _Autoconf: http://sources.redhat.com/autobook/
