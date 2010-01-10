@@ -3,7 +3,7 @@
 
 
 {% block body %}
-  <h1>{{ docstitle }}</h1>
+  <h1>{{ project }} documentation (release {{release}})</h1>
 
   <p>Welcome to toydist main documentation. Toydist is a tool to package python
   packages, without using distutils or setuptools. </p>
@@ -33,17 +33,17 @@
          </span></p>
 
      <p class="biglink">
-         <a class="biglink" href="{{ pathto('userguide') }}">
-            User Guide</a><br/>
+         <a class="biglink" href="{{ pathto('reference') }}">
+            Reference</a><br/>
          <span class="linkdescr">
-             Usage guidelines.
+	 Details description of the file format and command line interface.
          </span></p>
 
      <p class="biglink">
          <a class="biglink" href="{{ pathto('features') }}">
             Features</a><br/>
          <span class="linkdescr">
-             Features.
+             Current and planned features.
          </span></p>
 
    </td><td width="50%">
@@ -59,7 +59,7 @@
         <a class="biglink" href="{{ pathto('contribute') }}">
             Contribute</a><br/>
         <span class="linkdescr">
-            Take part in development.
+            Taking part in toydist's development.
         </span></p>
 
       <p class="biglink">
