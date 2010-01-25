@@ -15,7 +15,7 @@ git checkout $MASTER_BRANCH || exit
 git pull $MASTER_REPO $MASTER_BRANCH || exit
 
 virtualenv bootstrap
-source bootstrap/bin/activate
+. bootstrap/bin/activate
 python setup.py install
 
 (cd doc && make html)
