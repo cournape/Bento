@@ -5,7 +5,7 @@ import unittest
 import sys
 
 from os.path import \
-    join
+    join, dirname
 from nose.tools import \
     assert_equal, raises
 
@@ -27,7 +27,7 @@ from toydist import PackageDescription, static_representation
 
 old = sys.path[:]
 try:
-    sys.path.insert(0, "pkgdescr")
+    sys.path.insert(0, join(dirname(__file__), "pkgdescr"))
     from simple_package import PKG, DESCR
 finally:
     sys.path = old
