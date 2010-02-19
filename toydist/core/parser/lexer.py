@@ -1,6 +1,9 @@
 import ply
 import ply.lex
 
+from toydist.core.parser.utils \
+    import \
+        Peeker
 __all__ = ["MyLexer"]
 
 #==============
@@ -149,3 +152,101 @@ class MyLexer(object):
             return self.token_stream.next()
         except StopIteration:
             return None
+
+def indent_generator(token_stream):
+    """Post process the given stream of tokense to generate INDENT/DEDENT
+    tokens.
+    
+    Note
+    ----
+    Each generated token's value is the total amount of spaces from the
+    beginning of the line.
+    
+    The way indentation tokens are generated is similar to how it works in
+    python."""
+    stack = [0]
+
+    # Dummy token to track the token just before the current one
+    former = ply.lex.LexToken()
+    former.type = "NEWLINE"
+    former.value = "dummy"
+    former.lineno = 0
+    former.lexpos = -1
+
+    sentinel = ply.lex.LexToken()
+    sentinel.type = "LAST_TOKEN"
+    sentinel.value = "dummy"
+    sentinel.lineno = -1
+    sentinel.lexpos = -1
+
+    def generate_dedent(stck, tok):
+        amount = stck.pop(0)
+        return new_dedent(amount, tok)
+
+    tokens = Peeker(token_stream, dummy=sentinel)
+
+    for token in tokens:
+        if former.type == "NEWLINE":
+            if token.type == "WS":
+                indent = len(token.value)
+            else:
+                indent = 0
+
+            if indent == stack[0]:
+                former = token
+                if indent > 0:
+                    token = tokens.next()
+                    former = token
+                    yield token
+                else:
+                    yield former
+            elif indent > stack[0]:
+                stack.insert(0, indent)
+                ind = new_indent(indent, token)
+                former = ind
+                yield ind
+            elif indent < stack[0]:
+                if not indent in stack:
+                    raise ValueError("Wrong indent at line %d" % token.lineno)
+                while stack[0] > indent:
+                    former = generate_dedent(stack, token)
+                    yield former
+                if stack[0] > 0:
+                    former = tokens.next()
+                    yield former
+                else:
+                    former = token
+                    yield token
+        else:
+            former = token
+            yield token
+
+    # Generate additional DEDENT so that the number of INDENT/DEDENT always
+    # match
+    while len(stack) > 1:
+        former = generate_dedent(stack, token)
+        yield former
+
+def new_indent(amount, token):
+    tok = ply.lex.LexToken()
+    tok.type = "INDENT"
+    tok.value = amount
+    tok.lineno = token.lineno
+    tok.lexpos = token.lexpos
+    return tok
+
+def new_dedent(amount, token):
+    tok = ply.lex.LexToken()
+    tok.type = "DEDENT"
+    tok.value = amount
+    tok.lineno = token.lineno
+    tok.lexpos = token.lexpos
+    return tok
+
+def _new_token(type, token):
+    tok = ply.lex.LexToken()
+    tok.type = type
+    tok.value = token.value
+    tok.lineno = token.lineno
+    tok.lexpos = token.lexpos
+    return tok
