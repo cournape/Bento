@@ -250,3 +250,178 @@ def _new_token(type, token):
     tok.lineno = token.lineno
     tok.lexpos = token.lexpos
     return tok
+
+def scanning_field_id(token, stream, stack):
+    if token.value in META_FIELDS_ID.keys():
+        pass
+    return token, state
+
+_FIELD_TYPE_TO_STATE = {
+    "WORD": "SCANNING_WORD_FIELD",
+    "WORDS": "SCANNING_WORDS_FIELD",
+    "LINE": "SCANNING_SINGLELINE_FIELD",
+    "MULTILINE": "SCANNING_MULTILINE_FIELD"
+}
+
+def singleline_tokenizer(token, state, stream, internal):
+    if token.type == "NEWLINE":
+        state = "SCANNING_FIELD_ID"
+    return token, state
+
+def multiline_tokenizer(token, state, stream, internal):
+    stack = internal["stack"]
+    queue = internal["queue"]
+    stack_level = internal["stack_level"]
+
+    if token.type == "INDENT":
+        stack.append(token)
+        queue.insert(0, token)
+    elif token.type == "DEDENT":
+        prev = stack.pop(0)
+        if len(stack) < 1:
+            state = "SCANNING_FIELD_ID"
+        queue.insert(0, token)
+    elif token.type == "NEWLINE":
+        saved_newline = token
+        # Case where there is a single, non indented line for the field, i.e.:
+        # Description: a description
+        if (len(stack) == stack_level[0] and stream.peek().type != "INDENT"):
+            state = "SCANNING_FIELD_ID"
+            internal["stack_level"] = None
+        elif stream.peek().type == "DEDENT":
+            try:
+                while stream.peek().type == "DEDENT":
+                    token = stream.next()
+                    queue.insert(0, token)
+                    stack.pop()
+            except StopIteration:
+                pass
+            if len(stack) == stack_level[0]:
+                state = "SCANNING_FIELD_ID"
+                internal["stack_level"] = None
+            else:
+                queue.append(saved_newline)
+        else:
+            queue.insert(0, token)
+    else:
+        queue.insert(0, token)
+    return token, state
+
+def word_tokenizer(token, state, stream, internal):
+    queue = []
+    state = "SCANNING_FIELD_ID"
+    internal["queue"] = queue
+
+    try:
+        while token.type != "NEWLINE":
+            if token.type == "WORD":
+                queue.append(token)
+            token = stream.next()
+    except StopIteration:
+        queue.append(token)
+    return token, state
+
+def words_tokenizer(token, state, stream, internal):
+    words_stack = internal["words_stack"]
+    if token.type == "INDENT":
+        words_stack.append(token)
+    elif token.type == "DEDENT":
+        prev = words_stack.pop(0)
+        if len(words_stack) < 1:
+            state = "SCANNING_FIELD_ID"
+            internal["words_stack"] = []
+    return token, state
+
+def scan_field_id(token, state, stream, internal):
+    # When a candidate is found, do as follows:
+    # - save the candidate
+    # - eat any whitespace
+    # - if next is colon, candidate is an identifier, emit both
+    # identifier and colon
+    candidate = token
+    token = stream.peek()
+    if token.type == "WS":
+        token = stream.peek()
+    if token.type == "COLON":
+        # We do have a identifier, so replace WORD token by the
+        # right keyword token
+        candidate = _new_token(META_FIELDS_ID[candidate.value], candidate)
+
+    field_type = FIELD_TYPE[candidate.type]
+    try:
+        state = _FIELD_TYPE_TO_STATE[field_type]
+    except KeyError:
+        raise ValueError("Unknown state transition for type %s" % field_type)
+
+    return candidate, state
+
+def post_process(stream):
+    # XXX: this is awfully complicated...
+    stack = []
+    words_stack = []
+    stack_level = None
+    state = "SCANNING_FIELD_ID"
+
+    stream = Peeker(stream)
+    i = stream.next()
+    while i:
+        if state == "SCANNING_FIELD_ID":
+            if i.value in META_FIELDS_ID.keys():
+                i, state = scan_field_id(i, state, stream, None)
+                yield i
+
+                i = stream.next()
+                yield i
+
+                i = stream.next()
+            elif i.type == "NEWLINE":
+                i = stream.next()
+            else:
+                if i.type == "INDENT":
+                    stack.append(i)
+                elif i.type == "DEDENT":
+                    stack.pop(0)
+                yield i
+                i = stream.next()
+        elif state == "SCANNING_SINGLELINE_FIELD":
+            i, state = singleline_tokenizer(i, state, stream, None)
+            if not i.type == "NEWLINE":
+                yield i
+            i = stream.next()
+        elif state == "SCANNING_MULTILINE_FIELD":
+            if stack_level is None:
+                stack_level = [len(stack)]
+            internal = {"stack": stack, "queue": [], "stack_level": stack_level}
+            i, state = multiline_tokenizer(i, state, stream, internal)
+            stack_level = internal["stack_level"]
+            while len(internal["queue"]) > 0:
+                yield internal["queue"].pop()
+            i = stream.next()
+        elif state == "SCANNING_WORD_FIELD":
+            internal = {}
+            i, state = word_tokenizer(i, state, stream, internal)
+            for t in internal["queue"]:
+                yield t
+            i = stream.next()
+        elif state == "SCANNING_WORDS_FIELD":
+            i, state = _skip_ws(i, stream, words_stack, state)
+            if state == "SCANNING_WORDS_FIELD":
+                internal = {"words_stack": words_stack}
+                i, state = words_tokenizer(i, state, stream, internal)
+                words_stack = internal["words_stack"]
+                yield i
+            i = stream.next()
+        else:
+            raise ValueError("Unknown state: %s" % state)
+
+def _skip_ws(tok, stream, words_stack, state):
+    while tok.type  in ["NEWLINE", "WS"]:
+        if tok.type == "NEWLINE" and len(words_stack) == 0:
+            next = stream.peek()
+            if not next.type == "INDENT":
+                state = "SCANNING_FIELD_ID"
+            else:
+                tok = stream.next()
+            return tok, state
+        tok = stream.next()
+    return tok, state
