@@ -156,3 +156,28 @@ Node(type='stmt_list'):
 """
 
         self._test(data, expected)
+
+    def test_meta_stmts(self):
+        data = """\
+Name: yo
+Summary: yeah\
+"""
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='name', value='yo')
+    Node(type='summary', value=[Node('literal'), Node('literal')])\
+"""
+
+        self._test(data, expected)
+
+    def test_empty(self):
+        data = ""
+        expected = "None"
+
+        self._test(data, expected)
+
+    def test_newline(self):
+        data = "\n"
+        expected = "None"
+
+        self._test(data, expected)
