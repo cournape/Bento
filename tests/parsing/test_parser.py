@@ -116,3 +116,43 @@ Node(type='stmt_list'):
 
         self._test(data, expected)
 
+    def test_meta_classifiers_single_line(self):
+        data = "Classifiers: yo"
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='classifiers'):
+        Node(type='classifier', value=' yo')\
+"""
+
+        self._test(data, expected)
+
+    def test_meta_classifiers_indent_only(self):
+        data = """\
+Classifiers:
+    yo1
+    yo2\
+"""
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='classifiers'):
+        Node(type='classifiers_list'):
+            Node(type='classifier', value='yo1')
+            Node(type='classifier', value='yo2')\
+"""
+
+        self._test(data, expected)
+
+    def test_meta_classifiers_full(self):
+        data = """\
+Classifiers: yo1
+    yo2\
+"""
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='classifiers'):
+        Node(type='classifier', value=' yo1')
+        Node(type='classifiers_list'):
+            Node(type='classifier', value='yo2')\
+"""
+
+        self._test(data, expected)

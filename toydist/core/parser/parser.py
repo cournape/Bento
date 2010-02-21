@@ -73,6 +73,7 @@ def p_meta_stmt(p):
                  | meta_maintainer_email_stmt
                  | meta_license_stmt
                  | meta_platforms_stmt
+                 | meta_classifiers_stmt
     """
     p[0] = p[1]
 
@@ -126,9 +127,52 @@ def p_meta_version_stmt(p):
     """
     p[0] = Node("version", children=[p[3]])
 
+def p_meta_classifiers_stmt_single_line(p):
+    """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifier"""
+    p[0] = Node("classifiers", children=[p[3]])
+
+def p_meta_classifiers_stmt_indent(p):
+    """meta_classifiers_stmt : CLASSIFIERS_ID COLON NEWLINE INDENT classifiers_list DEDENT
+    """
+    p[0] = Node("classifiers", children=[p[5]])
+
+def p_meta_classifiers_stmt(p):
+    """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifier NEWLINE INDENT classifiers_list DEDENT
+    """
+    p[0] = Node("classifiers", children=[p[3], p[6]])
+
+def p_classifiers_list(p):
+    """classifiers_list : classifier NEWLINE classifiers_list
+    """
+    p[0] = p[3]
+    p[0].children.insert(0, p[1])
+
+def p_classifiers_list_term(p):
+    """classifiers_list : classifier
+    """
+    p[0] = Node("classifiers_list", children=[p[1]])
+
+def p_classifier(p):
+    """classifier : literal_line"""
+    p[0] = p[1]
+    p[0].value = "".join(p[0].value)
+    p[0].type = "classifier"
+
 #-----------------------
 #   Literal handling
 #-----------------------
+
+# We produce a flat list here to speed things up (should do the same for
+# description field)
+def p_literal_line(p):
+    """literal_line : anytoken literal_line"""
+    p[0] = p[2]
+    p[2].value.insert(0, p[1].value)
+
+def p_literal_line_term(p):
+    """literal_line : anytoken"""
+    p[0] = Node("literal_line", value=[p[1].value])
+
 def p_single_line_string(p):
     """single_line : single_line literal"""
     p[0] = p[1] + [p[2]]
