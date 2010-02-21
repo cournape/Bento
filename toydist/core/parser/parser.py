@@ -20,7 +20,7 @@ class Parser(object):
             self.lexer = lexer
 
     def parse(self, data, debug=False):
-        return self.parser.parse(data, lexer=self.lexer)
+        return self.parser.parse(data, lexer=self.lexer, debug=debug)
 
 def parse(data, debug=False):
     parser = Parser()
