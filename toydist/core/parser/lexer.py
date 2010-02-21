@@ -323,7 +323,7 @@ def word_tokenizer(token, state, stream, internal):
                 queue.append(token)
             token = stream.next()
     except StopIteration:
-        queue.append(token)
+        pass
     return token, state
 
 def words_tokenizer(token, state, stream, internal):

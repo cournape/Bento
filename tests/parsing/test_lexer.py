@@ -706,3 +706,8 @@ DEDENT
 """
         self._test(data, split(ref_str))
 
+    def test_single_line(self):
+        data = "Name: word"
+
+        ref_str = "NAME_ID COLON WORD"
+        self._test(data, split(ref_str))
