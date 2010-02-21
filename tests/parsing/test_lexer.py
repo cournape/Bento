@@ -24,18 +24,8 @@ class TestLexer(TestCase):
     def setUp(self):
         self.lexer = MyLexer()
 
-    def _test_stage1(self, data, ref):
+    def _test(self, data, ref):
         self.lexer.input(data)
-        self._test_impl(data, ref)
-
-    def _test_stage2(self, data, ref):
-        self.lexer.input(data)
-        self.lexer.token_stream = indent_generator(self.lexer.token_stream)
-        self._test_impl(data, ref)
-
-    def _test_stage3(self, data, ref):
-        self.lexer.input(data)
-        self.lexer.token_stream = post_process(indent_generator(self.lexer.token_stream))
         self._test_impl(data, ref)
 
     def _test_impl(self, data, ref):
@@ -59,39 +49,21 @@ class TestLexer(TestCase):
             print "Break at index", cnt
             raise e
 
-    def _tokens_stage2(self, data):
+    def _get_tokens(self, data):
         self.lexer.input(data)
-        self.lexer.token_stream = indent_generator(self.lexer.token_stream)
-
-        res = []
-        while True:
-            tok = self.lexer.token()
-            if not tok:
-                break
-            res.append(tok)
-        return res
-
-    def _tokens_stage3(self, data):
-        self.lexer.input(data)
-        self.lexer.token_stream = indent_generator(self.lexer.token_stream)
-        self.lexer.token_stream = post_process(self.lexer.token_stream)
-
-        res = []
-        while True:
-            tok = self.lexer.token()
-            if not tok:
-                break
-            res.append(tok)
-        return res
+        return [t for t in self.lexer.token_stream]
 
 # Test tokenizer stage before indentation generation
 class TestLexerStageOne(TestLexer):
+    def setUp(self):
+        self.lexer = MyLexer(stage=1)
+
     def test_single_line(self):
         data = """\
 Name: yo
 """
         ref = ["WORD", "COLON", "WS", "WORD", "NEWLINE"]
-        self._test_stage1(data, ref)
+        self._test(data, ref)
 
     def test_two_lines(self):
         data = """\
@@ -100,22 +72,25 @@ Summary: a brief summary
 """
         ref = ["WORD", "COLON", "WS", "WORD", "NEWLINE",
                "WORD", "COLON", "WS", "WORD", "WS", "WORD", "WS", "WORD", "NEWLINE"]
-        self._test_stage1(data, ref)
+        self._test(data, ref)
 
     def test_tab(self):
         data = """\
 Library:
 \tpackages
 """
-        assert_raises(SyntaxError, lambda: self._test_stage1(data, []))
+        assert_raises(SyntaxError, lambda: self._test(data, []))
 
 class TestLexerStageTwo(TestLexer):
+    def setUp(self):
+        self.lexer = MyLexer(stage=2)
+
     def test_single_line(self):
         data = """\
 Name: yo
 """
         ref = ["WORD", "COLON", "WS", "WORD", "NEWLINE"]
-        self._test_stage2(data, ref)
+        self._test(data, ref)
 
     def test_two_lines(self):
         data = """\
@@ -124,7 +99,7 @@ Summary: a brief summary
 """
         ref = ["WORD", "COLON", "WS", "WORD", "NEWLINE",
                "WORD", "COLON", "WS", "WORD", "WS", "WORD", "WS", "WORD", "NEWLINE"]
-        self._test_stage2(data, ref)
+        self._test(data, ref)
 
     def test_simple_indent(self):
         data = """\
@@ -136,7 +111,7 @@ WORD COLON NEWLINE
 INDENT WORD NEWLINE
 DEDENT
 """
-        self._test_stage2(data, ref)
+        self._test(data, ref)
 
     def test_simple_indent2(self):
         data = """\
@@ -150,7 +125,7 @@ INDENT
 WORD COMMA NEWLINE
 WORD NEWLINE
 DEDENT"""
-        self._test_stage2(data, ref)
+        self._test(data, ref)
 
     def test_indent_newlines(self):
         data = """\
@@ -168,7 +143,7 @@ WORD NEWLINE
 WORD WS WORD WS WORD NEWLINE
 DEDENT
 """
-        self._test_stage2(data, ref)
+        self._test(data, ref)
 
     def test_double_indentation(self):
         data = """\
@@ -184,7 +159,7 @@ INDENT
 WORD NEWLINE
 DEDENT DEDENT
 """
-        self._test_stage2(data, ref)
+        self._test(data, ref)
 
     def test_simple_dedent(self):
         data = """\
@@ -197,7 +172,7 @@ WORD COLON NEWLINE
 INDENT WORD NEWLINE DEDENT
 WORD COLON WS WORD NEWLINE
 """
-        self._test_stage2(data, ref)
+        self._test(data, ref)
 
     def test_simple_indent_dedent(self):
         data = """\
@@ -223,7 +198,7 @@ DEDENT
 WORD COLON WS WORD NEWLINE
 DEDENT
 """
-        self._test_stage2(data, ref)
+        self._test(data, ref)
 
     def test_complex_indent(self):
         data = """\
@@ -251,7 +226,7 @@ DEDENT DEDENT
 WORD COLON WS WORD NEWLINE
 WORD COLON WS WORD NEWLINE
 """
-        self._test_stage2(data, ref)
+        self._test(data, ref)
 
     def test_indent_value(self):
         data = """\
@@ -265,8 +240,8 @@ INDENT WORD WS WORD WS WORD NEWLINE
 INDENT DOT NEWLINE
 DEDENT DEDENT
 """
-        self._test_stage2(data, ref)
-        tokens = self._tokens_stage2(data)
+        self._test(data, ref)
+        tokens = self._get_tokens(data)
 
         indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
         assert_equal(indents[0].value, 4)
@@ -288,8 +263,8 @@ INDENT DOT NEWLINE
 DEDENT DEDENT
 WORD COLON WS WORD NEWLINE
 """
-        self._test_stage2(data, ref)
-        tokens = self._tokens_stage2(data)
+        self._test(data, ref)
+        tokens = self._get_tokens(data)
 
         indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
         assert_equal(indents[0].value, 4)
@@ -298,12 +273,15 @@ WORD COLON WS WORD NEWLINE
         assert_equal(indents[3].value, 4)
 
 class TestLexerStageThree(TestLexer):
+    def setUp(self):
+        self.lexer = MyLexer(stage=3)
+
     def test_single_line(self):
         data = """\
 Name: yo
 """
         ref = ["NAME_ID", "COLON", "WORD"]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_two_lines(self):
         data = """\
@@ -312,7 +290,7 @@ Summary: a brief summary
 """
         ref = ["NAME_ID", "COLON", "WORD",
                "SUMMARY_ID", "COLON", "WS", "WORD", "WS", "WORD", "WS", "WORD"]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_simple_indent(self):
         data = """\
@@ -321,7 +299,7 @@ Packages:
 """
         ref = ["PACKAGES_ID", "COLON",
                "INDENT", "WORD", "DEDENT"]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_simple_indent2(self):
         data = """\
@@ -334,7 +312,7 @@ Packages:
                "WORD", "COMMA",
                "WORD",
                "DEDENT"]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_indent_newlines(self):
         data = """\
@@ -349,7 +327,7 @@ Description:
                "WORD", "NEWLINE",
                "WORD", "WS", "WORD", "WS", "WORD",
                "DEDENT"]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_double_indentation(self):
         data = """\
@@ -361,7 +339,7 @@ Description:
                "INDENT", "WORD", "NEWLINE",
                "INDENT", "WORD",
                "DEDENT", "DEDENT"]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_simple_dedent(self):
         data = """\
@@ -372,7 +350,7 @@ Name: words
         ref = ["PACKAGES_ID", "COLON",
                "INDENT", "WORD", "DEDENT",
                "NAME_ID", "COLON", "WORD"]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_simple_indent_dedent(self):
         data = """\
@@ -396,7 +374,7 @@ Library:
                "DEDENT",
                "EXTENSION_ID", "COLON", "WORD",
                "DEDENT"]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_complex_indent(self):
         data = """\
@@ -422,7 +400,7 @@ Extension: yeah2
                "DEDENT", "DEDENT",
                "EXTENSION_ID", "COLON", "WORD",
                "EXTENSION_ID", "COLON", "WORD"]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_indent_value(self):
         data = """\
@@ -434,8 +412,8 @@ Description: some
                "INDENT", "WORD", "WS", "WORD", "WS", "WORD", "NEWLINE",
                "INDENT", "DOT",
                "DEDENT", "DEDENT"]
-        self._test_stage3(data, ref)
-        tokens = self._tokens_stage3(data,)
+        self._test(data, ref)
+        tokens = self._get_tokens(data,)
 
         indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
         assert_equal(indents[0].value, 4)
@@ -455,8 +433,8 @@ Name: yo
                "INDENT", "DOT",
                "DEDENT", "DEDENT",
                "NAME_ID", "COLON", "WORD"]
-        self._test_stage3(data, ref)
-        tokens = self._tokens_stage3(data,)
+        self._test(data, ref)
+        tokens = self._get_tokens(data,)
 
         indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
         assert_equal(indents[0].value, 4)
@@ -480,7 +458,7 @@ Library:
                "DEDENT",
                "DEDENT"
                ]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_comma2(self):
         data = """\
@@ -499,14 +477,14 @@ Library:
                "PACKAGES_ID", "COLON", "WORD", "COMMA", "INDENT", "WORD",
                "DEDENT",
                "DEDENT"]
-        self._test_stage3(data, ref)
+        self._test(data, ref)
 
     def test_tab(self):
         data = """\
 Library:
 \tpackages
 """
-        assert_raises(SyntaxError, lambda: self._test_stage3(data, []))
+        assert_raises(SyntaxError, lambda: self._test(data, []))
 
     def test_rest_literal1(self):
         data = '''\
@@ -537,7 +515,7 @@ NEWLINE
 DEDENT
 """
 
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
 
         data = """
 Description:
@@ -556,7 +534,7 @@ NEWLINE
     WORD WS WORD WS WORD WS WORD COMMA WS WORD WS WORD DOT
 DEDENT
 """
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
     
         data = """\
 Description:
@@ -575,7 +553,7 @@ NEWLINE
 DEDENT
 """
 
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
 
         data = """\
 Description:
@@ -594,7 +572,7 @@ DEDENT
 DEDENT
 """
 
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
 
 #    def test_rest_literal2(self):
 #        data = '''\
@@ -638,7 +616,7 @@ Name: yo
 DESCRIPTION_ID COLON WS WORD WS WORD
 NAME_ID COLON WORD
 """
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
 
     def test_indented_multiline(self):
         data = """\
@@ -654,7 +632,7 @@ DESCRIPTION_ID COLON WS WORD
 NAME_ID COLON WORD
 DEDENT
 """
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
 
     def test_indented_multiline2(self):
         data = """\
@@ -676,9 +654,12 @@ DESCRIPTION_ID COLON WS WORD
 NAME_ID COLON WORD
 DEDENT
 """
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
 
 class TestNewLines(TestLexer):
+    def setUp(self):
+        self.lexer = MyLexer(stage=3)
+
     # Test we throw away NEWLINES except in literals
     def test_lastnewline(self):
         data = """\
@@ -687,7 +668,7 @@ Name: yo
         ref_str = """\
 NAME_ID COLON WORD
 """
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
 
     def test_start_with_newlines(self):
         data = """\
@@ -697,7 +678,7 @@ Name: yo
         ref_str = """\
 NAME_ID COLON WORD
 """
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
 
     def test_start_with_newlines2(self):
         data = """\
@@ -706,7 +687,7 @@ Summary: a summary
         ref_str = """\
 SUMMARY_ID COLON WS WORD WS WORD
 """
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
 
     def test_dedent_newline(self):
         data = """\
@@ -723,5 +704,5 @@ INDENT WORD NEWLINE
 DEDENT WORD
 DEDENT
 """
-        self._test_stage3(data, split(ref_str))
+        self._test(data, split(ref_str))
 

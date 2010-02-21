@@ -136,16 +136,21 @@ def t_tab(t):
     raise SyntaxError(msg)
 
 class MyLexer(object):
-    def __init__(self, module=None, object=None, debug=0, optimize=0,
+    def __init__(self, stage=1, module=None, object=None, debug=0, optimize=0,
                  lextab='lextab', reflags=0, nowarn=0, outputdir='',
                  debuglog=None, errorlog=None):
         self.lexer = ply.lex.lex(module, object, debug, optimize, lextab,
                                  reflags, nowarn, outputdir, debuglog,
                                  errorlog)
+        self._stage = stage
 
     def input(self, *a, **kw):
         self.lexer.input(*a, **kw)
         self.token_stream = iter(self.lexer.token, None)
+        if self._stage >= 2:
+            self.token_stream = indent_generator(self.token_stream)
+        if self._stage >= 3:
+            self.token_stream = post_process(self.token_stream)
 
     def token(self, *a, **kw):
         try:
