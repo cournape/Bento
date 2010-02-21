@@ -63,10 +63,155 @@ def p_empty(p):
 #   Meta data
 #----------------
 def p_meta_stmt(p):
-    """meta_stmt : meta_name_stmt"""
+    """meta_stmt : meta_name_stmt
+                 | meta_summary_stmt
+                 | meta_version_stmt
+                 | meta_url_stmt
+                 | meta_author_stmt
+                 | meta_author_email_stmt
+                 | meta_maintainer_stmt
+                 | meta_maintainer_email_stmt
+                 | meta_license_stmt
+                 | meta_platforms_stmt
+    """
     p[0] = p[1]
 
 def p_meta_name_stmt(p):
     """meta_name_stmt : NAME_ID COLON WORD
     """
     p[0] = Node("name", value=p[3])
+
+def p_meta_summary_stmt(p):
+    """meta_summary_stmt : SUMMARY_ID COLON single_line
+    """
+    p[0] = Node("summary", value=p[3])
+
+def p_meta_url_stmt(p):
+    """meta_url_stmt : URL_ID COLON anyword
+    """
+    p[0] = Node("url", value=p[3].value)
+
+def p_meta_author_stmt(p):
+    """meta_author_stmt : AUTHOR_ID COLON anyword
+    """
+    p[0] = Node("author", value=p[3].value)
+
+def p_meta_author_email_stmt(p):
+    """meta_author_email_stmt : AUTHOR_EMAIL_ID COLON anyword
+    """
+    p[0] = Node("author_email", value=p[3].value)
+
+def p_meta_maintainer_stmt(p):
+    """meta_maintainer_stmt : MAINTAINER_ID COLON anyword
+    """
+    p[0] = Node("maintainer", value=p[3].value)
+
+def p_meta_maintainer_email_stmt(p):
+    """meta_maintainer_email_stmt : MAINTAINER_EMAIL_ID COLON anyword
+    """
+    p[0] = Node("maintainer_email", value=p[3].value)
+
+def p_meta_license_stmt(p):
+    """meta_license_stmt : LICENSE_ID COLON anyword
+    """
+    p[0] = Node("license", value=p[3].value)
+
+def p_meta_platforms_stmt(p):
+    """meta_platforms_stmt : PLATFORMS_ID COLON anyword
+    """
+    p[0] = Node("platforms", value=p[3].value)
+
+def p_meta_version_stmt(p):
+    """meta_version_stmt : VERSION_ID COLON version
+    """
+    p[0] = Node("version", children=[p[3]])
+
+#-----------------------
+#   Literal handling
+#-----------------------
+def p_single_line_string(p):
+    """single_line : single_line literal"""
+    p[0] = p[1] + [p[2]]
+
+def p_literal(p):
+    """literal : WS 
+               | WORD
+               | DOT
+    """
+    p[0] = Node("literal", value=p[1])
+
+def p_single_line_string_term(p):
+    """single_line : literal"""
+    p[0] = [p[1]]
+
+# anyword groks any character stream without space|newline
+def p_anyword(p):
+    """anyword : anyword anytoken 
+             | anytoken
+    """
+    if len(p) == 3:
+        p[0] = Node("anyword", value=(p[1].value + p[2].value))
+    elif len(p) == 2:
+        p[0] = p[1]
+    else:
+        raise ValueError()
+
+# Any token but whitespace, newline and comma
+def p_anytoken_no_comma(p):
+    """anytoken_no_comma : WORD
+                         | INT
+                         | DOT
+                         | COLON
+                         | LPAR
+                         | RPAR
+                         | DQUOTE
+                         | STAR
+                         | BQUOTE
+                         | SQUOTE
+                         | LESS
+                         | SLASH
+                         | SHARP
+                         | EQUAL
+                         | GREATER
+                         | TILDE
+                         | LBRACE
+                         | RBRACE
+                         | PERCENT
+                         | AROBASE
+                         | DOLLAR
+                         | MINUS
+    """
+    p[0] = Node("anytoken", value=p[1])
+
+# Any token but newline
+def p_anytoken(p):
+    """anytoken : anytoken_no_comma
+    """
+    p[0] = Node("anytoken", value=p[1].value)
+
+def p_anytoken_term(p):
+    """anytoken : COMMA
+                | WS
+    """
+    p[0] = Node("anytoken", value=p[1])
+
+def p_version(p):
+    """version : num_part"""
+    p[0] = p[1]
+
+def p_num_part(p):
+    """num_part : int DOT num_part
+                | int
+    """
+    if len(p) == 4:
+        p[0] = Node("num_part", children=[p[1]])
+        p[0].children.append(p[3])
+    elif len(p) == 2:
+        p[0] = p[1]
+    else:
+        raise ValueError("YO")
+
+def p_int(p):
+    """int : INT"""
+    value = int(p[1])
+    p[0] = Node("int", value=value)

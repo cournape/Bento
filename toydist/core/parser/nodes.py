@@ -36,4 +36,3 @@ def ast_pprint(root, cur_ind=0, ind_val=4, string=None):
         print "\n".join(_buf)
     else:
         string.write("\n".join(_buf))
-    
