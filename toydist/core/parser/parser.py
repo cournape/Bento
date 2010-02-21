@@ -31,10 +31,7 @@ def parse(data, debug=False):
 #-------------
 def p_stmt_list(p):
     """stmt_list : stmt_list stmt"""
-    if p[1].type == "stmt_list":
-        p[0] = p[1]
-    else:
-        p[0] = Node("stmt_list", children=[p[1]])
+    p[0] = p[1]
     if p[2].type not in ("newline",):
         p[0].children.append(p[2])
 
