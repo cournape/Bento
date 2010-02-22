@@ -37,3 +37,19 @@ def ast_pprint(root, cur_ind=0, ind_val=4, string=None):
         print "\n".join(_buf)
     else:
         string.write("\n".join(_buf))
+
+def ast_walk(root, dispatcher, debug=False):
+    def _walker(par):
+        children = []
+        for c in par.children:
+            children.append(_walker(c))
+
+        par.children = [c for c in children if c is not None]
+        try:
+            return dispatcher.action_dict[par.type](par)
+        except KeyError:
+            if debug:
+                print "no action for type %s" % par.type
+            return None
+
+    return _walker(root)
