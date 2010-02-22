@@ -205,12 +205,10 @@ def p_indented_block(p):
 
 def p_indented_block_value(p):
     """indented_block_value : multi_stmts dedent"""
-    #p[0] = Node("indented_block_value", value=[p[1], p[2]])
     p[0] = p[1] + [p[2]]
 
 def p_multi_stmts(p):
     """multi_stmts : multi_stmt multi_stmts"""
-    #p[0] = Node("multi_stmts", value=[p[1], p[2]])
     p[0] = p[1] + p[2]
 
 def p_multi_stmts_term(p):
@@ -224,11 +222,6 @@ def p_multi_stmt_ind_block(p):
 def p_multi_stmt_term(p):
     """multi_stmt : multi_literal"""
     p[0] = [p[1]]
-    #if len(p) == 2:
-    #    p[0] = Node("stmt", children=[p[1]])
-    #else:
-    #    #p[0] = Node("stmt", children=[p[1]])
-    #    p[0] = Node("empty")
 
 def p_newline(p):
     """newline : NEWLINE"""
