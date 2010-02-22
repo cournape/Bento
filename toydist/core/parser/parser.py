@@ -49,6 +49,7 @@ def p_stmt_list_newline(p):
 
 def p_stmt(p):
     """stmt : meta_stmt
+            | library
     """
     p[0] = p[1]
 
@@ -156,9 +157,97 @@ def p_classifier(p):
     p[0].value = "".join(p[0].value)
     p[0].type = "classifier"
 
+#---------------------
+#   Library section
+#---------------------
+def p_library(p):
+    """library : library_declaration INDENT library_stmts DEDENT
+    """
+    p[0] = Node("library", children=[p[1]])
+    p[0].children.append(p[3])
+
+def p_library_decl_only(p):
+    """library : library_declaration
+    """
+    p[0] = Node("library", children=[p[1]])
+
+def p_library_declaration(p):
+    """library_declaration : LIBRARY_ID COLON library_name"""
+    p[0] = p[3]
+
+def p_library_name(p):
+    """library_name : word
+                    |"""
+    if len(p) == 1:
+        name = "default"
+    else:
+        name = p[1]
+    p[0] = Node("library_name", value=name)
+
+def p_library_stmts(p):
+    """library_stmts : library_stmts library_stmt
+                     | library_stmt
+    """
+    if len(p) == 2:
+        p[0] = Node("library_stmts", children=[p[1]])
+    elif len(p) == 3:
+        if p[1].type == "library_stmts":
+            p[0] = p[1]
+        else:
+            p[0] = Node("library_stmts", children=[p[1]])
+        p[0].children.append(p[2])
+    else:
+        raise ValueError("yo")
+
+def p_library_stmt(p):
+    """library_stmt : modules_stmt
+                    | packages_stmt
+    """
+    p[0] = p[1]
+
+def p_packages_stmt(p):
+    """packages_stmt : PACKAGES_ID COLON comma_list"""
+    p[0] = Node("packages", value=p[3].value)
+
+def p_modules_stmt(p):
+    """modules_stmt : MODULES_ID COLON comma_list"""
+    p[0] = Node("modules", value=p[3].value)
+
 #-----------------------
 #   Literal handling
 #-----------------------
+
+def p_comma_list_indented(p):
+    """comma_list : indented_comma_list 
+    """
+    p[0] = Node("comma_list", value=p[1].value)
+
+def p_comma_list(p):
+    """comma_list : comma_words
+    """
+    p[0] = Node("comma_list", value=p[1].value)
+
+def p_indented_comma_list(p):
+    """indented_comma_list : comma_words COMMA INDENT comma_words DEDENT
+    """
+    p[0] = p[1]
+    p[0].value.extend(p[4].value)
+
+def p_indented_comma_list_term(p):
+    """indented_comma_list : INDENT comma_words DEDENT
+    """
+    p[0] = p[2]
+
+def p_comma_words(p):
+    """comma_words : comma_words COMMA anyword_comma_list
+    """
+    p[0] = p[1]
+    p[0].value.append(p[3].value)
+
+def p_comma_words_term(p):
+    """comma_words : anyword_comma_list
+    """
+    p[0] = Node("comma_words", value=[p[1].value])
 
 # We produce a flat list here to speed things up (should do the same for
 # description field)
@@ -250,6 +339,14 @@ def p_anyword(p):
     else:
         raise ValueError()
 
+def p_anyword_comma_list(p):
+    """anyword_comma_list : anyword_comma_list anytoken_no_comma"""
+    p[0] = Node("anyword_comma_list", value=(p[1].value + p[2].value))
+
+def p_anyword_comma_list_term(p):
+    """anyword_comma_list : anytoken_no_comma"""
+    p[0] = Node("anyword_comma_list", value=p[1].value)
+
 # Any token but whitespace, newline and comma
 def p_anytoken_no_comma(p):
     """anytoken_no_comma : WORD
@@ -331,6 +428,10 @@ def p_dedent(p):
     """dedent : DEDENT
     """
     p[0] = Node("dedent", value=p[1])
+
+def p_word(p):
+    """word : WORD"""
+    p[0] = Node("word", value=p[1])
 
 def p_version(p):
     """version : num_part"""

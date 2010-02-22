@@ -1,3 +1,7 @@
+from toydist.core.parser.nodes \
+    import \
+        Node
+
 def split_newline(s):
     try:
         ind = [i.type for i in s].index("newline")
@@ -23,6 +27,12 @@ class Dispatcher(object):
             "stmt_list": self.stmt_list,
             "name": self.name,
             "description": self.description,
+            # Library
+            "library": self.library,
+            "library_name": self.library_name,
+            "library_stmts": self.library_stmts,
+            "modules": self.modules,
+            "packages": self.packages,
         }
 
     def stmt_list(self, node):
@@ -61,7 +71,40 @@ class Dispatcher(object):
 
             cur_line = [" " * inds[0]]
             cur_line.extend([t.value for t in remain])
-            print cur_line
             line_str.append("".join(cur_line))
 
         return {"description": "".join(line_str)}
+
+    #--------------------------
+    # Library section handlers
+    #--------------------------
+    def library(self, node):
+        library = {
+            "modules": [],
+            "packages": [],
+            "extensions": []
+        }
+        for c in [node.children[0]] + node.children[1]:
+            if c.type == "name":
+                library["name"] = c.value
+            elif c.type == "modules":
+                library["modules"].extend(c.value)
+            elif c.type == "packages":
+                library["packages"].extend(c.value)
+            elif c.type == "extension":
+                library["extensions"].append(c.value)
+            else:
+                raise ValueError("GNe ?")
+        return {"library": library}
+
+    def library_name(self, node):
+        return Node("name", value=node.value)
+
+    def library_stmts(self, node):
+        return node.children
+
+    def packages(self, node):
+        return node
+
+    def modules(self, node):
+        return node

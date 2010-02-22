@@ -228,3 +228,69 @@ Node(type='stmt_list'):
         """Node('multi_literal')])"""
 
         self._test(data, expected)
+
+class TestLibrary(_TestGrammar):
+    def test_modules(self):
+        data = """\
+Library:
+    Modules: foo.py
+"""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='library'):
+        Node(type='library_name', value='default')
+        Node(type='library_stmts'):
+            Node(type='modules', value=['foo.py'])"""
+
+        self._test(data, expected)
+
+    def test_modules2(self):
+        data = """\
+Library:
+    Modules: foo.py,
+        bar.py,
+        fubar.py
+"""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='library'):
+        Node(type='library_name', value='default')
+        Node(type='library_stmts'):
+            Node(type='modules', value=['foo.py', 'bar.py', 'fubar.py'])"""
+
+        self._test(data, expected)
+
+    def test_modules3(self):
+        data = """\
+Library:
+    Modules:
+        bar.py,
+        fubar.py
+"""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='library'):
+        Node(type='library_name', value='default')
+        Node(type='library_stmts'):
+            Node(type='modules', value=['bar.py', 'fubar.py'])"""
+
+        self._test(data, expected)
+
+    def test_packages(self):
+        data = """\
+Library:
+    Packages:
+        foo, bar
+"""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='library'):
+        Node(type='library_name', value='default')
+        Node(type='library_stmts'):
+            Node(type='packages', value=['foo', 'bar'])"""
+
+        self._test(data, expected)
