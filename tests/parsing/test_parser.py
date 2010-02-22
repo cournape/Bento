@@ -18,15 +18,21 @@ from toydist.core.parser.parser \
     import \
         parse, Parser
 
-class TestGrammar(TestCase):
+class _TestGrammar(TestCase):
     def _test(self, data, expected):
         s = StringIO()
 
         p = parse(data)
         ast_pprint(p, string=s)
 
-        assert_equal(s.getvalue(), expected)
+        try:
+            assert_equal(s.getvalue(), expected)
+        except AssertionError, e:
+            msg = s.getvalue()
+            msg += "\n%s" % str(expected)
+            raise AssertionError("assertion error:\n%s" % msg)
 
+class TestMeta(_TestGrammar):
     def test_meta_name(self):
         data = "Name: yo"
         expected = """\
