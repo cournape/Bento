@@ -203,6 +203,7 @@ def p_library_stmts(p):
 def p_library_stmt(p):
     """library_stmt : modules_stmt
                     | packages_stmt
+                    | extension_stmt
     """
     p[0] = p[1]
 
@@ -213,6 +214,23 @@ def p_packages_stmt(p):
 def p_modules_stmt(p):
     """modules_stmt : MODULES_ID COLON comma_list"""
     p[0] = Node("modules", value=p[3].value)
+
+def p_extension_stmt_decl(p):
+    """extension_stmt : extension_decl"""
+    p[0] = Node("extension", children=[p[1]])
+
+def p_extension_stmt_content(p):
+    """extension_stmt : extension_decl INDENT extension_fields DEDENT"""
+    p[0] = Node("extension", children=[p[1]])
+    p[0].children.append(p[3])
+
+def p_extension_decl(p):
+    """extension_decl : EXTENSION_ID COLON anyword"""
+    p[0] = Node("extension_declaration", value=p[3].value)
+
+def p_extension_fields(p):
+    """extension_fields : SOURCES_ID COLON comma_list"""
+    p[0] = Node("sources", value=p[3].value)
 
 #---------------------
 #   Path section

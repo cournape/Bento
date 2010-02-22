@@ -39,6 +39,10 @@ class Dispatcher(object):
             "path_stmts": self.path_stmts,
             "path_description": self.path_description,
             "path_declaration": self.path_declaration,
+            # Extension
+            "extension": self.extension,
+            "extension_declaration": self.extension_declaration,
+            "sources": self.sources,
         }
 
     def stmt_list(self, node):
@@ -92,7 +96,7 @@ class Dispatcher(object):
         library = {
             "modules": [],
             "packages": [],
-            "extensions": []
+            "extensions": {}
         }
         for c in [node.children[0]] + node.children[1]:
             if c.type == "name":
@@ -102,7 +106,8 @@ class Dispatcher(object):
             elif c.type == "packages":
                 library["packages"].extend(c.value)
             elif c.type == "extension":
-                library["extensions"].append(c.value)
+                name = c.value["name"]
+                library["extensions"][name] = c.value
             else:
                 raise ValueError("GNe ?")
         return Node("library", value=library)
@@ -117,6 +122,23 @@ class Dispatcher(object):
         return node
 
     def modules(self, node):
+        return node
+
+    def extension(self, node):
+        ret = {"sources": []}
+        for c in node.children:
+            if c.type == "name":
+                ret["name"] = c.value
+            elif c.type == "sources":
+                ret["sources"].extend(c.value)
+            else:
+                raise ValueError("Gne ?")
+        return Node("extension", value=ret)
+
+    def extension_declaration(self, node):
+        return Node("name", value=node.value)
+
+    def sources(self, node):
         return node
 
     #-----------------
