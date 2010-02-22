@@ -107,3 +107,20 @@ Library:
         descr["libraries"]["default"] = library
 
         assert_equal(parse_and_analyse(data), descr)
+
+class TestPath(unittest.TestCase):
+    def test_simple(self):
+        data = """\
+Path: manpath
+    Description: man path
+    Default: /usr/share/man
+"""
+
+        descr = _empty_description()
+        descr["paths"]["manpath"] = {
+                "name": "manpath",
+                "default": "/usr/share/man",
+                "description": " man path",
+                }
+
+        assert_equal(parse_and_analyse(data), descr)

@@ -118,3 +118,33 @@ class Dispatcher(object):
 
     def modules(self, node):
         return node
+
+    #-----------------
+    #   Path option
+    #-----------------
+    def path(self, node):
+        path = {}
+        for i in [node.children[0]] + node.children[1]:
+            if i.type == "path_declaration":
+                path["name"] = i.value
+            elif i.type == "path_description":
+                path["description"] = i.value
+            elif i.type == "default":
+                path["default"] = i.value
+            else:
+                raise SyntaxError("GNe ?")
+
+        return Node("path", value=path)
+
+    def path_default(self, node):
+        return Node("default", value=node.value)
+
+    def path_stmts(self, node):
+        return node.children
+
+    def path_description(self, node):
+        node.value = "".join([i.value for i in node.value])
+        return node
+
+    def path_declaration(self, node):
+        return node

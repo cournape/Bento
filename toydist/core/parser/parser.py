@@ -50,6 +50,7 @@ def p_stmt_list_newline(p):
 def p_stmt(p):
     """stmt : meta_stmt
             | library
+            | path
     """
     p[0] = p[1]
 
@@ -212,6 +213,39 @@ def p_packages_stmt(p):
 def p_modules_stmt(p):
     """modules_stmt : MODULES_ID COLON comma_list"""
     p[0] = Node("modules", value=p[3].value)
+
+#---------------------
+#   Path section
+#---------------------
+def p_path(p):
+    """path : path_declaration INDENT path_stmts DEDENT"""
+    p[0] = Node("path", children=[p[1], p[3]])
+
+def p_path_declaration(p):
+    """path_declaration : PATH_ID COLON anyword"""
+    p[0] = Node("path_declaration", value=p[3].value)
+
+def p_path_stmts(p):
+    """path_stmts : path_stmts path_stmt"""
+    p[0] = Node("path_stmts", children=(p[1].children + [p[2]]))
+
+def p_path_stmts_term(p):
+    """path_stmts : path_stmt"""
+    p[0] = Node("path_stmts", children=[p[1]])
+
+def p_path_stmt(p):
+    """path_stmt : path_description
+                 | path_default"""
+    p[0] = p[1]
+
+def p_path_description(p):
+    """path_description : DESCRIPTION_ID COLON single_line"""
+    #"""path_description : meta_description_stmt"""
+    p[0] = Node("path_description", value=p[3])
+
+def p_path_default(p):
+    """path_default : DEFAULT_ID COLON anyword"""
+    p[0] = Node("path_default", value=p[3].value)
 
 #-----------------------
 #   Literal handling
