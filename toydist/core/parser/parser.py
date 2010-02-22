@@ -62,6 +62,7 @@ def p_empty(p):
 def p_meta_stmt(p):
     """meta_stmt : meta_name_stmt
                  | meta_summary_stmt
+                 | meta_description_stmt
                  | meta_version_stmt
                  | meta_url_stmt
                  | meta_author_stmt
@@ -174,6 +175,65 @@ def p_single_line_string(p):
     """single_line : single_line literal"""
     p[0] = p[1] + [p[2]]
 
+def p_meta_description_stmt_start_same_line(p):
+    """meta_description_stmt : description_decl single_line_newline INDENT multi_stmts DEDENT
+    """
+    p[0] = Node("description", value=(p[2].value + p[4]))
+
+def p_meta_description_stmt_indented_block(p):
+    """meta_description_stmt : description_decl NEWLINE INDENT multi_stmts DEDENT
+    """
+    p[0] = Node("description", value=p[4])
+
+def p_meta_description_stmt_single(p):
+    """meta_description_stmt : description_decl single_line
+    """
+    p[0] = Node("description", children=[Node("single_line", value=p[2])])
+
+def p_single_line_newline(p):
+    """single_line_newline : single_line newline
+    """
+    p[0] = Node("single_line_newline", value=(p[1] + [p[2]]))
+
+def p_description_decl(p):
+    """description_decl : DESCRIPTION_ID COLON"""
+    p[0] = Node("description_decl")
+
+def p_indented_block(p):
+    """indented_block : indent indented_block_value"""
+    p[0] = [p[1]] + p[2]
+
+def p_indented_block_value(p):
+    """indented_block_value : multi_stmts dedent"""
+    #p[0] = Node("indented_block_value", value=[p[1], p[2]])
+    p[0] = p[1] + [p[2]]
+
+def p_multi_stmts(p):
+    """multi_stmts : multi_stmt multi_stmts"""
+    #p[0] = Node("multi_stmts", value=[p[1], p[2]])
+    p[0] = p[1] + p[2]
+
+def p_multi_stmts_term(p):
+    """multi_stmts : multi_stmt"""
+    p[0] = p[1]
+
+def p_multi_stmt_ind_block(p):
+    """multi_stmt : indented_block"""
+    p[0] = p[1]
+
+def p_multi_stmt_term(p):
+    """multi_stmt : multi_literal"""
+    p[0] = [p[1]]
+    #if len(p) == 2:
+    #    p[0] = Node("stmt", children=[p[1]])
+    #else:
+    #    #p[0] = Node("stmt", children=[p[1]])
+    #    p[0] = Node("empty")
+
+def p_newline(p):
+    """newline : NEWLINE"""
+    p[0] = Node("newline", value=p[1])
+
 def p_literal(p):
     """literal : WS 
                | WORD
@@ -235,6 +295,49 @@ def p_anytoken_term(p):
                 | WS
     """
     p[0] = Node("anytoken", value=p[1])
+
+def p_multi_literal(p):
+    """multi_literal : WS
+                     | WORD
+                     | INT
+                     | DOT
+                     | newline
+                     | COLON
+                     | LPAR
+                     | RPAR
+                     | COMMA
+                     | DQUOTE
+                     | STAR
+                     | BQUOTE
+                     | SQUOTE
+                     | LESS
+                     | SLASH
+                     | SHARP
+                     | EQUAL
+                     | GREATER
+                     | TILDE
+                     | LBRACE
+                     | RBRACE
+                     | PERCENT
+                     | MINUS
+    """
+    if isinstance(p[1], Node):
+        if p[1].type in ["indent", "dedent", "newline"]:
+            p[0] = p[1]
+        else:
+            raise ValueError("GNe ?")
+    else:
+        p[0] = Node("multi_literal", value=p[1])
+
+def p_indent(p):
+    """indent : INDENT
+    """
+    p[0] = Node("indent", value=p[1])
+
+def p_dedent(p):
+    """dedent : DEDENT
+    """
+    p[0] = Node("dedent", value=p[1])
 
 def p_version(p):
     """version : num_part"""

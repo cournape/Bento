@@ -181,3 +181,45 @@ Node(type='stmt_list'):
         expected = "None"
 
         self._test(data, expected)
+
+    def test_description_single_line(self):
+        data = "Description: some words."
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='description'):
+        Node(type='single_line', value=[Node('literal'), """ \
+        """Node('literal'), Node('literal'), Node('literal'), """\
+        """Node('literal')])"""
+
+        self._test(data, expected)
+
+    def test_description_simple_indent(self):
+        data = """\
+Description:
+    some words."""
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='description', value=[Node('multi_literal'), Node('multi_literal'), """ \
+        """Node('multi_literal'), Node('multi_literal')])"""
+
+        self._test(data, expected)
+
+    def test_description_complex_indent(self):
+        data = """\
+Description:
+    some
+        indented
+            words
+    ."""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='description', value=[Node('multi_literal'), Node('newline'), """ \
+        """Node('indent'), """ \
+        """Node('multi_literal'), """ \
+        """Node('newline'), Node('indent'), """ \
+        """Node('multi_literal'), Node('newline'), """ \
+        """Node('dedent'), Node('dedent'), """ \
+        """Node('multi_literal')])"""
+
+        self._test(data, expected)
