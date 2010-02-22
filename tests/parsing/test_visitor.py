@@ -93,3 +93,17 @@ multiple
 lines.\
 """
         assert_equal(parse_and_analyse(data), ref)
+
+class TestLibrary(unittest.TestCase):
+    def test_modules(self):
+        data = """\
+Library:
+    Modules: foo.py
+"""
+
+        descr = _empty_description()
+        library = _empty_library()
+        library["modules"] = ["foo.py"]
+        descr["libraries"]["default"] = library
+
+        assert_equal(parse_and_analyse(data), descr)
