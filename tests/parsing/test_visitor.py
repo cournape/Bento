@@ -21,20 +21,31 @@ def parse_and_analyse(data):
 
     return res
 
+def _empty_description():
+    d = {"libraries": {}, "paths": {}}
+    return d
+
+def _empty_library():
+    d = {"name": "default", "modules": [], "packages": [], "extensions": []}
+    return d
+
 class TestSimpleMeta(unittest.TestCase):
     def test_name(self):
         data = """\
 Name: foo
 """
+        ref = _empty_description()
+        ref["name"] = "foo"
 
-        assert_equal(parse_and_analyse(data), {"name": "foo"})
+        assert_equal(parse_and_analyse(data), ref)
 
 class TestDescription(unittest.TestCase):
     def test_simple_single_line(self):
         data = "Description: some simple description"
 
-        assert_equal(parse_and_analyse(data),
-                     {"description": " some simple description"})
+        ref = _empty_description()
+        ref["description"] = " some simple description"
+        assert_equal(parse_and_analyse(data), ref)
 
     def test_simple_indented_block(self):
         data = """\
@@ -44,9 +55,8 @@ Description:
     lines.
 """
 
-        ref = {
-            "description": "some simple description\non multiple\nlines."
-        }
+        ref = _empty_description()
+        ref["description"] = "some simple description\non multiple\nlines."
         assert_equal(parse_and_analyse(data), ref)
 
     def test_simple_indented_block2(self):
@@ -56,12 +66,11 @@ Description: some simple description
     lines.
 """
 
-        ref = {
-            "description": " some simple description\non multiple\nlines."
-        }
+        ref = _empty_description()
+        ref["description"] = " some simple description\non multiple\nlines."
         assert_equal(parse_and_analyse(data), ref)
 
-    def test_nested_indented_block(self):
+    def test_nested_indented_block3(self):
         data = """\
 Description: some
     simple
@@ -73,8 +82,8 @@ Description: some
     lines.
 """
 
-        ref = {
-            "description": """ some
+        ref = _empty_description()
+        ref["description"] = """ some
 simple
     description
         on
@@ -83,5 +92,4 @@ multiple
 
 lines.\
 """
-        }
         assert_equal(parse_and_analyse(data), ref)

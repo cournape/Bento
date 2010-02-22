@@ -22,7 +22,7 @@ def split_newlines(s):
 
 class Dispatcher(object):
     def __init__(self):
-        self._d = {}
+        self._d = {"libraries": {}, "paths": {}}
         self.action_dict = {
             "stmt_list": self.stmt_list,
             "name": self.name,
@@ -33,15 +33,26 @@ class Dispatcher(object):
             "library_stmts": self.library_stmts,
             "modules": self.modules,
             "packages": self.packages,
+            # Path
+            "path": self.path,
+            "path_default": self.path_default,
+            "path_stmts": self.path_stmts,
+            "path_description": self.path_description,
+            "path_declaration": self.path_declaration,
         }
 
     def stmt_list(self, node):
         for c in node.children:
-            self._d.update(c)
+            if c.type in ["name", "description"]:
+                self._d[c.type] = c.value
+            elif c.type == "path":
+                self._d["paths"][c.value["name"]] = c.value
+            elif c.type == "library":
+                self._d["libraries"][c.value["name"]] = c.value
         return self._d
 
     def name(self, node):
-        return {"name": node.value}
+        return node
 
     def description(self, node):
         tokens = []
@@ -72,7 +83,7 @@ class Dispatcher(object):
             cur_line.extend([t.value for t in remain])
             line_str.append("".join(cur_line))
 
-        return {"description": "".join(line_str)}
+        return Node("description", value="".join(line_str))
 
     #--------------------------
     # Library section handlers
@@ -94,7 +105,7 @@ class Dispatcher(object):
                 library["extensions"].append(c.value)
             else:
                 raise ValueError("GNe ?")
-        return {"library": library}
+        return Node("library", value=library)
 
     def library_name(self, node):
         return Node("name", value=node.value)
