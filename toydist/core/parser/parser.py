@@ -188,7 +188,7 @@ def p_meta_description_stmt_indented_block(p):
 def p_meta_description_stmt_single(p):
     """meta_description_stmt : description_decl single_line
     """
-    p[0] = Node("description", children=[Node("single_line", value=p[2])])
+    p[0] = Node("description", value=p[2])
 
 def p_single_line_newline(p):
     """single_line_newline : single_line newline

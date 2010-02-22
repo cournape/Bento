@@ -186,8 +186,7 @@ Node(type='stmt_list'):
         data = "Description: some words."
         expected = """\
 Node(type='stmt_list'):
-    Node(type='description'):
-        Node(type='single_line', value=[Node('literal'), """ \
+    Node(type='description', value=[Node('literal'), """ \
         """Node('literal'), Node('literal'), Node('literal'), """\
         """Node('literal')])"""
 
