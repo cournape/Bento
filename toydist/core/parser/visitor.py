@@ -55,7 +55,6 @@ class Dispatcher(object):
         inds = [0]
         line_str = []
         for line in split_newlines(tokens):
-            print line
             if line[0].type == "dedent":
                 while line[0].type == "dedent":
                     inds.pop(0)
