@@ -50,3 +50,10 @@ class Peeker(object):
     def __iter__(self):
         return self
 
+def print_tokens_simple(lexer):
+    while True:
+        tok = lexer.token()
+        if not tok:
+            break
+        print tok
+
