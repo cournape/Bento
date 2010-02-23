@@ -509,7 +509,8 @@ def p_int(p):
 def p_error(p):
     if p is not None:
         data = p.lexer.lexdata.splitlines()
-        msg = ["Syntax error at line number %d, word '%s'" % (p.lineno, p.value)]
+        msg = ["Syntax error at line number %d, token %s ('%s')" % \
+               (p.lineno, p.type, p.value)]
         msg += ["    Line %d -> %s" % (p.lineno, data[p.lineno-1])]
         raise SyntaxError("\n".join(msg))
     raise SyntaxError("Unhandled token")
