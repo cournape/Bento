@@ -56,4 +56,3 @@ def print_tokens_simple(lexer):
         if not tok:
             break
         print tok
-
