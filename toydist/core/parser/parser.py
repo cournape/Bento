@@ -188,18 +188,13 @@ def p_library_name(p):
 
 def p_library_stmts(p):
     """library_stmts : library_stmts library_stmt
-                     | library_stmt
     """
-    if len(p) == 2:
-        p[0] = Node("library_stmts", children=[p[1]])
-    elif len(p) == 3:
-        if p[1].type == "library_stmts":
-            p[0] = p[1]
-        else:
-            p[0] = Node("library_stmts", children=[p[1]])
-        p[0].children.append(p[2])
-    else:
-        raise ValueError("yo")
+    p[0] = Node("library_stmts", children=[p[1]])
+
+def p_library_stmts_term(p):
+    """library_stmts : library_stmt
+    """
+    p[0] = Node("library_stmts", children=[p[1]])
 
 def p_library_stmt(p):
     """library_stmt : modules_stmt
@@ -216,10 +211,6 @@ def p_packages_stmt(p):
 def p_modules_stmt(p):
     """modules_stmt : MODULES_ID COLON comma_list"""
     p[0] = Node("modules", value=p[3].value)
-
-def p_extension_stmt_decl(p):
-    """extension_stmt : extension_decl"""
-    p[0] = Node("extension", children=[p[1]])
 
 def p_extension_stmt_content(p):
     """extension_stmt : extension_decl INDENT extension_fields DEDENT"""
@@ -446,15 +437,12 @@ def p_single_line_string_term(p):
 
 # anyword groks any character stream without space|newline
 def p_anyword(p):
-    """anyword : anyword anytoken 
-             | anytoken
-    """
-    if len(p) == 3:
-        p[0] = Node("anyword", value=(p[1].value + p[2].value))
-    elif len(p) == 2:
-        p[0] = p[1]
-    else:
-        raise ValueError()
+    """anyword : anyword anytoken"""
+    p[0] = Node("anyword", value=(p[1].value + p[2].value))
+
+def p_anyword_term(p):
+    """anyword : anytoken"""
+    p[0] = p[1]
 
 def p_anyword_comma_list(p):
     """anyword_comma_list : anyword_comma_list anytoken_no_comma"""
