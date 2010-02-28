@@ -1,4 +1,5 @@
 import unittest
+import sys
 
 from nose.tools \
     import \
@@ -179,5 +180,20 @@ Library:
         Modules:  fubar.py
 """
         descr["libraries"]["default"]["modules"] = ["fubar.py"]
+
+        assert_equal(parse_and_analyse(data), descr)
+
+    def test_os(self):
+        data = """\
+Library:
+    if os(%s):
+        Modules: foo.py, bar.py
+    else:
+        Modules:  fubar.py
+""" % sys.platform
+
+        descr = _empty_description()
+        descr["libraries"]["default"] = _empty_library()
+        descr["libraries"]["default"]["modules"] = ["foo.py", "bar.py"]
 
         assert_equal(parse_and_analyse(data), descr)
