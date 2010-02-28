@@ -240,12 +240,17 @@ def p_conditional_if_else(p):
 
 def p_test(p):
     """test : bool
-            | os_var"""
+            | os_var
+            | flag_var"""
     p[0] = p[1]
 
 def p_os_var(p):
     """os_var : OS_OP LPAR word RPAR"""
     p[0] = Node("osvar", value=p[3])
+
+def p_flag_var(p):
+    """flag_var : FLAG_OP LPAR word RPAR"""
+    p[0] = Node("flagvar", value=p[3])
 
 def p_cond_expr_true(p):
     """bool : TRUE"""

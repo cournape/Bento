@@ -20,7 +20,7 @@ tokens = ('COLON', 'DOT', 'INT', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'MAINTAINER_EMAIL_ID', 'LICENSE_ID', 'PLATFORMS_ID', 'CLASSIFIERS_ID',
           'PATH_ID', 'DEFAULT_ID', 'EXTRA_SOURCES_ID', 'EXECUTABLE_ID',
           'MODULE_ID', 'FUNCTION_ID', 'FLAG_ID',
-          'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE')
+          'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP')
 
 # List of FIELD keywords -> Token TYPE inside PLY lexer
 META_FIELDS_ID = {
@@ -61,6 +61,7 @@ CONDITIONAL_ID = {
     "false": "FALSE",
     "and": "AND",
     "os": "OS_OP",
+    "flag": "FLAG_OP",
 }
 
 # ID -> field type dict

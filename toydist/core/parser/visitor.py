@@ -22,6 +22,8 @@ def split_newlines(s):
     _split_newlines(s)
     return t
 
+_LIT_BOOL = {"true": True, "false": False}
+
 class Dispatcher(object):
     def __init__(self):
         self._d = {"libraries": {}, "paths": {}, "flags": {}}
@@ -54,8 +56,10 @@ class Dispatcher(object):
             # Conditional
             "conditional": self.conditional,
             "osvar": self.osvar,
+            "flagvar": self.flagvar,
             "bool": self.bool_var,
         }
+        self._vars = {}
 
     def stmt_list(self, node):
         for c in node.children:
@@ -208,6 +212,13 @@ class Dispatcher(object):
             else:
                 raise SyntaxError("GNe ?")
 
+        if not flag["default"] in ["true", "false"]:
+            raise SyntaxError("invalid default value %s for flag %s" \
+                              % (flag["default"], flag["name"])) 
+
+        if not flag["name"] in self._vars:
+            self._vars[flag["name"]] = flag["default"]
+
         return Node("flag", value=flag)
 
     def flag_default(self, node):
@@ -239,3 +250,10 @@ class Dispatcher(object):
 
     def bool_var(self, node):
         return node.value
+
+    def flagvar(self, node):
+        name = node.value.value
+        try:
+            return _LIT_BOOL[self._vars[name]]
+        except KeyError:
+            raise ValueError("Unknown flag variable %s" % name)
