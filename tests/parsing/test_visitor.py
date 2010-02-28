@@ -154,3 +154,30 @@ Flag: debug
                 }
 
         assert_equal(parse_and_analyse(data), descr)
+
+class TestConditional(unittest.TestCase):
+    def test_literal(self):
+        data = """\
+Library:
+    if true:
+        Modules: foo.py, bar.py
+    else:
+        Modules:  fubar.py
+"""
+
+        descr = _empty_description()
+        descr["libraries"]["default"] = _empty_library()
+        descr["libraries"]["default"]["modules"] = ["foo.py", "bar.py"]
+
+        assert_equal(parse_and_analyse(data), descr)
+
+        data = """\
+Library:
+    if false:
+        Modules: foo.py, bar.py
+    else:
+        Modules:  fubar.py
+"""
+        descr["libraries"]["default"]["modules"] = ["fubar.py"]
+
+        assert_equal(parse_and_analyse(data), descr)
