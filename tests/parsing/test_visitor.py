@@ -22,7 +22,7 @@ def parse_and_analyse(data):
     return res
 
 def _empty_description():
-    d = {"libraries": {}, "paths": {}}
+    d = {"libraries": {}, "paths": {}, "flags": {}}
     return d
 
 def _empty_library():
@@ -134,6 +134,23 @@ Path: manpath
                 "name": "manpath",
                 "default": "/usr/share/man",
                 "description": " man path",
+                }
+
+        assert_equal(parse_and_analyse(data), descr)
+
+class TestFlag(unittest.TestCase):
+    def test_simple(self):
+        data = """\
+Flag: debug
+    Description: debug flag
+    Default: false
+"""
+
+        descr = _empty_description()
+        descr["flags"]["debug"] = {
+                "name": "debug",
+                "default": "false",
+                "description": " debug flag",
                 }
 
         assert_equal(parse_and_analyse(data), descr)

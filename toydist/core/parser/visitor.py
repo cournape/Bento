@@ -24,7 +24,7 @@ def split_newlines(s):
 
 class Dispatcher(object):
     def __init__(self):
-        self._d = {"libraries": {}, "paths": {}}
+        self._d = {"libraries": {}, "paths": {}, "flags": {}}
         self.action_dict = {
             "stmt_list": self.stmt_list,
             "name": self.name,
@@ -41,6 +41,12 @@ class Dispatcher(object):
             "path_stmts": self.path_stmts,
             "path_description": self.path_description,
             "path_declaration": self.path_declaration,
+            # Flag
+            "flag": self.flag,
+            "flag_default": self.flag_default,
+            "flag_stmts": self.flag_stmts,
+            "flag_description": self.flag_description,
+            "flag_declaration": self.flag_declaration,
             # Extension
             "extension": self.extension,
             "extension_declaration": self.extension_declaration,
@@ -57,6 +63,8 @@ class Dispatcher(object):
                 self._d[c.type] = c.value
             elif c.type == "path":
                 self._d["paths"][c.value["name"]] = c.value
+            elif c.type == "flag":
+                self._d["flags"][c.value["name"]] = c.value
             elif c.type == "library":
                 self._d["libraries"][c.value["name"]] = c.value
         return self._d
@@ -182,6 +190,37 @@ class Dispatcher(object):
         return node
 
     def path_declaration(self, node):
+        return node
+
+    #-----------------
+    #   Flag option
+    #-----------------
+    # XXX: refactor path/flag handling, as they are almost identical
+    def flag(self, node):
+        flag = {}
+        for i in [node.children[0]] + node.children[1]:
+            if i.type == "flag_declaration":
+                flag["name"] = i.value
+            elif i.type == "flag_description":
+                flag["description"] = i.value
+            elif i.type == "default":
+                flag["default"] = i.value
+            else:
+                raise SyntaxError("GNe ?")
+
+        return Node("flag", value=flag)
+
+    def flag_default(self, node):
+        return Node("default", value=node.value)
+
+    def flag_stmts(self, node):
+        return node.children
+
+    def flag_description(self, node):
+        node.value = "".join([i.value for i in node.value])
+        return node
+
+    def flag_declaration(self, node):
         return node
 
     #-------------------

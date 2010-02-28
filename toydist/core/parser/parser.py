@@ -51,6 +51,7 @@ def p_stmt(p):
     """stmt : meta_stmt
             | library
             | path
+            | flag
     """
     p[0] = p[1]
 
@@ -295,6 +296,39 @@ def p_path_description(p):
 def p_path_default(p):
     """path_default : DEFAULT_ID COLON anyword"""
     p[0] = Node("path_default", value=p[3].value)
+
+#------------------
+#   Flag section
+#------------------
+def p_flag(p):
+    """flag : flag_declaration INDENT flag_stmts DEDENT"""
+    p[0] = Node("flag", children=[p[1], p[3]])
+
+def p_flag_declaration(p):
+    """flag_declaration : FLAG_ID COLON anyword"""
+    p[0] = Node("flag_declaration", value=p[3].value)
+
+def p_flag_stmts(p):
+    """flag_stmts : flag_stmts flag_stmt"""
+    p[0] = Node("flag_stmts", children=(p[1].children + [p[2]]))
+
+def p_flag_stmts_term(p):
+    """flag_stmts : flag_stmt"""
+    p[0] = Node("flag_stmts", children=[p[1]])
+
+def p_flag_stmt(p):
+    """flag_stmt : flag_description
+                 | flag_default"""
+    p[0] = p[1]
+
+def p_flag_description(p):
+    """flag_description : DESCRIPTION_ID COLON single_line"""
+    #"""flag_description : meta_description_stmt"""
+    p[0] = Node("flag_description", value=p[3])
+
+def p_flag_default(p):
+    """flag_default : DEFAULT_ID COLON anyword"""
+    p[0] = Node("flag_default", value=p[3].value)
 
 #-----------------------
 #   Literal handling
