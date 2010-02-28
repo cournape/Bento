@@ -354,15 +354,25 @@ def word_tokenizer(token, state, stream):
     return queue, token, state
 
 def words_tokenizer(token, state, stream, internal):
-    words_stack = internal.words_stack
-    if token.type == "INDENT":
-        words_stack.append(token)
-    elif token.type == "DEDENT":
-        prev = words_stack.pop(0)
-        if len(words_stack) < 1:
-            state = "SCANNING_FIELD_ID"
-            internal.words_stack = []
-    return token, state
+    token, state = _skip_ws(token, stream, state, internal)
+
+    if state == "SCANNING_WORDS_FIELD":
+        words_stack = internal.words_stack
+        if token.type == "INDENT":
+            words_stack.append(token)
+        elif token.type == "DEDENT":
+            prev = words_stack.pop(0)
+            if len(words_stack) < 1:
+                state = "SCANNING_FIELD_ID"
+                internal.words_stack = []
+        queue = [token]
+    else:
+        queue = []
+    try:
+        tok = stream.next()
+    except StopIteration:
+        tok = None
+    return queue, tok, state
 
 def scan_field_id(token, state, stream, internal):
     # When a candidate is found, do as follows:
@@ -459,11 +469,9 @@ def post_process(stream):
             for t in queue:
                 yield t
         elif state == "SCANNING_WORDS_FIELD":
-            i, state = _skip_ws(i, stream, state, internal)
-            if state == "SCANNING_WORDS_FIELD":
-                i, state = words_tokenizer(i, state, stream, internal)
-                yield i
-            i = stream.next()
+            queue, i, state = words_tokenizer(i, state, stream, internal)
+            for q in queue:
+                yield q
         else:
             raise ValueError("Unknown state: %s" % state)
 
