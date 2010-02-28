@@ -293,9 +293,12 @@ def singleline_tokenizer(token, state, stream):
     return queue, tok, state
 
 def multiline_tokenizer(token, state, stream, internal):
-    stack = internal["stack"]
-    stack_level = internal["stack_level"]
+    stack = internal.stack
     queue = []
+
+    if internal.stack_level is None:
+        internal.stack_level = [len(internal.stack)]
+    stack_level = internal.stack_level
 
     if token.type == "INDENT":
         stack.append(token)
@@ -311,7 +314,7 @@ def multiline_tokenizer(token, state, stream, internal):
         # Description: a description
         if (len(stack) == stack_level[0] and stream.peek().type != "INDENT"):
             state = "SCANNING_FIELD_ID"
-            internal["stack_level"] = None
+            internal.stack_level = None
         elif stream.peek().type == "DEDENT":
             try:
                 while stream.peek().type == "DEDENT":
@@ -322,7 +325,7 @@ def multiline_tokenizer(token, state, stream, internal):
                 pass
             if len(stack) == stack_level[0]:
                 state = "SCANNING_FIELD_ID"
-                internal["stack_level"] = None
+                internal.stack_level = None
             else:
                 queue.append(saved_newline)
         else:
@@ -351,14 +354,14 @@ def word_tokenizer(token, state, stream):
     return queue, token, state
 
 def words_tokenizer(token, state, stream, internal):
-    words_stack = internal["words_stack"]
+    words_stack = internal.words_stack
     if token.type == "INDENT":
         words_stack.append(token)
     elif token.type == "DEDENT":
         prev = words_stack.pop(0)
         if len(words_stack) < 1:
             state = "SCANNING_FIELD_ID"
-            internal["words_stack"] = []
+            internal.words_stack = []
     return token, state
 
 def scan_field_id(token, state, stream, internal):
@@ -411,9 +414,13 @@ def tokenize_conditional(stream, token):
 
 def post_process(stream):
     # XXX: this is awfully complicated...
-    stack = []
-    words_stack = []
-    stack_level = None
+    class _Internal(object):
+        def __init__(self):
+            self.stack = []
+            self.words_stack = []
+            self.stack_level = None
+    internal = _Internal()
+
     state = "SCANNING_FIELD_ID"
 
     stream = Peeker(stream)
@@ -434,9 +441,9 @@ def post_process(stream):
                 i = stream.next()
             else:
                 if i.type == "INDENT":
-                    stack.append(i)
+                    internal.stack.append(i)
                 elif i.type == "DEDENT":
-                    stack.pop(0)
+                    internal.stack.pop(0)
                 yield i
                 i = stream.next()
         elif state == "SCANNING_SINGLELINE_FIELD":
@@ -444,11 +451,7 @@ def post_process(stream):
             for q in queue:
                 yield q
         elif state == "SCANNING_MULTILINE_FIELD":
-            if stack_level is None:
-                stack_level = [len(stack)]
-            internal = {"stack": stack, "stack_level": stack_level}
             queue, i, state = multiline_tokenizer(i, state, stream, internal)
-            stack_level = internal["stack_level"]
             while len(queue) > 0:
                 yield queue.pop()
         elif state == "SCANNING_WORD_FIELD":
@@ -456,19 +459,17 @@ def post_process(stream):
             for t in queue:
                 yield t
         elif state == "SCANNING_WORDS_FIELD":
-            i, state = _skip_ws(i, stream, words_stack, state)
+            i, state = _skip_ws(i, stream, state, internal)
             if state == "SCANNING_WORDS_FIELD":
-                internal = {"words_stack": words_stack}
                 i, state = words_tokenizer(i, state, stream, internal)
-                words_stack = internal["words_stack"]
                 yield i
             i = stream.next()
         else:
             raise ValueError("Unknown state: %s" % state)
 
-def _skip_ws(tok, stream, words_stack, state):
+def _skip_ws(tok, stream, state, internal):
     while tok.type  in ["NEWLINE", "WS"]:
-        if tok.type == "NEWLINE" and len(words_stack) == 0:
+        if tok.type == "NEWLINE" and len(internal.words_stack) == 0:
             next = stream.peek()
             if not next.type == "INDENT":
                 state = "SCANNING_FIELD_ID"
