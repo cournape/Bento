@@ -48,6 +48,7 @@ class Dispatcher(object):
             # Conditional
             "conditional": self.conditional,
             "osvar": self.osvar,
+            "bool": self.bool_var,
         }
 
     def stmt_list(self, node):
@@ -196,3 +197,6 @@ class Dispatcher(object):
     def osvar(self, node):
         os_name = node.value.value
         return os_name == sys.platform
+
+    def bool_var(self, node):
+        return node.value
