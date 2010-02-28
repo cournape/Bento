@@ -19,7 +19,8 @@ tokens = ('COLON', 'DOT', 'INT', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'URL_ID', 'AUTHOR_ID', 'AUTHOR_EMAIL_ID', 'MAINTAINER_ID',
           'MAINTAINER_EMAIL_ID', 'LICENSE_ID', 'PLATFORMS_ID', 'CLASSIFIERS_ID',
           'PATH_ID', 'DEFAULT_ID', 'EXTRA_SOURCES_ID', 'EXECUTABLE_ID',
-          'MODULE_ID', 'FUNCTION_ID')
+          'MODULE_ID', 'FUNCTION_ID',
+          'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE')
 
 # List of FIELD keywords -> Token TYPE inside PLY lexer
 META_FIELDS_ID = {
@@ -50,6 +51,15 @@ META_FIELDS_ID = {
     "Executable": "EXECUTABLE_ID",
     "Module": "MODULE_ID",
     "Function": "FUNCTION_ID",
+}
+
+CONDITIONAL_ID = {
+    "if": "IF",
+    "else": "ELSE",
+    "true": "TRUE",
+    "false": "FALSE",
+    "and": "AND",
+    "os": "OS_OP",
 }
 
 # ID -> field type dict
@@ -360,6 +370,28 @@ def scan_field_id(token, state, stream, internal):
 
     return candidate, state
 
+def tokenize_conditional(stream, token):
+    ret = []
+
+    token.type = CONDITIONAL_ID[token.value]
+    ret.append(token)
+
+    queue = []
+    next = stream.peek()
+    if not next.type in ["COLON", "NEWLINE"]:
+        while next.type not in ["COLON", "NEWLINE"]:
+            if next.type not in ["WS"]:
+                queue.append(next)
+            next = stream.next()
+        queue.append(next)
+
+    for q in queue:
+        if q.value in CONDITIONAL_ID.keys():
+            q.type = CONDITIONAL_ID[q.value]
+        ret.append(q)
+
+    return ret, stream.next()
+
 def post_process(stream):
     # XXX: this is awfully complicated...
     stack = []
@@ -371,7 +403,12 @@ def post_process(stream):
     i = stream.next()
     while i:
         if state == "SCANNING_FIELD_ID":
-            if i.value in META_FIELDS_ID.keys():
+            if i.value in CONDITIONAL_ID.keys():
+                queue, i = tokenize_conditional(stream, i)
+                for q in queue:
+                    yield q
+
+            elif i.value in META_FIELDS_ID.keys():
                 i, state = scan_field_id(i, state, stream, None)
                 yield i
 

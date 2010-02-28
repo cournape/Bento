@@ -204,6 +204,7 @@ def p_library_stmt(p):
     """library_stmt : modules_stmt
                     | packages_stmt
                     | extension_stmt
+                    | conditional_stmt
     """
     p[0] = p[1]
 
@@ -231,6 +232,36 @@ def p_extension_decl(p):
 def p_extension_fields(p):
     """extension_fields : SOURCES_ID COLON comma_list"""
     p[0] = Node("sources", value=p[3].value)
+
+#---------------------
+# Conditional handling
+#---------------------
+def p_conditional_if_only(p):
+    """conditional_stmt : IF test COLON INDENT library_stmts DEDENT"""
+    p[0] = Node("conditional", value=p[2], children=[p[5]])
+
+def p_conditional_if_else(p):
+    """conditional_stmt : IF test COLON INDENT library_stmts DEDENT \
+                          ELSE COLON INDENT library_stmts DEDENT
+    """
+    p[0] = Node("conditional", value=p[2], children=[p[5], p[10]])
+
+def p_test(p):
+    """test : bool
+            | os_var"""
+    p[0] = p[1]
+
+def p_os_var(p):
+    """os_var : OS_OP LPAR word RPAR"""
+    p[0] = Node("osvar", value=p[3])
+
+def p_cond_expr_true(p):
+    """bool : TRUE"""
+    p[0] = Node("bool", value=True)
+
+def p_cond_expr_false(p):
+    """bool : FALSE"""
+    p[0] = Node("bool", value=False)
 
 #---------------------
 #   Path section
