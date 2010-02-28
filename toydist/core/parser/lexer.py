@@ -294,8 +294,8 @@ def singleline_tokenizer(token, state, stream):
 
 def multiline_tokenizer(token, state, stream, internal):
     stack = internal["stack"]
-    queue = internal["queue"]
     stack_level = internal["stack_level"]
+    queue = []
 
     if token.type == "INDENT":
         stack.append(token)
@@ -329,7 +329,12 @@ def multiline_tokenizer(token, state, stream, internal):
             queue.insert(0, token)
     else:
         queue.insert(0, token)
-    return token, state
+
+    try:
+        token = stream.next()
+    except StopIteration:
+        token = None
+    return queue, token, state
 
 def word_tokenizer(token, state, stream):
     queue = []
@@ -441,12 +446,11 @@ def post_process(stream):
         elif state == "SCANNING_MULTILINE_FIELD":
             if stack_level is None:
                 stack_level = [len(stack)]
-            internal = {"stack": stack, "queue": [], "stack_level": stack_level}
-            i, state = multiline_tokenizer(i, state, stream, internal)
+            internal = {"stack": stack, "stack_level": stack_level}
+            queue, i, state = multiline_tokenizer(i, state, stream, internal)
             stack_level = internal["stack_level"]
-            while len(internal["queue"]) > 0:
-                yield internal["queue"].pop()
-            i = stream.next()
+            while len(queue) > 0:
+                yield queue.pop()
         elif state == "SCANNING_WORD_FIELD":
             queue, i, state = word_tokenizer(i, state, stream)
             for t in queue:
