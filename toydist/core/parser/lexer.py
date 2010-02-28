@@ -278,10 +278,19 @@ _FIELD_TYPE_TO_STATE = {
     "MULTILINE": "SCANNING_MULTILINE_FIELD"
 }
 
-def singleline_tokenizer(token, state, stream, internal):
+def singleline_tokenizer(token, state, stream):
     if token.type == "NEWLINE":
         state = "SCANNING_FIELD_ID"
-    return token, state
+        queue = []
+    else:
+        queue = [token]
+
+    try:
+        tok = stream.next()
+    except StopIteration:
+        tok = None
+
+    return queue, tok, state
 
 def multiline_tokenizer(token, state, stream, internal):
     stack = internal["stack"]
@@ -426,10 +435,9 @@ def post_process(stream):
                 yield i
                 i = stream.next()
         elif state == "SCANNING_SINGLELINE_FIELD":
-            i, state = singleline_tokenizer(i, state, stream, None)
-            if not i.type == "NEWLINE":
-                yield i
-            i = stream.next()
+            queue, i, state = singleline_tokenizer(i, state, stream)
+            for q in queue:
+                yield q
         elif state == "SCANNING_MULTILINE_FIELD":
             if stack_level is None:
                 stack_level = [len(stack)]
