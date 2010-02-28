@@ -322,10 +322,9 @@ def multiline_tokenizer(token, state, stream, internal):
         queue.insert(0, token)
     return token, state
 
-def word_tokenizer(token, state, stream, internal):
+def word_tokenizer(token, state, stream):
     queue = []
     state = "SCANNING_FIELD_ID"
-    internal["queue"] = queue
 
     try:
         while token.type != "NEWLINE":
@@ -333,8 +332,9 @@ def word_tokenizer(token, state, stream, internal):
                 queue.append(token)
             token = stream.next()
     except StopIteration:
-        pass
-    return token, state
+        token = None
+
+    return queue, token, state
 
 def words_tokenizer(token, state, stream, internal):
     words_stack = internal["words_stack"]
@@ -440,11 +440,9 @@ def post_process(stream):
                 yield internal["queue"].pop()
             i = stream.next()
         elif state == "SCANNING_WORD_FIELD":
-            internal = {}
-            i, state = word_tokenizer(i, state, stream, internal)
-            for t in internal["queue"]:
+            queue, i, state = word_tokenizer(i, state, stream)
+            for t in queue:
                 yield t
-            i = stream.next()
         elif state == "SCANNING_WORDS_FIELD":
             i, state = _skip_ws(i, stream, words_stack, state)
             if state == "SCANNING_WORDS_FIELD":
