@@ -368,7 +368,10 @@ def scan_field_id(token, state, stream, internal):
     except KeyError:
         raise ValueError("Unknown state transition for type %s" % field_type)
 
-    return candidate, state
+    queue = [candidate]
+    queue.append(stream.next())
+    next = stream.next()
+    return queue, next, state
 
 def tokenize_conditional(stream, token):
     ret = []
@@ -409,13 +412,10 @@ def post_process(stream):
                     yield q
 
             elif i.value in META_FIELDS_ID.keys():
-                i, state = scan_field_id(i, state, stream, None)
-                yield i
+                queue, i, state = scan_field_id(i, state, stream, None)
+                for q in queue:
+                    yield q
 
-                i = stream.next()
-                yield i
-
-                i = stream.next()
             elif i.type == "NEWLINE":
                 i = stream.next()
             else:
