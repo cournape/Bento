@@ -422,6 +422,23 @@ def tokenize_conditional(stream, token):
 
     return ret, stream.next()
 
+def find_next(token, stream, internal):
+    queue = []
+
+    if token.type != "NEWLINE":
+        if token.type == "INDENT":
+            internal.stack.append(token)
+        elif token.type == "DEDENT":
+            internal.stack.pop(0)
+        queue.append(token)
+
+    try:
+        tok = stream.next()
+    except StopIteration:
+        tok = None
+
+    return queue, tok
+
 def post_process(stream):
     # XXX: this is awfully complicated...
     class _Internal(object):
@@ -441,21 +458,14 @@ def post_process(stream):
                 queue, i = tokenize_conditional(stream, i)
                 for q in queue:
                     yield q
-
             elif i.value in META_FIELDS_ID.keys():
                 queue, i, state = scan_field_id(i, state, stream, None)
                 for q in queue:
                     yield q
-
-            elif i.type == "NEWLINE":
-                i = stream.next()
             else:
-                if i.type == "INDENT":
-                    internal.stack.append(i)
-                elif i.type == "DEDENT":
-                    internal.stack.pop(0)
-                yield i
-                i = stream.next()
+                queue, i = find_next(i, stream, internal)
+                for q in queue:
+                    yield q
         elif state == "SCANNING_SINGLELINE_FIELD":
             queue, i, state = singleline_tokenizer(i, state, stream)
             for q in queue:
