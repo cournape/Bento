@@ -1,3 +1,5 @@
+import sys
+
 from toydist.core.parser.nodes \
     import \
         Node
@@ -43,6 +45,9 @@ class Dispatcher(object):
             "extension": self.extension,
             "extension_declaration": self.extension_declaration,
             "sources": self.sources,
+            # Conditional
+            "conditional": self.conditional,
+            "osvar": self.osvar,
         }
 
     def stmt_list(self, node):
@@ -98,18 +103,25 @@ class Dispatcher(object):
             "packages": [],
             "extensions": {}
         }
-        for c in [node.children[0]] + node.children[1]:
-            if c.type == "name":
-                library["name"] = c.value
+
+        def update(library_dict, c):
+            if type(c) == list:
+                for i in c:
+                    update(library_dict, i)
+            elif c.type == "name":
+                library_dict["name"] = c.value
             elif c.type == "modules":
-                library["modules"].extend(c.value)
+                library_dict["modules"].extend(c.value)
             elif c.type == "packages":
-                library["packages"].extend(c.value)
+                library_dict["packages"].extend(c.value)
             elif c.type == "extension":
                 name = c.value["name"]
-                library["extensions"][name] = c.value
+                library_dict["extensions"][name] = c.value
             else:
-                raise ValueError("GNe ?")
+                raise ValueError("Unhandled node type: %s" % c)
+
+        for c in [node.children[0]] + node.children[1]:
+            update(library, c)
         return Node("library", value=library)
 
     def library_name(self, node):
@@ -170,3 +182,17 @@ class Dispatcher(object):
 
     def path_declaration(self, node):
         return node
+
+    #-------------------
+    #   Conditionals
+    #-------------------
+    def conditional(self, node):
+        test = node.value
+        if self.action_dict[test.type](test):
+            return node.children[:1]
+        else:
+            return node.children[1:]
+
+    def osvar(self, node):
+        os_name = node.value.value
+        return os_name == sys.platform
