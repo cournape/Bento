@@ -52,6 +52,7 @@ def p_stmt(p):
             | library
             | path
             | flag
+            | extra_sources
     """
     p[0] = p[1]
 
@@ -158,6 +159,13 @@ def p_classifier(p):
     p[0] = p[1]
     p[0].value = "".join(p[0].value)
     p[0].type = "classifier"
+
+#---------------------------------------
+# Data files and extra sources handling
+#---------------------------------------
+def p_extra_sources(p):
+    """extra_sources : EXTRA_SOURCES_ID COLON comma_list"""
+    p[0] = Node("extra_sources", value=p[3].value)
 
 #---------------------
 #   Library section

@@ -26,7 +26,7 @@ _LIT_BOOL = {"true": True, "false": False}
 
 class Dispatcher(object):
     def __init__(self):
-        self._d = {"libraries": {}, "paths": {}, "flags": {}}
+        self._d = {"libraries": {}, "paths": {}, "flags": {}, "extra_sources": []}
         self.action_dict = {
             "stmt_list": self.stmt_list,
             "name": self.name,
@@ -58,6 +58,8 @@ class Dispatcher(object):
             "osvar": self.osvar,
             "flagvar": self.flagvar,
             "bool": self.bool_var,
+            # Extra source files
+            "extra_sources": self.extra_sources,
         }
         self._vars = {}
 
@@ -257,3 +259,6 @@ class Dispatcher(object):
             return _LIT_BOOL[self._vars[name]]
         except KeyError:
             raise ValueError("Unknown flag variable %s" % name)
+
+    def extra_sources(self, node):
+        self._d["extra_sources"].extend(node.value)
