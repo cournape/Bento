@@ -53,6 +53,7 @@ def p_stmt(p):
             | path
             | flag
             | extra_sources
+            | data_files
     """
     p[0] = p[1]
 
@@ -166,6 +167,43 @@ def p_classifier(p):
 def p_extra_sources(p):
     """extra_sources : EXTRA_SOURCES_ID COLON comma_list"""
     p[0] = Node("extra_sources", value=p[3].value)
+ 
+def p_data_files(p):
+    """data_files : data_files_declaration INDENT data_files_stmts DEDENT
+    """
+    p[0] = Node("data_files", children=[p[1]])
+    p[0].children.append(p[3])
+
+def p_data_files_declaration(p):
+    """data_files_declaration : DATAFILES_ID COLON word"""
+    p[0] = Node("data_files_declaration", value=p[3].value)
+
+def p_data_files_stmts(p):
+    """data_files_stmts : data_files_stmts data_files_stmt"""
+    p[0] = Node("data_files_stmts", children=(p[1].children + [p[2]]))
+
+def p_data_files_stmts_term(p):
+    """data_files_stmts : data_files_stmt"""
+    p[0] = Node("data_files_stmts", children=[p[1]])
+
+def p_data_files_stmt(p):
+    """data_files_stmt : data_files_target
+                       | data_files_files
+                       | data_files_srcdir
+    """
+    p[0] = p[1]
+
+def p_data_files_target(p):
+    """data_files_target : TARGET_ID COLON anyword"""
+    p[0] = Node("target_dir", value=p[3].value)
+
+def p_data_files_srcdir(p):
+    """data_files_srcdir : SRCDIR_ID COLON anyword"""
+    p[0] = Node("source_dir", value=p[3].value)
+
+def p_data_files_files(p):
+    """data_files_files : FILES_ID COLON comma_list"""
+    p[0] = Node("files", value=p[3].value)
 
 #---------------------
 #   Library section
@@ -197,7 +235,9 @@ def p_library_name(p):
 def p_library_stmts(p):
     """library_stmts : library_stmts library_stmt
     """
-    p[0] = Node("library_stmts", children=[p[1]])
+    children = p[1].children
+    children.append(p[2])
+    p[0] = Node("library_stmts", children=children)
 
 def p_library_stmts_term(p):
     """library_stmts : library_stmt

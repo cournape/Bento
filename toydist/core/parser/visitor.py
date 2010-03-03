@@ -26,7 +26,11 @@ _LIT_BOOL = {"true": True, "false": False}
 
 class Dispatcher(object):
     def __init__(self):
-        self._d = {"libraries": {}, "paths": {}, "flags": {}, "extra_sources": []}
+        self._d = {"libraries": {},
+                   "paths": {},
+                   "flags": {},
+                   "extra_sources": [],
+                   "data_files": {}}
         self.action_dict = {
             "stmt_list": self.stmt_list,
             "name": self.name,
@@ -60,6 +64,13 @@ class Dispatcher(object):
             "bool": self.bool_var,
             # Extra source files
             "extra_sources": self.extra_sources,
+            # Data files handling
+            "data_files": self.data_files,
+            "data_files_stmts": self.data_files_stmts,
+            "data_files_declaration": self.data_files_declaration,
+            "source_dir": self.source_dir,
+            "target_dir": self.target_dir,
+            "files": self.files,
         }
         self._vars = {}
 
@@ -73,6 +84,10 @@ class Dispatcher(object):
                 self._d["flags"][c.value["name"]] = c.value
             elif c.type == "library":
                 self._d["libraries"][c.value["name"]] = c.value
+            elif c.type == "data_files":
+                self._d["data_files"][c.value["name"]] = c.value
+            else:
+                raise ValueError("Unhandled top statement (%s)" % c)
         return self._d
 
     def name(self, node):
@@ -262,3 +277,42 @@ class Dispatcher(object):
 
     def extra_sources(self, node):
         self._d["extra_sources"].extend(node.value)
+
+    # Data handling
+    def data_files(self, node):
+        d = {}
+
+        def update(data_d, c):
+            if type(c) == list:
+                for  i in c:
+                    update(data_d, i)
+            elif c.type == "data_files_declaration":
+                d["name"] = c.value
+            elif c.type == "source_dir":
+                d["source_dir"] = c.value
+            elif c.type == "target_dir":
+                d["target_dir"] = c.value
+            elif c.type == "files":
+                d["files"] = c.value
+            else:
+                raise ValueError("Unhandled node type: %s" % c)
+
+        for c in node.children:
+            update(d, c)
+
+        return Node("data_files", value=d)
+
+    def data_files_declaration(self, node):
+        return node
+
+    def data_files_stmts(self, node):
+        return node.children
+
+    def source_dir(self, node):
+        return node
+
+    def target_dir(self, node):
+        return node
+
+    def files(self, node):
+        return node

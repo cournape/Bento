@@ -23,7 +23,7 @@ def parse_and_analyse(data):
     return res
 
 def _empty_description():
-    d = {"libraries": {}, "paths": {}, "flags": {}}
+    d = {"libraries": {}, "paths": {}, "flags": {}, "data_files": {}, "extra_sources": []}
     return d
 
 def _empty_library():
@@ -135,6 +135,25 @@ Path: manpath
                 "name": "manpath",
                 "default": "/usr/share/man",
                 "description": " man path",
+                }
+
+        assert_equal(parse_and_analyse(data), descr)
+
+class TestDataFiles(unittest.TestCase):
+    def test_simple(self):
+        data = """\
+DataFiles: man1doc
+    TargetDir: /usr/share/man/man1
+    SourceDir: doc/man1
+    Files: foo.1
+"""
+
+        descr = _empty_description()
+        descr["data_files"]["man1doc"] = {
+                "name": "man1doc",
+                "target_dir": "/usr/share/man/man1",
+                "source_dir": "doc/man1",
+                "files": ["foo.1"],
                 }
 
         assert_equal(parse_and_analyse(data), descr)
