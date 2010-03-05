@@ -128,7 +128,7 @@ def p_meta_platforms_stmt(p):
 def p_meta_version_stmt(p):
     """meta_version_stmt : VERSION_ID COLON version
     """
-    p[0] = Node("version", children=[p[3]])
+    p[0] = Node("version", value=p[3].value)
 
 def p_meta_classifiers_stmt_single_line(p):
     """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifier"""
@@ -480,7 +480,6 @@ def p_newline(p):
 def p_literal(p):
     """literal : WS 
                | WORD
-               | DOT
     """
     p[0] = Node("literal", value=p[1])
 
@@ -508,8 +507,6 @@ def p_anyword_comma_list_term(p):
 # Any token but whitespace, newline and comma
 def p_anytoken_no_comma(p):
     """anytoken_no_comma : WORD
-                         | INT
-                         | DOT
                          | COLON
                          | LPAR
                          | RPAR
@@ -528,7 +525,6 @@ def p_anytoken_no_comma(p):
                          | PERCENT
                          | AROBASE
                          | DOLLAR
-                         | MINUS
     """
     p[0] = Node("anytoken", value=p[1])
 
@@ -547,8 +543,6 @@ def p_anytoken_term(p):
 def p_multi_literal(p):
     """multi_literal : WS
                      | WORD
-                     | INT
-                     | DOT
                      | newline
                      | COLON
                      | LPAR
@@ -567,7 +561,6 @@ def p_multi_literal(p):
                      | LBRACE
                      | RBRACE
                      | PERCENT
-                     | MINUS
     """
     if isinstance(p[1], Node):
         if p[1].type in ["indent", "dedent", "newline"]:
@@ -592,26 +585,26 @@ def p_word(p):
     p[0] = Node("word", value=p[1])
 
 def p_version(p):
-    """version : num_part"""
-    p[0] = p[1]
+    """version : WORD"""
+    p[0] = Node("version", value=p[1])
 
-def p_num_part(p):
-    """num_part : int DOT num_part
-                | int
-    """
-    if len(p) == 4:
-        p[0] = Node("num_part", children=[p[1]])
-        p[0].children.append(p[3])
-    elif len(p) == 2:
-        p[0] = p[1]
-    else:
-        raise ValueError("YO")
-
-def p_int(p):
-    """int : INT"""
-    value = int(p[1])
-    p[0] = Node("int", value=value)
-
+#def p_num_part(p):
+#    """num_part : int DOT num_part
+#                | int
+#    """
+#    if len(p) == 4:
+#        p[0] = Node("num_part", children=[p[1]])
+#        p[0].children.append(p[3])
+#    elif len(p) == 2:
+#        p[0] = p[1]
+#    else:
+#        raise ValueError("YO")
+#
+#def p_int(p):
+#    """int : INT"""
+#    value = int(p[1])
+#    p[0] = Node("int", value=value)
+#
 def p_error(p):
     if p is not None:
         msg = ["Syntax error at line number %d, token %s ('%s')" % \

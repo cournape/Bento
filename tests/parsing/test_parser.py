@@ -58,7 +58,7 @@ Node(type='stmt_list'):
     Node(type='summary', value=[Node('literal'), Node('literal'), """ \
         """Node('literal'), Node('literal'), Node('literal'), """ \
         """Node('literal'), Node('literal'), Node('literal'), """ \
-        """Node('literal'), Node('literal'), Node('literal')])"""
+        """Node('literal'), Node('literal')])"""
 
         self._test(data, expected)
 
@@ -106,10 +106,7 @@ Node(type='stmt_list'):
         data = "Version: 1.0"
         expected = """\
 Node(type='stmt_list'):
-    Node(type='version'):
-        Node(type='num_part'):
-            Node(type='int', value=1)
-            Node(type='int', value=0)\
+    Node(type='version', value='1.0')\
 """
 
         self._test(data, expected)
@@ -193,8 +190,7 @@ Node(type='stmt_list'):
         expected = """\
 Node(type='stmt_list'):
     Node(type='description', value=[Node('literal'), """ \
-        """Node('literal'), Node('literal'), Node('literal'), """\
-        """Node('literal')])"""
+        """Node('literal'), Node('literal'), Node('literal')])"""
 
         self._test(data, expected)
 
@@ -205,7 +201,7 @@ Description:
         expected = """\
 Node(type='stmt_list'):
     Node(type='description', value=[Node('multi_literal'), Node('multi_literal'), """ \
-        """Node('multi_literal'), Node('multi_literal')])"""
+        """Node('multi_literal')])"""
 
         self._test(data, expected)
 

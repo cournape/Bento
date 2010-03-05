@@ -9,10 +9,10 @@ __all__ = ["MyLexer"]
 #==============
 #   Lexer
 #==============
-tokens = ('COLON', 'DOT', 'INT', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
+tokens = ('COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'BACKSLASH', 'LPAR', 'RPAR', 'DQUOTE', 'SQUOTE', 'STAR', 'LESS',
           'DOLLAR', 'TILDE', 'LBRACE', 'RBRACE', 'PERCENT', 'AROBASE',
-          'GREATER', 'PLUS', 'EQUAL', 'MINUS', 'SHARP', 'BQUOTE', 'NAME_ID',
+          'GREATER', 'PLUS', 'EQUAL', 'SHARP', 'BQUOTE', 'NAME_ID',
           'SUMMARY_ID', 'DESCRIPTION_ID', 'INDENT', 'DEDENT', 'LIBRARY_ID',
           'PACKAGES_ID', 'VERSION_ID', 'MODULES_ID', 'EXTENSION_ID',
           'SOURCES_ID', 'DATAFILES_ID', 'TARGET_ID', 'FILES_ID', 'SRCDIR_ID',
@@ -97,8 +97,6 @@ FIELD_TYPE = {
 }
 
 t_COLON = r':'
-t_DOT = r'\.'
-t_INT = r'\d+'
 t_COMMA = r','
 t_SLASH = r"\/"
 t_BACKSLASH = r"\\"
@@ -110,7 +108,6 @@ t_STAR = r"\*"
 t_LESS = r"\<"
 t_GREATER = r"\>"
 t_PLUS = r"\+"
-t_MINUS = r"-"
 t_EQUAL = r"="
 t_BQUOTE = r"`"
 t_SHARP = r"\#"
@@ -125,7 +122,7 @@ def t_WORD(t):
     # FIXME: how to handle special characters in "words", such as for paths
     # variables ?
     #r'[\/\\a-zA-Z_][\/\\\w]*'
-    r'[a-zA-Z_][\w_-]*'
+    r'[a-zA-Z_\.0-9][0-9\.\w_-]*'
     return t
 
 # Whitespace
