@@ -511,7 +511,6 @@ def p_anytoken_no_comma(p):
                          | LPAR
                          | RPAR
                          | DQUOTE
-                         | STAR
                          | BQUOTE
                          | SQUOTE
                          | LESS
@@ -522,9 +521,6 @@ def p_anytoken_no_comma(p):
                          | TILDE
                          | LBRACE
                          | RBRACE
-                         | PERCENT
-                         | AROBASE
-                         | DOLLAR
     """
     p[0] = Node("anytoken", value=p[1])
 
@@ -549,7 +545,6 @@ def p_multi_literal(p):
                      | RPAR
                      | COMMA
                      | DQUOTE
-                     | STAR
                      | BQUOTE
                      | SQUOTE
                      | LESS
@@ -560,7 +555,6 @@ def p_multi_literal(p):
                      | TILDE
                      | LBRACE
                      | RBRACE
-                     | PERCENT
     """
     if isinstance(p[1], Node):
         if p[1].type in ["indent", "dedent", "newline"]:
