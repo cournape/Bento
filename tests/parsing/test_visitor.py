@@ -216,3 +216,40 @@ Library:
         descr["libraries"]["default"]["modules"] = ["foo.py", "bar.py"]
 
         assert_equal(parse_and_analyse(data), descr)
+
+    def test_flag(self):
+        data = """\
+Flag: debug
+    Default: true
+
+Library:
+    if flag(debug):
+        Modules: foo.py, bar.py
+    else:
+        Modules:  fubar.py
+"""
+
+        descr = _empty_description()
+        descr["libraries"]["default"] = _empty_library()
+        descr["libraries"]["default"]["modules"] = ["foo.py", "bar.py"]
+        descr["flags"]["debug"] = {"default": "true", "name": "debug"}
+
+        assert_equal(parse_and_analyse(data), descr)
+
+        data = """\
+Flag: debug
+    Default: false
+
+Library:
+    if flag(debug):
+        Modules: foo.py, bar.py
+    else:
+        Modules:  fubar.py
+"""
+
+        descr = _empty_description()
+        descr["libraries"]["default"] = _empty_library()
+        descr["libraries"]["default"]["modules"] = ["fubar.py"]
+        descr["flags"]["debug"] = {"default": "false", "name": "debug"}
+
+        assert_equal(parse_and_analyse(data), descr)
