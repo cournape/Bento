@@ -10,8 +10,7 @@ __all__ = ["MyLexer"]
 #   Lexer
 #==============
 tokens = ('COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
-          'BACKSLASH', 'LPAR', 'RPAR', 'DQUOTE', 'SQUOTE', 'LESS',
-          'DOLLAR', 'TILDE', 'LBRACE', 'RBRACE',
+          'BACKSLASH', 'LPAR', 'RPAR', 'DQUOTE', 'SQUOTE', 'LESS', 'DOLLAR',
           'GREATER', 'PLUS', 'EQUAL', 'SHARP', 'BQUOTE', 'NAME_ID',
           'SUMMARY_ID', 'DESCRIPTION_ID', 'INDENT', 'DEDENT', 'LIBRARY_ID',
           'PACKAGES_ID', 'VERSION_ID', 'MODULES_ID', 'EXTENSION_ID',
@@ -110,15 +109,12 @@ t_PLUS = r"\+"
 t_EQUAL = r"="
 t_BQUOTE = r"`"
 t_SHARP = r"\#"
-t_TILDE = r"~"
-t_LBRACE = r"{"
-t_RBRACE = r"}"
 
 def t_WORD(t):
     # FIXME: how to handle special characters in "words", such as for paths
     # variables ?
     #r'[\/\\a-zA-Z_][\/\\\w]*'
-    r'[@\*a-zA-Z_\.0-9][\*@0-9\.\w_-]*'
+    r'[\[\}@\*a-zA-Z_\.0-9][\{\}\*@0-9\.\w_-]*'
     return t
 
 # Whitespace

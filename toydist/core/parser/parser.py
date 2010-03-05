@@ -518,9 +518,6 @@ def p_anytoken_no_comma(p):
                          | SHARP
                          | EQUAL
                          | GREATER
-                         | TILDE
-                         | LBRACE
-                         | RBRACE
     """
     p[0] = Node("anytoken", value=p[1])
 
@@ -552,9 +549,6 @@ def p_multi_literal(p):
                      | SHARP
                      | EQUAL
                      | GREATER
-                     | TILDE
-                     | LBRACE
-                     | RBRACE
     """
     if isinstance(p[1], Node):
         if p[1].type in ["indent", "dedent", "newline"]:
