@@ -413,12 +413,12 @@ def p_comma_words_term(p):
 # We produce a flat list here to speed things up (should do the same for
 # description field)
 def p_literal_line(p):
-    """literal_line : anytoken literal_line"""
+    """literal_line : literal literal_line"""
     p[0] = p[2]
     p[2].value.insert(0, p[1].value)
 
 def p_literal_line_term(p):
-    """literal_line : anytoken"""
+    """literal_line : literal"""
     p[0] = Node("literal_line", value=[p[1].value])
 
 def p_single_line_string(p):
@@ -477,23 +477,17 @@ def p_newline(p):
     """newline : NEWLINE"""
     p[0] = Node("newline", value=p[1])
 
-def p_literal(p):
-    """literal : WS 
-               | WORD
-    """
-    p[0] = Node("literal", value=p[1])
-
 def p_single_line_string_term(p):
     """single_line : literal"""
     p[0] = [p[1]]
 
 # anyword groks any character stream without space|newline
 def p_anyword(p):
-    """anyword : anyword anytoken"""
+    """anyword : anyword literal"""
     p[0] = Node("anyword", value=(p[1].value + p[2].value))
 
 def p_anyword_term(p):
-    """anyword : anytoken"""
+    """anyword : literal"""
     p[0] = p[1]
 
 def p_anyword_comma_list(p):
@@ -518,39 +512,26 @@ def p_anytoken_no_comma(p):
     """
     p[0] = Node("anytoken", value=p[1])
 
-# Any token but newline
-def p_anytoken(p):
-    """anytoken : anytoken_no_comma
+def p_literal(p):
+    """literal : anytoken_no_comma
     """
-    p[0] = Node("anytoken", value=p[1].value)
+    p[0] = Node("literal", value=p[1].value)
 
-def p_anytoken_term(p):
-    """anytoken : COMMA
-                | WS
+def p_literal_term(p):
+    """literal : COMMA
+               | WS
     """
-    p[0] = Node("anytoken", value=p[1])
+    p[0] = Node("literal", value=p[1])
 
 def p_multi_literal(p):
-    """multi_literal : WS
-                     | WORD
-                     | newline
-                     | COLON
-                     | LPAR
-                     | RPAR
-                     | COMMA
-                     | LESS
-                     | SLASH
-                     | SHARP
-                     | EQUAL
-                     | GREATER
+    """multi_literal : literal
     """
-    if isinstance(p[1], Node):
-        if p[1].type in ["indent", "dedent", "newline"]:
-            p[0] = p[1]
-        else:
-            raise ValueError("GNe ?")
-    else:
-        p[0] = Node("multi_literal", value=p[1])
+    p[0] = Node("multi_literal", value=p[1].value)
+
+def p_multi_literal2(p):
+    """multi_literal : newline
+    """
+    p[0] = p[1]
 
 def p_indent(p):
     """indent : INDENT
