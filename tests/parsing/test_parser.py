@@ -55,7 +55,7 @@ Node(type='stmt_list'):
         data = "Summary: a few words of description."
         expected = """\
 Node(type='stmt_list'):
-    Node(type='summary', value=[Node('literal'), Node('literal'), """ \
+    Node(type='summary', value=[Node('literal'), """ \
         """Node('literal'), Node('literal'), Node('literal'), """ \
         """Node('literal'), Node('literal'), Node('literal'), """ \
         """Node('literal'), Node('literal')])"""
@@ -168,7 +168,7 @@ Summary: yeah\
         expected = """\
 Node(type='stmt_list'):
     Node(type='name', value='yo')
-    Node(type='summary', value=[Node('literal'), Node('literal')])\
+    Node(type='summary', value=[Node('literal')])\
 """
 
         self._test(data, expected)
@@ -189,8 +189,7 @@ Node(type='stmt_list'):
         data = "Description: some words."
         expected = """\
 Node(type='stmt_list'):
-    Node(type='description', value=[Node('literal'), """ \
-        """Node('literal'), Node('literal'), Node('literal')])"""
+    Node(type='description', value=[Node('literal'), Node('literal'), Node('literal')])"""
 
         self._test(data, expected)
 

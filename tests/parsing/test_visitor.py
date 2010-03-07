@@ -45,7 +45,7 @@ class TestDescription(unittest.TestCase):
         data = "Description: some simple description"
 
         ref = _empty_description()
-        ref["description"] = " some simple description"
+        ref["description"] = "some simple description"
         assert_equal(parse_and_analyse(data), ref)
 
     def test_simple_indented_block(self):
@@ -68,7 +68,7 @@ Description: some simple description
 """
 
         ref = _empty_description()
-        ref["description"] = " some simple description\non multiple\nlines."
+        ref["description"] = "some simple description\non multiple\nlines."
         assert_equal(parse_and_analyse(data), ref)
 
     def test_nested_indented_block3(self):
@@ -84,7 +84,7 @@ Description: some
 """
 
         ref = _empty_description()
-        ref["description"] = """ some
+        ref["description"] = """some
 simple
     description
         on
@@ -134,7 +134,7 @@ Path: manpath
         descr["paths"]["manpath"] = {
                 "name": "manpath",
                 "default": "/usr/share/man",
-                "description": " man path",
+                "description": "man path",
                 }
 
         assert_equal(parse_and_analyse(data), descr)
@@ -170,7 +170,7 @@ Flag: debug
         descr["flags"]["debug"] = {
                 "name": "debug",
                 "default": "false",
-                "description": " debug flag",
+                "description": "debug flag",
                 }
 
         assert_equal(parse_and_analyse(data), descr)

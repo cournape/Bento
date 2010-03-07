@@ -86,7 +86,7 @@ def p_meta_name_stmt(p):
     p[0] = Node("name", value=p[3])
 
 def p_meta_summary_stmt(p):
-    """meta_summary_stmt : SUMMARY_ID COLON single_line
+    """meta_summary_stmt : SUMMARY_ID COLON single_line_value
     """
     p[0] = Node("summary", value=p[3])
 
@@ -333,7 +333,7 @@ def p_path_stmt(p):
     p[0] = p[1]
 
 def p_path_description(p):
-    """path_description : DESCRIPTION_ID COLON single_line"""
+    """path_description : DESCRIPTION_ID COLON single_line_value"""
     #"""path_description : meta_description_stmt"""
     p[0] = Node("path_description", value=p[3])
 
@@ -366,7 +366,7 @@ def p_flag_stmt(p):
     p[0] = p[1]
 
 def p_flag_description(p):
-    """flag_description : DESCRIPTION_ID COLON single_line"""
+    """flag_description : DESCRIPTION_ID COLON single_line_value"""
     #"""flag_description : meta_description_stmt"""
     p[0] = Node("flag_description", value=p[3])
 
@@ -421,9 +421,21 @@ def p_literal_line_term(p):
     """literal_line : literal"""
     p[0] = Node("literal_line", value=[p[1].value])
 
+def p_single_line(p):
+    """single_line_value : WS single_line"""
+    p[0] = p[2]
+
+def p_single_line_no_space(p):
+    """single_line_value : single_line"""
+    p[0] = p[1]
+
 def p_single_line_string(p):
     """single_line : single_line literal"""
     p[0] = p[1] + [p[2]]
+
+def p_single_line_string_term(p):
+    """single_line : literal_no_space"""
+    p[0] = [p[1]]
 
 def p_meta_description_stmt_start_same_line(p):
     """meta_description_stmt : description_decl single_line_newline INDENT multi_stmts DEDENT
@@ -436,12 +448,12 @@ def p_meta_description_stmt_indented_block(p):
     p[0] = Node("description", value=p[4])
 
 def p_meta_description_stmt_single(p):
-    """meta_description_stmt : description_decl single_line
+    """meta_description_stmt : description_decl single_line_value
     """
     p[0] = Node("description", value=p[2])
 
 def p_single_line_newline(p):
-    """single_line_newline : single_line newline
+    """single_line_newline : single_line_value newline
     """
     p[0] = Node("single_line_newline", value=(p[1] + [p[2]]))
 
@@ -477,10 +489,6 @@ def p_newline(p):
     """newline : NEWLINE"""
     p[0] = Node("newline", value=p[1])
 
-def p_single_line_string_term(p):
-    """single_line : literal"""
-    p[0] = [p[1]]
-
 # anyword groks any character stream without space|newline
 def p_anyword(p):
     """anyword : anyword literal"""
@@ -512,14 +520,23 @@ def p_anytoken_no_comma(p):
     """
     p[0] = Node("anytoken", value=p[1])
 
+def p_literal_no_space(p):
+    """literal_no_space : anytoken_no_comma
+    """
+    p[0] = Node("literal", value=p[1].value)
+
+def p_literal_no_space_term(p):
+    """literal_no_space : COMMA
+    """
+    p[0] = Node("literal", value=p[1])
+
 def p_literal(p):
-    """literal : anytoken_no_comma
+    """literal : literal_no_space
     """
     p[0] = Node("literal", value=p[1].value)
 
 def p_literal_term(p):
-    """literal : COMMA
-               | WS
+    """literal : WS
     """
     p[0] = Node("literal", value=p[1])
 
