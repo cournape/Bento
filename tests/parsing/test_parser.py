@@ -55,10 +55,10 @@ Node(type='stmt_list'):
         data = "Summary: a few words of description."
         expected = """\
 Node(type='stmt_list'):
-    Node(type='summary', value=[Node('literal'), Node('literal'), """ \
+    Node(type='summary', value=[Node('literal'), """ \
         """Node('literal'), Node('literal'), Node('literal'), """ \
         """Node('literal'), Node('literal'), Node('literal'), """ \
-        """Node('literal'), Node('literal'), Node('literal')])"""
+        """Node('literal'), Node('literal')])"""
 
         self._test(data, expected)
 
@@ -106,10 +106,7 @@ Node(type='stmt_list'):
         data = "Version: 1.0"
         expected = """\
 Node(type='stmt_list'):
-    Node(type='version'):
-        Node(type='num_part'):
-            Node(type='int', value=1)
-            Node(type='int', value=0)\
+    Node(type='version', value='1.0')\
 """
 
         self._test(data, expected)
@@ -171,7 +168,7 @@ Summary: yeah\
         expected = """\
 Node(type='stmt_list'):
     Node(type='name', value='yo')
-    Node(type='summary', value=[Node('literal'), Node('literal')])\
+    Node(type='summary', value=[Node('literal')])\
 """
 
         self._test(data, expected)
@@ -192,9 +189,7 @@ Node(type='stmt_list'):
         data = "Description: some words."
         expected = """\
 Node(type='stmt_list'):
-    Node(type='description', value=[Node('literal'), """ \
-        """Node('literal'), Node('literal'), Node('literal'), """\
-        """Node('literal')])"""
+    Node(type='description', value=[Node('literal'), Node('literal'), Node('literal')])"""
 
         self._test(data, expected)
 
@@ -205,7 +200,19 @@ Description:
         expected = """\
 Node(type='stmt_list'):
     Node(type='description', value=[Node('multi_literal'), Node('multi_literal'), """ \
-        """Node('multi_literal'), Node('multi_literal')])"""
+        """Node('multi_literal')])"""
+
+        self._test(data, expected)
+
+    def test_description_simple_indent_wse(self):
+        "Test indented block with ws error."
+        data = """\
+Description:   
+    some words."""
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='description', value=[Node('multi_literal'), Node('multi_literal'), """ \
+        """Node('multi_literal')])"""
 
         self._test(data, expected)
 

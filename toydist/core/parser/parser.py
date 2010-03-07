@@ -86,7 +86,7 @@ def p_meta_name_stmt(p):
     p[0] = Node("name", value=p[3])
 
 def p_meta_summary_stmt(p):
-    """meta_summary_stmt : SUMMARY_ID COLON single_line
+    """meta_summary_stmt : SUMMARY_ID COLON single_line_value
     """
     p[0] = Node("summary", value=p[3])
 
@@ -128,7 +128,7 @@ def p_meta_platforms_stmt(p):
 def p_meta_version_stmt(p):
     """meta_version_stmt : VERSION_ID COLON version
     """
-    p[0] = Node("version", children=[p[3]])
+    p[0] = Node("version", value=p[3].value)
 
 def p_meta_classifiers_stmt_single_line(p):
     """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifier"""
@@ -333,7 +333,7 @@ def p_path_stmt(p):
     p[0] = p[1]
 
 def p_path_description(p):
-    """path_description : DESCRIPTION_ID COLON single_line"""
+    """path_description : DESCRIPTION_ID COLON single_line_value"""
     #"""path_description : meta_description_stmt"""
     p[0] = Node("path_description", value=p[3])
 
@@ -366,7 +366,7 @@ def p_flag_stmt(p):
     p[0] = p[1]
 
 def p_flag_description(p):
-    """flag_description : DESCRIPTION_ID COLON single_line"""
+    """flag_description : DESCRIPTION_ID COLON single_line_value"""
     #"""flag_description : meta_description_stmt"""
     p[0] = Node("flag_description", value=p[3])
 
@@ -413,17 +413,29 @@ def p_comma_words_term(p):
 # We produce a flat list here to speed things up (should do the same for
 # description field)
 def p_literal_line(p):
-    """literal_line : anytoken literal_line"""
+    """literal_line : literal literal_line"""
     p[0] = p[2]
     p[2].value.insert(0, p[1].value)
 
 def p_literal_line_term(p):
-    """literal_line : anytoken"""
+    """literal_line : literal"""
     p[0] = Node("literal_line", value=[p[1].value])
+
+def p_single_line(p):
+    """single_line_value : WS single_line"""
+    p[0] = p[2]
+
+def p_single_line_no_space(p):
+    """single_line_value : single_line"""
+    p[0] = p[1]
 
 def p_single_line_string(p):
     """single_line : single_line literal"""
     p[0] = p[1] + [p[2]]
+
+def p_single_line_string_term(p):
+    """single_line : literal_no_space"""
+    p[0] = [p[1]]
 
 def p_meta_description_stmt_start_same_line(p):
     """meta_description_stmt : description_decl single_line_newline INDENT multi_stmts DEDENT
@@ -435,13 +447,18 @@ def p_meta_description_stmt_indented_block(p):
     """
     p[0] = Node("description", value=p[4])
 
+def p_meta_description_stmt_indented_block2(p):
+    """meta_description_stmt : description_decl WS NEWLINE INDENT multi_stmts DEDENT
+    """
+    p[0] = Node("description", value=p[5])
+
 def p_meta_description_stmt_single(p):
-    """meta_description_stmt : description_decl single_line
+    """meta_description_stmt : description_decl single_line_value
     """
     p[0] = Node("description", value=p[2])
 
 def p_single_line_newline(p):
-    """single_line_newline : single_line newline
+    """single_line_newline : single_line_value newline
     """
     p[0] = Node("single_line_newline", value=(p[1] + [p[2]]))
 
@@ -477,24 +494,13 @@ def p_newline(p):
     """newline : NEWLINE"""
     p[0] = Node("newline", value=p[1])
 
-def p_literal(p):
-    """literal : WS 
-               | WORD
-               | DOT
-    """
-    p[0] = Node("literal", value=p[1])
-
-def p_single_line_string_term(p):
-    """single_line : literal"""
-    p[0] = [p[1]]
-
 # anyword groks any character stream without space|newline
 def p_anyword(p):
-    """anyword : anyword anytoken"""
+    """anyword : anyword literal"""
     p[0] = Node("anyword", value=(p[1].value + p[2].value))
 
 def p_anyword_term(p):
-    """anyword : anytoken"""
+    """anyword : literal"""
     p[0] = p[1]
 
 def p_anyword_comma_list(p):
@@ -508,74 +514,46 @@ def p_anyword_comma_list_term(p):
 # Any token but whitespace, newline and comma
 def p_anytoken_no_comma(p):
     """anytoken_no_comma : WORD
-                         | INT
-                         | DOT
                          | COLON
                          | LPAR
                          | RPAR
-                         | DQUOTE
-                         | STAR
-                         | BQUOTE
-                         | SQUOTE
                          | LESS
                          | SLASH
                          | SHARP
                          | EQUAL
                          | GREATER
-                         | TILDE
-                         | LBRACE
-                         | RBRACE
-                         | PERCENT
-                         | AROBASE
-                         | DOLLAR
-                         | MINUS
     """
     p[0] = Node("anytoken", value=p[1])
 
-# Any token but newline
-def p_anytoken(p):
-    """anytoken : anytoken_no_comma
+def p_literal_no_space(p):
+    """literal_no_space : anytoken_no_comma
     """
-    p[0] = Node("anytoken", value=p[1].value)
+    p[0] = Node("literal", value=p[1].value)
 
-def p_anytoken_term(p):
-    """anytoken : COMMA
-                | WS
+def p_literal_no_space_term(p):
+    """literal_no_space : COMMA
     """
-    p[0] = Node("anytoken", value=p[1])
+    p[0] = Node("literal", value=p[1])
+
+def p_literal(p):
+    """literal : literal_no_space
+    """
+    p[0] = Node("literal", value=p[1].value)
+
+def p_literal_term(p):
+    """literal : WS
+    """
+    p[0] = Node("literal", value=p[1])
 
 def p_multi_literal(p):
-    """multi_literal : WS
-                     | WORD
-                     | INT
-                     | DOT
-                     | newline
-                     | COLON
-                     | LPAR
-                     | RPAR
-                     | COMMA
-                     | DQUOTE
-                     | STAR
-                     | BQUOTE
-                     | SQUOTE
-                     | LESS
-                     | SLASH
-                     | SHARP
-                     | EQUAL
-                     | GREATER
-                     | TILDE
-                     | LBRACE
-                     | RBRACE
-                     | PERCENT
-                     | MINUS
+    """multi_literal : literal
     """
-    if isinstance(p[1], Node):
-        if p[1].type in ["indent", "dedent", "newline"]:
-            p[0] = p[1]
-        else:
-            raise ValueError("GNe ?")
-    else:
-        p[0] = Node("multi_literal", value=p[1])
+    p[0] = Node("multi_literal", value=p[1].value)
+
+def p_multi_literal2(p):
+    """multi_literal : newline
+    """
+    p[0] = p[1]
 
 def p_indent(p):
     """indent : INDENT
@@ -592,26 +570,26 @@ def p_word(p):
     p[0] = Node("word", value=p[1])
 
 def p_version(p):
-    """version : num_part"""
-    p[0] = p[1]
+    """version : WORD"""
+    p[0] = Node("version", value=p[1])
 
-def p_num_part(p):
-    """num_part : int DOT num_part
-                | int
-    """
-    if len(p) == 4:
-        p[0] = Node("num_part", children=[p[1]])
-        p[0].children.append(p[3])
-    elif len(p) == 2:
-        p[0] = p[1]
-    else:
-        raise ValueError("YO")
-
-def p_int(p):
-    """int : INT"""
-    value = int(p[1])
-    p[0] = Node("int", value=value)
-
+#def p_num_part(p):
+#    """num_part : int DOT num_part
+#                | int
+#    """
+#    if len(p) == 4:
+#        p[0] = Node("num_part", children=[p[1]])
+#        p[0].children.append(p[3])
+#    elif len(p) == 2:
+#        p[0] = p[1]
+#    else:
+#        raise ValueError("YO")
+#
+#def p_int(p):
+#    """int : INT"""
+#    value = int(p[1])
+#    p[0] = Node("int", value=value)
+#
 def p_error(p):
     if p is not None:
         msg = ["Syntax error at line number %d, token %s ('%s')" % \

@@ -9,17 +9,16 @@ __all__ = ["MyLexer"]
 #==============
 #   Lexer
 #==============
-tokens = ('COLON', 'DOT', 'INT', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
-          'BACKSLASH', 'LPAR', 'RPAR', 'DQUOTE', 'SQUOTE', 'STAR', 'LESS',
-          'DOLLAR', 'TILDE', 'LBRACE', 'RBRACE', 'PERCENT', 'AROBASE',
-          'GREATER', 'PLUS', 'EQUAL', 'MINUS', 'SHARP', 'BQUOTE', 'NAME_ID',
+tokens = ('COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
+          'BACKSLASH', 'LPAR', 'RPAR', 'LESS',
+          'GREATER', 'EQUAL', 'SHARP', 'NAME_ID',
           'SUMMARY_ID', 'DESCRIPTION_ID', 'INDENT', 'DEDENT', 'LIBRARY_ID',
           'PACKAGES_ID', 'VERSION_ID', 'MODULES_ID', 'EXTENSION_ID',
           'SOURCES_ID', 'DATAFILES_ID', 'TARGET_ID', 'FILES_ID', 'SRCDIR_ID',
           'URL_ID', 'AUTHOR_ID', 'AUTHOR_EMAIL_ID', 'MAINTAINER_ID',
           'MAINTAINER_EMAIL_ID', 'LICENSE_ID', 'PLATFORMS_ID', 'CLASSIFIERS_ID',
           'PATH_ID', 'DEFAULT_ID', 'EXTRA_SOURCES_ID', 'EXECUTABLE_ID',
-          'MODULE_ID', 'FUNCTION_ID', 'FLAG_ID',
+          'FUNCTION_ID', 'FLAG_ID',
           'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP')
 
 # List of FIELD keywords -> Token TYPE inside PLY lexer
@@ -50,7 +49,6 @@ META_FIELDS_ID = {
     "Default": "DEFAULT_ID",
     "ExtraSourceFiles": "EXTRA_SOURCES_ID",
     "Executable": "EXECUTABLE_ID",
-    "Module": "MODULE_ID",
     "Function": "FUNCTION_ID",
 }
 
@@ -92,40 +90,25 @@ FIELD_TYPE = {
     "DEFAULT_ID": "WORDS",
     "EXTRA_SOURCES_ID": "WORDS",
     "EXECUTABLE_ID": "WORD",
-    "MODULE_ID": "WORDS",
     "FUNCTION_ID": "WORDS",
 }
 
 t_COLON = r':'
-t_DOT = r'\.'
-t_INT = r'\d+'
 t_COMMA = r','
 t_SLASH = r"\/"
 t_BACKSLASH = r"\\"
 t_LPAR = r"\("
 t_RPAR = r"\)"
-t_SQUOTE = r"'"
-t_DQUOTE = r"\""
-t_STAR = r"\*"
 t_LESS = r"\<"
 t_GREATER = r"\>"
-t_PLUS = r"\+"
-t_MINUS = r"-"
 t_EQUAL = r"="
-t_BQUOTE = r"`"
 t_SHARP = r"\#"
-t_DOLLAR = r"\$"
-t_TILDE = r"~"
-t_LBRACE = r"{"
-t_RBRACE = r"}"
-t_PERCENT = r"%"
-t_AROBASE = r"@"
 
 def t_WORD(t):
     # FIXME: how to handle special characters in "words", such as for paths
     # variables ?
     #r'[\/\\a-zA-Z_][\/\\\w]*'
-    r'[a-zA-Z_][\w_-]*'
+    r'[\'\"`\[\}@\*a-zA-Z_\.0-9-\$][\'\"\$\{\}\*@0-9\.\w_-`]*'
     return t
 
 # Whitespace
