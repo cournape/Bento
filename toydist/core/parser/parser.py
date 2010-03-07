@@ -510,9 +510,6 @@ def p_anytoken_no_comma(p):
                          | COLON
                          | LPAR
                          | RPAR
-                         | DQUOTE
-                         | BQUOTE
-                         | SQUOTE
                          | LESS
                          | SLASH
                          | SHARP
@@ -541,9 +538,6 @@ def p_multi_literal(p):
                      | LPAR
                      | RPAR
                      | COMMA
-                     | DQUOTE
-                     | BQUOTE
-                     | SQUOTE
                      | LESS
                      | SLASH
                      | SHARP
