@@ -204,6 +204,18 @@ Node(type='stmt_list'):
 
         self._test(data, expected)
 
+    def test_description_simple_indent_wse(self):
+        "Test indented block with ws error."
+        data = """\
+Description:   
+    some words."""
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='description', value=[Node('multi_literal'), Node('multi_literal'), """ \
+        """Node('multi_literal')])"""
+
+        self._test(data, expected)
+
     def test_description_complex_indent(self):
         data = """\
 Description:

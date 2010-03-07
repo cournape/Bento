@@ -447,6 +447,11 @@ def p_meta_description_stmt_indented_block(p):
     """
     p[0] = Node("description", value=p[4])
 
+def p_meta_description_stmt_indented_block2(p):
+    """meta_description_stmt : description_decl WS NEWLINE INDENT multi_stmts DEDENT
+    """
+    p[0] = Node("description", value=p[5])
+
 def p_meta_description_stmt_single(p):
     """meta_description_stmt : description_decl single_line_value
     """
