@@ -120,6 +120,52 @@ class TestLexerStageTwo(TestLexer):
             self._get_tokens(data)
         self.assertRaises(SyntaxError, f)
 
+class TestLexerStageThree(TestLexer):
+    def setUp(self):
+        self.lexer = MyLexer(stage=3)
+
+    def test_simple(self):
+        data = "yoyo"
+        ref = "WORD"
+        self._test(data, ref)
+
+    def test_empty(self):
+        data = ""
+        ref = []
+        self._test(data, ref)
+
+    def test_simple_escape(self):
+        data = "yoyo\ "
+        ref = "WORD"
+        self._test(data, ref)
+
+        tokens = self._get_tokens(data)
+        assert_equal(tokens[0].value, "yoyo ")
+
+    def test_simple_escape2(self):
+        data = "\ yoyo\ "
+        ref = "WORD"
+        self._test(data, ref)
+
+        tokens = self._get_tokens(data)
+        assert_equal(tokens[0].value, " yoyo ")
+
+    def test_double_escape(self):
+        data = "yoyo\ \ yaya"
+        ref = "WORD"
+        self._test(data, ref)
+
+        tokens = self._get_tokens(data)
+        assert_equal(tokens[0].value, "yoyo  yaya")
+
+    def test_literal_escape(self):
+        data = "yoyo\\\\"
+        ref = "WORD"
+        self._test(data, ref)
+
+        tokens = self._get_tokens(data)
+        assert_equal(tokens[0].value, "yoyo\\")
+
 class TestLexerStageFour(TestLexer):
     def setUp(self):
         self.lexer = MyLexer(stage=4)

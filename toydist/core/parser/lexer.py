@@ -152,6 +152,8 @@ class MyLexer(object):
         self.token_stream = iter(self.lexer.token, None)
         if self._stage >= 2:
             self.token_stream = detect_escaped(self.token_stream)
+        if self._stage >= 3:
+            self.token_stream = merge_escaped(self.token_stream)
         if self._stage >= 4:
             self.token_stream = indent_generator(self.token_stream)
         if self._stage >= 5:
@@ -179,6 +181,44 @@ def detect_escaped(stream):
         else:
             t.escaped = False
         yield t
+
+def merge_escaped(stream):
+    stream = Peeker(stream, EOF)
+    queue = []
+
+    t = stream.next()
+    while t:
+        if t.escaped:
+            queue.append(t)
+        else:
+            if t.type == "WORD":
+                if queue:
+                    queue.append(t)
+                    n = stream.peek()
+                    if not n.escaped:
+                        t.value = "".join([c.value for c in queue])
+                        yield t
+                        queue = []
+                else:
+                    n = stream.peek()
+                    if n.escaped:
+                        queue.append(t)
+                    else:
+                        yield t
+            else:
+                if queue:
+                    queue[-1].value = "".join([c.value for c in queue])
+                    yield queue[-1]
+                    queue = []
+                yield t
+        try:
+            t = stream.next()
+        except StopIteration:
+            if queue:
+                t.value = "".join([c.value for c in queue])
+                t.type = "WORD"
+                yield t
+            return
 
 def indent_generator(token_stream):
     """Post process the given stream of tokense to generate INDENT/DEDENT
