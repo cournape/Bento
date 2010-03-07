@@ -15,7 +15,7 @@ class Parser(object):
     def __init__(self, lexer=None):
         self.parser = ply.yacc.yacc(start="stmt_list")
         if lexer is None:
-            self.lexer = MyLexer(stage=3)
+            self.lexer = MyLexer(stage=5)
         else:
             self.lexer = lexer
 

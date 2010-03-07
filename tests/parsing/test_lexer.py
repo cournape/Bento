@@ -85,6 +85,45 @@ class TestLexerStageTwo(TestLexer):
     def setUp(self):
         self.lexer = MyLexer(stage=2)
 
+    def test_simple(self):
+        data = "yoyo"
+        ref = "WORD"
+        self._test(data, ref)
+
+    def test_empty(self):
+        data = ""
+        ref = []
+        self._test(data, ref)
+
+    def test_simple_escape(self):
+        data = "yoyo\ "
+        ref = "WORD WS"
+        self._test(data, ref)
+
+        tokens = self._get_tokens(data)
+        assert_equal(tokens[0].escaped, False)
+        assert_equal(tokens[1].escaped, True)
+
+    def test_double_escape(self):
+        data = "yoyo\\\\ "
+        ref = "WORD BACKSLASH WS"
+        self._test(data, ref)
+
+        tokens = self._get_tokens(data)
+        assert_equal(tokens[0].escaped, False)
+        assert_equal(tokens[1].escaped, True)
+        assert_equal(tokens[2].escaped, False)
+
+    def test_wrong_escape(self):
+        data = "yoyo\\"
+        def f():
+            self._get_tokens(data)
+        self.assertRaises(SyntaxError, f)
+
+class TestLexerStageFour(TestLexer):
+    def setUp(self):
+        self.lexer = MyLexer(stage=4)
+
     def test_single_line(self):
         data = """\
 Name: yo
@@ -272,9 +311,9 @@ WORD COLON WS WORD NEWLINE
         assert_equal(indents[2].value, 6)
         assert_equal(indents[3].value, 4)
 
-class TestLexerStageThree(TestLexer):
+class TestLexerStageFive(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage=3)
+        self.lexer = MyLexer(stage=5)
 
     def test_single_line(self):
         data = """\
@@ -657,7 +696,7 @@ DEDENT
 
 class TestNewLines(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage=3)
+        self.lexer = MyLexer(stage=5)
 
     # Test we throw away NEWLINES except in literals
     def test_lastnewline(self):

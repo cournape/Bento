@@ -131,6 +131,13 @@ def t_tab(t):
     msg = "Illegal tab character at line %d" % t.lineno
     raise SyntaxError(msg)
 
+class _Dummy(object):
+    def __init__(self):
+        self.type = "EOF"
+        self.escaped = False
+
+EOF = _Dummy()
+
 class MyLexer(object):
     def __init__(self, stage=1, module=None, object=None, debug=0, optimize=0,
                  lextab='lextab', reflags=0, nowarn=0, outputdir='',
@@ -144,8 +151,10 @@ class MyLexer(object):
         self.lexer.input(*a, **kw)
         self.token_stream = iter(self.lexer.token, None)
         if self._stage >= 2:
+            self.token_stream = detect_escaped(self.token_stream)
+        if self._stage >= 4:
             self.token_stream = indent_generator(self.token_stream)
-        if self._stage >= 3:
+        if self._stage >= 5:
             self.token_stream = post_process(self.token_stream)
 
     def token(self, *a, **kw):
@@ -153,6 +162,23 @@ class MyLexer(object):
             return self.token_stream.next()
         except StopIteration:
             return None
+
+def detect_escaped(stream):
+    """Post process the given stream to generate escaped character for characters
+    preceded by the escaping token."""
+    stream = Peeker(stream, EOF)
+    for t in stream:
+        if t.type == "BACKSLASH":
+            n = stream.peek()
+            if n is EOF:
+                raise SyntaxError("EOF while escaping token %r (line %d)" %
+                                  (t.value, t.lineno-1))
+            else:
+                t = stream.next()
+            t.escaped = True
+        else:
+            t.escaped = False
+        yield t
 
 def indent_generator(token_stream):
     """Post process the given stream of tokense to generate INDENT/DEDENT
