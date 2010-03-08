@@ -21,6 +21,9 @@ tokens = ('COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'FUNCTION_ID', 'FLAG_ID',
           'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP')
 
+ESCAPING_CHAR = dict([(t, False) for t in tokens])
+ESCAPING_CHAR["BACKSLASH"] = True
+
 # List of FIELD keywords -> Token TYPE inside PLY lexer
 META_FIELDS_ID = {
     "Version": "VERSION_ID",
@@ -169,7 +172,7 @@ def detect_escaped(stream):
     """Post process the given stream to generate escaped character for characters
     preceded by the escaping token."""
     for t in stream:
-        if t.type == "BACKSLASH":
+        if ESCAPING_CHAR[t.type]:
             try:
                 t = stream.next()
             except StopIteration:
