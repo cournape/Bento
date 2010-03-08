@@ -221,7 +221,7 @@ def merge_escaped(stream):
                 yield t
             return
 
-def indent_generator(token_stream):
+def indent_generator(tokens):
     """Post process the given stream of tokense to generate INDENT/DEDENT
     tokens.
     
@@ -241,17 +241,9 @@ def indent_generator(token_stream):
     former.lineno = 0
     former.lexpos = -1
 
-    sentinel = ply.lex.LexToken()
-    sentinel.type = "LAST_TOKEN"
-    sentinel.value = "dummy"
-    sentinel.lineno = -1
-    sentinel.lexpos = -1
-
     def generate_dedent(stck, tok):
         amount = stck.pop(0)
         return new_dedent(amount, tok)
-
-    tokens = Peeker(token_stream, dummy=sentinel)
 
     for token in tokens:
         if former.type == "NEWLINE":
