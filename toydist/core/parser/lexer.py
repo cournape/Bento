@@ -110,8 +110,7 @@ t_SHARP = r"\#"
 def t_WORD(t):
     # FIXME: how to handle special characters in "words", such as for paths
     # variables ?
-    #r'[\/\\a-zA-Z_][\/\\\w]*'
-    r'[\'\"`\[\}@\*a-zA-Z_\.0-9-\$][\'\"\$\{\}\*@0-9\.\w_-`]*'
+    r'[\w\/\<\>"\'\`*@\-\.\$]+'
     return t
 
 # Whitespace
@@ -152,15 +151,16 @@ class MyLexer(object):
 
     def input(self, *a, **kw):
         self.lexer.input(*a, **kw)
-        self.token_stream = iter(self.lexer.token, None)
+        token_stream = iter(self.lexer.token, None)
         if self._stage >= 2:
-            self.token_stream = detect_escaped(self.token_stream)
+            token_stream = detect_escaped(token_stream)
         if self._stage >= 3:
-            self.token_stream = merge_escaped(self.token_stream)
+            token_stream = merge_escaped(token_stream)
         if self._stage >= 4:
-            self.token_stream = indent_generator(self.token_stream)
+            token_stream = indent_generator(token_stream)
         if self._stage >= 5:
-            self.token_stream = post_process(self.token_stream)
+            token_stream = post_process(token_stream)
+        self.token_stream = token_stream
 
     def token(self, *a, **kw):
         try:
