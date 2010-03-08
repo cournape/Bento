@@ -168,15 +168,13 @@ class MyLexer(object):
 def detect_escaped(stream):
     """Post process the given stream to generate escaped character for characters
     preceded by the escaping token."""
-    stream = Peeker(stream, EOF)
     for t in stream:
         if t.type == "BACKSLASH":
-            n = stream.peek()
-            if n is EOF:
+            try:
+                t = stream.next()
+            except StopIteration:
                 raise SyntaxError("EOF while escaping token %r (line %d)" %
                                   (t.value, t.lineno-1))
-            else:
-                t = stream.next()
             t.escaped = True
         else:
             t.escaped = False
