@@ -1,4 +1,6 @@
 import sys
+import os
+
 import ply
 import ply.lex
 import ply.yacc
@@ -11,20 +13,27 @@ from toydist.core.parser.nodes \
     import \
         Node
 
+_PICKLED_PARSETAB = os.path.join(os.path.dirname(__file__), "parsetab")
+_OPTIMIZE_LEX = 0
+_DEBUG_YACC = 1
+
 class Parser(object):
     def __init__(self, lexer=None):
-        self.parser = ply.yacc.yacc(start="stmt_list")
         if lexer is None:
-            self.lexer = MyLexer(stage=5)
+            self.lexer = MyLexer(stage=5, optimize=_OPTIMIZE_LEX)
         else:
             self.lexer = lexer
 
-    def parse(self, data, debug=False):
-        return self.parser.parse(data, lexer=self.lexer, debug=debug)
+        self.parser = ply.yacc.yacc(start="stmt_list",
+                                    picklefile=_PICKLED_PARSETAB,
+                                    debug=_DEBUG_YACC)
 
-def parse(data, debug=False):
+    def parse(self, data):
+        return self.parser.parse(data, lexer=self.lexer)
+
+def parse(data):
     parser = Parser()
-    return parser.parse(data, debug)
+    return parser.parse(data)
 
 #-------------
 #   Grammar
