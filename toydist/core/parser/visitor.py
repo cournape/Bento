@@ -43,6 +43,7 @@ class Dispatcher(object):
             "modules": self.modules,
             "packages": self.packages,
             "build_requires": self.build_requires,
+            "install_requires": self.install_requires,
             # Path
             "path": self.path,
             "path_default": self.path_default,
@@ -142,6 +143,7 @@ class Dispatcher(object):
             "modules": [],
             "packages": [],
             "build_requires": [],
+            "install_requires": [],
             "extensions": {}
         }
 
@@ -157,6 +159,8 @@ class Dispatcher(object):
                 library_dict["packages"].extend(c.value)
             elif c.type == "build_requires":
                 library_dict["build_requires"].extend(c.value)
+            elif c.type == "install_requires":
+                library_dict["install_requires"].extend(c.value)
             elif c.type == "extension":
                 name = c.value["name"]
                 library_dict["extensions"][name] = c.value
@@ -180,6 +184,9 @@ class Dispatcher(object):
         return node
 
     def build_requires(self, node):
+        return node
+
+    def install_requires(self, node):
         return node
 
     def extension(self, node):
