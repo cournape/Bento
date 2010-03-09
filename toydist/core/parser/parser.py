@@ -80,6 +80,7 @@ def p_meta_stmt(p):
                  | meta_description_stmt
                  | meta_version_stmt
                  | meta_url_stmt
+                 | meta_download_url_stmt
                  | meta_author_stmt
                  | meta_author_email_stmt
                  | meta_maintainer_stmt
@@ -104,6 +105,11 @@ def p_meta_url_stmt(p):
     """meta_url_stmt : URL_ID COLON anyword
     """
     p[0] = Node("url", value=p[3].value)
+
+def p_meta_download_url_stmt(p):
+    """meta_download_url_stmt : DOWNLOAD_URL_ID COLON anyword
+    """
+    p[0] = Node("download_url", value=p[3].value)
 
 def p_meta_author_stmt(p):
     """meta_author_stmt : AUTHOR_ID COLON anyword

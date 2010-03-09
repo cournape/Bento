@@ -20,7 +20,8 @@ tokens = ('COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'PATH_ID', 'DEFAULT_ID', 'EXTRA_SOURCES_ID', 'EXECUTABLE_ID',
           'FUNCTION_ID', 'MODULE_ID', 'FLAG_ID',
           'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP',
-          'BUILD_REQUIRES_ID', 'INSTALL_REQUIRES_ID')
+          'BUILD_REQUIRES_ID', 'INSTALL_REQUIRES_ID',
+          'DOWNLOAD_URL_ID')
 
 ESCAPING_CHAR = dict([(t, False) for t in tokens])
 ESCAPING_CHAR["BACKSLASH"] = True
@@ -41,6 +42,7 @@ META_FIELDS_ID = {
     "Files": "FILES_ID",
     "SourceDir": "SRCDIR_ID",
     "Url": "URL_ID",
+    "DownloadUrl": "DOWNLOAD_URL_ID",
     "Author": "AUTHOR_ID",
     "AuthorEmail": "AUTHOR_EMAIL_ID",
     "Maintainer": "MAINTAINER_ID",
@@ -85,6 +87,7 @@ FIELD_TYPE = {
     "SRCDIR_ID": "WORDS",
     "FILES_ID": "WORDS",
     "URL_ID": "WORDS",
+    "DOWNLOAD_URL_ID": "WORDS",
     "AUTHOR_ID": "LINE",
     "AUTHOR_EMAIL_ID": "WORDS",
     "MAINTAINER_ID": "LINE",
