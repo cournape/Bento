@@ -117,7 +117,7 @@ t_SHARP = r"\#"
 def t_WORD(t):
     # FIXME: how to handle special characters in "words", such as for paths
     # variables ?
-    r'[\w\/\<\>"\'\`*@\-\.\$]+'
+    r'[~\{\}%\w\/\<\>"\'\`*@\-\.\$]+'
     return t
 
 # Whitespace
