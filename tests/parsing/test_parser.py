@@ -302,6 +302,40 @@ Node(type='stmt_list'):
 
         self._test(data, expected)
 
+    def test_build_requires(self):
+        data = """\
+Library:
+    BuildRequires:
+        foo, bar
+"""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='library'):
+        Node(type='library_name', value='default')
+        Node(type='library_stmts'):
+            Node(type='build_requires', value=['foo', 'bar'])"""
+
+        self._test(data, expected)
+
+    def test_build_requires2(self):
+        data = """\
+Library:
+    BuildRequires:
+        foo, bar
+    BuildRequires: fubar
+"""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='library'):
+        Node(type='library_name', value='default')
+        Node(type='library_stmts'):
+            Node(type='build_requires', value=['foo', 'bar'])
+            Node(type='build_requires', value=['fubar'])"""
+
+        self._test(data, expected)
+
 class TestExecutable(_TestGrammar):
     def test_simple(self):
         data = """\

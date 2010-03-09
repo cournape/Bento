@@ -249,6 +249,7 @@ def p_library_stmt(p):
     """library_stmt : modules_stmt
                     | packages_stmt
                     | extension_stmt
+                    | build_requires_stmt
                     | conditional_stmt
     """
     p[0] = p[1]
@@ -260,6 +261,10 @@ def p_packages_stmt(p):
 def p_modules_stmt(p):
     """modules_stmt : MODULES_ID COLON comma_list"""
     p[0] = Node("modules", value=p[3].value)
+
+def p_build_requires_stmt(p):
+    """build_requires_stmt : BUILD_REQUIRES_ID COLON comma_list"""
+    p[0] = Node("build_requires", value=p[3].value)
 
 def p_extension_stmt_content(p):
     """extension_stmt : extension_decl INDENT extension_fields DEDENT"""

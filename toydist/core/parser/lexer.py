@@ -19,7 +19,8 @@ tokens = ('COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'MAINTAINER_EMAIL_ID', 'LICENSE_ID', 'PLATFORMS_ID', 'CLASSIFIERS_ID',
           'PATH_ID', 'DEFAULT_ID', 'EXTRA_SOURCES_ID', 'EXECUTABLE_ID',
           'FUNCTION_ID', 'MODULE_ID', 'FLAG_ID',
-          'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP')
+          'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP',
+          'BUILD_REQUIRES_ID')
 
 ESCAPING_CHAR = dict([(t, False) for t in tokens])
 ESCAPING_CHAR["BACKSLASH"] = True
@@ -54,6 +55,7 @@ META_FIELDS_ID = {
     "Executable": "EXECUTABLE_ID",
     "Function": "FUNCTION_ID",
     "Module": "MODULE_ID",
+    "BuildRequires": "BUILD_REQUIRES_ID",
 }
 
 CONDITIONAL_ID = {
@@ -96,6 +98,7 @@ FIELD_TYPE = {
     "EXECUTABLE_ID": "WORD",
     "FUNCTION_ID": "WORDS",
     "MODULE_ID": "WORD",
+    "BUILD_REQUIRES_ID": "WORDS",
 }
 
 t_COLON = r':'

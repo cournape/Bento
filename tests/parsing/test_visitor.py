@@ -28,7 +28,8 @@ def _empty_description():
     return d
 
 def _empty_library():
-    d = {"name": "default", "modules": [], "packages": [], "extensions": {}}
+    d = {"name": "default", "modules": [], "packages": [], "extensions": {},
+         "build_requires": []}
     return d
 
 class TestSimpleMeta(unittest.TestCase):
@@ -119,6 +120,18 @@ Library:
         descr = _empty_description()
         library = _empty_library()
         library["extensions"]["_foo"] = {"name": "_foo", "sources": ["foo.c"]}
+        descr["libraries"]["default"] = library
+
+        assert_equal(parse_and_analyse(data), descr)
+
+    def test_build_requires(self):
+        data = """\
+Library:
+    BuildRequires: foo
+"""
+        descr = _empty_description()
+        library = _empty_library()
+        library["build_requires"] = ["foo"]
         descr["libraries"]["default"] = library
 
         assert_equal(parse_and_analyse(data), descr)
