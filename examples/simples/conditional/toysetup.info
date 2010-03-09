@@ -8,9 +8,9 @@ Library:
     Packages:
         hello
     Extension: hello._bar
-        sources:
+        Sources:
             src/hellomodule.c
     if os(linux)
         Extension: hello._linux_backend
-            sources:
+            Sources:
                 src/linbackend.c

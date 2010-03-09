@@ -8,9 +8,9 @@ Description:
 Summary: simple example to create executables with toydist.
 
 Executable: simple_executable
-    function: main
-    module: foo.commands
+    Function: main
+    Module: foo.commands
 
 Executable: simple_executable2
-    function: main
-    module: foo.commands
+    Function: main
+    Module: foo.commands

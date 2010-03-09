@@ -4,5 +4,5 @@ Library:
     Packages:
         hello
     Extension: hello._bar
-        sources:
+        Sources:
             src/hellomodule.c
