@@ -50,6 +50,6 @@ def ast_walk(root, dispatcher, debug=False):
         except KeyError:
             if debug:
                 print "no action for type %s" % par.type
-            return None
+            return par
 
     return _walker(root)

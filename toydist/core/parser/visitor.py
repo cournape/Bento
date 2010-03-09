@@ -85,7 +85,10 @@ class Dispatcher(object):
 
     def stmt_list(self, node):
         for c in node.children:
-            if c.type in ["name", "description"]:
+            if c.type in ["name", "description", "version", "summary", "url",
+                          "download_url", "author", "author_email",
+                          "maintainer", "maintainer_email", "license",
+                          "platforms", "classifiers"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
                 self._d["paths"][c.value["name"]] = c.value
