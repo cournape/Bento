@@ -50,6 +50,7 @@ def p_stmt_list_newline(p):
 def p_stmt(p):
     """stmt : meta_stmt
             | library
+            | exec
             | path
             | flag
             | extra_sources
@@ -373,6 +374,38 @@ def p_flag_description(p):
 def p_flag_default(p):
     """flag_default : DEFAULT_ID COLON anyword"""
     p[0] = Node("flag_default", value=p[3].value)
+
+#----------------------
+#  Executable section
+#----------------------
+def p_executable(p):
+    """exec : exec_decl INDENT exec_stmts DEDENT"""
+    p[0] = Node("executable", children=[p[1], p[3]])
+
+def p_exec_declaration(p):
+    """exec_decl : EXECUTABLE_ID COLON anyword"""
+    p[0] = Node("exec_name", value=p[3].value)
+
+def p_exec_stmts(p):
+    """exec_stmts : exec_stmts exec_stmt"""
+    p[0] = Node("exec_stmts", children=(p[1].children + [p[2]]))
+
+def p_exec_stmts_term(p):
+    """exec_stmts : exec_stmt"""
+    p[0] = Node("exec_stmts", children=[p[1]])
+
+def p_exec_stmt(p):
+    """exec_stmt : function
+                 | module"""
+    p[0] = p[1]
+
+def p_exec_module(p):
+    """module : MODULE_ID COLON anyword"""
+    p[0] = Node("module", value=p[3].value)
+
+def p_exec_function(p):
+    """function : FUNCTION_ID COLON anyword"""
+    p[0] = Node("function", value=p[3].value)
 
 #-----------------------
 #   Literal handling

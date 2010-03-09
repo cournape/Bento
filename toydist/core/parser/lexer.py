@@ -18,7 +18,7 @@ tokens = ('COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'URL_ID', 'AUTHOR_ID', 'AUTHOR_EMAIL_ID', 'MAINTAINER_ID',
           'MAINTAINER_EMAIL_ID', 'LICENSE_ID', 'PLATFORMS_ID', 'CLASSIFIERS_ID',
           'PATH_ID', 'DEFAULT_ID', 'EXTRA_SOURCES_ID', 'EXECUTABLE_ID',
-          'FUNCTION_ID', 'FLAG_ID',
+          'FUNCTION_ID', 'MODULE_ID', 'FLAG_ID',
           'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP')
 
 ESCAPING_CHAR = dict([(t, False) for t in tokens])
@@ -53,6 +53,7 @@ META_FIELDS_ID = {
     "ExtraSourceFiles": "EXTRA_SOURCES_ID",
     "Executable": "EXECUTABLE_ID",
     "Function": "FUNCTION_ID",
+    "Module": "MODULE_ID",
 }
 
 CONDITIONAL_ID = {
@@ -94,6 +95,7 @@ FIELD_TYPE = {
     "EXTRA_SOURCES_ID": "WORDS",
     "EXECUTABLE_ID": "WORD",
     "FUNCTION_ID": "WORDS",
+    "MODULE_ID": "WORD",
 }
 
 t_COLON = r':'

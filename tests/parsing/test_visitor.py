@@ -23,7 +23,8 @@ def parse_and_analyse(data):
     return res
 
 def _empty_description():
-    d = {"libraries": {}, "paths": {}, "flags": {}, "data_files": {}, "extra_sources": []}
+    d = {"libraries": {}, "paths": {}, "flags": {}, "data_files": {},
+         "extra_sources": [], "executables": {}}
     return d
 
 def _empty_library():
@@ -253,3 +254,18 @@ Library:
         descr["flags"]["debug"] = {"default": "false", "name": "debug"}
 
         assert_equal(parse_and_analyse(data), descr)
+
+class TestExecutable(unittest.TestCase):
+    def test_modules(self):
+        data = """\
+Executable: foo
+    Module: foo.bar
+    Function: main
+"""
+
+        descr = _empty_description()
+        executable = {"name": "foo", "module": "foo.bar", "function": "main"}
+        descr["executables"]["foo"] = executable
+
+        assert_equal(parse_and_analyse(data), descr)
+

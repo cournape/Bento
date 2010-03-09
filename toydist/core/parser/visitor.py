@@ -27,6 +27,7 @@ _LIT_BOOL = {"true": True, "false": False}
 class Dispatcher(object):
     def __init__(self):
         self._d = {"libraries": {},
+                   "executables": {},
                    "paths": {},
                    "flags": {},
                    "extra_sources": [],
@@ -71,6 +72,12 @@ class Dispatcher(object):
             "source_dir": self.source_dir,
             "target_dir": self.target_dir,
             "files": self.files,
+            # Executable
+            "executable": self.executable,
+            "exec_stmts": self.exec_stmts,
+            "exec_name": self.exec_name,
+            "function": self.function,
+            "module": self.module,
         }
         self._vars = {}
 
@@ -84,6 +91,8 @@ class Dispatcher(object):
                 self._d["flags"][c.value["name"]] = c.value
             elif c.type == "library":
                 self._d["libraries"][c.value["name"]] = c.value
+            elif c.type == "executable":
+                self._d["executables"][c.value["name"]] = c.value
             elif c.type == "data_files":
                 self._d["data_files"][c.value["name"]] = c.value
             else:
@@ -316,3 +325,37 @@ class Dispatcher(object):
 
     def files(self, node):
         return node
+
+    # Executable handling
+    def executable(self, node):
+        d = {}
+
+        def update(exec_d, c):
+            if type(c) == list:
+                for  i in c:
+                    update(exec_d, i)
+            elif c.type == "name":
+                exec_d["name"] = c.value
+            elif c.type == "module":
+                exec_d["module"] = c.value
+            elif c.type == "function":
+                exec_d["function"] = c.value
+            else:
+                raise ValueError("Unhandled node type: %s" % c)
+
+        for c in node.children:
+            update(d, c)
+
+        return Node("executable", value=d)
+
+    def exec_stmts(self, node):
+        return node.children
+
+    def exec_name(self, node):
+        return Node("name", value=node.value)
+
+    def function(self, node):
+        return Node("function", value=node.value)
+
+    def module(self, node):
+        return Node("module", value=node.value)

@@ -301,3 +301,22 @@ Node(type='stmt_list'):
             Node(type='packages', value=['foo', 'bar'])"""
 
         self._test(data, expected)
+
+class TestExecutable(_TestGrammar):
+    def test_simple(self):
+        data = """\
+Executable: foo
+    Module: foo.bar
+    Function: main
+"""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='executable'):
+        Node(type='exec_name', value='foo')
+        Node(type='exec_stmts'):
+            Node(type='module', value='foo.bar')
+            Node(type='function', value='main')"""
+
+        self._test(data, expected)
+
