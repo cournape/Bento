@@ -548,19 +548,3 @@ def _skip_ws(tok, stream, state, internal):
             return tok, state
         tok = stream.next()
     return tok, state
-
-if __name__ == "__main__":
-    from toydist.core.parser.nodes import print_tokens_simple
-
-    data = "Name: yo"
-    lexer = MyLexer(stage=3)
-    lexer.input(data)
-
-    print_tokens_simple(lexer)
-
-#    data = """\
-#Path: path
-#    Description: yo
-#    Default: yo"""
-#    lexer.input(data)
-#    print_tokens_simple(lexer)
