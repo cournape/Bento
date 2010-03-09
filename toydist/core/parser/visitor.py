@@ -34,33 +34,25 @@ class Dispatcher(object):
                    "data_files": {}}
         self.action_dict = {
             "stmt_list": self.stmt_list,
-            "name": self.name,
             "description": self.description,
             "summary": self.summary,
             # Library
             "library": self.library,
             "library_name": self.library_name,
             "library_stmts": self.library_stmts,
-            "modules": self.modules,
-            "packages": self.packages,
-            "build_requires": self.build_requires,
-            "install_requires": self.install_requires,
             # Path
             "path": self.path,
             "path_default": self.path_default,
             "path_stmts": self.path_stmts,
             "path_description": self.path_description,
-            "path_declaration": self.path_declaration,
             # Flag
             "flag": self.flag,
             "flag_default": self.flag_default,
             "flag_stmts": self.flag_stmts,
             "flag_description": self.flag_description,
-            "flag_declaration": self.flag_declaration,
             # Extension
             "extension": self.extension,
             "extension_declaration": self.extension_declaration,
-            "sources": self.sources,
             # Conditional
             "conditional": self.conditional,
             "osvar": self.osvar,
@@ -71,10 +63,6 @@ class Dispatcher(object):
             # Data files handling
             "data_files": self.data_files,
             "data_files_stmts": self.data_files_stmts,
-            "data_files_declaration": self.data_files_declaration,
-            "source_dir": self.source_dir,
-            "target_dir": self.target_dir,
-            "files": self.files,
             # Executable
             "executable": self.executable,
             "exec_stmts": self.exec_stmts,
@@ -104,9 +92,6 @@ class Dispatcher(object):
             else:
                 raise ValueError("Unhandled top statement (%s)" % c)
         return self._d
-
-    def name(self, node):
-        return node
 
     def summary(self, node):
         node.value = "".join([i.value for i in node.value])
@@ -185,18 +170,6 @@ class Dispatcher(object):
     def library_stmts(self, node):
         return node.children
 
-    def packages(self, node):
-        return node
-
-    def modules(self, node):
-        return node
-
-    def build_requires(self, node):
-        return node
-
-    def install_requires(self, node):
-        return node
-
     def extension(self, node):
         ret = {"sources": []}
         for c in node.children:
@@ -210,9 +183,6 @@ class Dispatcher(object):
 
     def extension_declaration(self, node):
         return Node("name", value=node.value)
-
-    def sources(self, node):
-        return node
 
     #-----------------
     #   Path option
@@ -239,9 +209,6 @@ class Dispatcher(object):
 
     def path_description(self, node):
         node.value = "".join([i.value for i in node.value])
-        return node
-
-    def path_declaration(self, node):
         return node
 
     #-----------------
@@ -279,9 +246,6 @@ class Dispatcher(object):
         node.value = "".join([i.value for i in node.value])
         return node
 
-    def flag_declaration(self, node):
-        return node
-
     #-------------------
     #   Conditionals
     #-------------------
@@ -297,7 +261,7 @@ class Dispatcher(object):
         return os_name == sys.platform
 
     def bool_var(self, node):
-        return node.value
+         return node.value
 
     def flagvar(self, node):
         name = node.value.value
@@ -333,20 +297,8 @@ class Dispatcher(object):
 
         return Node("data_files", value=d)
 
-    def data_files_declaration(self, node):
-        return node
-
     def data_files_stmts(self, node):
         return node.children
-
-    def source_dir(self, node):
-        return node
-
-    def target_dir(self, node):
-        return node
-
-    def files(self, node):
-        return node
 
     # Executable handling
     def executable(self, node):
