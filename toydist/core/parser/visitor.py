@@ -36,6 +36,7 @@ class Dispatcher(object):
             "stmt_list": self.stmt_list,
             "name": self.name,
             "description": self.description,
+            "summary": self.summary,
             # Library
             "library": self.library,
             "library_name": self.library_name,
@@ -105,6 +106,10 @@ class Dispatcher(object):
         return self._d
 
     def name(self, node):
+        return node
+
+    def summary(self, node):
+        node.value = "".join([i.value for i in node.value])
         return node
 
     def description(self, node):
