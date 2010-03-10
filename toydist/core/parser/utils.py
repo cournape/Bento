@@ -44,7 +44,7 @@ class Peeker(object):
         else:
             try:
                 i = self._it.next()
-            except Exception, e:
+            except StopIteration:
                 return self._dummy
             self._cache = i
             return i
