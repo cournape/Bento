@@ -151,12 +151,14 @@ def p_meta_classifiers_stmt_single_line(p):
     p[0] = Node("classifiers", children=[p[3]])
 
 def p_meta_classifiers_stmt_indent(p):
-    """meta_classifiers_stmt : CLASSIFIERS_ID COLON NEWLINE INDENT classifiers_list DEDENT
+    """meta_classifiers_stmt : CLASSIFIERS_ID COLON NEWLINE INDENT \
+                               classifiers_list DEDENT
     """
     p[0] = Node("classifiers", children=[p[5]])
 
 def p_meta_classifiers_stmt(p):
-    """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifier NEWLINE INDENT classifiers_list DEDENT
+    """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifier NEWLINE \
+                               INDENT classifiers_list DEDENT
     """
     p[0] = Node("classifiers", children=[p[3], p[6]])
 
@@ -496,17 +498,20 @@ def p_single_line_string_term(p):
     p[0] = [p[1]]
 
 def p_meta_description_stmt_start_same_line(p):
-    """meta_description_stmt : description_decl single_line_newline INDENT multi_stmts DEDENT
+    """meta_description_stmt : description_decl single_line_newline \
+                               INDENT multi_stmts DEDENT
     """
     p[0] = Node("description", value=(p[2].value + p[4]))
 
 def p_meta_description_stmt_indented_block(p):
-    """meta_description_stmt : description_decl NEWLINE INDENT multi_stmts DEDENT
+    """meta_description_stmt : description_decl NEWLINE \
+                               INDENT multi_stmts DEDENT
     """
     p[0] = Node("description", value=p[4])
 
 def p_meta_description_stmt_indented_block2(p):
-    """meta_description_stmt : description_decl WS NEWLINE INDENT multi_stmts DEDENT
+    """meta_description_stmt : description_decl WS NEWLINE \
+                               INDENT multi_stmts DEDENT
     """
     p[0] = Node("description", value=p[5])
 

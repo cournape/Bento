@@ -261,7 +261,7 @@ class Dispatcher(object):
         return os_name == sys.platform
 
     def bool_var(self, node):
-         return node.value
+        return node.value
 
     def flagvar(self, node):
         name = node.value.value
