@@ -255,7 +255,7 @@ def indent_generator(toks):
         amount = stck.pop(0)
         return new_dedent(amount, tok)
 
-    for token in tokens:
+    for token in toks:
         if former.type == "NEWLINE":
             if token.type == "WS":
                 indent = len(token.value)
@@ -265,7 +265,7 @@ def indent_generator(toks):
             if indent == stack[0]:
                 former = token
                 if indent > 0:
-                    token = tokens.next()
+                    token = toks.next()
                     former = token
                     yield token
                 else:
@@ -282,7 +282,7 @@ def indent_generator(toks):
                     former = generate_dedent(stack, token)
                     yield former
                 if stack[0] > 0:
-                    former = tokens.next()
+                    former = toks.next()
                     yield former
                 else:
                     former = token

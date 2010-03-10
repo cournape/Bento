@@ -1,6 +1,6 @@
 class Node(object):
-    def __init__(self, type, children=None, value=None):
-        self.type = type
+    def __init__(self, tp, children=None, value=None):
+        self.type = tp
         if children:
             self.children = children
         else:
