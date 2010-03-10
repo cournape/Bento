@@ -42,6 +42,15 @@ Name: foo
 
         assert_equal(parse_and_analyse(data), ref)
 
+    def test_summary(self):
+        data = """\
+Summary: a few words.
+"""
+        ref = _empty_description()
+        ref["summary"] = "a few words."
+
+        assert_equal(parse_and_analyse(data), ref)
+
 class TestDescription(unittest.TestCase):
     def test_simple_single_line(self):
         data = "Description: some simple description"
