@@ -179,8 +179,8 @@ class MyLexer(object):
             return None
 
 def detect_escaped(stream):
-    """Post process the given stream to generate escaped character for characters
-    preceded by the escaping token."""
+    """Post process the given stream to generate escaped character for
+    characters preceded by the escaping token."""
     for t in stream:
         if ESCAPING_CHAR[t.type]:
             try:
@@ -231,8 +231,8 @@ def merge_escaped(stream):
                 yield t
             return
 
-def indent_generator(tokens):
-    """Post process the given stream of tokense to generate INDENT/DEDENT
+def indent_generator(toks):
+    """Post process the given stream of tokens to generate INDENT/DEDENT
     tokens.
     
     Note

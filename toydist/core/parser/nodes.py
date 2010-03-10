@@ -14,6 +14,7 @@ class Node(object):
         return "Node(%r)" % self.type
 
 def ast_pprint(root, cur_ind=0, ind_val=4, string=None):
+    """Pretty printer for the yacc-based parser."""
     _buf = []
 
     def _ast_pprint(_root, _cur_ind):
@@ -39,6 +40,19 @@ def ast_pprint(root, cur_ind=0, ind_val=4, string=None):
         string.write("\n".join(_buf))
 
 def ast_walk(root, dispatcher, debug=False):
+    """Walk the given tree and for each node apply the corresponding function
+    as defined by the dispatcher.
+    
+    If one node type does not have any function defined for it, it simply
+    returns the node unchanged.
+    
+    Parameters
+    ----------
+    root : Node
+        top of the tree to walk into.
+    dispatcher : Dispatcher
+        defines the action for each node type.
+    """
     def _walker(par):
         children = []
         for c in par.children:

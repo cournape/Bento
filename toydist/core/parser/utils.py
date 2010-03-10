@@ -1,14 +1,24 @@
-# Generator to enable "peeking" the next item:
-# >>> a = [1, 2, 3, 4]
-# >>> peeker = Peeker(a)
-# >>> for i in peeker:
-# >>>     try:
-# >>>         next = peeker.peek()
-# >>>         print "Next to %d is %d" % (i, next)
-# >>>     except StopIteration:
-# >>>         print "End of stream", i
-# >>>         
 class Peeker(object):
+    """Generator to enable "peeking" the next item
+
+    Parameters
+    ----------
+    it : iterator
+        iterator which we one to peek in
+    dummy :
+        if not None, will be returned by peek if the iterator is empty
+
+    Example
+    -------
+    >>> a = [1, 2, 3, 4]
+    >>> peeker = Peeker(a)
+    >>> for i in peeker:
+    >>>     try:
+    >>>         next = peeker.peek()
+    >>>         print "Next to %d is %d" % (i, next)
+    >>>     except StopIteration:
+    >>>         print "End of stream", i
+    """
     def __init__(self, it, dummy=None):
         self._it = iter(it)
         self._cache = None
