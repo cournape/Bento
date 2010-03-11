@@ -11,6 +11,9 @@ from toydist.core.parser.lexer \
 from toydist.core.parser.nodes \
     import \
         Node
+from toydist.core.parser.errors \
+    import \
+        ParseError
 
 _PICKLED_PARSETAB = os.path.join(os.path.dirname(__file__), "parsetab")
 _OPTIMIZE_LEX = 0
@@ -303,6 +306,10 @@ def p_extension_fields(p):
 #---------------------
 # Conditional handling
 #---------------------
+def p_conditional_if_error(p):
+    """conditional_stmt : IF error"""
+    raise ParseError(error_msg(p[2], "Error in if statement"))
+
 def p_conditional_if_only(p):
     """conditional_stmt : IF test COLON INDENT library_stmts DEDENT"""
     p[0] = Node("conditional", value=p[2], children=[p[5]])
@@ -653,13 +660,19 @@ def p_version(p):
 #    p[0] = Node("int", value=value)
 #
 def p_error(p):
+    if _DEBUG_YACC:
+        raise SyntaxError(error_msg(p, None))
+
+def error_msg(p, error_msg):
     if p is not None:
-        msg = ["Syntax error at line number %d, token %s ('%s')" % \
+        msg = ["Syntax error at line number %d, token %s (%r)" % \
                (p.lineno, p.type, p.value)]
+        if error_msg is not None:
+            msg += ["    %s" % error_msg]
         if hasattr(p.lexer, "lexdata"):
             data = p.lexer.lexdata.splitlines()
-            msg += ["    Line %d -> %s" % (p.lineno, data[p.lineno-1])]
+            msg += ["    Line %d -> %r" % (p.lineno, data[p.lineno-1])]
         else:
             msg += ["    Line %d" % (p.lineno)]
-        raise SyntaxError("\n".join(msg))
-    raise SyntaxError("Unhandled token")
+        return "\n".join(msg)
+    return "Unhandled token"
