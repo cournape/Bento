@@ -13,5 +13,3 @@ Library:
     if flag(debug)
         Extension: _foo
             sources: _foo.c
-    Extension: _bar
-        sources: src\,_foo.c, $octave_dir/src/bar.c
