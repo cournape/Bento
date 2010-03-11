@@ -28,7 +28,9 @@ class InstalledSection(object):
         return self.tp + ":" + self.name
 
     def write_section(self, fid):
-        fid.write(write_file_section(self.fullname, self.srcdir, self.target, self.files))
+        if len(self.files) > 0:
+            fid.write(write_file_section(self.fullname, self.srcdir,
+                                         self.target, self.files))
 
 class InstalledPkgDescription(object):
     @classmethod
