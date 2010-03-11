@@ -444,7 +444,13 @@ def scan_field_id(token, state, stream, internal):
         # right keyword token
         candidate = _new_token(META_FIELDS_ID[candidate.value], candidate)
 
-    field_type = FIELD_TYPE[candidate.type]
+    try:
+        field_type = FIELD_TYPE[candidate.type]
+    except KeyError:
+        data = candidate.lexer.lexdata.splitlines()
+        msg = ["Error while tokenizing %r (missing colon ?)" %  candidate.value]
+        msg += ["    Line %d -> %r" % (candidate.lineno, data[candidate.lineno-1])]
+        raise SyntaxError("\n".join(msg))
     try:
         state = _FIELD_TYPE_TO_STATE[field_type]
     except KeyError:
