@@ -642,23 +642,6 @@ def p_version(p):
     """version : WORD"""
     p[0] = Node("version", value=p[1])
 
-#def p_num_part(p):
-#    """num_part : int DOT num_part
-#                | int
-#    """
-#    if len(p) == 4:
-#        p[0] = Node("num_part", children=[p[1]])
-#        p[0].children.append(p[3])
-#    elif len(p) == 2:
-#        p[0] = p[1]
-#    else:
-#        raise ValueError("YO")
-#
-#def p_int(p):
-#    """int : INT"""
-#    value = int(p[1])
-#    p[0] = Node("int", value=value)
-#
 def p_error(p):
     if _DEBUG_YACC:
         raise SyntaxError(error_msg(p, None))
