@@ -175,7 +175,8 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
 
         tp = o.type
 
-        log = open("convert.log", "w")
+        convert_log = "convert.log"
+        log = open(convert_log, "w")
         try:
             if tp == "automatic":
                 try:
@@ -203,9 +204,9 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
                 finally:
                     fid.close()
         except Exception, e:
-            msg = "Error while converting %s - you may look at config.log for " \
+            msg = "Error while converting %s - you may look at %s for " \
                   "details (Original exception: %s %s)" 
-            raise ConvertionError(msg % (filename, type(e), str(e)))
+            raise ConvertionError(msg % (filename, convert_log, type(e), str(e)))
         finally:
             log.flush()
             log.close()
