@@ -73,9 +73,10 @@ Usage:   toymaker build_egg [OPTIONS]"""
             ipkg.path_variables["sitedir"] = "."
             file_sections = ipkg.resolve_paths()
             for type in file_sections:
-                for value in file_sections[type].values():
-                    for f in value:
-                        zid.write(f[0], f[1])
+                if not type in ["executables"]:
+                    for value in file_sections[type].values():
+                        for f in value:
+                            zid.write(f[0], f[1])
 
             pprint("PINK", "Byte-compiling ...")
             for section in file_sections["pythonfiles"].values():
