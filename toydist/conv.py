@@ -38,9 +38,10 @@ def distutils_to_package_description(dist):
 
     data["executables"] = {}
     if hasattr(dist, "entry_points"):
-        if dist.entry_points and "console_scripts" in dist.entry_points:
-            console_scripts = dist.entry_points["console_scripts"]
-        else:
+        from pkg_resources import EntryPoint, split_sections
+        try:
+            console_scripts = entry_points["console_scripts"]
+        except KeyError:
             console_scripts = []
         for entry in console_scripts:
             exe = Executable.from_representation(entry)
