@@ -27,30 +27,6 @@ _SCHEME = {
         'sitedir': '$libdir/python$py_version_short/site-packages',
         'pkgdatadir': '$datadir/$pkgname'
     },
-    'darwin': {
-        'prefix': '/usr/local',
-        'eprefix': '$prefix',
-        'bindir': '$eprefix/bin',
-        'sbindir': '$eprefix/sbin',
-        'libexecdir': '$eprefix/libexec',
-        'sysconfdir': '$prefix/etc',
-        'sharedstatedir': '$prefix/com',
-        'localstatedir': '$prefix/var',
-        'libdir': '$eprefix/lib',
-        'includedir': '$prefix/include',
-        'datarootdir': '$prefix/share',
-        'datadir': '$datarootdir',
-        'mandir': '$datarootdir/man',
-        'infodir': '$datarootdir/info',
-        'localedir': '$datarootdir/locale',
-        'docdir': '$datarootdir/doc/$pkgname',
-        'htmldir': '$docdir',
-        'dvidir': '$docdir',
-        'psdir': '$docdir',
-        'pdfdir': '$docdir',
-        'sitedir': '$libdir/python$py_version_short/site-packages',
-        'pkgdatadir': '$datadir/$pkgname'
-    },
     'win32': {
         'prefix': sys.prefix,
         'eprefix': r'$prefix',
@@ -128,10 +104,10 @@ _SCHEME_OPTS = {
 
 
 def get_scheme(platform):
-    if platform.startswith('linux'):
-        pkg_platform = 'unix'
-    else:
+    if platform.startswith('win32'):
         pkg_platform = platform
+    else:
+        pkg_platform = 'unix'
 
     try:
         scheme = _SCHEME[pkg_platform]
