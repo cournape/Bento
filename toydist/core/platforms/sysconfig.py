@@ -4,8 +4,8 @@ import sys
 # well, otherwise the it will not be customizable from configure.
 _SCHEME = {
     'unix': {
-        'prefix': '/usr/local',
-        'eprefix': '$prefix',
+        'prefix': sys.prefix,
+        'eprefix': sys.exec_prefix,
         'bindir': '$eprefix/bin',
         'sbindir': '$eprefix/sbin',
         'libexecdir': '$eprefix/libexec',
