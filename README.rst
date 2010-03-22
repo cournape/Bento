@@ -1,7 +1,8 @@
-An experimental alternative to distutils/setuptools/etc...
+An experimental alternative to distutils/setuptools/etc... for packaging python
+software.
 
 Toydist discussion happen on NumPy Mailing list, and development is on
-`github`_. Bug should be reported on toydist `issue-tracker`_. Online
+`github`_. Bugs should be reported on toydist `issue-tracker`_. Online
 `documentation`_ is available on github as well
 
 .. _github: http://github.com/cournape/toydist.git
@@ -57,7 +58,7 @@ can be used to configure, build, install, etc... the distribution::
 What can it do
 --------------
 
-Not much ATM. The following is implemented:
+The following is implemented:
 
     * Basic library to parse the static format. The format support the
       following:
@@ -81,11 +82,11 @@ Rationale
 Being able to describe most python packages from a purely static file has the
 following advantages:
 
-    * No arbitrary code execution, you only have to trust toydist code
-      instead of setup.py (which can do anything that python can)
     * Inspection of packages becomes easier for third parties, like OS
       vendors.
-    * Also the current toydist implementation uses distutils to actually
+    * No arbitrary code execution, you only have to trust toydist code
+      instead of setup.py (which can do anything that python can)
+    * Altough the current toydist implementation uses distutils to actually
       build the extensions, distutils becomes an implementation detail of
       the system, in the sense that another build system can be build on
       top of toydist. This gives a simple but powerful way forward for
