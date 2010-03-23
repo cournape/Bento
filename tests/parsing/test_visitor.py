@@ -23,8 +23,8 @@ def parse_and_analyse(data):
     return res
 
 def _empty_description():
-    d = {"libraries": {}, "paths": {}, "flags": {}, "data_files": {},
-         "extra_sources": [], "executables": {}}
+    d = {"libraries": {}, "path_options": {}, "flag_options": {},
+         "data_files": {}, "extra_sources": [], "executables": {}}
     return d
 
 def _empty_library():
@@ -166,7 +166,7 @@ Path: manpath
 """
 
         descr = _empty_description()
-        descr["paths"]["manpath"] = {
+        descr["path_options"]["manpath"] = {
                 "name": "manpath",
                 "default": "/usr/share/man",
                 "description": "man path",
@@ -202,7 +202,7 @@ Flag: debug
 """
 
         descr = _empty_description()
-        descr["flags"]["debug"] = {
+        descr["flag_options"]["debug"] = {
                 "name": "debug",
                 "default": "false",
                 "description": "debug flag",
@@ -267,7 +267,7 @@ Library:
         descr = _empty_description()
         descr["libraries"]["default"] = _empty_library()
         descr["libraries"]["default"]["py_modules"] = ["foo.py", "bar.py"]
-        descr["flags"]["debug"] = {"default": "true", "name": "debug"}
+        descr["flag_options"]["debug"] = {"default": "true", "name": "debug"}
 
         assert_equal(parse_and_analyse(data), descr)
 
@@ -285,7 +285,7 @@ Library:
         descr = _empty_description()
         descr["libraries"]["default"] = _empty_library()
         descr["libraries"]["default"]["py_modules"] = ["fubar.py"]
-        descr["flags"]["debug"] = {"default": "false", "name": "debug"}
+        descr["flag_options"]["debug"] = {"default": "false", "name": "debug"}
 
         assert_equal(parse_and_analyse(data), descr)
 

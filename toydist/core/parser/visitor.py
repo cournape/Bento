@@ -28,8 +28,8 @@ class Dispatcher(object):
     def __init__(self):
         self._d = {"libraries": {},
                    "executables": {},
-                   "paths": {},
-                   "flags": {},
+                   "path_options": {},
+                   "flag_options": {},
                    "extra_sources": [],
                    "data_files": {}}
         self.action_dict = {
@@ -80,9 +80,9 @@ class Dispatcher(object):
                           "platforms", "classifiers"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
-                self._d["paths"][c.value["name"]] = c.value
+                self._d["path_options"][c.value["name"]] = c.value
             elif c.type == "flag":
-                self._d["flags"][c.value["name"]] = c.value
+                self._d["flag_options"][c.value["name"]] = c.value
             elif c.type == "library":
                 self._d["libraries"][c.value["name"]] = c.value
             elif c.type == "executable":
