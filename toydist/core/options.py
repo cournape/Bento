@@ -1,33 +1,44 @@
-from toydist.core.descr_parser import \
-        parse
+from toydist.core.parser.api \
+    import \
+        parse_to_dict
+from toydist.core.pkg_objects \
+    import \
+        PathOption, FlagOption
 
 class PackageOptions(object):
     @classmethod
     def __from_data(cls, data):
-        d = parse(data)
+        d = parse_to_dict(data)
 
         kw = {}
         if not "name" in d:
             raise ValueError("No name field found")
         kw["name"] = d["name"]
 
-        for k in ["path_options", "flag_options"]:
-            if d.has_key(k):
-                kw[k] = d[k]
+        kw["path_options"] = {}
+        for name, path in d["path_options"].items():
+            kw["path_options"][name] = PathOption(path["name"],
+                                                  path["default"],
+                                                  path["description"])
 
+        kw["flag_options"] = {}
+        for name, flag in d["flag_options"].items():
+            kw["flag_options"][name] = PathOption(flag["name"],
+                                                  flag["default"],
+                                                  flag["description"])
         return cls(**kw)
 
     @classmethod
     def from_string(cls, str):
         """Create a PackageOptions instance from a toysetup.info content."""
-        return cls.__from_data(str.readlines())
+        return cls.__from_data(str)
 
     @classmethod
     def from_file(cls, filename):
         """Create a PackageOptions instance from a toysetup.info file."""
         fid = open(filename, 'r')
         try:
-            data = fid.readlines()
+            data = fid.read()
             return cls.__from_data(data)
         finally:
             fid.close()

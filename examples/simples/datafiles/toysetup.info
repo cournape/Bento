@@ -2,26 +2,26 @@ Name: hello
 Version: 1.0
 
 DataFiles: data
-    srcdir: data
-    target: $pkgdatadir
-    files:
+    SourceDir: data
+    TargetDir: $pkgdatadir
+    Files:
         foo.src
 
 DataFiles: data2
-    target: $pkgdatadir
-    files:
+    TargetDir: $pkgdatadir
+    Files:
         data/*.dat
 
 DataFiles: man1data
-    srcdir: doc
-    target: $mandir/man1
-    files:
+    SourceDir: doc
+    TargetDir: $mandir/man1
+    Files:
         foo.1
 
 DataFiles: man3data
-    srcdir: doc
-    target: $mandir/man3
-    files:
+    SourceDir: doc
+    TargetDir: $mandir/man3
+    Files:
         foo.3
 
 Library:

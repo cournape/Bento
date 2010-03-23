@@ -13,7 +13,9 @@ FIELD_DELIM = ("\t", " ")
 class InstalledSection(object):
     @classmethod
     def from_data_files(cls, name, data_files):
-        return cls("datafiles", name, data_files.srcdir, data_files.target,
+        return cls("datafiles", name,
+                   data_files.source_dir,
+                   data_files.target_dir,
                    data_files.files)
         
     def __init__(self, tp, name, srcdir, target, files):

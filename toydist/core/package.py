@@ -1,74 +1,50 @@
 import os
 
+from copy \
+    import \
+        deepcopy
+
 from toydist.core.pkg_objects import \
-        Extension
+        Extension, DataFiles, Executable
 from toydist.core.meta import \
         _set_metadata, _METADATA_FIELDS
 from toydist.core.utils import \
         find_package, expand_glob
-from toydist.core.descr_parser import \
-        parse
+from toydist.core.parser.api \
+    import \
+        parse_to_dict
 
 class PackageDescription:
     @classmethod
     def __from_data(cls, data, user_flags):
         if not user_flags:
             user_flags = {}
-        d = parse(data, user_flags)
+        d = parse_to_dict(data, user_flags)
+        kw = deepcopy(d)
 
-        kw = {}
-        for k in ['name', 'version', 'summary', 'url', 'author',
-                'maintainer', 'maintainer_email', 'license',
-                'author_email', 'description', 'platforms',
-                'install_requires', 'build_requires', 'download_url',
-                'classifiers']:
-            # FIXME: consolidate this naming mess
-            data_key = k.replace('_', '')
-            if not d.has_key(data_key):
-                kw[k] = None
-            else:
-                kw[k] = d[data_key]
+        # FIXME: fix this mess
+        if not d["libraries"].keys() in [[], ["default"]]:
+            raise NotImplementedError(
+                    "Non default library not yet supported")
 
-        if d.has_key('extrasourcefiles'):
-            kw['extra_source_files'] = d['extrasourcefiles']
-        else:
-            kw['extra_source_files'] = []
+        if len(d["libraries"]) > 0:
+            library = d["libraries"]["default"]
+            for k in ["packages", "py_modules", "extensions",
+                      "install_requires"]:
+                kw[k] = library[k]
+        del kw["libraries"]
 
-        if d.has_key('datafiles'):
-            kw['data_files'] = d['datafiles']
-        else:
-            kw['data_files'] = []
+        del kw["path_options"]
+        del kw["flag_options"]
 
-        if d.has_key('library'):
-            library = d['library'][""]
+        kw["extra_source_files"] = kw["extra_sources"]
+        del kw["extra_sources"]
 
-            if library.has_key('packages'):
-                kw['packages'] = library['packages']
-            else:
-                kw['packages'] = []
+        for name, data in d["data_files"].items():
+            kw["data_files"][name] = DataFiles.from_parse_dict(data)
 
-            if library.has_key('modules'):
-                kw['py_modules'] = library['modules']
-            else:
-                kw['py_modules'] = []
-
-            if library.has_key('extension'):
-                kw['extensions'] = library['extension']
-            else:
-                kw['extensions'] = []
-
-            if library.has_key('installdepends'):
-                kw['install_requires'] = library['installdepends']
-            else:
-                kw['install_requires'] = []
-
-        if d.has_key('executables'):
-            executables = {}
-            for name, value in d["executables"].items():
-                executables[name] = value
-            kw["executables"] = executables
-        else:
-            kw["executables"] = {}
+        for name, executable in d["executables"].items():
+            kw["executables"][name] = Executable.from_parse_dict(executable)
 
         return cls(**kw)
 
@@ -76,14 +52,14 @@ class PackageDescription:
     def from_string(cls, s, user_flags=None):
         """Create a PackageDescription from a string containing the package
         description."""
-        return cls.__from_data(s.splitlines(), user_flags)
+        return cls.__from_data(s, user_flags)
 
     @classmethod
     def from_file(cls, filename, user_flags=None):
         """Create a PackageDescription from a toysetup.info file."""
         info_file = open(filename, 'r')
         try:
-            data = info_file.readlines()
+            data = info_file.read()
             return cls.__from_data(data, user_flags)
         finally:
             info_file.close()
@@ -153,7 +129,7 @@ def file_list(pkg, root_src=""):
 
     for section in pkg.data_files.values():
         for entry in section.files:
-            files.extend([os.path.join(root_src, section.srcdir, f) 
+            files.extend([os.path.join(root_src, section.source_dir, f) 
                           for f in expand_glob(entry, root_src)])
 
     return files
@@ -163,6 +139,11 @@ def static_representation(pkg, options={}):
     instance as a string."""
     indent_level = 4
     r = []
+
+    def indented_list(head, seq, ind):
+        r.append("%s%s:" % (' ' * (ind - 1) * indent_level, head))
+        r.append(',\n'.join([' ' * ind * indent_level + i for i in seq]))
+
     if pkg.name:
         r.append("Name: %s" % pkg.name)
     if pkg.version:
@@ -190,8 +171,7 @@ def static_representation(pkg, options={}):
     if pkg.platforms:
         r.append("Platforms: %s" % ",".join(pkg.platforms))
     if pkg.classifiers:
-        r.append("Classifiers:")
-        r.extend([' ' * (indent_level * 1) + f + ',' for f in pkg.classifiers])
+        indented_list("Classifiers", pkg.classifiers, 1)
 
     if options:
         for k in options:
@@ -206,43 +186,37 @@ def static_representation(pkg, options={}):
         r.append('')
 
     if pkg.extra_source_files:
-        r.append("ExtraSourceFiles:")
-        r.extend([' ' * (indent_level * 1) + f + ',' for f in pkg.extra_source_files])
+        indented_list("ExtraSourceFiles", pkg.extra_source_files, 1)
         r.append('')
 
     if pkg.data_files:
         for section in pkg.data_files:
             v = pkg.data_files[section]
             r.append("DataFiles: %s" % section)
-            r.append(' ' * indent_level + "srcdir:%s" % v["srcdir"])
-            r.append(' ' * indent_level + "target:%s" % v["target"])
-            r.append(' ' * indent_level + "files:")
-            r.extend([' ' * (indent_level * 2) + f + ',' for f in v["files"]])
+            r.append(' ' * indent_level + "SourceDir: %s" % v["srcdir"])
+            r.append(' ' * indent_level + "TargetDir: %s" % v["target"])
+            indented_list("Files", v["files"], 2)
             r.append('')
 
     # Fix indentation handling instead of hardcoding it
     r.append("Library:")
 
     if pkg.install_requires:
-        r.append(' ' * indent_level + "InstallDepends:")
-        r.extend([' ' * (indent_level * 2) + p + ',' for p in pkg.install_requires])
+        indented_list("InstallRequires", pkg.install_requires, 2)
     if pkg.py_modules:
-        r.append(' ' * indent_level + "Modules:")
-        r.extend([' ' * (indent_level * 2) + p + ',' for p in pkg.py_modules])
+        indented_list("Modules", pkg.modules, 2)
     if pkg.packages:
-        r.append(' ' * indent_level + "Packages:")
-        r.extend([' ' * (indent_level * 2) + p + ',' for p in pkg.packages])
+        indented_list("Packages", pkg.packages, 2)
 
     if pkg.extensions:
         for e in pkg.extensions:
             r.append(' ' * indent_level + "Extension: %s" % e.name)
-            r.append(' ' * 2 * indent_level + "sources:")
-            r.extend([' ' * (indent_level * 3) + s + ',' for s in e.sources])
+            indented_list("Sources", e.sources, 3)
     r.append("")
 
     for name, value in pkg.executables.items():
         r.append("Executable: %s" % name)
-        r.append(' ' * indent_level + "module: %s" % value.module)
-        r.append(' ' * indent_level + "function: %s" % value.function)
+        r.append(' ' * indent_level + "Module: %s" % value.module)
+        r.append(' ' * indent_level + "Function: %s" % value.function)
         r.append("")
     return "\n".join(r)

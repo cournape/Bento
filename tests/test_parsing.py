@@ -32,328 +32,17 @@ try:
 finally:
     sys.path = old
 
-def test_metadata():
-    meta_ref = {
-        "name": "foo",
-        "version": "1.0",
-        "summary": "A summary",
-        "author": "John Doe",
-        "authoremail": "john@doe.com",
-        "maintainer": "John DoeDoe",
-        "maintaineremail": "john@doedoe.com",
-        "license": "BSD",
-        "platforms": ["any"]
-    }
-
-    meta_str = """\
-Name: foo
-Version: 1.0
-Summary: A summary
-Description:     
-    Some more complete description of the package, spread over severala
-    indented lines
-Author: John Doe
-AuthorEmail: john@doe.com
-Maintainer: John DoeDoe
-MaintainerEmail: john@doedoe.com
-License: BSD
-Platforms: any
-"""
-
-    parsed = parse(meta_str.splitlines())
-    for k in meta_ref:
-        assert_equal(parsed[k], meta_ref[k])
-
-def test_url_metadata():
-    meta_ref = {
-        "name": "foo",
-        "summary": "A summary",
-        "downloadurl": "http://www.example.com",
-    }
-
-    meta_str = """\
-Name: foo
-Summary: A summary
-DownloadUrl: http://www.example.com
-"""
-
-    parsed = parse(meta_str.splitlines())
-    for k in meta_ref:
-        assert_equal(parsed[k], meta_ref[k])
-
-class TestExtension(unittest.TestCase):
-    def setUp(self):
-        self.meta_str = """\
-Name: hello
-Version: 1.0
-"""
-
-    def _test(self, main_data, expected):
-       data = self.meta_str + main_data
-       parsed = parse(data.splitlines())
-       assert_equal(parsed["library"][""], expected)
-
-    def test_simple(self):
-        data = """\
-Library:
-    Extension: _bar
-        sources:
-            hellomodule.c
-"""
-
-        expected = {"extension": {"_bar": {"sources": ["hellomodule.c"]}}}
-        self._test(data, expected)
-
-    def test_multi_sources(self):
-        data = """\
-Library:
-    Extension: _bar
-        sources:
-            foobar.c,
-            barfoo.c,
-"""
-
-        expected = {"extension": {"_bar": {"sources": ["foobar.c", "barfoo.c"]}}}
-        self._test(data, expected)
-
-    def test_multi_sources2(self):
-        data = """\
-Library:
-    Extension: _bar
-        sources:
-            foobar.c, barfoo.c
-"""
-
-        expected = {"extension": {"_bar": {"sources": ["foobar.c", "barfoo.c"]}}}
-        self._test(data, expected)
-
-class TestCommaListLexer(unittest.TestCase):
-    def test_simple(self):
-        s = ["foo, bar"]
-        s += ["""\
-foo,
-bar"""]
-
-        for i in s:
-            lexer = CommaListLexer(i)
-            r = [lexer.get_token().strip() for j in range(2)]
-            assert_equal(r, ['foo', 'bar'])
-            assert lexer.get_token() == lexer.eof
-
-    def test_escape(self):
-        s = "foo\,bar"
-        lexer = CommaListLexer(s)
-        r = lexer.get_token().strip()
-        assert_equal(r, 'foo,bar')
-        assert lexer.get_token() == lexer.eof
-
-        s = "src\,/_foo.c, bar.c"
-        lexer = CommaListLexer(s)
-        r = [lexer.get_token().strip() for j in range(2)]
-        assert_equal(r, ['src,/_foo.c', 'bar.c'])
-        assert lexer.get_token() == lexer.eof
-
-def test_comma_list_split():
-    for test in [('foo', ['foo']), ('foo,bar', ['foo', 'bar']),
-            ('foo\,bar', ['foo,bar']),
-            ('foo.c\,bar.c', ['foo.c,bar.c']),
-            ('foo$var', ["foo$var"])]:
-        assert_equal(comma_list_split(test[0]), test[1])
-
-class TestPackage(unittest.TestCase):
-    __meta_simple = {
-            "name": "Sphinx",
-            "version": "0.6.3",
-            "summary": "Python documentation generator",
-            "url": "http://sphinx.pocoo.org/",
-            "download_url": "http://pypi.python.org/pypi/Sphinx",
-            "description": "Some long description.",
-            "author": "Georg Brandl",
-            "author_email": "georg@python.org",
-            "maintainer": "Georg Brandl",
-            "maintainer_email": "georg@python.org",
-            "license": "BSD",
-            "platforms": ["any"],
-            "classifiers": [
-                "Development Status :: 4 - Beta",
-                "Environment :: Console",
-                "Environment :: Web Environment",
-                "Intended Audience :: Developers",
-                "License :: OSI Approved :: BSD License",
-                "Operating System :: OS Independent",
-                "Programming Language :: Python",
-                "Topic :: Documentation",
-                "Topic :: Utilities",]
-        }
-
-    def _test_roundtrip(self, data):
-        r_pkg = PackageDescription(**data)
-        static = static_representation(r_pkg)
-        fid, filename = tempfile.mkstemp("yo")
-        try:
-            os.write(fid, static)
-            pkg = PackageDescription.from_file(filename)
-        finally:
-            os.close(fid)
-            os.remove(filename)
-            
-        for k in pkg.__dict__:
-            assert_equal(pkg.__dict__[k], r_pkg.__dict__[k])
-
-    def test_roundrip_meta(self):
-        data = self.__meta_simple
-        data["description"] = """\
-Sphinx is a tool that makes it easy to create intelligent and beautiful
-documentation for Python projects (or other documents consisting of
-multiple reStructuredText sources), written by Georg Brandl.
-It was originally created to translate the new Python documentation,
-but has now been cleaned up in the hope that it will be useful to many
-other projects.
-
-Sphinx uses reStructuredText as its markup language, and many of its strengths
-come from the power and straightforwardness of reStructuredText and its
-parsing and translating suite, the Docutils.
-
-Although it is still under constant development, the following features
-are already present, work fine and can be seen "in action" in the Python docs:
-
-* Output formats: HTML (including Windows HTML Help), plain text and LaTeX,
-  for printable PDF versions
-* Extensive cross-references: semantic markup and automatic links
-  for functions, classes, glossary terms and similar pieces of information
-* Hierarchical structure: easy definition of a document tree, with automatic
-  links to siblings, parents and children
-* Automatic indices: general index as well as a module index
-* Code handling: automatic highlighting using the Pygments highlighter
-* Various extensions are available, e.g. for automatic testing of snippets
-  and inclusion of appropriately formatted docstrings.
-
-A development egg can be found `here
-<http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_."""
-        self._test_roundtrip(data)
-
-    #def test_simple_package(self):
-    #    pkg = PackageDescription.from_string(DESCR)
-    #    for k in PKG.__dict__:
-    #        assert_equal(PKG.__dict__[k], pkg.__dict__[k])
-
-class TestFlags(unittest.TestCase):
-    def test_simple(self):
-        text = """\
-Name: foo
-
-Flag: flag1
-    description: flag1 description
-    default: false
-"""
-        m = parse(text.splitlines())
-        self.failUnless(m["flags"], "false")
-
-    def test_user_custom(self):
-        text = """\
-Name: foo
-
-Flag: flag1
-    description: flag1 description
-    default: false
-"""
-        m = parse(text.splitlines(), user_flags={"flag1": False})
-        self.failUnless(m["flags"], "false")
-
-        m = parse(text.splitlines(), user_flags={"flag1": True})
-        self.failUnless(m["flags"], "true")
-
-class TestConditional(unittest.TestCase):
-    def test_simple(self):
-        text = """\
-Name: foo
-
-Flag: debug
-    description: debug flag
-    default: true
-
-Library:
-    packages:
-        foo
-    if flag(debug)
-        packages: bar
-"""
-        pkg = PackageDescription.from_string(text, user_flags={"debug": False})
-        self.failUnless("foo" in pkg.packages)
-        self.failUnless("bar" not in pkg.packages)
-
-        pkg = PackageDescription.from_string(text, user_flags={"debug": True})
-        self.failUnless("foo" in pkg.packages)
-        self.failUnless("bar" in pkg.packages)
-
-    def test_simple_else(self):
-        text = """\
-Name: foo
-
-Flag: debug
-    description: debug flag
-    default: true
-
-Library:
-    packages:
-        foo
-    if flag(debug)
-        packages: bar
-    else
-        packages: fubar
-"""
-        pkg = PackageDescription.from_string(text, user_flags={"debug": True})
-        assert_equal(sorted(pkg.packages), ["bar", "foo"])
-
-        pkg = PackageDescription.from_string(text, user_flags={"debug": False})
-        assert_equal(sorted(pkg.packages), ["foo", "fubar"])
-
-class TestExecutable(unittest.TestCase):
-    def test_simple(self):
-        text = """\
-Name: foo
-
-Executable: foo-cmd
-    module: foo
-    function: main
-"""
-        r_exe = Executable("foo-cmd", module="foo", function="main")
-        pkg = PackageDescription.from_string(text)
-        self.failUnless("foo-cmd" in pkg.executables)
-        assert_equal(pkg.executables["foo-cmd"].__dict__, r_exe.__dict__)
-    
-    # FIXME: the IndexError is a bug in reader.parse_error
-    @raises(ParseError, IndexError)
-    def test_invalid1(self):
-        text = """\
-Name: foo
-
-Executable: foo-cmd
-    function: main
-"""
-        PackageDescription.from_string(text)
-
-    @raises(ParseError, IndexError)
-    def test_invalid2(self):
-        text = """\
-Name: foo
-
-Executable: foo-cmd
-    module: main
-"""
-        PackageDescription.from_string(text)
-
 class TestDataFiles(unittest.TestCase):
     def test_simple(self):
         text = """\
 Name: foo
 
 DataFiles: data
-    target: $datadir
-    files:
+    TargetDir: $datadir
+    Files:
         foo.data
 """
-        r_data = DataFiles("data", files=["foo.data"], target="$datadir")
+        r_data = DataFiles("data", files=["foo.data"], target_dir="$datadir")
         pkg = PackageDescription.from_string(text)
         self.failUnless("data" in pkg.data_files)
         assert_equal(pkg.data_files["data"].__dict__, r_data.__dict__)
@@ -363,31 +52,28 @@ class TestOptions(unittest.TestCase):
 Name: foo
 
 Flag: flag1
-    description: flag1 description
-    default: false
+    Description: flag1 description
+    Default: false
 
 Path: foo
-    description: foo description
-    default: /usr/lib
+    Description: foo description
+    Default: /usr/lib
 """
     def _test_simple(self, opts):
         self.failUnless(opts.name, "foo")
 
         flag = FlagOption("flag1", "false", "flag1 description")
         self.failUnless(opts.flag_options.keys(), ["flags"])
-        self.failUnless(opts.flag_options["flag1"].__dict__, flag.__dict__)
+        self.failUnless(opts.flag_options["flag1"], flag.__dict__)
 
         path = PathOption("foo", "/usr/lib", "foo description")
         self.failUnless(opts.path_options.keys(), ["foo"])
-        self.failUnless(opts.path_options["foo"].__dict__, path.__dict__)
+        self.failUnless(opts.path_options["foo"], path.__dict__)
 
     def test_simple_from_string(self):
-        s = StringIO(self.simple_text)
-        try:
-            opts = PackageOptions.from_string(s)
-            self._test_simple(opts)
-        finally:
-            s.close()
+        s = self.simple_text
+        opts = PackageOptions.from_string(s)
+        self._test_simple(opts)
 
     def test_simple_from_file(self):
         fid, filename = tempfile.mkstemp(suffix=".info")
@@ -398,4 +84,3 @@ Path: foo
         finally:
             os.close(fid)
             os.remove(filename)
-#

@@ -1,0 +1,297 @@
+Name: Sphinx
+Version: 0.6.3
+Summary: Python documentation generator
+Url: http://sphinx.pocoo.org/
+DownloadUrl: http://pypi.python.org/pypi/Sphinx
+Description:     
+    Sphinx is a tool that makes it easy to create intelligent and beautiful
+    documentation for Python projects (or other documents consisting of
+    multiple reStructuredText sources), written by Georg Brandl.
+    It was originally created to translate the new Python documentation,
+    but has now been cleaned up in the hope that it will be useful to many
+    other projects.
+    
+    Sphinx uses reStructuredText as its markup language, and many of its strengths
+    come from the power and straightforwardness of reStructuredText and its
+    parsing and translating suite, the Docutils.
+    
+    Although it is still under constant development, the following features
+    are already present, work fine and can be seen "in action" in the Python docs:
+    
+    * Output formats: HTML (including Windows HTML Help), plain text and LaTeX,
+      for printable PDF versions
+    * Extensive cross-references: semantic markup and automatic links
+      for functions, classes, glossary terms and similar pieces of information
+    * Hierarchical structure: easy definition of a document tree, with automatic
+      links to siblings, parents and children
+    * Automatic indices: general index as well as a module index
+    * Code handling: automatic highlighting using the Pygments highlighter
+    * Various extensions are available, e.g. for automatic testing of snippets
+      and inclusion of appropriately formatted docstrings.
+    
+    A development egg can be found `here
+    <http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_.
+Author: Georg Brandl
+AuthorEmail: georg@python.org
+Maintainer: Georg Brandl
+MaintainerEmail: georg@python.org
+License: BSD
+Platforms: any
+Classifiers:
+    Development Status :: 4 - Beta,
+    Environment :: Console,
+    Environment :: Web Environment,
+    Intended Audience :: Developers,
+    License :: OSI Approved :: BSD License,
+    Operating System :: OS Independent,
+    Programming Language :: Python,
+    Topic :: Documentation,
+    Topic :: Utilities,
+
+Path: gendatadir
+    Description: Directory for dataFiles obtained from distutils conversion
+    Default: $sitedir
+
+ExtraSourceFiles:
+    AUTHORS,
+    CHANGES,
+    EXAMPLES,
+    LICENSE,
+    Makefile,
+    README,
+    TODO,
+    babel.cfg,
+    doc/Makefile,
+    doc/_static/sphinx.png,
+    doc/_templates/index.html,
+    doc/_templates/indexsidebar.html,
+    doc/_templates/layout.html,
+    doc/builders.rst,
+    doc/changes.rst,
+    doc/concepts.rst,
+    doc/conf.py,
+    doc/config.rst,
+    doc/contents.rst,
+    doc/examples.rst,
+    doc/ext/appapi.rst,
+    doc/ext/autodoc.rst,
+    doc/ext/autosummary.rst,
+    doc/ext/builderapi.rst,
+    doc/ext/coverage.rst,
+    doc/ext/doctest.rst,
+    doc/ext/graphviz.rst,
+    doc/ext/ifconfig.rst,
+    doc/ext/inheritance.rst,
+    doc/ext/intersphinx.rst,
+    doc/ext/math.rst,
+    doc/ext/refcounting.rst,
+    doc/ext/todo.rst,
+    doc/ext/tutorial.rst,
+    doc/extensions.rst,
+    doc/faq.rst,
+    doc/glossary.rst,
+    doc/intro.rst,
+    doc/markup/code.rst,
+    doc/markup/desc.rst,
+    doc/markup/index.rst,
+    doc/markup/inline.rst,
+    doc/markup/misc.rst,
+    doc/markup/para.rst,
+    doc/rest.rst,
+    doc/sphinx-build.1,
+    doc/sphinx-quickstart.1,
+    doc/templating.rst,
+    doc/theming.rst,
+    ez_setup.py,
+    setup.cfg,
+    setup.py,
+    sphinx-autogen.py,
+    sphinx-build.py,
+    sphinx-quickstart.py,
+    tests/coverage.py,
+    tests/etree13/ElementPath.py,
+    tests/etree13/ElementTree.py,
+    tests/etree13/HTMLTreeBuilder.py,
+    tests/etree13/__init__.py,
+    tests/path.py,
+    tests/root/Makefile,
+    tests/root/_static/README,
+    tests/root/_templates/layout.html,
+    tests/root/autodoc.txt,
+    tests/root/autosummary.txt,
+    tests/root/bom.txt,
+    tests/root/conf.py,
+    tests/root/contents.txt,
+    tests/root/desc.txt,
+    tests/root/ext.py,
+    tests/root/images.txt,
+    tests/root/img.gif,
+    tests/root/img.pdf,
+    tests/root/img.png,
+    tests/root/includes.txt,
+    tests/root/literal.inc,
+    tests/root/markup.txt,
+    tests/root/math.txt,
+    tests/root/rimg.png,
+    tests/root/special/api.h,
+    tests/root/special/code.py,
+    tests/root/subdir/images.txt,
+    tests/root/subdir/img.png,
+    tests/root/subdir/include.inc,
+    tests/root/subdir/includes.txt,
+    tests/root/subdir/simg.png,
+    tests/root/svgimg.pdf,
+    tests/root/svgimg.svg,
+    tests/root/testtheme/layout.html,
+    tests/root/testtheme/static/staticimg.png,
+    tests/root/testtheme/static/statictmpl.html_t,
+    tests/root/testtheme/theme.conf,
+    tests/root/wrongenc.inc,
+    tests/root/ziptheme.zip,
+    tests/run.py,
+    tests/test_application.py,
+    tests/test_autodoc.py,
+    tests/test_build.py,
+    tests/test_config.py,
+    tests/test_coverage.py,
+    tests/test_env.py,
+    tests/test_highlighting.py,
+    tests/test_i18n.py,
+    tests/test_markup.py,
+    tests/test_quickstart.py,
+    tests/test_search.py,
+    tests/test_theming.py,
+    tests/util.py,
+    utils/check_sources.py,
+    utils/pylintrc,
+    utils/reindent.py
+
+DataFiles: gendata_sphinx_locale
+    SourceDir:sphinx/locale
+    TargetDir:$gendatadir/sphinx/locale
+    Files:
+        sphinx.pot,
+        cs/LC_MESSAGES/sphinx.js,
+        cs/LC_MESSAGES/sphinx.mo,
+        cs/LC_MESSAGES/sphinx.po,
+        de/LC_MESSAGES/sphinx.js,
+        de/LC_MESSAGES/sphinx.mo,
+        de/LC_MESSAGES/sphinx.po,
+        es/LC_MESSAGES/sphinx.js,
+        es/LC_MESSAGES/sphinx.mo,
+        es/LC_MESSAGES/sphinx.po,
+        fi/LC_MESSAGES/sphinx.js,
+        fi/LC_MESSAGES/sphinx.mo,
+        fi/LC_MESSAGES/sphinx.po,
+        fr/LC_MESSAGES/sphinx.js,
+        fr/LC_MESSAGES/sphinx.mo,
+        fr/LC_MESSAGES/sphinx.po,
+        it/LC_MESSAGES/sphinx.js,
+        it/LC_MESSAGES/sphinx.mo,
+        it/LC_MESSAGES/sphinx.po,
+        ja/LC_MESSAGES/sphinx.js,
+        ja/LC_MESSAGES/sphinx.mo,
+        ja/LC_MESSAGES/sphinx.po,
+        nl/LC_MESSAGES/sphinx.js,
+        nl/LC_MESSAGES/sphinx.mo,
+        nl/LC_MESSAGES/sphinx.po,
+        pl/LC_MESSAGES/sphinx.js,
+        pl/LC_MESSAGES/sphinx.mo,
+        pl/LC_MESSAGES/sphinx.po,
+        pt_BR/LC_MESSAGES/sphinx.js,
+        pt_BR/LC_MESSAGES/sphinx.mo,
+        pt_BR/LC_MESSAGES/sphinx.po,
+        ru/LC_MESSAGES/sphinx.js,
+        ru/LC_MESSAGES/sphinx.mo,
+        ru/LC_MESSAGES/sphinx.po,
+        sl/LC_MESSAGES/sphinx.js,
+        sl/LC_MESSAGES/sphinx.mo,
+        sl/LC_MESSAGES/sphinx.po,
+        uk_UA/LC_MESSAGES/sphinx.js,
+        uk_UA/LC_MESSAGES/sphinx.mo,
+        uk_UA/LC_MESSAGES/sphinx.po,
+        zh_TW/LC_MESSAGES/sphinx.js,
+        zh_TW/LC_MESSAGES/sphinx.mo,
+        zh_TW/LC_MESSAGES/sphinx.po
+
+DataFiles: gendata_sphinx_pycode
+    SourceDir:sphinx/pycode
+    TargetDir:$gendatadir/sphinx/pycode
+    Files:
+        Grammar.txt
+
+DataFiles: gendata_sphinx
+    SourceDir:sphinx
+    TargetDir:$gendatadir/sphinx
+    Files:
+        texinputs/Makefile,
+        texinputs/fncychap.sty,
+        texinputs/howto.cls,
+        texinputs/manual.cls,
+        texinputs/python.ist,
+        texinputs/sphinx.sty,
+        texinputs/tabulary.sty,
+        themes/basic/defindex.html,
+        themes/basic/genindex-single.html,
+        themes/basic/genindex-split.html,
+        themes/basic/genindex.html,
+        themes/basic/layout.html,
+        themes/basic/modindex.html,
+        themes/basic/opensearch.xml,
+        themes/basic/page.html,
+        themes/basic/search.html,
+        themes/basic/theme.conf,
+        themes/basic/changes/frameset.html,
+        themes/basic/changes/rstsource.html,
+        themes/basic/changes/versionchanges.html,
+        themes/basic/static/basic.css,
+        themes/basic/static/doctools.js,
+        themes/basic/static/file.png,
+        themes/basic/static/jquery.js,
+        themes/basic/static/minus.png,
+        themes/basic/static/plus.png,
+        themes/basic/static/searchtools.js,
+        themes/default/theme.conf,
+        themes/default/static/default.css_t,
+        themes/sphinxdoc/layout.html,
+        themes/sphinxdoc/theme.conf,
+        themes/sphinxdoc/static/contents.png,
+        themes/sphinxdoc/static/navigation.png,
+        themes/sphinxdoc/static/sphinxdoc.css,
+        themes/traditional/theme.conf,
+        themes/traditional/static/traditional.css
+
+DataFiles: gendata_sphinx_ext_autosummary
+    SourceDir:sphinx/ext/autosummary
+    TargetDir:$gendatadir/sphinx/ext/autosummary
+    Files:
+        templates/module
+
+Library:
+    InstallRequires:
+        Pygments>=0.8,
+        Jinja2>=2.1,
+        docutils>=0.4
+    Packages:
+        sphinx,
+        sphinx.builders,
+        sphinx.directives,
+        sphinx.ext,
+        sphinx.ext.autosummary,
+        sphinx.locale,
+        sphinx.pycode,
+        sphinx.pycode.pgen2,
+        sphinx.util,
+        sphinx.writers
+
+Executable: sphinx-build
+    Module: sphinx
+    Function: main
+
+Executable: sphinx-quickstart
+    Module: sphinx.quickstart
+    Function: main
+
+Executable: sphinx-autogen
+    Module: sphinx.ext.autosummary.generate
+    Function: main
