@@ -28,7 +28,7 @@ def _empty_description():
     return d
 
 def _empty_library():
-    d = {"name": "default", "modules": [], "packages": [], "extensions": {},
+    d = {"name": "default", "py_modules": [], "packages": [], "extensions": {},
          "build_requires": [], "install_requires": []}
     return d
 
@@ -115,7 +115,7 @@ Library:
 
         descr = _empty_description()
         library = _empty_library()
-        library["modules"] = ["foo.py"]
+        library["py_modules"] = ["foo.py"]
         descr["libraries"]["default"] = library
 
         assert_equal(parse_and_analyse(data), descr)
@@ -222,7 +222,7 @@ Library:
 
         descr = _empty_description()
         descr["libraries"]["default"] = _empty_library()
-        descr["libraries"]["default"]["modules"] = ["foo.py", "bar.py"]
+        descr["libraries"]["default"]["py_modules"] = ["foo.py", "bar.py"]
 
         assert_equal(parse_and_analyse(data), descr)
 
@@ -233,7 +233,7 @@ Library:
     else:
         Modules:  fubar.py
 """
-        descr["libraries"]["default"]["modules"] = ["fubar.py"]
+        descr["libraries"]["default"]["py_modules"] = ["fubar.py"]
 
         assert_equal(parse_and_analyse(data), descr)
 
@@ -248,7 +248,7 @@ Library:
 
         descr = _empty_description()
         descr["libraries"]["default"] = _empty_library()
-        descr["libraries"]["default"]["modules"] = ["foo.py", "bar.py"]
+        descr["libraries"]["default"]["py_modules"] = ["foo.py", "bar.py"]
 
         assert_equal(parse_and_analyse(data), descr)
 
@@ -266,7 +266,7 @@ Library:
 
         descr = _empty_description()
         descr["libraries"]["default"] = _empty_library()
-        descr["libraries"]["default"]["modules"] = ["foo.py", "bar.py"]
+        descr["libraries"]["default"]["py_modules"] = ["foo.py", "bar.py"]
         descr["flags"]["debug"] = {"default": "true", "name": "debug"}
 
         assert_equal(parse_and_analyse(data), descr)
@@ -284,7 +284,7 @@ Library:
 
         descr = _empty_description()
         descr["libraries"]["default"] = _empty_library()
-        descr["libraries"]["default"]["modules"] = ["fubar.py"]
+        descr["libraries"]["default"]["py_modules"] = ["fubar.py"]
         descr["flags"]["debug"] = {"default": "false", "name": "debug"}
 
         assert_equal(parse_and_analyse(data), descr)

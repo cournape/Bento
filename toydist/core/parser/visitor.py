@@ -133,7 +133,7 @@ class Dispatcher(object):
     #--------------------------
     def library(self, node):
         library = {
-            "modules": [],
+            "py_modules": [],
             "packages": [],
             "build_requires": [],
             "install_requires": [],
@@ -147,7 +147,7 @@ class Dispatcher(object):
             elif c.type == "name":
                 library_dict["name"] = c.value
             elif c.type == "modules":
-                library_dict["modules"].extend(c.value)
+                library_dict["py_modules"].extend(c.value)
             elif c.type == "packages":
                 library_dict["packages"].extend(c.value)
             elif c.type == "build_requires":
