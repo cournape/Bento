@@ -3,15 +3,13 @@ Version: 0.1
 
 Flag: debug
     Description: build debug or not
-    Default: True
+    Default: true
 
 Path: octave_dir
     Description: Octave directory
     Default: $datarootdir/octave/site/m
 
 Library:
-    if flag(debug)
+    if flag(debug):
         Extension: _foo
-            sources: _foo.c
-    Extension: _bar
-        sources: src\,_foo.c, $octave_dir/src/bar.c
+            Sources: _foo.c

@@ -3,14 +3,14 @@ Version: 1.0
 
 Library:
     BuildRequires: paver, sphinx, numpy
-    if os(windows)
+    if os(windows):
         BuildRequires: pywin32
     Packages:
         hello
     Extension: hello._bar
         Sources:
             src/hellomodule.c
-    if os(linux)
+    if os(linux):
         Extension: hello._linux_backend
             Sources:
                 src/linbackend.c
