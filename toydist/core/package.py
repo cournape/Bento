@@ -163,6 +163,11 @@ def static_representation(pkg, options={}):
     instance as a string."""
     indent_level = 4
     r = []
+
+    def indented_list(head, seq, ind):
+        r.append("%s%s:" % (' ' * (ind - 1) * indent_level, head))
+        r.append(',\n'.join([' ' * ind * indent_level + i for i in seq]))
+
     if pkg.name:
         r.append("Name: %s" % pkg.name)
     if pkg.version:
@@ -190,8 +195,7 @@ def static_representation(pkg, options={}):
     if pkg.platforms:
         r.append("Platforms: %s" % ",".join(pkg.platforms))
     if pkg.classifiers:
-        r.append("Classifiers:")
-        r.extend([' ' * (indent_level * 1) + f + ',' for f in pkg.classifiers])
+        indented_list("Classifiers", pkg.classifiers, 1)
 
     if options:
         for k in options:
@@ -206,43 +210,37 @@ def static_representation(pkg, options={}):
         r.append('')
 
     if pkg.extra_source_files:
-        r.append("ExtraSourceFiles:")
-        r.extend([' ' * (indent_level * 1) + f + ',' for f in pkg.extra_source_files])
+        indented_list("ExtraSourceFiles", pkg.extra_source_files, 1)
         r.append('')
 
     if pkg.data_files:
         for section in pkg.data_files:
             v = pkg.data_files[section]
             r.append("DataFiles: %s" % section)
-            r.append(' ' * indent_level + "srcdir:%s" % v["srcdir"])
-            r.append(' ' * indent_level + "target:%s" % v["target"])
-            r.append(' ' * indent_level + "files:")
-            r.extend([' ' * (indent_level * 2) + f + ',' for f in v["files"]])
+            r.append(' ' * indent_level + "SourceDir: %s" % v["srcdir"])
+            r.append(' ' * indent_level + "TargetDir: %s" % v["target"])
+            indented_list("Files", v["files"], 2)
             r.append('')
 
     # Fix indentation handling instead of hardcoding it
     r.append("Library:")
 
     if pkg.install_requires:
-        r.append(' ' * indent_level + "InstallDepends:")
-        r.extend([' ' * (indent_level * 2) + p + ',' for p in pkg.install_requires])
+        indented_list("InstallRequires", pkg.install_requires, 2)
     if pkg.py_modules:
-        r.append(' ' * indent_level + "Modules:")
-        r.extend([' ' * (indent_level * 2) + p + ',' for p in pkg.py_modules])
+        indented_list("Modules", pkg.modules, 2)
     if pkg.packages:
-        r.append(' ' * indent_level + "Packages:")
-        r.extend([' ' * (indent_level * 2) + p + ',' for p in pkg.packages])
+        indented_list("Packages", pkg.packages, 2)
 
     if pkg.extensions:
         for e in pkg.extensions:
             r.append(' ' * indent_level + "Extension: %s" % e.name)
-            r.append(' ' * 2 * indent_level + "sources:")
-            r.extend([' ' * (indent_level * 3) + s + ',' for s in e.sources])
+            indented_list("Sources", e.sources, 3)
     r.append("")
 
     for name, value in pkg.executables.items():
         r.append("Executable: %s" % name)
-        r.append(' ' * indent_level + "module: %s" % value.module)
-        r.append(' ' * indent_level + "function: %s" % value.function)
+        r.append(' ' * indent_level + "Module: %s" % value.module)
+        r.append(' ' * indent_level + "Function: %s" % value.function)
         r.append("")
     return "\n".join(r)
