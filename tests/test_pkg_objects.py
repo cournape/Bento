@@ -19,15 +19,16 @@ class TestDataFiles(unittest.TestCase):
         data = DataFiles("data", files=["foo.c"])
         assert_equal(data.name, "data")
         assert_equal(data.files, ["foo.c"])
-        assert_equal(data.srcdir, ".")
-        assert_equal(data.target, "$sitedir")
+        assert_equal(data.source_dir, ".")
+        assert_equal(data.target_dir, "$sitedir")
 
     def test_from_dict(self):
-        parsed_dict = {"files": "foo.c, yo.c", "target": "foo"}
-        data = DataFiles.from_parse_dict("data", parsed_dict)
+        parsed_dict = {"name": "data",
+                       "files": ["foo.c", "yo.c"], "target_dir": "foo"}
+        data = DataFiles.from_parse_dict(parsed_dict)
         assert_equal(data.name, "data")
         assert_equal(data.files, ["foo.c", "yo.c"])
-        assert_equal(data.target, "foo")
+        assert_equal(data.target_dir, "foo")
     # TODO: test with a populated temp dir
 
 class TestExecutable(unittest.TestCase):

@@ -5,9 +5,9 @@ from pprint import \
 
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException
-
-from toydist.core.descr_parser import \
-        parse, ParseError
+from toydist.core.parser.api \
+    import \
+        parse_to_dict, ParseError
 
 class ParseCommand(Command):
     long_descr = """\
@@ -37,23 +37,23 @@ Usage:   toymaker parse [OPTIONS]"""
 
         f = open(filename, "r")
         try:
-            data = f.readlines()
+            data = f.read()
             try:
-                parsed = parse(data, {}, {})
+                parsed = parse_to_dict(data)
             except ParseError, e:
                 msg = "Error while parsing file %s\n" % filename
                 e.args = (msg,) +  e.args
                 raise e
             if o.flags:
                 try:
-                    flags = parsed["flag_options"]
+                    flags = parsed["flags"]
                     for flag in flags:
                         print flags[flag]
                 except KeyError:
                     pass
             elif o.path:
                 try:
-                    paths = parsed["path_options"]
+                    paths = parsed["paths"]
                     for path in paths:
                         print paths[path]
                 except KeyError:

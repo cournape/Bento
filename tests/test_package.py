@@ -48,7 +48,8 @@ class TestPackage(unittest.TestCase):
                                      py_modules=["module"],
                                      data_files={"data": 
                                             DataFiles("data", files=["data/foo.dat"],
-                                            target="$prefix", srcdir=".")
+                                            target_dir="$prefix",
+                                            source_dir=".")
                                      })
             fl = [os.path.normpath(f) for f in file_list(pkg, root_src=os.path.join(d, "foo"))]
             assert_equal(sorted(fl), sorted(files))

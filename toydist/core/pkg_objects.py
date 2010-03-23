@@ -34,17 +34,10 @@ Customizable path: %s
 
 class DataFiles(object):
     @classmethod
-    def from_parse_dict(cls, name, d):
-        kw = {}
-        kw["target"] = d["target"]
-        kw["srcdir"] = d.get("srcdir", None)
-        kw["files"] = d.get('files', None)
-        if kw["files"]:
-            kw["files"] = comma_list_split(kw['files'])
+    def from_parse_dict(cls, d):
+        return cls(**d)
 
-        return cls(name=name, **kw)
-
-    def __init__(self, name, files=None, target=None, srcdir=None):
+    def __init__(self, name, files=None, target_dir=None, source_dir=None):
         self.name = name
 
         if files is not None:
@@ -52,15 +45,15 @@ class DataFiles(object):
         else:
             self.files = []
 
-        if target is not None:
-            self.target = target
+        if target_dir is not None:
+            self.target_dir = target_dir
         else:
-            self.target = "$sitedir"
+            self.target_dir = "$sitedir"
 
-        if srcdir is not None:
-            self.srcdir = srcdir
+        if source_dir is not None:
+            self.source_dir = source_dir
         else:
-            self.srcdir = "."
+            self.source_dir = "."
 
     # FIXME: this function should not really be here...
     def resolve_glob(self):
@@ -68,16 +61,18 @@ class DataFiles(object):
         current value for source direcory."""
         files = []
         for f in self.files:
-            files.extend(expand_glob(f, self.srcdir))
+            files.extend(expand_glob(f, self.source_dir))
         return files
 
     def __repr__(self):
-        return repr({"files": self.files, "srcdir": self.srcdir, "target": self.target})
+        return repr({"files": self.files,
+                     "source_dir": self.source_dir,
+                     "target_dir": self.target_dir})
 
 class Executable(object):
     @classmethod
-    def from_parse_dict(cls, name, d):
-        return cls(name, **d)
+    def from_parse_dict(cls, d):
+        return cls(**d)
 
     @classmethod
     def from_representation(cls, s):
