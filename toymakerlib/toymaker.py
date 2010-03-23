@@ -11,7 +11,7 @@ from toydist.core.utils import \
         subst_vars, pprint
 from toydist.core.platforms import \
         get_scheme
-from toydist.core.descr_parser import \
+from toydist.core.parser.api import \
         ParseError
 
 from toydist.commands.core import \

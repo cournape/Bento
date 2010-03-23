@@ -14,8 +14,6 @@ try:
 finally:
     from StringIO import StringIO
 
-from toydist.core.descr_parser import \
-    parse, ParseError
 from toydist.core.pkg_objects import \
     PathOption, FlagOption, Executable, DataFiles
 from toydist.core.parse_utils import \
