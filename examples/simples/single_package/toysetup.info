@@ -1,5 +1,10 @@
 Name: foo
 Version: 1.0
 Library:
-    Packages:
-        foo
+  Packages:
+      foo
+  InstallRequires:
+    foo
+  if os(linux2):
+    InstallRequires:
+      bar

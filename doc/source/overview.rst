@@ -38,9 +38,8 @@ From scratch
 Toydist packages are created from a toysetup.info file, which describes
 metadata as well as package content in a mostly declarative manner.
 
-For a simple package hello as follows::
+For a simple python package hello consisting of two files::
 
-    toysetup.info
     hello/__init__.py
     hello/hello.py
 
@@ -54,18 +53,14 @@ a simple toysetup.info may be written as follows::
             hello
 
 The file contains some metadata, like package name and version. Its syntax is
-indentation-based, like python.
-
-Important note: indentation is currently hardcoded to 4 spaces, i.e. every
-indentation level must be exactly 4 spaces. A different number of spaces, or a
-tab character will cause the parser to choke. This limitation will be
-alleviated before a 1.0 release.
+indentation-based, like python, except that only spaces are allowed (tab
+character will cause an error when used at the beginning of a line).
 
 Building and installing
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Toydist includes toymaker, a command-line interface to toydist to configure,
-build and install simple packages. Its interface is similar to autotools::
+Toydist includes toymaker, a command-line interface to configure, build and
+install simple packages. Its interface is similar to autotools::
 
     toydist configure --prefix=somedirectory
     toydist build
@@ -75,11 +70,11 @@ In addition, the following subcommands are available::
 
     toydist sdist
 
-To build a source distribution and::
+to build a source distribution and::
 
     toydist build_egg
 
-To build an egg. Building an egg requires to run configure and build first -
+to build an egg. Building an egg requires to run configure and build first -
 this is not done automatically (yet).
 
 From existing setup.py
@@ -126,3 +121,15 @@ and::
             sphinx
 
 otherwise.
+
+Note:: toydist syntax supports simple conditional, so after conversion, you
+could modify the generated file as follows::
+
+    Name: foo
+
+    Library:
+        InstallRequires:
+            sphinx
+        if os(win32):
+            InstallRequires:
+                pywin32

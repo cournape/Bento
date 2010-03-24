@@ -2,8 +2,8 @@
 FAQ
 ===
 
-Why creating a new tool ?
-=========================
+Why to create a new tool ?
+==========================
 
 Toydist is mainly born out of my frustration with distutils while dealing with
 complex build issues in NumPy and SciPy. I found distutils poorly documented,
