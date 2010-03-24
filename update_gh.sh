@@ -1,4 +1,10 @@
 #! /bin/sh
+OSNAME=`uname`
+if [ "$OSNAME" == "Linux" ]; then
+	ISED="sed -i";
+else
+	ISED="sed -i ''"
+fi
 
 MASTER_REPO=$PWD/../toydist.git
 GH_PAGES_REPO=$PWD
@@ -16,12 +22,15 @@ git pull $MASTER_REPO $MASTER_BRANCH || exit
 
 virtualenv bootstrap
 . bootstrap/bin/activate
+# Installing sphinx into the virtualenv is necessary so that sphinx-build use
+# the virtualenved python
+easy_install sphinx
 python setup.py install
 
 (cd doc && make html)
 mv doc/build/html $TEMPDIR
 mv $TEMPDIR/html/_static $TEMPDIR/html/static
-find $TEMPDIR/html -type f -exec sed -i '' -e s/_static/static/g '{}' \;
+find $TEMPDIR/html -type f -exec $ISED -e s/_static/static/g '{}' \;
 git checkout gh-pages || exit
 rm -rf $GH_PAGES_REPO/*
 mv $TEMPDIR/html/* $GH_PAGES_REPO
