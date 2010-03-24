@@ -1,4 +1,4 @@
-An experimental alternative to distutils/setuptools/etc... for packaging python
+An experimental alternative to distutils/setuptools/etc... to package python
 software.
 
 Toydist discussion happen on NumPy Mailing list, and development is on
@@ -39,10 +39,6 @@ may be described as follows::
     Library:
         Packages:
             hello
-
-Note that for now, you *have* to use 4 spaces for indentation, always. This is
-an arbitrary limitation which will be removed at some point once the parser is
-improved.
 
 Building, installing
 ~~~~~~~~~~~~~~~~~~~~
