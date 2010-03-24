@@ -4,9 +4,8 @@ alternative to distutils.
 Syntax and features of the package description file
 ===================================================
 
-Missinge features:
+Missing features:
 
-    - Formalize the toydist.info syntax with a grammar
     - Versioning
     - Multiple libraries
     - Recursive declaration ?
