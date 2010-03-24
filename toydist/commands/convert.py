@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 
 from cStringIO import \
         StringIO
@@ -204,6 +205,9 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
                 finally:
                     fid.close()
         except Exception, e:
+            log.write("Error while converting - traceback:\n")
+            tb = sys.exc_info()[2]
+            traceback.print_tb(tb, file=log)
             msg = "Error while converting %s - you may look at %s for " \
                   "details (Original exception: %s %s)" 
             raise ConvertionError(msg % (filename, convert_log, type(e), str(e)))
