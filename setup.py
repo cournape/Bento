@@ -73,7 +73,7 @@ METADATA = {
 
 PACKAGE_DATA = {
     'packages': ['toydist', 'toydist.core', 'toydist.commands', 'toydist.private',
-                 'toymakerlib', 'toydist.core.platforms'],
+                 'toymakerlib', 'toydist.core.platforms', 'toydist.core.parser'],
     'entry_points': {
         'console_scripts': ['toymaker=toymakerlib.toymaker:noexc_main']
     }
