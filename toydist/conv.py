@@ -36,16 +36,16 @@ def distutils_to_package_description(dist):
     data['extensions'] = dist.ext_modules
     data['classifiers'] = dist.get_classifiers()
 
+    entry_points = entry_points_from_dist(dist)
+
     data["executables"] = {}
-    if hasattr(dist, "entry_points"):
-        from pkg_resources import EntryPoint, split_sections
-        try:
-            console_scripts = entry_points["console_scripts"]
-        except KeyError:
-            console_scripts = []
-        for entry in console_scripts:
-            exe = Executable.from_representation(entry)
-            data["executables"][exe.name] = exe
+    try:
+        console_scripts = entry_points["console_scripts"]
+    except KeyError:
+        console_scripts = []
+    for entry in console_scripts:
+        exe = Executable.from_representation(entry)
+        data["executables"][exe.name] = exe
 
     return PackageDescription(**data)
 
@@ -79,3 +79,18 @@ def to_distutils_meta(meta):
 def write_pkg_info(pkg, file):
     dist_meta = to_distutils_meta(pkg)
     dist_meta.write_pkg_file(file)
+
+def entry_points_from_dist(dist):
+    if hasattr(dist, "entry_points"):
+        from pkg_resources import split_sections
+        if isinstance(dist.entry_points, basestring):
+            entry_points = {}
+            sections = split_sections(dist.entry_points)
+            for group, lines in sections:
+                group = group.strip()
+                entry_points[group] = lines
+        else:
+            entry_points = dist.entry_points
+    else:
+        entry_points = {}
+    return entry_points
