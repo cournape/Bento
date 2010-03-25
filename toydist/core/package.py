@@ -204,7 +204,7 @@ def static_representation(pkg, options={}):
     if pkg.install_requires:
         indented_list("InstallRequires", pkg.install_requires, 2)
     if pkg.py_modules:
-        indented_list("Modules", pkg.modules, 2)
+        indented_list("Modules", pkg.py_modules, 2)
     if pkg.packages:
         indented_list("Packages", pkg.packages, 2)
 
