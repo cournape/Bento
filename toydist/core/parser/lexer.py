@@ -106,6 +106,8 @@ FIELD_TYPE = {
     "INSTALL_REQUIRES_ID": "WORDS",
 }
 
+# Special characters: everytime one is added/changed, update t_WORD
+# regex if necessary
 t_COLON = r':'
 t_COMMA = r','
 t_SLASH = r"\/"
@@ -118,9 +120,8 @@ t_EQUAL = r"="
 t_SHARP = r"\#"
 
 def t_WORD(t):
-    # FIXME: how to handle special characters in "words", such as for paths
-    # variables ?
-    r'[~\{\}%\w\/\<\>"\'\`*@\-\.\$]+'
+    # Match everything but whitespace and special characters
+    r'([^:^,^\s^\\^(^).]|[.])+'
     return t
 
 # Whitespace
