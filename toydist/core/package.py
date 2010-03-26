@@ -74,11 +74,6 @@ class PackageDescription:
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
-        # Package metadata
-        _args = locals()
-        kw = dict([(k, _args[k]) for k in _METADATA_FIELDS if k in _args])
-        _set_metadata(self, **kw)
-
         # Package content
         if not packages:
             self.packages = []
@@ -110,10 +105,19 @@ class PackageDescription:
         else:
             self.executables = executables
 
-    @property
-    def top_levels(self):
-        pkgs = list(set([k.split(".", 1)[0] for k in self.packages]))
-        return pkgs
+        pkgs = []
+        for p in self.packages:
+            pkgs.append(p)
+        for p in self.py_modules:
+            pkgs.append(p)
+        for p in self.extensions:
+            pkgs.append(p.name)
+        top_levels = [i for i in pkgs if not "." in i]
+
+        # Package metadata
+        _args = locals()
+        kw = dict([(k, _args[k]) for k in _METADATA_FIELDS if k in _args])
+        _set_metadata(self, **kw)
 
 def file_list(pkg, root_src=""):
     # FIXME: root_src
