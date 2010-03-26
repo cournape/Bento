@@ -114,9 +114,9 @@ def p_meta_download_url_stmt(p):
     p[0] = Node("download_url", value=p[3].value)
 
 def p_meta_author_stmt(p):
-    """meta_author_stmt : AUTHOR_ID COLON anyword
+    """meta_author_stmt : AUTHOR_ID COLON single_line_value
     """
-    p[0] = Node("author", value=p[3].value)
+    p[0] = Node("author", value=p[3])
 
 def p_meta_author_email_stmt(p):
     """meta_author_email_stmt : AUTHOR_EMAIL_ID COLON anyword
@@ -124,9 +124,9 @@ def p_meta_author_email_stmt(p):
     p[0] = Node("author_email", value=p[3].value)
 
 def p_meta_maintainer_stmt(p):
-    """meta_maintainer_stmt : MAINTAINER_ID COLON anyword
+    """meta_maintainer_stmt : MAINTAINER_ID COLON single_line_value
     """
-    p[0] = Node("maintainer", value=p[3].value)
+    p[0] = Node("maintainer", value=p[3])
 
 def p_meta_maintainer_email_stmt(p):
     """meta_maintainer_email_stmt : MAINTAINER_EMAIL_ID COLON anyword

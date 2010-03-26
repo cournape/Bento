@@ -51,6 +51,15 @@ Summary: a few words.
 
         assert_equal(parse_and_analyse(data), ref)
 
+    def test_author(self):
+        data = """\
+Author: John Doe
+"""
+        ref = _empty_description()
+        ref["author"] = "John Doe"
+
+        assert_equal(parse_and_analyse(data), ref)
+
 class TestDescription(unittest.TestCase):
     def test_simple_single_line(self):
         data = "Description: some simple description"

@@ -66,7 +66,8 @@ Node(type='stmt_list'):
         data = "Author: John Doe"
         expected = """\
 Node(type='stmt_list'):
-    Node(type='author', value=' John Doe')"""
+    Node(type='author', """\
+    "value=[Node('literal'), Node('literal'), Node('literal')])"
 
         self._test(data, expected)
 
@@ -90,7 +91,8 @@ Node(type='stmt_list'):
         data = "Maintainer: John Doe"
         expected = """\
 Node(type='stmt_list'):
-    Node(type='maintainer', value=' John Doe')"""
+    Node(type='maintainer', """ \
+    "value=[Node('literal'), Node('literal'), Node('literal')])"
 
         self._test(data, expected)
 
