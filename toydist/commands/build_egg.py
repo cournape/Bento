@@ -115,7 +115,8 @@ class EggInfo(object):
         return "\n".join(self.meta.install_requires)
 
     def get_top_levels(self):
-        return "\n".join(self.meta.top_levels)
+        # Last newline added for compatibility with setuptools
+        return "\n".join(self.meta.top_levels + [''])
 
     def get_not_zip_safe(self):
         return "\n"
@@ -128,6 +129,7 @@ class EggInfo(object):
         ret.append("[console_scripts]")
         ret.extend([exe.full_representation() for exe in \
                         self.executables.values()])
+        ret.append('')
         return "\n".join(ret)
 
     def iter_meta(self):
