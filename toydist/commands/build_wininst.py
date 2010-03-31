@@ -49,8 +49,6 @@ Usage:   toymaker build_wininst [OPTIONS]"""
         meta = PackageMetadata.from_ipkg(ipkg)
 
         # XXX: do this correctly, maybe use same as distutils ?
-        fid, arcname = tempfile.mkstemp(prefix="zip")
-
         wininst = wininst_filename(os.path.join("toydist", meta.fullname))
         wininst_dir = os.path.dirname(wininst)
         if wininst_dir:
@@ -60,6 +58,7 @@ Usage:   toymaker build_wininst [OPTIONS]"""
         egg_info_dir = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
         egg_info = EggInfo.from_ipkg(ipkg)
 
+        fid, arcname = tempfile.mkstemp(prefix="zip")
         zid = zipfile.ZipFile(arcname, "w", zipfile.ZIP_DEFLATED)
         try:
             for filename, cnt in egg_info.iter_meta():
