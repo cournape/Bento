@@ -85,10 +85,10 @@ def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="toydist"):
     else:
         bitmaplen = 0
 
-    file = open(installer_name, "wb")
-    file.write(get_exe_bytes())
+    fid = open(installer_name, "wb")
+    fid.write(get_exe_bytes())
     if bitmap:
-        file.write(bitmapdata)
+        fid.write(bitmapdata)
 
     # Convert cfgdata from unicode to ascii, mbcs encoded
     try:
@@ -108,7 +108,7 @@ def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="toydist"):
     #    # empty pre-install script
     #    cfgdata = cfgdata + "\0"
     cfgdata = cfgdata + "\0"
-    file.write(cfgdata)
+    fid.write(cfgdata)
 
     # The 'magic number' 0x1234567B is used to make sure that the
     # binary layout of 'cfgdata' is what the wininst.exe binary
@@ -120,8 +120,8 @@ def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="toydist"):
                          len(cfgdata),     # length
                          bitmaplen,        # number of bytes in bitmap
                          )
-    file.write(header)
-    file.write(open(arcname, "rb").read())
+    fid.write(header)
+    fid.write(open(arcname, "rb").read())
 
 def get_inidata(ipkg):
     # Return data describing the installation.
