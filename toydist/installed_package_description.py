@@ -196,15 +196,15 @@ executables
         self.path_variables['_srcrootdir'] = src_root_dir
 
         file_sections = {}
-        for type in self.files:
-            file_sections[type] = {}
-            for name, value in self.files[type].items():
+        for tp in self.files:
+            file_sections[tp] = {}
+            for name, value in self.files[tp].items():
                 srcdir = subst_vars(value["srcdir"], self.path_variables)
                 target = subst_vars(value["target"], self.path_variables)
 
-                files = [(os.path.join(srcdir, file), os.path.join(target, file))
-                         for file in value["files"]]
-                file_sections[type][name] = files
+                file_sections[tp][name] = \
+                        [(os.path.join(srcdir, f), os.path.join(target, f))
+                         for f in value["files"]]
 
         return file_sections 
 
