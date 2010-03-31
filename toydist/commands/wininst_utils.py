@@ -142,6 +142,8 @@ def get_inidata(ipkg):
     for name in ["author", "author_email", "summary", "maintainer",
                  "maintainer_email", "name", "url", "version"]:
         data = getattr(meta, name)
+        if name == "summary":
+            name = "description"
         if data:
             info = info + ("\n    %s: %s" % \
                            (string.capitalize(name), escape(data)))
