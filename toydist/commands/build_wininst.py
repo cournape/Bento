@@ -18,12 +18,12 @@ from toydist.core import \
 from toydist.conv import \
         to_distutils_meta
 from toydist.installed_package_description import \
-        InstalledPkgDescription
+        InstalledPkgDescription, iter_files
 
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException
-#from toydist.commands.build_egg import \
-#        write_egg_info, egg_info_dirname
+from toydist.commands.build_egg import \
+        EggInfo, egg_info_dirname
 from toydist.commands.wininst_utils import \
         wininst_filename, create_exe
 
@@ -57,50 +57,24 @@ Usage:   toymaker build_wininst [OPTIONS]"""
             if not os.path.exists(wininst_dir):
                 os.makedirs(wininst_dir)
 
-        egg_info = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
+        egg_info_dir = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
+        egg_info = EggInfo.from_ipkg(ipkg)
 
-        compression = zipfile.ZIP_DEFLATED
-        zid = zipfile.ZipFile(arcname, "w", compression=compression)
+        zid = zipfile.ZipFile(arcname, "w", zipfile.ZIP_DEFLATED)
         try:
-            ret = write_egg_info(ipkg)
-            try:
-                for k, v in ret.items():
-                    v.seek(0)
-                    zid.writestr(os.path.join(egg_info, k), v.getvalue())
-            finally:
-                for v in ret.values():
-                    v.close()
+            for filename, cnt in egg_info.iter_meta():
+                zid.writestr(os.path.join(egg_info_dir, filename), cnt)
 
-            # FIXME: abstract file_sections, it is too low-level ATM, and not
-            # very practical to use. In Most installers, what is needed is:
-            #  - specify a different install scheme per sectio
-            # - ?
-            ipkg.path_variables["sitedir"] = "."
+            ipkg.path_variables["prefix"] = "SCRIPTS"
+            ipkg.path_variables["sitedir"] = "PURELIB"
             ipkg.path_variables["gendatadir"] = "$sitedir"
 
             file_sections = ipkg.resolve_paths()
-            for type in file_sections:
-                if type == "executables":
-                    basename = "SCRIPTS"
-                    for value in file_sections["executables"].values():
-                        for f in value:
-                            zid.write(f[0], os.path.join(basename, os.path.basename(f[1])))
-                elif type in ["pythonfiles", "datafiles"]:
-                    # FIXME: how to deal with data files ? Shall we really
-                    # install all of them in sphinx ?
-                    basename = "PURELIB"
-                    for value in file_sections[type].values():
-                        for f in value:
-                            zid.write(f[0], os.path.join(basename, f[1]))
-                else:
-                    for value in file_sections[type].values():
-                        for f in value:
-                            zid.write(f[0], f[1])
+            for kind, source, target in iter_files(file_sections):
+                zid.writestr(target, source)
 
-            create_exe(ipkg, arcname, wininst)
         finally:
             zid.close()
             os.close(fid)
-            os.remove(arcname)
 
-        return 
+        create_exe(ipkg, arcname, wininst)
