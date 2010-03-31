@@ -166,8 +166,7 @@ def get_inidata(ipkg):
 
     title = meta.fullname
     lines.append("title=%s" % escape(title))
-    build_info = "Built %s with distutils-%s" % \
+    build_info = "Built %s with toydist-%s" % \
                  (time.ctime(time.time()), toydist.__version__)
     lines.append("build_info=%s" % build_info)
     return string.join(lines, "\n")
-
