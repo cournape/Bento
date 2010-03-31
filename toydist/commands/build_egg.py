@@ -50,7 +50,7 @@ Usage:   toymaker build_egg [OPTIONS]"""
                     % (SCRIPT_NAME, "build_egg"))
 
         ipkg = InstalledPkgDescription.from_file(filename)
-        meta = PackageMetadata.from_installed_pkg_description(ipkg)
+        meta = PackageMetadata.from_ipkg(ipkg)
 
         egg_info = EggInfo.from_ipkg(ipkg)
 
@@ -86,7 +86,7 @@ Usage:   toymaker build_egg [OPTIONS]"""
 class EggInfo(object):
     @classmethod
     def from_ipkg(cls, ipkg):
-        meta = PackageMetadata.from_installed_pkg_description(ipkg)
+        meta = PackageMetadata.from_ipkg(ipkg)
         executables = ipkg.executables
 
         file_sections = ipkg.resolve_paths()

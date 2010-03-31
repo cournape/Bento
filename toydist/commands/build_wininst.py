@@ -46,7 +46,7 @@ Usage:   toymaker build_wininst [OPTIONS]"""
                     % (SCRIPT_NAME, "build_wininst"))
 
         ipkg = InstalledPkgDescription.from_file(filename)
-        meta = PackageMetadata.from_installed_pkg_description(ipkg)
+        meta = PackageMetadata.from_ipkg(ipkg)
 
         # XXX: do this correctly, maybe use same as distutils ?
         fid, arcname = tempfile.mkstemp(prefix="zip")

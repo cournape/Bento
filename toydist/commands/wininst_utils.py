@@ -125,7 +125,7 @@ def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="toydist"):
 
 def get_inidata(ipkg):
     # Return data describing the installation.
-    meta = PackageMetadata.from_installed_pkg_description(ipkg)
+    meta = PackageMetadata.from_ipkg(ipkg)
 
     # Write the [metadata] section.
     lines = []
