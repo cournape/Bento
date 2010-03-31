@@ -154,8 +154,9 @@ def get_inidata(ipkg):
     #if self.install_script:
     #    lines.append("install_script=%s" % self.install_script)
     lines.append("info=%s" % escape(info))
-    #lines.append("target_compile=%d" % (not self.no_target_compile))
-    #lines.append("target_optimize=%d" % (not self.no_target_optimize))
+    # FIXME: handle this correctly
+    lines.append("target_compile=1")
+    lines.append("target_optimize=1")
     #if self.target_version:
     #    lines.append("target_version=%s" % self.target_version)
     #if self.user_access_control:
