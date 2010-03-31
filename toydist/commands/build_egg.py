@@ -144,8 +144,8 @@ class EggInfo(object):
                 "pkg_info": "PKG-INFO",
                 "sources": "SOURCES.txt",
                 "install_requires": "requires.txt",
-                "top_levels": "top_levels.txt",
-                "not_zip_safe": "not-zip-safe.txt",
+                "top_levels": "top_level.txt",
+                "not_zip_safe": "not-zip-safe",
                 "dependency_links": "dependency_links.txt",
                 "entry_points": "entry_points.txt",
             }
