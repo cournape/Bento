@@ -34,6 +34,19 @@ class InstalledSection(object):
             fid.write(write_file_section(self.fullname, self.srcdir,
                                          self.target, self.files))
 
+def iter_source_files(file_sections):
+    for kind in file_sections:
+        if not kind in ["executables"]:
+            for name, section in file_sections[kind].items():
+                for f in section:
+                    yield f[0]
+
+def iter_files(file_sections):
+    for kind in file_sections:
+        for name, section in file_sections[kind].items():
+            for source, target in section:
+                yield kind, source, target
+
 class InstalledPkgDescription(object):
     @classmethod
     def from_file(cls, filename):
