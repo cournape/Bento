@@ -98,7 +98,7 @@ class Executable(object):
 
     # FIXME: this function should not really be here...
     def full_representation(self):
-        return "%s=%s" % (self.name, self.representation())
+        return "%s = %s" % (self.name, self.representation())
 
     def __repr__(self):
         return repr({"name": self.name, "module": self.module, "function": self.function})
