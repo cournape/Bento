@@ -55,7 +55,7 @@ def _set_metadata(obj, name, version=None, summary=None, url=None,
 
 class PackageMetadata(object):
     @classmethod
-    def from_installed_pkg_description(cls, ipkg):
+    def from_ipkg(cls, ipkg):
         return cls(**ipkg.meta)
 
     def __init__(self, name, version=None, summary=None, url=None,

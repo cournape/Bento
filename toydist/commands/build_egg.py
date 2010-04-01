@@ -16,7 +16,7 @@ from toydist.core import \
 from toydist.conv import \
         to_distutils_meta
 from toydist.installed_package_description import \
-        InstalledPkgDescription
+        InstalledPkgDescription, iter_source_files, iter_files
 
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException
@@ -50,7 +50,9 @@ Usage:   toymaker build_egg [OPTIONS]"""
                     % (SCRIPT_NAME, "build_egg"))
 
         ipkg = InstalledPkgDescription.from_file(filename)
-        meta = PackageMetadata.from_installed_pkg_description(ipkg)
+        meta = PackageMetadata.from_ipkg(ipkg)
+
+        egg_info = EggInfo.from_ipkg(ipkg)
 
         # FIXME: fix egg name
         egg = egg_filename(os.path.join("toydist", meta.fullname))
@@ -59,72 +61,96 @@ Usage:   toymaker build_egg [OPTIONS]"""
             if not os.path.exists(egg_dir):
                 os.makedirs(egg_dir)
 
-        zid = zipfile.ZipFile(egg, "w")
+        egg_info = EggInfo.from_ipkg(ipkg)
+
+        zid = zipfile.ZipFile(egg, "w", zipfile.ZIP_DEFLATED)
         try:
-            ret = write_egg_info(ipkg)
-            try:
-                for k, v in ret.items():
-                    v.seek(0)
-                    zid.writestr(os.path.join("EGG-INFO", k), v.getvalue())
-            finally:
-                for v in ret.values():
-                    v.close()
+            for filename, cnt in egg_info.iter_meta():
+                zid.writestr(os.path.join("EGG-INFO", filename), cnt)
 
             ipkg.path_variables["sitedir"] = "."
             file_sections = ipkg.resolve_paths()
-            for type in file_sections:
-                if not type in ["executables"]:
-                    for value in file_sections[type].values():
-                        for f in value:
-                            zid.write(f[0], f[1])
+            for kind, source, target in iter_files(file_sections):
+                if not kind in ["executables"]:
+                    zid.write(source, target)
 
             pprint("PINK", "Byte-compiling ...")
-            for section in file_sections["pythonfiles"].values():
-                for source, target in section:
+            for kind, source, target in iter_files(file_sections):
+                if kind in ["pythonfiles"]:
                     zid.writestr("%sc" % target, compile(source))
         finally:
             zid.close()
 
         return 
 
-def write_egg_info(ipkg):
-    ret = {}
+class EggInfo(object):
+    @classmethod
+    def from_ipkg(cls, ipkg):
+        meta = PackageMetadata.from_ipkg(ipkg)
+        executables = ipkg.executables
 
-    meta = PackageMetadata.from_installed_pkg_description(ipkg)
-    dmeta = to_distutils_meta(meta)
+        file_sections = ipkg.resolve_paths()
+        sources = list(iter_source_files(file_sections))
 
-    ret["PKG-INFO"] = StringIO()
-    dmeta.write_pkg_file(ret["PKG-INFO"])
+        return cls(meta, executables, sources)
 
-    # XXX: bdist_egg includes extra source files here. Should we do the
-    # same for compatibility ?
-    ret["SOURCES.txt"] = StringIO()
-    files = []
-    file_sections = ipkg.resolve_paths()
-    for name, value in file_sections.items():
-        files.extend([f[0] for f in value])
-    ret["SOURCES.txt"].writelines("\n".join([os.path.normpath(f) for f in files]))
+    def __init__(self, meta, executables, sources):
+        self._dist_meta = to_distutils_meta(meta)
 
-    if meta.install_requires:
-        ret["requires.txt"] = StringIO()
-        ret["requires.txt"].write("\n".join(meta.install_requires))
+        self.sources = sources
+        self.meta = meta
+        self.executables = executables
 
-    ret["top_level.txt"] = StringIO()
-    ret["top_level.txt"].write("\n".join(meta.top_levels))
-    ret["top_level.txt"].write("\n")
+    def get_pkg_info(self):
+        tmp = StringIO()
+        self._dist_meta.write_pkg_file(tmp)
+        ret = tmp.getvalue()
+        tmp.close()
+        return ret
 
-    # Write not-zip-safe
-    # FIXME: handle this, assume not zip safe for now
-    ret["not-zip-safe"] = StringIO()
-    ret["not-zip-safe"].write("\n")
+    def get_sources(self):
+        return "\n".join([os.path.normpath(f) for f in self.sources])
 
-    ret["dependency_links.txt"] = StringIO()
-    ret["dependency_links.txt"].write("\n")
+    def get_install_requires(self):
+        return "\n".join(self.meta.install_requires)
 
-    ret["entry_points.txt"] = StringIO()
-    ret["entry_points.txt"].write("[console_scripts]\n")
-    ret["entry_points.txt"].write(
-        "\n".join([exe.full_representation() for exe in ipkg.executables.values()]))
-    ret["entry_points.txt"].write("\n")
+    def get_top_levels(self):
+        # Last newline added for compatibility with setuptools
+        return "\n".join(self.meta.top_levels + [''])
 
-    return ret
+    def get_not_zip_safe(self):
+        return "\n"
+
+    def get_dependency_links(self):
+        return "\n"
+
+    def get_entry_points(self):
+        ret = []
+        ret.append("[console_scripts]")
+        ret.extend([exe.full_representation() for exe in \
+                        self.executables.values()])
+        ret.append('')
+        return "\n".join(ret)
+
+    def iter_meta(self):
+        func_table = {
+                "pkg_info": self.get_pkg_info,
+                "sources": self.get_sources,
+                "install_requires": self.get_install_requires,
+                "top_levels": self.get_top_levels,
+                "not_zip_safe": self.get_not_zip_safe,
+                "dependency_links": self.get_dependency_links,
+                "entry_points": self.get_entry_points,
+            }
+        file_table = {
+                "pkg_info": "PKG-INFO",
+                "sources": "SOURCES.txt",
+                "install_requires": "requires.txt",
+                "top_levels": "top_level.txt",
+                "not_zip_safe": "not-zip-safe",
+                "dependency_links": "dependency_links.txt",
+                "entry_points": "entry_points.txt",
+            }
+
+        for k in func_table:
+            yield file_table[k], func_table[k]()

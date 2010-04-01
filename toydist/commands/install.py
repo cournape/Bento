@@ -1,30 +1,41 @@
 import os
 import shutil
+import subprocess
 
 from toydist.installed_package_description import \
-    InstalledPkgDescription
+    InstalledPkgDescription, iter_files
 
 from toydist.commands.core import \
     Command, UsageException
+from toydist.core.utils import \
+    pprint
 
 def install_sections(sections, installer=None):
     if not installer:
-        installer = shutil.copy
+        installer = copy_installer
 
-    for type in sections:
-        for name in sections[type]:
-            for source, target in sections[type][name]:
-                if not os.path.exists(os.path.dirname(target)):
-                    os.makedirs(os.path.dirname(target))
-                installer(source, target)
-                if type == "executables":
-                    os.chmod(target, 0555)
+    for kind, source, target in iter_files(sections):
+        installer(source, target, kind)
 
-# def installer(source, target):
-#     cmd = ["install", "-m", "644", source, target]
-#     strcmd = "INSTALL %s -> %s" % (source, target)
-#     pprint('GREEN', strcmd)
-#     subprocess.check_call(cmd)
+def copy_installer(source, target, kind):
+    dtarget = os.path.dirname(target)
+    if not os.path.exists(dtarget):
+        os.makedirs(dtarget)
+    shutil.copy(source, target)
+    if kind == "executables":
+        os.chmod(target, 0555)
+
+def unix_installer(source, target, kind):
+    if kind in ["executables"]:
+        mode = "755"
+    else:
+        mode = "644"
+    cmd = ["install", "-m", mode, source, target]
+    strcmd = "INSTALL %s -> %s" % (source, target)
+    pprint('GREEN', strcmd)
+    if not os.path.exists(os.path.dirname(target)):
+        os.makedirs(os.path.dirname(target))
+    subprocess.check_call(cmd)
 
 class InstallCommand(Command):
     long_descr = """\
@@ -45,5 +56,4 @@ Usage:   toymaker install [OPTIONS]."""
         ipkg = InstalledPkgDescription.from_file("installed-pkg-info")
         file_sections = ipkg.resolve_paths()
 
-        #install_sections(sections, installer=installer)
-        install_sections(file_sections, installer=shutil.copy)
+        install_sections(file_sections, installer=copy_installer)

@@ -34,6 +34,19 @@ class InstalledSection(object):
             fid.write(write_file_section(self.fullname, self.srcdir,
                                          self.target, self.files))
 
+def iter_source_files(file_sections):
+    for kind in file_sections:
+        if not kind in ["executables"]:
+            for name, section in file_sections[kind].items():
+                for f in section:
+                    yield f[0]
+
+def iter_files(file_sections):
+    for kind in file_sections:
+        for name, section in file_sections[kind].items():
+            for source, target in section:
+                yield kind, source, target
+
 class InstalledPkgDescription(object):
     @classmethod
     def from_file(cls, filename):
@@ -196,15 +209,15 @@ executables
         self.path_variables['_srcrootdir'] = src_root_dir
 
         file_sections = {}
-        for type in self.files:
-            file_sections[type] = {}
-            for name, value in self.files[type].items():
+        for tp in self.files:
+            file_sections[tp] = {}
+            for name, value in self.files[tp].items():
                 srcdir = subst_vars(value["srcdir"], self.path_variables)
                 target = subst_vars(value["target"], self.path_variables)
 
-                files = [(os.path.join(srcdir, file), os.path.join(target, file))
-                         for file in value["files"]]
-                file_sections[type][name] = files
+                file_sections[tp][name] = \
+                        [(os.path.join(srcdir, f), os.path.join(target, f))
+                         for f in value["files"]]
 
         return file_sections 
 

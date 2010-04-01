@@ -85,10 +85,10 @@ def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="toydist"):
     else:
         bitmaplen = 0
 
-    file = open(installer_name, "wb")
-    file.write(get_exe_bytes())
+    fid = open(installer_name, "wb")
+    fid.write(get_exe_bytes())
     if bitmap:
-        file.write(bitmapdata)
+        fid.write(bitmapdata)
 
     # Convert cfgdata from unicode to ascii, mbcs encoded
     try:
@@ -108,7 +108,7 @@ def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="toydist"):
     #    # empty pre-install script
     #    cfgdata = cfgdata + "\0"
     cfgdata = cfgdata + "\0"
-    file.write(cfgdata)
+    fid.write(cfgdata)
 
     # The 'magic number' 0x1234567B is used to make sure that the
     # binary layout of 'cfgdata' is what the wininst.exe binary
@@ -120,12 +120,12 @@ def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="toydist"):
                          len(cfgdata),     # length
                          bitmaplen,        # number of bytes in bitmap
                          )
-    file.write(header)
-    file.write(open(arcname, "rb").read())
+    fid.write(header)
+    fid.write(open(arcname, "rb").read())
 
 def get_inidata(ipkg):
     # Return data describing the installation.
-    meta = PackageMetadata.from_installed_pkg_description(ipkg)
+    meta = PackageMetadata.from_ipkg(ipkg)
 
     # Write the [metadata] section.
     lines = []
@@ -142,6 +142,8 @@ def get_inidata(ipkg):
     for name in ["author", "author_email", "summary", "maintainer",
                  "maintainer_email", "name", "url", "version"]:
         data = getattr(meta, name)
+        if name == "summary":
+            name = "description"
         if data:
             info = info + ("\n    %s: %s" % \
                            (string.capitalize(name), escape(data)))
@@ -154,8 +156,9 @@ def get_inidata(ipkg):
     #if self.install_script:
     #    lines.append("install_script=%s" % self.install_script)
     lines.append("info=%s" % escape(info))
-    #lines.append("target_compile=%d" % (not self.no_target_compile))
-    #lines.append("target_optimize=%d" % (not self.no_target_optimize))
+    # FIXME: handle this correctly
+    lines.append("target_compile=1")
+    lines.append("target_optimize=1")
     #if self.target_version:
     #    lines.append("target_version=%s" % self.target_version)
     #if self.user_access_control:
@@ -163,8 +166,7 @@ def get_inidata(ipkg):
 
     title = meta.fullname
     lines.append("title=%s" % escape(title))
-    build_info = "Built %s with distutils-%s" % \
+    build_info = "Built %s with toydist-%s" % \
                  (time.ctime(time.time()), toydist.__version__)
     lines.append("build_info=%s" % build_info)
     return string.join(lines, "\n")
-
