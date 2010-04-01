@@ -1,11 +1,14 @@
 import os
 import shutil
+import subprocess
 
 from toydist.installed_package_description import \
     InstalledPkgDescription, iter_files
 
 from toydist.commands.core import \
     Command, UsageException
+from toydist.core.utils import \
+    pprint
 
 def install_sections(sections, installer=None):
     if not installer:
@@ -21,6 +24,18 @@ def copy_installer(source, target, kind):
     shutil.copy(source, target)
     if kind == "executables":
         os.chmod(target, 0555)
+
+def unix_installer(source, target, kind):
+    if kind in ["executables"]:
+        mode = "755"
+    else:
+        mode = "644"
+    cmd = ["install", "-m", mode, source, target]
+    strcmd = "INSTALL %s -> %s" % (source, target)
+    pprint('GREEN', strcmd)
+    if not os.path.exists(os.path.dirname(target)):
+        os.makedirs(os.path.dirname(target))
+    subprocess.check_call(cmd)
 
 class InstallCommand(Command):
     long_descr = """\
