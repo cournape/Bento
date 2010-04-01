@@ -95,6 +95,9 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
                 val = getattr(o, k)
                 if val:
                     scheme[k] = val
+        # XXX: define default somewhere and stick with it
+        if o.prefix is not None and o.exec_prefix is None:
+            scheme["eprefix"] = scheme["prefix"]
 
         # FIXME: fix this mess
         flag_vals = {}
