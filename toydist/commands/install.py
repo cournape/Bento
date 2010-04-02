@@ -10,13 +10,6 @@ from toydist.commands.core import \
 from toydist.core.utils import \
     pprint
 
-def install_sections(sections, installer=None):
-    if not installer:
-        installer = copy_installer
-
-    for kind, source, target in iter_files(sections):
-        installer(source, target, kind)
-
 def copy_installer(source, target, kind):
     dtarget = os.path.dirname(target)
     if not os.path.exists(dtarget):
@@ -56,4 +49,5 @@ Usage:   toymaker install [OPTIONS]."""
         ipkg = InstalledPkgDescription.from_file("installed-pkg-info")
         file_sections = ipkg.resolve_paths()
 
-        install_sections(file_sections, installer=copy_installer)
+        for kind, source, target in iter_files(file_sections):
+            copy_installer(source, target, kind)
