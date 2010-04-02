@@ -16,7 +16,9 @@ Future features
 ---------------
 
 * Simple C-extension building framework to cut distutils dependency
-* Scons/waf libraries to interact with Scons_ and Waf_ build tools
+* Scons/waf libraries to interact with Scons_ and Waf_ build tools, so that
+  complex packages can have access to a real build system with dependencies
+  handling.
 * Hooks for customizing arbitrary stages (configure, build, etc...)
 * Conversion to native packages (.deb, .rpm, .exe, .msi, etc...)
 

@@ -10,6 +10,7 @@ Missing features:
     - Multiple libraries
     - Recursive declaration ?
     - Options declaration besides boolean ?
+    - Unicode support
 
 Extending the simple build
 ==========================
