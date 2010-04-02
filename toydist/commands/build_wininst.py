@@ -22,7 +22,7 @@ from toydist.installed_package_description import \
 
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException
-from toydist.commands.build_egg import \
+from toydist.commands.egg_utils import \
         EggInfo, egg_info_dirname
 from toydist.commands.wininst_utils import \
         wininst_filename, create_exe
