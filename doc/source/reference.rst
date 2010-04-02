@@ -29,9 +29,8 @@ A typical .info file contains the following information:
 
 Each section consists of field:value pairs:
 
-    * Field name are case-insensitive, names are case-sensitive.
-    * Each indentation level must be exactly 4 spaces. Arbitrary number of
-      spaces is on the TODO list, tab will not be supported.
+    * Both fields and values are case-sensitive.
+    * Tab characters for indentation are not supported.
 
 Package metadata
 ----------------
@@ -78,7 +77,7 @@ it would be declared as follows::
     Version: 0.0.1
 
     Library:
-        packages:
+        Packages:
             hello.pkg1,
             hello.pkg2,
             hello
@@ -86,13 +85,13 @@ it would be declared as follows::
 The following syntax is also allowed::
 
     Library:
-        packages:
+        Packages:
             hello.pkg1, hello.pkg2, hello
 
 as well as::
 
     Library:
-        packages: hello.pkg1, hello.pkg2, hello
+        Packages: hello.pkg1, hello.pkg2, hello
 
 Packages containing C extensions
 ================================
@@ -102,7 +101,7 @@ the declaration is as follows::
 
     Library:
         Extension: hello._foo
-            sources:
+            Sources:
                 src/foo.c,
                 src/bar.c
 
@@ -159,8 +158,8 @@ sources can be installed anywhere. The most simple syntax for data files is as
 follows::
 
     DataFiles:
-        target: /etc
-        files:
+        TargetDir: /etc
+        Files:
             somefile.conf
 
 This installs the file somefile.conf into /etc. Using hardcoded paths should be
@@ -168,8 +167,8 @@ avoided, though. Toydist allows you to use "dynamic" path instead. This scheme
 should be familiar to people who have used autotools::
 
     DataFiles:
-        target: $sysconfdir
-        files:
+        TargetDir: $sysconfdir
+        Files:
             somefile.conf
 
 $sysconfigdir is a path variable: toydist defines several path variables
@@ -191,17 +190,17 @@ By default, the installed name is the concatenation of target and the values in
 files, e.g.::
 
     DataFiles:
-        target: $includedir
-        files:
+        TargetDir: $includedir
+        Files:
             foo/bar.h
 
 will be installed as $includedir/foo/bar.h. If instead, you want to install
 foo/bar.h as $includedir/bar.h, you need to use the srcdir field::
 
     DataFiles:
-        target: $includedir
-        srcdir: foo
-        files:
+        TargetDir: $includedir
+        SourceDir: foo
+        Files:
             bar.h
 
 Named data files section
@@ -211,29 +210,29 @@ You can define as many DataFiles sections as you want, as long as you name
 them, i.e.::
 
     DataFiles: man1
-        target: $mandir/man1
-        srcdir: doc/man
-        files:
+        TargetDir: $mandir/man1
+        SourceDir: doc/man
+        Files:
             *.1
 
     DataFiles: man3
-        target: $mandir/man3
-        srcdir: doc/man
-        files:
+        TargetDir: $mandir/man3
+        SourceDir: doc/man
+        Files:
             *.3
 
 is ok, but::
 
     DataFiles:
-        target: $mandir/man1
-        srcdir: doc/man
-        files:
+        TargetDir: $mandir/man1
+        SourceDir: doc/man
+        Files:
             *.1
 
     DataFiles:
-        target: $mandir/man3
-        srcdir: doc/man
-        files:
+        TargetDir: $mandir/man3
+        SourceDir: doc/man
+        Files:
             *.3
 
 is not.
@@ -247,16 +246,15 @@ depending on some option. For this reason, the .info file supports a limited
 form of conditional. For example::
 
     Library:
-        InstallDepends:
+        InstallRequires:
             docutils,
             sphinx
-            if os(windows)
+            if os(windows):
                 pywin32
 
 The following conditional forms are available:
 
     - os(value): condition on the OS
-    - arch(value): conditional on the architecture
     - flag(value): user-defined flag, boolean
 
 Adding custom options
