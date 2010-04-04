@@ -1,3 +1,5 @@
+import os
+
 import ply
 import ply.lex
 

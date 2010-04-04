@@ -1,5 +1,3 @@
-import os
-
 import ply
 import ply.lex
 import ply.yacc
@@ -8,16 +6,15 @@ from toydist.core.parser.lexer \
     import \
         MyLexer, tokens
 
+from toydist._config \
+    import \
+        _PICKLED_PARSETAB, _OPTIMIZE_LEX, _DEBUG_YACC
 from toydist.core.parser.nodes \
     import \
         Node
 from toydist.core.parser.errors \
     import \
         ParseError
-
-_PICKLED_PARSETAB = os.path.join(os.path.dirname(__file__), "parsetab")
-_OPTIMIZE_LEX = 0
-_DEBUG_YACC = 1
 
 class Parser(object):
     def __init__(self, lexer=None):
