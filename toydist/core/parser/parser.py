@@ -1,6 +1,5 @@
-import ply
-import ply.lex
-import ply.yacc
+from toydist.private.ply \
+    import lex, yacc
 
 from toydist.core.parser.lexer \
     import \
@@ -23,9 +22,9 @@ class Parser(object):
         else:
             self.lexer = lexer
 
-        self.parser = ply.yacc.yacc(start="stmt_list",
-                                    picklefile=_PICKLED_PARSETAB,
-                                    debug=_DEBUG_YACC)
+        self.parser = yacc.yacc(start="stmt_list",
+                                picklefile=_PICKLED_PARSETAB,
+                                debug=_DEBUG_YACC)
 
     def parse(self, data):
         return self.parser.parse(data, lexer=self.lexer)
