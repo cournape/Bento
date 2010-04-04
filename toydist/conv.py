@@ -3,6 +3,29 @@ from toydist.core import \
 from toydist.core.pkg_objects import \
         Executable
 
+_PKG_TO_DIST = {
+        "ext_modules": lambda pkg: [v for v  in \
+                                    pkg.extensions.values()],
+        "platforms": lambda pkg: [v for v  in pkg.platforms],
+        "packages": lambda pkg: [v for v  in pkg.packages],
+        "py_modules": lambda pkg: [v for v  in pkg.py_modules],
+}
+
+for k in ["name", "version", "summary", "url", "author",
+          "author_email", "maintainer", "maintainer_email",
+          "license", "description", "download_url"]:
+    _PKG_TO_DIST[k] = lambda pkg: getattr(pkg, k)
+
+def pkg_to_distutils(pkg):
+    """Convert PackageDescription instance to a dict which may be used
+    as argument to distutils/setuptools setup function."""
+    d = {}
+
+    for k, v in _PKG_TO_DIST.items():
+        d[k] = v(pkg)
+
+    return d
+
 def distutils_to_package_description(dist):
     data = {}
 
