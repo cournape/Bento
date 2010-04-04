@@ -104,5 +104,9 @@ class Executable(object):
         return repr({"name": self.name, "module": self.module, "function": self.function})
 
 class Extension(DistExtension):
+    @classmethod
+    def from_parse_dict(cls, d):
+        return cls(**d)
+
     def __repr__(self):
         return "Extension(%s, sources=%s)" % (self.name, self.sources)

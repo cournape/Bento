@@ -40,10 +40,7 @@ def build_extensions(extensions):
         dist.cmdclass['scons'] = scons
         distutils.core._setup_distribution = dist
 
-    dist.ext_modules = []
-    for name, value in extensions.items():
-        e = Extension(name, sources=value["sources"])
-        dist.ext_modules.append(e)
+    dist.ext_modules = [e for e in extensions.values()]
 
     bld_cmd = build_ext(dist)
     bld_cmd.initialize_options()

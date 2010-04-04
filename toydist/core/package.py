@@ -28,10 +28,13 @@ class PackageDescription:
                     "Non default library not yet supported")
 
         if len(d["libraries"]) > 0:
-            library = d["libraries"]["default"]
-            for k in ["packages", "py_modules", "extensions",
-                      "install_requires"]:
-                kw[k] = library[k]
+            default = d["libraries"]["default"]
+            for k in ["packages", "py_modules", "install_requires"]:
+                kw[k] = default[k]
+            kw["extensions"] = {}
+            if default["extensions"]:
+                for k, v in default["extensions"].items():
+                    kw["extensions"][k] = Extension.from_parse_dict(v)
         del kw["libraries"]
 
         del kw["path_options"]
@@ -111,7 +114,7 @@ class PackageDescription:
         for p in self.py_modules:
             pkgs.append(p)
         for p in self.extensions:
-            pkgs.append(p.name)
+            pkgs.append(p)
         top_levels = [i for i in pkgs if not "." in i]
 
         # Package metadata
