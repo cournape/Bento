@@ -88,10 +88,9 @@ Usage:   toymaker build [OPTIONS]."""
 
         s = ConfigureState.from_dump('.config.bin')
 
-        filename = s.package_description
+        pkg = s.pkg
         scheme = dict([(k, s.paths[k]) for k in s.paths])
 
-        pkg = PackageDescription.from_file(filename, user_flags=s.flags)
 
         # FIXME: root_src
         root_src = ""
