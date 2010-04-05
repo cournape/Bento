@@ -6,7 +6,7 @@ from toydist.core.utils import \
 from toydist.core.platforms import \
         get_scheme
 from toydist.core import \
-        PackageOptions
+        PackageOptions, PackageDescription
 
 from toydist.commands.core import \
         Command, UsageException, SCRIPT_NAME
@@ -114,9 +114,14 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
                         msg = """Error: %s: option %s expects a true or false argument"""
                         raise UsageException(msg % (SCRIPT_NAME, "--with-%s" % k))
 
+        # Cache the built package description to avoid reparsing it for
+        # subsequent commands
+        pkg = PackageDescription.from_file(filename, flag_vals)
+
         s = ConfigureState()
         s.paths = scheme
         s.flags = flag_vals
         s.package_description = filename
+        s.pkg = pkg
         s.dump()
         pprint('GREEN', "Writing configuration state in file %s" % '.config.bin')
