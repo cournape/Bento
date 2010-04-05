@@ -1,3 +1,6 @@
+from toydist.utils \
+    import \
+        pickle_memoize
 from toydist.core.parser.parser \
     import \
         parse as _parse
@@ -8,8 +11,13 @@ from toydist.core.parser.visitor \
     import \
         Dispatcher
 
+@pickle_memoize
+def parse(data):
+    return _parse(data)
+
 def parse_to_dict(data, user_flags=None):
-    p = _parse(data)
+    p = parse(data)
+
     dispatcher = Dispatcher()
     if user_flags is None:
         dispatcher._vars = {}
