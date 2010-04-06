@@ -1,11 +1,8 @@
 import os
 import sys
-import re
 
 from toydist.core.utils import \
         find_package
-from toydist.core import \
-        PackageDescription
 from toydist.installed_package_description import \
         InstalledPkgDescription, InstalledSection
 
@@ -22,17 +19,27 @@ def build_extensions(extensions):
     # FIXME: import done here to avoid clashing with monkey-patch as done by
     # the convert subcommand.
     if USE_NUMPY_DISTUTILS:
-        from numpy.distutils.extension import Extension
-        from numpy.distutils.numpy_distribution import NumpyDistribution as Distribution
-        from numpy.distutils.command.build_ext import build_ext
-        from numpy.distutils.command.build_src import build_src
-        from numpy.distutils.command.scons import scons
+        from numpy.distutils.numpy_distribution \
+            import \
+                NumpyDistribution as Distribution
+        from numpy.distutils.command.build_ext \
+            import \
+                build_ext
+        from numpy.distutils.command.build_src \
+            import \
+                build_src
+        from numpy.distutils.command.scons \
+            import \
+                scons
         from numpy.distutils import log
         import distutils.core
     else:
-        from distutils.extension import Extension
-        from distutils.dist import Distribution
-        from distutils.command.build_ext import build_ext
+        from distutils.dist \
+            import \
+                Distribution
+        from distutils.command.build_ext \
+            import \
+                build_ext
         from distutils import log
 
     log.set_verbosity(1)
@@ -59,8 +66,9 @@ def build_extensions(extensions):
         ext_target = os.path.join(bld_cmd.build_lib,
                                  bld_cmd.get_ext_filename(fullname))
         srcdir = os.path.dirname(ext_target)
-        outputs[fullname] = InstalledSection("extensions", fullname, srcdir,
-                                             target, [os.path.basename(ext_target)])
+        section = InstalledSection("extensions", fullname, srcdir,
+                                    target, [os.path.basename(ext_target)])
+        outputs[fullname] = section
     return outputs
 
 class BuildCommand(Command):
@@ -111,7 +119,8 @@ Usage:   toymaker build [OPTIONS]."""
         sections["datafiles"] = {}
         for name, data_section in pkg.data_files.items():
             data_section.files = data_section.resolve_glob()
-            sections["datafiles"][name] = InstalledSection.from_data_files(name, data_section)
+            sections["datafiles"][name] = \
+                    InstalledSection.from_data_files(name, data_section)
 
         # handle extensions
         if pkg.extensions:
@@ -125,9 +134,9 @@ Usage:   toymaker build [OPTIONS]."""
                 sections["executable"][ename] = evalue
 
         meta = {}
-        for m in ["name", "version", "summary", "url", "author", "author_email",
-                  "license", "download_url", "description", "platforms", "classifiers",
-                  "install_requires"]:
+        for m in ["name", "version", "summary", "url", "author",
+                  "author_email", "license", "download_url", "description",
+                  "platforms", "classifiers", "install_requires"]:
             meta[m] = getattr(pkg, m)
 
         meta["top_levels"] = pkg.top_levels
