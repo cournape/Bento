@@ -1,5 +1,55 @@
-An experimental alternative to distutils/setuptools/etc... to package python
-software.
+A pythonic, no-nonsense packaging tool for python software. It is as simple as
+writing a file toysetup.info with the following content::
+
+    Name: Foo
+    Author: John Doe
+
+    Library:
+        Packages: foo
+
+The package is then installed with toymaker, the command line interface to
+toydist::
+
+    toymaker configure
+    toymaker build
+    toymaker install
+
+The goals of toydist are simplicity and extensibility. There should be only one
+way to package simple packages (ideally, relying only on the toysetup.info
+file), while being flexible enough to handle complex softwares. The ultimate
+goal of toydist is to replace the hideous distutils extensions to build NumPy
+and SciPy.
+
+The main features of toydist are:
+
+    * Indentation-based declarative package description
+    * Automatic conversion from setup.py to toydist format
+    * Support for arbitrary installation scheme (ala autoconf, with sensible
+      defaults on Windows)
+    * Simple and flexible data files installation description
+    * Basic support for console scripts ala setuptools
+    * Preliminary support for building eggs and windows installers
+
+Planned features:
+
+    * Support for msi and Mac OS X .mpkg
+    * Enable Linux distributors to write simple extensions for packaging
+      toydist-packages as they see fit
+    * Pre/Post stages hooks
+    * Distutils compatibility mode, driven by the toysetup.info file
+    * Protocol to integrate with real build tools like scons, waf or
+      make
+    * Infrastructure for a correctly designed package index, using
+      well-known practices instead of the broken easy_install + pypi
+      model (easy mirroring, enforced metadata, indexing to enable
+      querying-before-installing, etc...).
+
+Code-wise, toydist has the following advantages:
+
+    * Clear separation of intent between package description, configuration,
+      build and installation
+    * No dependency on distutils or setuptools code, with a focus on
+      using standard python idioms
 
 Toydist discussion happen on NumPy Mailing list, and development is on
 `github`_. Bugs should be reported on toydist `issue-tracker`_. Online
@@ -50,27 +100,8 @@ can be used to configure, build, install, etc... the distribution::
     toymaker build
     toymaker install
     toymaker sdist
-
-What can it do
---------------
-
-The following is implemented:
-
-    * Basic library to parse the static format. The format support the
-      following:
-
-        * Most (all?) metadata from PKG-INFO format 1.2
-        * Command line options for additional path and flags
-        * One simple way to deal with installed data files
-        * One simple wat to deal with non-installed data (e.g. only
-          included in sdist)
-        * Packages, modules and simple C extensions
-
-    * Building and installing simple packages from the static
-      format (Linux and Mac OS X only for now), sdist generation
-    * Experimental automatic convertion of existing setup.py to a new
-      static format
-    * Basic egg generation
+    toymaker build_egg
+    toymaker build_wininst # on windows only
 
 Rationale
 ---------
@@ -96,3 +127,12 @@ Useful discussions which are related to toydist design:
       http://www.mail-archive.com/distutils-sig@python.org/msg08031.html
     * 'Just use debian' on distutils-sig:
       http://mail.python.org/pipermail/distutils-sig/2008-September/010129.html
+
+Toydist design borrows from:
+
+    * Cabal
+    * Automake (for data files description) and autoconf
+    * RPM spec file
+
+The toydist package indexing is inspired by the Hackage database, CRAN and
+linux packaging tools.
