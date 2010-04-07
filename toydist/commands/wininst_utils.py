@@ -8,6 +8,8 @@ from distutils.util import \
 from distutils.sysconfig import \
         get_python_version
 
+from toydist._config import \
+        WININST_DIR
 from toydist.core import \
         PackageMetadata
 import toydist
@@ -56,7 +58,7 @@ def get_exe_bytes (target_version=None, plat_name=None):
 
     # wininst-x.y.exe directory
     # XXX: put those somewhere else, and per-python version preferably
-    directory = os.path.join(os.path.dirname(__file__), "wininst")
+    directory = WININST_DIR
     # we must use a wininst-x.y.exe built with the same C compiler
     # used for python.  XXX What about mingw, borland, and so on?
 
