@@ -1,9 +1,10 @@
 #! /bin/sh
 OSNAME=`uname`
-if [ "$OSNAME" == "Linux" ]; then
+if test x"$OSNAME" = x"Linux"
+then
 	ISED="sed -i";
 else
-	ISED="sed -i ''"
+	ISED="sed -i ''";
 fi
 
 MASTER_REPO=$PWD/../toydist.git
