@@ -4,15 +4,30 @@
    contain the root `toctree` directive.
 
 ################################################################
-Toydist: an experimental alternative to distutils and setuptools
+Toydist: an no-nonsense packaging tool for python
 ################################################################
 
 Toydist is a Python-based packaging solution intended to replace
-distutils/setuptools. Toydist aims at being simpler, more pythonic and more
-extensible than the aforementioned tools.
+distutils/setuptools. Packaging simple python code is as simple as
+writing the following toysetup.info file::
 
-It is currenly in very early stage, and is not recommended for any production
-use. Discussions on toydist design happens on the NumPy Mailing List.
+    Name: Foo
+    Author: John Doe
+
+    Library:
+        Packages: foo
+
+Toydist contains a command line tools to build and install toydist
+packages::
+
+    toymaker configure
+    toymaker build
+    toymaker install
+
+Toydist aims at being simpler, more pythonic and more extensible than
+existing tools. It is currenly in very early stage, and is not
+recommended for any production use. Discussions on toydist design
+happens on the NumPy Mailing List.
 
 .. toctree::
    :maxdepth: 2
@@ -30,4 +45,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
