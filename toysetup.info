@@ -1,0 +1,53 @@
+Name: toydist
+Version: 0.0.2dev
+Summary: A toy distribution tool
+Url: http://github.com/cournape/toydist
+Description:
+    Toydist is a toy distribution tool for python packages, The goal are
+    extensibility, flexibility, and easy interoperation with external tools.
+    
+    Toydist is still in infancy; discussions happen on the NumPy Mailing list
+    (http://mail.scipy.org/pipermail/numpy-discussion/).
+Author: David Cournapeau
+AuthorEmail: cournape@gmail.com
+Maintainer: David Cournapeau
+MaintainerEmail: cournape@gmail.com
+License: BSD
+Platforms: any
+Classifiers:
+    Development Status :: 1 - Planning,
+    Intended Audience :: Developers,
+    License :: OSI Approved,
+    Programming Language :: Python,
+    Topic :: Software Development,
+    Operating System :: Microsoft :: Windows,
+    Operating System :: POSIX,
+    Operating System :: Unix,
+    Operating System :: MacOS
+
+DataFiles: windows_arch_data
+    SourceDir: toydist/commands
+    TargetDir: $sitedir/toydist/commands/
+    Files: cli.exe, wininst/*.exe
+
+DataFiles: ply_data
+    SourceDir: toydist
+    TargetDir: $sitedir/toydist
+    Files: parsetab
+
+ExtraSourceFiles:
+    setup.py
+
+Library:
+    Packages:
+        toydist,
+        toydist.commands,
+        toydist.core,
+        toydist.core.parser,
+        toydist.core.platforms,
+        toydist.private,
+        toymakerlib
+
+Executable: toymaker
+    Module: toymakerlib.toymaker
+    Function: noexc_main
