@@ -1,5 +1,5 @@
-A pythonic, no-nonsense packaging tool for python software. It is as simple as
-writing a file toysetup.info with the following content::
+A pythonic, no-nonsense packaging tool for python software. Packaging is as
+simple as writing a file toysetup.info with a file which looks as follows::
 
     Name: Foo
     Author: John Doe
@@ -53,14 +53,30 @@ Code-wise, toydist has the following advantages:
 
 Toydist discussion happen on NumPy Mailing list, and development is on
 `github`_. Bugs should be reported on toydist `issue-tracker`_. Online
-`documentation`_ is available on github as well
+`documentation`_ is available on github as well.
+
+TOYDIST IS IN (VERY) EARLY STAGES: ANY PRODUCTION USAGE IS STRONGLY DISCOURAGED
+AT THIS POINT.
 
 .. _github: http://github.com/cournape/toydist.git
 .. _issue-tracker: http://github.com/cournape/toydist/issues
 .. _documentation: http://cournape.github.com/toydist
 
-Quick start
------------
+Installing toydist
+------------------
+
+Toydist may be installed the usual way from setup.py::
+
+    python setup.py install --user # python 2.6 and later
+    python setup.py install --prefix=some_directory
+
+Alternatively, there is a bootstrap script so that toydist can install itself::
+
+    python bootstrap.py # create the toymaker[.exe] script/executable 
+    ./toymaker configure && ./toymaker build && ./toymaker install
+
+Quick starting guide for packaging with toydist
+-----------------------------------------------
 
 From existing setup.py
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -70,8 +86,11 @@ command to convert existing setup.py::
 
     toymaker convert
 
-If successfull, it will write a file toysetup.info. If it fails, convert.log
-should contain useful information.
+If successfull, it will write a file toysetup.info. If it fails,
+convert.log should contain useful information. If the conversion
+fails, please report a bug on the `issue-tracker`_, but keep in mind
+that complex packages cannot be fully converted, especially if they
+rely on complex distutils extensions.
 
 From scratch
 ~~~~~~~~~~~~
