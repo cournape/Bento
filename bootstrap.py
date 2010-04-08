@@ -20,7 +20,7 @@ def install_inplace(pkg):
         else:
             section = create_posix_script(name, executable, ".")
             for f in section.files:
-                os.chmod(f, 755)
+                os.chmod(f, 0755)
         installed = ",".join(section.files)
         pprint("GREEN", "installing %s in current directory" % installed)
 
