@@ -18,8 +18,10 @@ if [ $MASTER_REPO/.git -ef $GH_PAGES_REPO/.git ]; then
 fi
 echo $TEMPDIR
 
+# Force update to last master repo commit
 git checkout $MASTER_BRANCH || exit
-git pull $MASTER_REPO $MASTER_BRANCH || exit
+git fetch $MASTER_REPO $MASTER_BRANCH || exit
+git reset --hard FETCH_HEAD || exit
 
 virtualenv bootstrap
 . bootstrap/bin/activate
