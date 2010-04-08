@@ -1,7 +1,8 @@
 import os
 
-import ply
-import ply.lex
+from toydist.private.ply.lex \
+    import \
+        LexToken, lex
 
 from toydist.core.parser.utils \
     import \
@@ -157,9 +158,9 @@ class MyLexer(object):
     def __init__(self, stage=1, module=None, object=None, debug=0, optimize=0,
                  lextab='lextab', reflags=0, nowarn=0, outputdir='',
                  debuglog=None, errorlog=None):
-        self.lexer = ply.lex.lex(module, object, debug, optimize, lextab,
-                                 reflags, nowarn, outputdir, debuglog,
-                                 errorlog)
+        self.lexer = lex(module, object, debug, optimize, lextab,
+                         reflags, nowarn, outputdir, debuglog,
+                         errorlog)
         self._stage = stage
 
     def input(self, *a, **kw):
@@ -248,7 +249,7 @@ def indent_generator(toks):
     stack = [0]
 
     # Dummy token to track the token just before the current one
-    former = ply.lex.LexToken()
+    former = LexToken()
     former.type = "NEWLINE"
     former.value = "dummy"
     former.lineno = 0
@@ -301,7 +302,7 @@ def indent_generator(toks):
         yield former
 
 def new_indent(amount, token):
-    tok = ply.lex.LexToken()
+    tok = LexToken()
     tok.type = "INDENT"
     tok.value = amount
     tok.lineno = token.lineno
@@ -309,7 +310,7 @@ def new_indent(amount, token):
     return tok
 
 def new_dedent(amount, token):
-    tok = ply.lex.LexToken()
+    tok = LexToken()
     tok.type = "DEDENT"
     tok.value = amount
     tok.lineno = token.lineno
@@ -317,7 +318,7 @@ def new_dedent(amount, token):
     return tok
 
 def _new_token(type, token):
-    tok = ply.lex.LexToken()
+    tok = LexToken()
     tok.type = type
     tok.value = token.value
     tok.lineno = token.lineno
