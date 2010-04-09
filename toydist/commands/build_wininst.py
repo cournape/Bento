@@ -69,8 +69,12 @@ Usage:   toymaker build_wininst [OPTIONS]"""
             ipkg.path_variables["gendatadir"] = "$sitedir"
 
             file_sections = ipkg.resolve_paths()
+
+            def write_content(source, target, kind):
+                zid.write(source, target)
+
             for kind, source, target in iter_files(file_sections):
-                zid.writestr(target, source)
+                write_content(source, target, kind)
 
         finally:
             zid.close()
