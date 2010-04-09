@@ -64,7 +64,7 @@ Usage:   toymaker build_wininst [OPTIONS]"""
             for filename, cnt in egg_info.iter_meta():
                 zid.writestr(os.path.join(egg_info_dir, filename), cnt)
 
-            ipkg.path_variables["prefix"] = "SCRIPTS"
+            ipkg.path_variables["bindir"] = "SCRIPTS"
             ipkg.path_variables["sitedir"] = "PURELIB"
             ipkg.path_variables["gendatadir"] = "$sitedir"
 
