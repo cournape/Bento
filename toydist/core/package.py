@@ -63,7 +63,11 @@ class PackageDescription:
         info_file = open(filename, 'r')
         try:
             data = info_file.read()
-            return cls.__from_data(data, user_flags)
+            ret = cls.__from_data(data, user_flags)
+            # FIXME: find a better way to automatically include the
+            # toysetup.info file
+            ret.extra_source_files.append(filename)
+            return ret
         finally:
             info_file.close()
 
@@ -137,7 +141,7 @@ def file_list(pkg, root_src=""):
     for section in pkg.data_files.values():
         for entry in section.files:
             files.extend([os.path.join(root_src, section.source_dir, f) 
-                          for f in expand_glob(entry, root_src)])
+                          for f in expand_glob(entry, os.path.join(root_src, section.source_dir))])
 
     return files
 
