@@ -18,8 +18,17 @@ from distutils.core \
     import \
         setup
 
-VERSION = "0.0.2"
-RELEASED = False
+from toydist.core \
+    import \
+        PackageDescription
+
+pkg = PackageDescription.from_file("toysetup.info")
+
+FULL_VERSION = pkg.version
+if "dev" in FULL_VERSION:
+    RELEASED = False
+else:
+    RELEASED = True
 
 try:
     if os.path.exists(".git"):
@@ -31,11 +40,6 @@ try:
         GIT_REVISION = ""
 except WindowsError:
     GIT_REVISION = ""
-
-if not RELEASED:
-    FULL_VERSION = VERSION + "dev"
-else:
-    FULL_VERSION = VERSION
 
 def generate_version_py(filename):
     cnt = """\
@@ -89,43 +93,24 @@ class install(old_install):
         outfiles.extend(self.__files)
         return outfiles
 
-DESCR = """\
-Toydist is a toy distribution tool for python packages, The goal are
-extensibility, flexibility, and easy interoperation with external tools.
-
-Toydist is still in infancy; discussions happen on the NumPy Mailing list
-(http://mail.scipy.org/pipermail/numpy-discussion/).
-"""
-
-CLASSIFIERS = [
-    "Development Status :: 1 - Planning",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved",
-    "Programming Language :: Python",
-    "Topic :: Software Development",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX",
-    "Operating System :: Unix",
-    "Operating System :: MacOS"
-]
+DESCR = pkg.description
+CLASSIFIERS = pkg.classifiers
 
 METADATA = {
-    'name': 'toydist',
+    'name': pkg.name,
     'version': FULL_VERSION,
-    'description': 'A toy distribution tool',
-    'url': 'http://github.com/cournape/toydist',
-    'author': 'David Cournapeau',
-    'author_email': 'cournape@gmail.com',
-    'license': 'BSD',
+    'description': pkg.summary,
+    'url': pkg.url,
+    'author': pkg.author,
+    'author_email': pkg.author_email,
+    'license': pkg.license,
     'long_description': DESCR,
     'platforms': 'any',
     'classifiers': CLASSIFIERS,
 }
 
 PACKAGE_DATA = {
-    'packages': ['toydist', 'toydist.core', 'toydist.commands', 'toydist.private',
-                 'toymakerlib', 'toydist.core.platforms', 'toydist.core.parser',
-                 'toydist.private.ply'],
+    'packages': pkg.packages,
     'entry_points': {
         'console_scripts': ['toymaker=toymakerlib.toymaker:noexc_main']
     },
