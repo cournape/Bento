@@ -36,7 +36,8 @@ DataFiles: ply_data
     Files: parsetab
 
 ExtraSourceFiles:
-    setup.py
+    setup.py,
+    bootstrap.py
 
 Library:
     Packages:
