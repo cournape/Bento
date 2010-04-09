@@ -1,5 +1,6 @@
 import getopt
 import optparse
+import copy
 
 # FIXME: how to handle script name in one location
 SCRIPT_NAME = 'toymaker'
@@ -66,7 +67,8 @@ class Command(object):
     def set_option_parser(self):
         try:
             parser = MyOptionParser(self.long_descr.splitlines()[1])
-            for o in self.opts:
+            oo = copy.deepcopy(self.opts)
+            for o in oo:
                 a = o.pop('opts')
                 kw = o
                 parser.add_option(*a, **kw)
