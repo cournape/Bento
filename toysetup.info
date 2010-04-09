@@ -46,6 +46,7 @@ Library:
         toydist.core.parser,
         toydist.core.platforms,
         toydist.private,
+        toydist.private.ply,
         toymakerlib
 
 Executable: toymaker
