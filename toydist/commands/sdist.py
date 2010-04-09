@@ -31,14 +31,19 @@ Usage:   toymaker sdist [OPTIONS]."""
                 raise UsageException("Missing %s file" % "toysetup.info")
 
         pkg = PackageDescription.from_file(filename)
+        create_tarball(pkg)
 
+def create_tarball(pkg, tarname=None):
+    if tarname is None:
         basename = tarball_basename(pkg.name, pkg.version)
-        topname = "%s-%s" % (pkg.name, pkg.version)
         tarname = "%s.tar.gz" % basename
+    topname = "%s-%s" % (pkg.name, pkg.version)
 
-        tf = tarfile.open(tarname, "w:gz")
-        try:
-            for file in file_list(pkg):
-                tf.add(file, os.path.join(topname, file))
-        finally:
-            tf.close()
+    tf = tarfile.open(tarname, "w:gz")
+    try:
+        for file in file_list(pkg):
+            tf.add(file, os.path.join(topname, file))
+    finally:
+        tf.close()
+
+    return tarname
