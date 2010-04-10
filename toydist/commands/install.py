@@ -16,7 +16,7 @@ def copy_installer(source, target, kind):
         os.makedirs(dtarget)
     shutil.copy(source, target)
     if kind == "executables":
-        os.chmod(target, 0555)
+        os.chmod(target, 0755)
 
 def unix_installer(source, target, kind):
     if kind in ["executables"]:
