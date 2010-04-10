@@ -37,7 +37,12 @@ DataFiles: ply_data
 
 ExtraSourceFiles:
     setup.py,
-    bootstrap.py
+    bootstrap.py,
+    tests/parsing/functionals/*.py,
+    tests/parsing/functionals/*.info,
+    tests/parsing/*.py,
+    tests/pkgdescr/*.py,
+    tests/*.py
 
 Library:
     Packages:
