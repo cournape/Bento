@@ -118,7 +118,7 @@ class PackageDescription:
         for p in self.py_modules:
             pkgs.append(p)
         for p in self.extensions:
-            pkgs.append(p)
+            pkgs.append(p.name)
         top_levels = [i for i in pkgs if not "." in i]
 
         # Package metadata
