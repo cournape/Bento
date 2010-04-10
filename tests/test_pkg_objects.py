@@ -33,9 +33,9 @@ class TestDataFiles(unittest.TestCase):
 
 class TestExecutable(unittest.TestCase):
     def test_basic(self):
-        exe = Executable.from_representation("foo=core:main")
+        exe = Executable.from_representation("foo = core:main")
         assert_equal(exe.name, "foo")
         assert_equal(exe.module, "core")
         assert_equal(exe.function, "main")
 
-        assert_equal(exe.full_representation(), "foo=core:main")
+        assert_equal(exe.full_representation(), "foo = core:main")
