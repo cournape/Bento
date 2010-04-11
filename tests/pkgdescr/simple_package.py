@@ -62,5 +62,5 @@ PKG = PackageDescription(
         "Topic :: Utilities",],
     py_modules=["cat.py"],
     packages=["sphinx", "sphinx.builders"],
-    extensions=[Extension(name="_dog", sources=["src/dog.c"])],
+    extensions={"_dog": Extension(name="_dog", sources=["src/dog.c"])},
 )
