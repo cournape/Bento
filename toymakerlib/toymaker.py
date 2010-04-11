@@ -67,7 +67,27 @@ def register_commands():
     register_command("parse", ParseCommand, public=False)
     register_command("detect_type", DetectTypeCommand, public=False)
  
+def set_main():
+    import imp
+
+    main_file = "toysetup.py"
+    assert os.path.exists(main_file)
+
+    module = imp.new_module("toysetup_module")
+    code = open(main_file).read()
+
+    sys.path.insert(0, os.path.dirname(main_file))
+    try:
+        exec(compile(code, main_file, 'exec'), module.__dict__)
+    finally:
+        sys.path.pop(0)
+
+    module.root_path = main_file
+
+    return module
+
 def main(argv=None):
+    from toymakerlib.hooks import get_pre_hooks, get_post_hooks
     register_commands()
 
     if argv is None:
@@ -79,6 +99,7 @@ def main(argv=None):
     cmd_name = None
     cmd_opts = None
 
+    mod = set_main()
     try:
         opts, pargs = getopt.getopt(argv, "hv", ["help", "version", "full-version"])
         for opt, arg in opts:
@@ -119,7 +140,13 @@ def main(argv=None):
             raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
         else:
             cmd = get_command(cmd_name)()
+            if get_pre_hooks(cmd_name) is not None:
+                for f, a, kw in get_pre_hooks(cmd_name):
+                    f(*a, **kw)
             cmd.run(cmd_opts)
+            if get_post_hooks(cmd_name) is not None:
+                for f, a, kw in get_post_hooks(cmd_name):
+                    f(*a, **kw)
 
 def noexc_main(argv=None):
     try:
