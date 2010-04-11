@@ -67,8 +67,8 @@ def set_flag_options(flag_opts, options):
     flag_vals = {}
     for k in flag_opts:
         opt_name = "with_" + k
-        if hasattr(o, opt_name):
-            val = getattr(o, opt_name)
+        if hasattr(options, opt_name):
+            val = getattr(options, opt_name)
             if val:
                 if val == "true":
                     flag_vals[k] = True
