@@ -50,6 +50,36 @@ def ensure_info_exists(opts):
 
     return filename
 
+def set_scheme_options(scheme, options):
+    """Set path variables given in options in scheme dictionary."""
+    for k in scheme:
+        if hasattr(options, k):
+            val = getattr(options, k)
+            if val:
+                scheme[k] = val
+    # XXX: define default somewhere and stick with it
+    if options.prefix is not None and options.exec_prefix is None:
+        scheme["eprefix"] = scheme["prefix"]
+
+def set_flag_options(flag_opts, options):
+    """Set flag variables given in options in flag dictionary."""
+    # FIXME: fix this mess
+    flag_vals = {}
+    for k in flag_opts:
+        opt_name = "with_" + k
+        if hasattr(o, opt_name):
+            val = getattr(o, opt_name)
+            if val:
+                if val == "true":
+                    flag_vals[k] = True
+                elif val == "false":
+                    flag_vals[k] = False
+                else:
+                    msg = """Error: %s: option %s expects a true or false argument"""
+                    raise UsageException(msg % (SCRIPT_NAME, "--with-%s" % k))
+
+    return flag_vals
+
 class ConfigureCommand(Command):
     long_descr = """\
 Purpose: configure the project
@@ -64,8 +94,36 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
         else:
             filename = ensure_info_exists(opts)
 
+        # As the configure command line handling is customized from
+        # the toysetup.info (flags, paths variables), we cannot just
+        # call set_options_parser.
         pkg_opts = PackageOptions.from_file(filename)
+        scheme, flag_opts = self.add_configuration_options(pkg_opts)
 
+        self.set_option_parser()
+        o, a = self.parser.parse_args(opts)
+        if o.help:
+            self.parser.print_help()
+            return
+
+        set_scheme_options(scheme, o)
+        flag_vals = set_flag_options(flag_opts, o)
+
+        # Cache the built package description to avoid reparsing it for
+        # subsequent commands
+        pkg = PackageDescription.from_file(filename, flag_vals)
+
+        s = ConfigureState()
+        s.paths = scheme
+        s.flags = flag_vals
+        s.package_description = filename
+        s.pkg = pkg
+        s.dump()
+        pprint('GREEN', "Writing configuration state in file %s" % '.config.bin')
+
+    def add_configuration_options(self, pkg_opts):
+        """Add the path and flags-related options as defined in the
+        toysetup.info file to the command."""
         scheme, scheme_opts = get_scheme(sys.platform)
         # XXX: abstract away those, as it is copied from distutils
         py_version = sys.version.split()[0]
@@ -89,44 +147,4 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
                     "help": "%s [default=%s]" % (v.description, v.default_value)}
             self.opts.append(flag_opts[name])
 
-        self.set_option_parser()
-        o, a = self.parser.parse_args(opts)
-        if o.help:
-            self.parser.print_help()
-            return
-
-        for k in scheme:
-            if hasattr(o, k):
-                val = getattr(o, k)
-                if val:
-                    scheme[k] = val
-        # XXX: define default somewhere and stick with it
-        if o.prefix is not None and o.exec_prefix is None:
-            scheme["eprefix"] = scheme["prefix"]
-
-        # FIXME: fix this mess
-        flag_vals = {}
-        for k in flag_opts:
-            opt_name = "with_" + k
-            if hasattr(o, opt_name):
-                val = getattr(o, opt_name)
-                if val:
-                    if val == "true":
-                        flag_vals[k] = True
-                    elif val == "false":
-                        flag_vals[k] = False
-                    else:
-                        msg = """Error: %s: option %s expects a true or false argument"""
-                        raise UsageException(msg % (SCRIPT_NAME, "--with-%s" % k))
-
-        # Cache the built package description to avoid reparsing it for
-        # subsequent commands
-        pkg = PackageDescription.from_file(filename, flag_vals)
-
-        s = ConfigureState()
-        s.paths = scheme
-        s.flags = flag_vals
-        s.package_description = filename
-        s.pkg = pkg
-        s.dump()
-        pprint('GREEN', "Writing configuration state in file %s" % '.config.bin')
+        return scheme, flag_opts
