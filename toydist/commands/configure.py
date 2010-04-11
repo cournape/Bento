@@ -35,6 +35,21 @@ class ConfigureState(object):
         finally:
             f.close()
 
+def ensure_info_exists(opts):
+    if len(opts) < 1 or opts[-1].startswith('-'):
+        msg = "%s: Error: No toysetup.info found, and no toydist " \
+              "configuration file given at the command line." % SCRIPT_NAME
+        msg += "\nTry: %s help configure" % SCRIPT_NAME
+        raise UsageException(msg)
+    else:
+        filename = opts[-1]
+        if not os.path.exists(filename):
+            msg = "%s: Error: configuration file %s not found." % \
+                    (SCRIPT_NAME, filename)
+            raise UsageException(msg)
+
+    return filename
+
 class ConfigureCommand(Command):
     long_descr = """\
 Purpose: configure the project
@@ -47,17 +62,7 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
         if os.path.exists('toysetup.info'):
             filename = 'toysetup.info'
         else:
-            if len(opts) < 1 or opts[-1].startswith('-'):
-                msg = "%s: Error: No toysetup.info found, and no toydist " \
-                      "configuration file given at the command line." % SCRIPT_NAME
-                msg += "\nTry: %s help configure" % SCRIPT_NAME
-                raise UsageException(msg)
-            else:
-                filename = opts[-1]
-                if not os.path.exists(filename):
-                    msg = "%s: Error: configuration file %s not found." % \
-                            (SCRIPT_NAME, filename)
-                    raise UsageException(msg)
+            filename = ensure_info_exists(opts)
 
         pkg_opts = PackageOptions.from_file(filename)
 
