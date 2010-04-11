@@ -93,7 +93,7 @@ class PackageDescription:
             self.py_modules = py_modules
 
         if not extensions:
-            self.extensions = []
+            self.extensions = {}
         else:
             self.extensions = extensions
 
@@ -117,7 +117,7 @@ class PackageDescription:
             pkgs.append(p)
         for p in self.py_modules:
             pkgs.append(p)
-        for p in self.extensions:
+        for p in self.extensions.values():
             pkgs.append(p.name)
         top_levels = [i for i in pkgs if not "." in i]
 

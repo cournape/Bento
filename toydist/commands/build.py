@@ -15,6 +15,16 @@ from toydist.commands.script_utils import \
 
 USE_NUMPY_DISTUTILS = False
 
+def toyext_to_distext(e):
+    """Convert a toydist Extension instance to a distutils
+    Extension."""
+    # FIXME: this is temporary, will be removed once we do not depend
+    # on distutils to build extensions anymore. That's why this is not
+    # a method of the toydist Extension class.
+    from distutils.extension import Extension as DistExtension
+
+    return DistExtension(e.name, sources=[s for s in e.sources])
+
 def build_extensions(extensions):
     # FIXME: import done here to avoid clashing with monkey-patch as done by
     # the convert subcommand.
@@ -50,7 +60,8 @@ def build_extensions(extensions):
         dist.cmdclass['scons'] = scons
         distutils.core._setup_distribution = dist
 
-    dist.ext_modules = [e for e in extensions.values()]
+    dist.ext_modules = [toyext_to_distext(e) for e in
+                            extensions.values()]
 
     bld_cmd = build_ext(dist)
     bld_cmd.initialize_options()

@@ -1,6 +1,3 @@
-from distutils.core import \
-        Extension as DistExtension
-
 from toydist.core.parse_utils import \
     comma_list_split
 from toydist.core.utils import \
@@ -103,10 +100,14 @@ class Executable(object):
     def __repr__(self):
         return repr({"name": self.name, "module": self.module, "function": self.function})
 
-class Extension(DistExtension):
+class Extension(object):
     @classmethod
     def from_parse_dict(cls, d):
         return cls(**d)
+
+    def __init__(self, name, sources):
+        self.name = name
+        self.sources = sources
 
     def __repr__(self):
         return "Extension(%s, sources=%s)" % (self.name, self.sources)
