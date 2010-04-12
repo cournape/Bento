@@ -51,20 +51,23 @@ SCRIPT_NAME = 'toymaker'
 #================================
 #   Create the command line UI
 #================================
-register_command("help", HelpCommand)
-register_command("configure", ConfigureCommand)
-register_command("build", BuildCommand)
-register_command("install", InstallCommand)
-register_command("convert", ConvertCommand)
-register_command("sdist", SdistCommand)
-register_command("build_egg", BuildEggCommand)
-register_command("build_wininst", BuildWininstCommand)
+def register_commands():
+    register_command("help", HelpCommand)
+    register_command("configure", ConfigureCommand)
+    register_command("build", BuildCommand)
+    register_command("install", InstallCommand)
+    register_command("convert", ConvertCommand)
+    register_command("sdist", SdistCommand)
+    register_command("build_egg", BuildEggCommand)
+    register_command("build_wininst", BuildWininstCommand)
 
-register_command("build_pkg_info", BuildPkgInfoCommand, public=False)
-register_command("parse", ParseCommand, public=False)
-register_command("detect_type", DetectTypeCommand, public=False)
+    register_command("build_pkg_info", BuildPkgInfoCommand, public=False)
+    register_command("parse", ParseCommand, public=False)
+    register_command("detect_type", DetectTypeCommand, public=False)
  
 def main(argv=None):
+    register_commands()
+
     if argv is None:
         argv = sys.argv[1:]
 
