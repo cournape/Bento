@@ -1,6 +1,11 @@
+from toydist.commands.core \
+    import \
+        register_command
+
 __HOOK_REGISTRY = {}
 __PRE_HOOK_REGISTRY = {}
 __POST_HOOK_REGISTRY = {}
+__COMMANDS_OVERRIDE = {}
 
 def add_to_registry(func, category):
     global __HOOK_REGISTRY
@@ -9,6 +14,11 @@ def add_to_registry(func, category):
         __HOOK_REGISTRY[category] = [func]
     else:
         __HOOK_REGISTRY[category].append(func)
+
+def override_command(command, func, args, kw):
+    global __COMMANDS_OVERRIDE
+
+    __COMMANDS_OVERRIDE[command] = (func, args, kw)
 
 def add_to_pre_registry(func, cmd_name):
     global __PRE_HOOK_REGISTRY
@@ -44,6 +54,10 @@ def get_post_hooks(cmd_name):
     global __POST_HOOK_REGISTRY
     return __POST_HOOK_REGISTRY.get(cmd_name, None)
 
+def get_command_override(cmd_name):
+    global __COMMANDS_OVERRIDE
+    return __COMMANDS_OVERRIDE.get(cmd_name, None)
+
 def post_configure(f, *a, **kw):
     add_to_registry((f, a, kw), "post_configure")
     add_to_post_registry((f, a, kw), "configure")
@@ -51,3 +65,19 @@ def post_configure(f, *a, **kw):
 def pre_configure(f, *a, **kw):
     add_to_registry((f, a, kw), "pre_configure")
     add_to_pre_registry((f, a, kw), "configure")
+
+def post_sdist(f, *a, **kw):
+    add_to_registry((f, a, kw), "post_sdist")
+    add_to_post_registry((f, a, kw), "sdist")
+
+def pre_sdist(f, *a, **kw):
+    add_to_registry((f, a, kw), "pre_sdist")
+    add_to_pre_registry((f, a, kw), "sdist")
+
+def override(f, *a, **kw):
+    override_command(f.__name__, f, a, kw)
+
+def command_register(f, *a, **kw):
+    ret = f(*a, **kw)
+    for cmd_name, cmd_class in ret.items():
+        register_command(cmd_name, cmd_class)

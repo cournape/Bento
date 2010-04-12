@@ -45,7 +45,7 @@ from toydist.commands.errors import \
 
 from toymakerlib.hooks \
     import \
-        get_pre_hooks, get_post_hooks
+        get_pre_hooks, get_post_hooks, get_command_override
 
 if os.environ.get("TOYMAKER_DEBUG", None) is not None:
     TOYMAKER_DEBUG = True
@@ -164,12 +164,16 @@ def _main(argv=None):
             run_cmd(cmd_name, cmd_opts)
 
 def run_cmd(cmd_name, cmd_opts):
-    cmd = get_command(cmd_name)()
+    if get_command_override(cmd_name):
+        cmd_func = get_command_override(cmd_name)[0]
+    else:
+        cmd = get_command(cmd_name)()
+        cmd_func = cmd.run
 
     if get_pre_hooks(cmd_name) is not None:
         for f, a, kw in get_pre_hooks(cmd_name):
             f(*a, **kw)
-    cmd.run(cmd_opts)
+    cmd_func(cmd_opts)
     if get_post_hooks(cmd_name) is not None:
         for f, a, kw in get_post_hooks(cmd_name):
             f(*a, **kw)
