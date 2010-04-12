@@ -1,5 +1,7 @@
 from toydist.core import \
         PackageDescription
+from toydist.core.utils import \
+        InvalidPackage, validate_package as _validate_package
 from toydist.core.pkg_objects import \
         Executable
 
@@ -25,6 +27,18 @@ def pkg_to_distutils(pkg):
         d[k] = v(pkg)
 
     return d
+
+def validate_packages(pkgs):
+    ret_pkgs = []
+    for pkg in pkgs:
+        try:
+            _validate_package(pkg, ".")
+        except InvalidPackage:
+            # FIXME: add the package as data here
+            pass
+        else:
+            ret_pkgs.append(pkg)
+    return ret_pkgs
 
 def distutils_to_package_description(dist):
     data = {}
@@ -55,7 +69,7 @@ def distutils_to_package_description(dist):
         pass
 
     data['py_modules'] = dist.py_modules
-    data['packages'] = dist.packages
+    data['packages'] = validate_packages(dist.packages)
     data['extensions'] = dist.ext_modules
     data['classifiers'] = dist.get_classifiers()
 
