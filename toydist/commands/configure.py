@@ -125,7 +125,6 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
         s.package_description = filename
         s.pkg = pkg
         s.dump()
-        pprint('GREEN', "Writing configuration state in file %s" % '.config.bin')
 
     def add_configuration_options(self, pkg_opts):
         """Add the path and flags-related options as defined in the
