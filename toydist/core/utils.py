@@ -6,6 +6,10 @@ import glob
 from os.path import \
     join, split, splitext, dirname, relpath
 
+from toydist.core.errors \
+    import \
+        InvalidPackage
+
 # Color handling for terminals (taken from waf)
 COLORS_LST = {
         'USE' : True,
@@ -147,18 +151,26 @@ def subst_vars (s, local_vars):
 if __name__ == "__main__":
     print expand_glob("*.py", dirname(__file__))
 
-def find_package(pkg_name, basedir=''):
-    """Given a python package name, find all its modules relatively to basedir.
+def validate_package(pkg_name, basedir):
+    """Given a python package name, check whether it is indeed an existing
+    package.
 
-    If basedir is not given, look relatively to the current directory."""
+    Package is looked relatively to the current directory."""
     # XXX: this function is wrong - use the code from setuptools
     pkg_dir = pkg_name.replace(".", os.path.sep)
     basedir = os.path.join(basedir, pkg_dir)
     init = os.path.join(basedir, '__init__.py')
     if not os.path.exists(init):
-        raise ValueError(
+        raise InvalidPackage(
                 "Missing __init__.py in package %s (in directory %s)"
                 % (pkg_name, basedir))
+    return basedir
+
+def find_package(pkg_name, basedir=''):
+    """Given a python package name, find all its modules relatively to basedir.
+
+    If basedir is not given, look relatively to the current directory."""
+    basedir = validate_package(pkg_name, basedir)
     return [os.path.join(basedir, f)
                 for f in
-                    os.listdir(os.path.dirname(init)) if f.endswith('.py')]
+                    os.listdir(basedir) if f.endswith('.py')]
