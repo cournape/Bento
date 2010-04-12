@@ -124,6 +124,7 @@ except ImportError, e:
 setuptools_numpy_code = """\
 import sys
 try:
+    import setuptools
     import numpy.distutils.core
     from numpy.distutils.core import setup as _setup
 
