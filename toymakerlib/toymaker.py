@@ -71,6 +71,12 @@ def register_commands():
     register_command("parse", ParseCommand, public=False)
     register_command("detect_type", DetectTypeCommand, public=False)
  
+def dummy_startup():
+    pass
+
+def dummy_shutdown():
+    pass
+
 def set_main():
     import imp
 
@@ -88,10 +94,23 @@ def set_main():
         sys.path.pop(0)
 
     module.root_path = main_file
+    if not hasattr(module, "startup"):
+        module.startup = dummy_startup
+    if not hasattr(module, "shutdown"):
+        module.shutdown = dummy_shutdown
 
     return module
 
 def main(argv=None):
+    mod = set_main()
+    mod.startup()
+
+    try:
+        return _main(argv)
+    finally:
+        mod.shutdown()
+
+def _main(argv=None):
     register_commands()
 
     if argv is None:
@@ -103,7 +122,6 @@ def main(argv=None):
     cmd_name = None
     cmd_opts = None
 
-    mod = set_main()
     try:
         opts, pargs = getopt.getopt(argv, "hv", ["help", "version", "full-version"])
         for opt, arg in opts:
