@@ -13,7 +13,7 @@ from toydist.commands.configure import \
 from toydist.commands.script_utils import \
         create_posix_script, create_win32_script
 
-USE_NUMPY_DISTUTILS = False
+__USE_NUMPY_DISTUTILS = False
 
 def toyext_to_distext(e):
     """Convert a toydist Extension instance to a distutils
@@ -25,10 +25,10 @@ def toyext_to_distext(e):
 
     return DistExtension(e.name, sources=[s for s in e.sources])
 
-def build_extensions(extensions):
+def build_extensions(extensions, use_numpy_distutils):
     # FIXME: import done here to avoid clashing with monkey-patch as done by
     # the convert subcommand.
-    if USE_NUMPY_DISTUTILS:
+    if use_numpy_distutils:
         from numpy.distutils.numpy_distribution \
             import \
                 NumpyDistribution as Distribution
@@ -55,7 +55,7 @@ def build_extensions(extensions):
     log.set_verbosity(1)
 
     dist = Distribution()
-    if USE_NUMPY_DISTUTILS:
+    if use_numpy_distutils:
         dist.cmdclass['build_src'] = build_src
         dist.cmdclass['scons'] = scons
         distutils.core._setup_distribution = dist
@@ -89,6 +89,8 @@ Usage:   toymaker build [OPTIONS]."""
     short_descr = "build the project."
 
     def run(self, opts):
+        global __USE_NUMPY_DISTUTILS
+
         self.set_option_parser()
         o, a = self.parser.parse_args(opts)
         if o.help:
@@ -104,9 +106,9 @@ Usage:   toymaker build [OPTIONS]."""
         # anyway
         try:
             import numpy
-            USE_NUMPY_DISTUTILS = True
+            __USE_NUMPY_DISTUTILS = True
         except ImportError:
-            USE_NUMPY_DISTUTILS = False
+            __USE_NUMPY_DISTUTILS = False
 
         s = ConfigureState.from_dump('.config.bin')
 
@@ -135,7 +137,7 @@ Usage:   toymaker build [OPTIONS]."""
 
         # handle extensions
         if pkg.extensions:
-            extensions = build_extensions(pkg.extensions)
+            extensions = build_extensions(pkg.extensions, __USE_NUMPY_DISTUTILS)
             sections["extension"] = extensions
 
         sections["executable"] = {}
