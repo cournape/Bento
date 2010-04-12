@@ -287,17 +287,31 @@ def p_install_requires_stmt(p):
     p[0] = Node("install_requires", value=p[3].value)
 
 def p_extension_stmt_content(p):
-    """extension_stmt : extension_decl INDENT extension_fields DEDENT"""
+    """extension_stmt : extension_decl INDENT extension_field_stmts DEDENT"""
     p[0] = Node("extension", children=[p[1]])
     p[0].children.append(p[3])
+
+def p_extension_field_stmts(p):
+    """extension_field_stmts : extension_field_stmts extension_field_stmt"""
+    children = p[1].children
+    children.append(p[2])
+    p[0] = Node("extension_field_stmts", children=children)
+
+def p_extension_field_stmts_term(p):
+    """extension_field_stmts : extension_field_stmt"""
+    p[0] = Node("extension_field_stmts", children=[p[1]])
 
 def p_extension_decl(p):
     """extension_decl : EXTENSION_ID COLON anyword"""
     p[0] = Node("extension_declaration", value=p[3].value)
 
-def p_extension_fields(p):
-    """extension_fields : SOURCES_ID COLON comma_list"""
+def p_extension_sources(p):
+    """extension_field_stmt : SOURCES_ID COLON comma_list"""
     p[0] = Node("sources", value=p[3].value)
+
+def p_extension_include_dirs(p):
+    """extension_field_stmt : INCLUDE_DIRS_ID COLON comma_list"""
+    p[0] = Node("include_dirs", value=p[3].value)
 
 #---------------------
 # Conditional handling
