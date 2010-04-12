@@ -75,7 +75,8 @@ def set_main():
     import imp
 
     main_file = "toysetup.py"
-    assert os.path.exists(main_file)
+    if not os.path.exists(main_file):
+        return None
 
     module = imp.new_module("toysetup_module")
     code = open(main_file).read()
