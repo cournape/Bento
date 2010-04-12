@@ -105,9 +105,14 @@ class Extension(object):
     def from_parse_dict(cls, d):
         return cls(**d)
 
-    def __init__(self, name, sources):
+    def __init__(self, name, sources, include_dirs):
         self.name = name
         self.sources = sources
+        if include_dirs is None:
+            self.include_dirs = []
+        else:
+            self.include_dirs = include_dirs
 
     def __repr__(self):
-        return "Extension(%s, sources=%s)" % (self.name, self.sources)
+        return "Extension(%s, sources=%s, include_dirs=%r)" % \
+                    (self.name, self.sources, self.include_dirs)

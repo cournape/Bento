@@ -22,8 +22,8 @@ def toyext_to_distext(e):
     # on distutils to build extensions anymore. That's why this is not
     # a method of the toydist Extension class.
     from distutils.extension import Extension as DistExtension
-
-    return DistExtension(e.name, sources=[s for s in e.sources])
+    return DistExtension(e.name, sources=[s for s in e.sources],
+                         include_dirs=[inc for inc in e.include_dirs])
 
 def build_extensions(extensions, use_numpy_distutils):
     # FIXME: import done here to avoid clashing with monkey-patch as done by
