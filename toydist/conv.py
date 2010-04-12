@@ -73,16 +73,14 @@ def distutils_to_package_description(dist):
     data['extensions'] = dist.ext_modules
     data['classifiers'] = dist.get_classifiers()
 
-    entry_points = entry_points_from_dist(dist)
-
     data["executables"] = {}
-    try:
-        console_scripts = entry_points["console_scripts"]
-    except KeyError:
-        console_scripts = []
-    for entry in console_scripts:
-        exe = Executable.from_representation(entry)
-        data["executables"][exe.name] = exe
+
+    entry_points = entry_points_from_dist(dist)
+    if entry_points:
+        console_scripts = entry_points.get("console_scripts", [])
+        for entry in console_scripts:
+            exe = Executable.from_representation(entry)
+            data["executables"][exe.name] = exe
 
     return PackageDescription(**data)
 
