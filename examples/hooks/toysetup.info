@@ -1,0 +1,7 @@
+Name: HookExample
+Version: 0.0.1
+Summary: An example for toydist hooks
+Url: http://github.com/cournape/toydist
+Author: David Cournapeau
+AuthorEmail: cournape@gmail.com
+License: BSD
