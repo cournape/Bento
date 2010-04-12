@@ -55,6 +55,7 @@ class Dispatcher(object):
             # Extension
             "extension": self.extension,
             "extension_declaration": self.extension_declaration,
+            "extension_field_stmts": self.extension_field_stmts,
             # Conditional
             "conditional": self.conditional,
             "osvar": self.osvar,
@@ -182,14 +183,22 @@ class Dispatcher(object):
 
     def extension(self, node):
         ret = {"sources": []}
-        for c in node.children:
-            if c.type == "name":
+        def update(extension_dict, c):
+            if type(c) == list:
+                for i in c:
+                    update(extension_dict, i)
+            elif c.type == "name":
                 ret["name"] = c.value
             elif c.type == "sources":
                 ret["sources"].extend(c.value)
             else:
                 raise ValueError("Gne ?")
+        for c in [node.children[0]] + node.children[1]:
+            update(ret, c)
         return Node("extension", value=ret)
+
+    def extension_field_stmts(self, node):
+        return node.children
 
     def extension_declaration(self, node):
         return Node("name", value=node.value)
