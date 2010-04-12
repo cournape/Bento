@@ -89,8 +89,14 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
 
         # We need to obtain the package description ASAP, as we need to parse
         # it to get the options (i.e. we cannot use the option handling mechanism).
-        if os.path.exists('toysetup.info'):
-            filename = 'toysetup.info'
+        candidate = "toysetup.info"
+        if len(opts) < 1 or opts[-1].startswith('-'):
+            pass
+        else:
+            candidate = opts[-1]
+
+        if os.path.exists(candidate):
+            filename = candidate
         else:
             filename = ensure_info_exists(opts)
 
