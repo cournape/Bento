@@ -182,7 +182,7 @@ class Dispatcher(object):
         return node.children
 
     def extension(self, node):
-        ret = {"sources": []}
+        ret = {"sources": [], "include_dirs": []}
         def update(extension_dict, c):
             if type(c) == list:
                 for i in c:
@@ -191,6 +191,8 @@ class Dispatcher(object):
                 ret["name"] = c.value
             elif c.type == "sources":
                 ret["sources"].extend(c.value)
+            elif c.type == "include_dirs":
+                ret["include_dirs"].extend(c.value)
             else:
                 raise ValueError("Gne ?")
         for c in [node.children[0]] + node.children[1]:

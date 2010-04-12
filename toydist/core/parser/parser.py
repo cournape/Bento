@@ -309,6 +309,10 @@ def p_extension_sources(p):
     """extension_field_stmt : SOURCES_ID COLON comma_list"""
     p[0] = Node("sources", value=p[3].value)
 
+def p_extension_include_dirs(p):
+    """extension_field_stmt : INCLUDE_DIRS_ID COLON comma_list"""
+    p[0] = Node("include_dirs", value=p[3].value)
+
 #---------------------
 # Conditional handling
 #---------------------
