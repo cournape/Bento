@@ -639,8 +639,13 @@ def p_version(p):
     p[0] = Node("version", value=p[1])
 
 def p_error(p):
+    # FIXME: this logic is buggy, think more about debug vs non-debug modes
     if _DEBUG_YACC:
         raise SyntaxError(error_msg(p, None))
+    else:
+        msg = "yacc: Syntax error at line %d, Token(%s, %r)" % \
+                (p.lineno, p.type, p.value)
+        raise SyntaxError(msg)
 
 def error_msg(p, error_msg):
     if p is not None:
