@@ -38,6 +38,7 @@ DataFiles: ply_data
 ExtraSourceFiles:
     setup.py,
     bootstrap.py,
+    toysetup.py,
     tests/parsing/functionals/*.py,
     tests/parsing/functionals/*.info,
     tests/parsing/*.py,
