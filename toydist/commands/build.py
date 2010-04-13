@@ -9,7 +9,7 @@ from toydist.installed_package_description import \
 from toydist.commands.core import \
         Command, SCRIPT_NAME, UsageException
 from toydist.commands.configure import \
-        ConfigureState
+        ConfigureState, get_configured_state
 from toydist.commands.script_utils import \
         create_posix_script, create_win32_script
 
@@ -97,10 +97,6 @@ Usage:   toymaker build [OPTIONS]."""
             self.parser.print_help()
             return
 
-        if not os.path.exists('.config.bin'):
-            raise UsageException(
-                   "You need to run %s configure before building" % SCRIPT_NAME)
-
         # XXX: import here because numpy import time slows down everything
         # otherwise. This is ugly, but using numpy.distutils is temporary
         # anyway
@@ -110,7 +106,7 @@ Usage:   toymaker build [OPTIONS]."""
         except ImportError:
             __USE_NUMPY_DISTUTILS = False
 
-        s = ConfigureState.from_dump('.config.bin')
+        s = get_configured_state()
 
         pkg = s.pkg
         scheme = dict([(k, s.paths[k]) for k in s.paths])

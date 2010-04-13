@@ -17,3 +17,5 @@ _DEBUG_YACC = 0
 
 # Windows binaries
 _CLI = os.path.join(ARCH_DATA, "commands", "cli.exe")
+
+CONFIGURED_STATE_DUMP = ".config.bin"
