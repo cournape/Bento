@@ -103,12 +103,14 @@ def set_main():
 
 def main(argv=None):
     mod = set_main()
-    mod.startup()
+    if mod:
+        mod.startup()
 
     try:
         return _main(argv)
     finally:
-        mod.shutdown()
+        if mod:
+            mod.shutdown()
 
 def _main(argv=None):
     register_commands()
