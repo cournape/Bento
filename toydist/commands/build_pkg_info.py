@@ -3,8 +3,11 @@ from toydist.core.package import \
 from toydist.conv import \
         write_pkg_info
 
+from toydist.commands.errors \
+    import \
+        UsageException
 from toydist.commands.core import \
-        Command, SCRIPT_NAME, UsageException
+        Command, SCRIPT_NAME
 
 class BuildPkgInfoCommand(Command):
     long_descr = """\

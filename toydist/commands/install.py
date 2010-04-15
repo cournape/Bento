@@ -5,8 +5,11 @@ import subprocess
 from toydist.installed_package_description import \
     InstalledPkgDescription, iter_files
 
+from toydist.commands.errors \
+    import \
+        UsageException
 from toydist.commands.core import \
-    Command, UsageException
+    Command
 from toydist.core.utils import \
     pprint
 

@@ -3,8 +3,11 @@ import os
 from pprint import \
         pprint
 
+from toydist.commands.errors \
+    import \
+        UsageException
 from toydist.commands.core import \
-        Command, SCRIPT_NAME, UsageException
+        Command, SCRIPT_NAME
 from toydist.core.parser.api \
     import \
         parse_to_dict, ParseError

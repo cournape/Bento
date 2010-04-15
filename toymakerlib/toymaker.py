@@ -37,9 +37,11 @@ from toydist.commands.build_egg import \
 from toydist.commands.build_wininst import \
         BuildWininstCommand
 from toydist.commands.core import \
-        register_command, UsageException, \
+        register_command, \
         MyOptionParser, get_command_names, get_command, \
-        get_public_command_names, ConvertionError
+        get_public_command_names
+from toydist.commands.errors import \
+        ConvertionError, UsageException
 
 if os.environ.get("TOYMAKER_DEBUG", None) is not None:
     TOYMAKER_DEBUG = True

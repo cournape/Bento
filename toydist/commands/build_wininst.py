@@ -20,8 +20,11 @@ from toydist.conv import \
 from toydist.installed_package_description import \
         InstalledPkgDescription, iter_files
 
+from toydist.commands.errors \
+    import \
+        UsageException
 from toydist.commands.core import \
-        Command, SCRIPT_NAME, UsageException
+        Command, SCRIPT_NAME
 from toydist.commands.egg_utils import \
         EggInfo, egg_info_dirname
 from toydist.commands.wininst_utils import \

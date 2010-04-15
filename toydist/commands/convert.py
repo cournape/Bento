@@ -17,7 +17,9 @@ from toydist.core.pkg_objects import \
         PathOption
 
 from toydist.commands.core import \
-        Command, UsageException, ConvertionError
+        Command
+from toydist.commands.errors import \
+        UsageException, ConvertionError
 
 class SetupCannotRun(Exception):
     pass

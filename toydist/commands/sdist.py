@@ -4,8 +4,11 @@ import tarfile
 from toydist.core.package import \
         PackageDescription, file_list
 
+from toydist.commands.errors \
+    import \
+        UsageException
 from toydist.commands.core import \
-    Command, UsageException
+    Command
 
 def tarball_basename(dist_name, version=None):
     if version:

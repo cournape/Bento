@@ -12,7 +12,10 @@ from toydist._config \
         CONFIGURED_STATE_DUMP
 
 from toydist.commands.core import \
-        Command, UsageException, SCRIPT_NAME
+        Command, SCRIPT_NAME
+from toydist.commands.errors \
+    import \
+        UsageException
 
 class ConfigureState(object):
     def __init__(self):
