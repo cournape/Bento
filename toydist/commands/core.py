@@ -2,8 +2,9 @@ import getopt
 import optparse
 import copy
 
-# FIXME: how to handle script name in one location
-SCRIPT_NAME = 'toymaker'
+from toydist.commands._config \
+    import \
+        SCRIPT_NAME
 
 USAGE = """\
 %(name)s [command] [options]
