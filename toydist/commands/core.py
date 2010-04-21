@@ -57,13 +57,20 @@ class Command(object):
     def __init__(self):
         self.parser = None
 
+    def _create_parser(self):
+        if self.parser is None:
+            self.parser = OptionParser(self.long_descr.splitlines()[1])
+
+    def reset_parser(self):
+        self.parser = None
+        self._create_parser()
+
     def set_option_parser(self):
+        self._create_parser()
         try:
-            parser = OptionParser(self.long_descr.splitlines()[1])
             oo = copy.deepcopy(self.opts)
             for o in oo:
-                parser.add_option(o)
-            self.parser = parser
+                self.parser.add_option(o)
         except getopt.GetoptError, e:
             raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
 

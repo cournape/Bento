@@ -106,13 +106,16 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
         else:
             filename = ensure_info_exists(opts)
 
+        pkg_opts = PackageOptions.from_file(filename)
+
         # As the configure command line handling is customized from
         # the toysetup.info (flags, paths variables), we cannot just
-        # call set_options_parser.
-        pkg_opts = PackageOptions.from_file(filename)
+        # call set_options_parser, and we set it up manually instead
+        self.reset_parser()
+        for opt in self.opts:
+            self.parser.add_option(opt)
         scheme, flag_opts = self.add_configuration_options(pkg_opts)
 
-        self.set_option_parser()
         o, a = self.parser.parse_args(opts)
         if o.help:
             self.parser.print_help()
@@ -156,16 +159,23 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
                        help='%s [%s]' % (f.description,
                                          f.default_value))
 
+        install_group = self.parser.add_option_group(
+                "Installation fine tuning")
         for opt in scheme_opts.values():
             self.opts.append(opt)
+            install_group.add_option(opt)
 
         flag_opts = {}
+        if pkg_opts.flag_options:
+            flags_group = self.parser.add_option_group(
+                    "Optional features")
         for name, v in pkg_opts.flag_options.items():
             flag_opts[name] = Option(
                     "--with-%s" % v.name,
                     help="%s [default=%s]" % (
                         v.description, v.default_value))
             self.opts.append(flag_opts[name])
+            flags_group.add_option(flag_opts[name])
 
         return scheme, flag_opts
 
