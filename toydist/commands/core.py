@@ -46,15 +46,6 @@ def register_command(name, klass, public=True):
     _CMDS_TO_CLASS = dict([(k, v) for k, v in _PCMDS_TO_CLASS.items()])
     _CMDS_TO_CLASS.update(_UCMDS_TO_CLASS)
 
-class MyOptionParser(OptionParser):
-    def __init__(self, *a, **kw):
-        if not kw.has_key('add_help_option'):
-            kw['add_help_option'] = False
-        OptionParser.__init__(self, *a, **kw)
-
-    def error(self, msg):
-        raise UsageException("%s: ERROR: %s" % (SCRIPT_NAME, msg))
-
 class Command(object):
     long_descr = None
     short_descr = None
@@ -68,7 +59,7 @@ class Command(object):
 
     def set_option_parser(self):
         try:
-            parser = MyOptionParser(self.long_descr.splitlines()[1])
+            parser = OptionParser(self.long_descr.splitlines()[1])
             oo = copy.deepcopy(self.opts)
             for o in oo:
                 parser.add_option(o)
