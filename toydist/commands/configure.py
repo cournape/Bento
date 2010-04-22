@@ -91,6 +91,9 @@ class ConfigureCommand(Command):
 Purpose: configure the project
 Usage: toymaker configure [OPTIONS] [package description file]."""
     short_descr = "configure the project."
+    opts = [Option('-h', '--help',
+                   help="Show package-specific configuration options",
+                   action="store_true")]
     def run(self, opts):
 
         # We need to obtain the package description ASAP, as we need to parse
