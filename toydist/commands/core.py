@@ -5,6 +5,8 @@ from optparse \
     import \
         Option
 
+import toydist
+
 from toydist.commands.options \
     import \
         OptionParser
@@ -17,10 +19,8 @@ from toydist.commands.errors \
         UsageException, OptionError
 
 USAGE = """\
-%(name)s [command] [options]
-
-Main commands:
-%(cmds)s\
+Toymaker %(version)s -- an alternative to distutils-based systems
+Usage: %(name)s [command [options]]
 """
 
 # FIXME: better way to register commands
@@ -88,7 +88,7 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
     short_descr = "gives help on a given topic or command."
     def run(self, cmd_args):
         if len(cmd_args) < 1:
-            print get_usage()
+            print get_simple_usage()
             return
 
         # Parse the options for help command itself
@@ -114,7 +114,10 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
         except OptionError, e:
             raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
 
-        # 
+        if cmd_name == "commands":
+            print get_usage()
+            return
+
         if not cmd_name in get_command_names():
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
         cmd_class = get_command(cmd_name)
@@ -126,19 +129,59 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
         print ""
         parser.print_help()
 
-def get_usage():
-    cmd_help = []
-    cmd_doc = {}
-    cmd_names = sorted(get_public_command_names())
+def fill_string(s, minlen):
+    if len(s) < minlen:
+        s += " " * (minlen - len(s))
+    return s
 
+def get_simple_usage():
+    ret = [USAGE % {"name": SCRIPT_NAME,
+                    "version": toydist.__version__}]
+    ret.append("Basic Commands:")
+
+    commands = []
+
+    def add_group(cmd_names):
+        for name in cmd_names:
+            v = get_command(name)
+            doc = v.short_descr
+            if doc is None:
+                doc = "undocumented"
+            header = "  %(script)s %(cmd_name)s" % \
+                        {"script": SCRIPT_NAME,
+                         "cmd_name": name}
+            commands.append((header, doc))
+    add_group(["configure", "build", "install"])
+    commands.append(("", ""))
+    add_group(["sdist", "build_wininst", "build_egg"])
+    commands.append(("", ""))
+
+    commands.append(("  %s help configure" % SCRIPT_NAME,
+                     "more help on e.g. configure command"))
+    commands.append(("  %s help commands" % SCRIPT_NAME,
+                     "list all commands"))
+
+    minlen = max([len(header) for header, hlp in commands]) + 2
+    for header, hlp in commands:
+        ret.append(fill_string(header, minlen) + hlp)
+    return "\n".join(ret)
+
+def get_usage():
+    ret = [USAGE % {"name": SCRIPT_NAME,
+                    "version": toydist.__version__}]
+    ret.append("Toydist commands:")
+
+    commands = []
+    cmd_names = sorted(get_public_command_names())
     for name in cmd_names:
         v = get_command(name)
         doc = v.short_descr
         if doc is None:
             doc = "undocumented"
-        cmd_doc[name] = doc
+        header = "  %s" % name
+        commands.append((header, doc))
 
-    just = max([len(name) for name in cmd_names])
-
-    cmd_help = ['  %s: %s' % (name.ljust(just), cmd_doc[name]) for name in cmd_names]
-    return USAGE % {'cmds': "\n".join(cmd_help), 'name': SCRIPT_NAME}
+    minlen = max([len(header) for header, hlp in commands]) + 2
+    for header, hlp in commands:
+        ret.append(fill_string(header, minlen) + hlp)
+    return "\n".join(ret)
