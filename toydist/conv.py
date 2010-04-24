@@ -70,7 +70,10 @@ def distutils_to_package_description(dist):
 
     data['py_modules'] = dist.py_modules
     data['packages'] = validate_packages(dist.packages)
-    data['extensions'] = dict([(e.name, e) for e in dist.ext_modules])
+    if dist.ext_modules:
+        data['extensions'] = dict([(e.name, e) for e in dist.ext_modules])
+    else:
+        data['extensions'] = {}
     data['classifiers'] = dist.get_classifiers()
 
     data["executables"] = {}
