@@ -12,7 +12,7 @@ from toydist._config \
         CONFIGURED_STATE_DUMP
 
 from toydist.commands.core import \
-        Command, SCRIPT_NAME
+        Command, SCRIPT_NAME, Option
 from toydist.commands.errors \
     import \
         UsageException
@@ -135,7 +135,13 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
     def add_configuration_options(self, pkg_opts):
         """Add the path and flags-related options as defined in the
         toysetup.info file to the command."""
-        scheme, scheme_opts = get_scheme(sys.platform)
+        scheme, scheme_opts_d = get_scheme(sys.platform)
+
+        scheme_opts = {}
+        for name, opt_d in scheme_opts_d.items():
+            opt = Option(*opt_d["opts"], help=opt_d["help"])
+            scheme_opts[name] = opt
+
         # XXX: abstract away those, as it is copied from distutils
         py_version = sys.version.split()[0]
         scheme['py_version_short'] = py_version[0:3]
@@ -145,17 +151,20 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
         # Add path options to the path scheme
         for name, f in pkg_opts.path_options.items():
             scheme[name] = f.default_value
-            scheme_opts[name] = {'opts': ['--%s' % f.name],
-                                 'help': '%s [%s]' % (f.description, f.default_value)}
+            scheme_opts[name] = \
+                Option('--%s' % f.name,
+                       help='%s [%s]' % (f.description,
+                                         f.default_value))
 
-        for name, opt in scheme_opts.items():
+        for opt in scheme_opts.values():
             self.opts.append(opt)
 
         flag_opts = {}
         for name, v in pkg_opts.flag_options.items():
-            flag_opts[name] = {
-                    "opts": ["--with-%s" % v.name],
-                    "help": "%s [default=%s]" % (v.description, v.default_value)}
+            flag_opts[name] = Option(
+                    "--with-%s" % v.name,
+                    help="%s [default=%s]" % (
+                        v.description, v.default_value))
             self.opts.append(flag_opts[name])
 
         return scheme, flag_opts
