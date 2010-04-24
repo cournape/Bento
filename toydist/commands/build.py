@@ -28,7 +28,10 @@ def toyext_to_distext(e):
     return DistExtension(e.name, sources=[s for s in e.sources],
                          include_dirs=[inc for inc in e.include_dirs])
 
-def build_extensions(extensions, use_numpy_distutils):
+def build_extensions(pkg, use_numpy_distutils):
+    if not pkg.extensions:
+        return {}
+
     # FIXME: import done here to avoid clashing with monkey-patch as done by
     # the convert subcommand.
     if use_numpy_distutils:
@@ -64,14 +67,14 @@ def build_extensions(extensions, use_numpy_distutils):
         distutils.core._setup_distribution = dist
 
     dist.ext_modules = [toyext_to_distext(e) for e in
-                            extensions.values()]
+                        pkg.extensions.values()]
 
     bld_cmd = build_ext(dist)
     bld_cmd.initialize_options()
     bld_cmd.finalize_options()
     bld_cmd.run()
 
-    outputs = {}
+    ret = {}
     for ext in bld_cmd.extensions:
         # FIXME: do package -> location translation correctly
         pkg_dir = os.path.dirname(ext.name.replace('.', os.path.sep))
@@ -82,8 +85,30 @@ def build_extensions(extensions, use_numpy_distutils):
         srcdir = os.path.dirname(ext_target)
         section = InstalledSection("extensions", fullname, srcdir,
                                     target, [os.path.basename(ext_target)])
-        outputs[fullname] = section
-    return outputs
+        ret[fullname] = section
+    return ret
+
+def build_python_files(pkg):
+    # FIXME: root_src
+    root_src = ""
+    python_files = []
+    for p in pkg.packages:
+        python_files.extend(find_package(p, root_src))
+    for m in pkg.py_modules:
+        python_files.append(os.path.join(root_src, '%s.py' % m))
+    py_section = InstalledSection("pythonfiles", "library",
+            root_src, "$sitedir", python_files)
+
+    return {"library": py_section}
+
+def build_data_files(pkg):
+    ret = {}
+    # Get data files
+    for name, data_section in pkg.data_files.items():
+        data_section.files = data_section.resolve_glob()
+        ret[name] = InstalledSection.from_data_files(name, data_section)
+
+    return ret
 
 class BuildCommand(Command):
     long_descr = """\
@@ -114,39 +139,22 @@ Usage:   toymaker build [OPTIONS]."""
         pkg = s.pkg
         scheme = dict([(k, s.paths[k]) for k in s.paths])
 
+        sections = {
+                "pythonfiles": {},
+                "datafiles": {},
+                "extension": {},
+                "executable": {}
+        }
 
-        # FIXME: root_src
-        root_src = ""
-        python_files = []
-        for p in pkg.packages:
-            python_files.extend(find_package(p, root_src))
-        for m in pkg.py_modules:
-            python_files.append(os.path.join(root_src, '%s.py' % m))
-
-        sections = {"pythonfiles": {"library":
-                    InstalledSection("pythonfiles", "library", root_src,
-                                     "$sitedir", python_files)}}
-
-        # Get data files
-        sections["datafiles"] = {}
-        for name, data_section in pkg.data_files.items():
-            data_section.files = data_section.resolve_glob()
-            sections["datafiles"][name] = \
-                    InstalledSection.from_data_files(name, data_section)
-
-        # handle extensions
-        if pkg.extensions:
-            extensions = build_extensions(pkg.extensions, __USE_NUMPY_DISTUTILS)
-            sections["extension"] = extensions
-
-        sections["executable"] = {}
-        if pkg.executables:
-            executables = build_executables(pkg.executables)
-            for ename, evalue in executables.items():
-                sections["executable"][ename] = evalue
+        sections["pythonfiles"].update(build_python_files(pkg))
+        sections["datafiles"].update(build_data_files(pkg))
+        sections["extension"].update(build_extensions(pkg,
+                __USE_NUMPY_DISTUTILS))
+        sections["executable"].update(build_executables(pkg))
 
         meta = ipkg_meta_from_pkg(pkg)
-        p = InstalledPkgDescription(sections, meta, scheme, pkg.executables)
+        p = InstalledPkgDescription(sections, meta, scheme,
+                                    pkg.executables)
         p.write('installed-pkg-info')
 
 def build_dir():
@@ -161,11 +169,13 @@ def build_dir():
     bld_scripts.finalize_options()
     return bld_scripts.build_dir
 
-def build_executables(executables):
+def build_executables(pkg):
+    if not pkg.executables:
+        return {}
     bdir = build_dir()
     ret = {}
 
-    for name, executable in executables.items():
+    for name, executable in pkg.executables.items():
         if sys.platform == "win32":
             ret[name] = create_win32_script(name, executable, bdir)
         else:
