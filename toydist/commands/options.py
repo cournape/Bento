@@ -79,9 +79,9 @@ class Argument(object):
         return self.tp in ["?", "*"]
 
 class OptionParser(optparse.OptionParser):
-    def __init__(self, description):
+    def __init__(self, description=None, usage=None):
         optparse.OptionParser.__init__(self, description=description,
-                add_help_option=False)
+                add_help_option=False, usage=usage)
         self._opts = []
 
     def add_option(self, opt):

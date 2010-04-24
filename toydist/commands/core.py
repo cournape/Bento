@@ -3,7 +3,11 @@ import copy
 
 from optparse \
     import \
-        OptionParser, Option
+        Option
+
+from toydist.commands.options \
+    import \
+        OptionParser
 
 from toydist.commands._config \
     import \
@@ -103,7 +107,7 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
 
         # XXX: overkill as we don't support any options for now
         try:
-            parser = MyOptionParser()
+            parser = OptionParser()
             for o in self.opts:
                 parser.add_option(o)
             parser.parse_args(help_args)
@@ -115,7 +119,7 @@ Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
         cmd_class = get_command(cmd_name)
 
-        parser = MyOptionParser(usage='')
+        parser = OptionParser(usage='')
         for o in cmd_class.opts:
             parser.add_option(o)
         print cmd_class.long_descr
