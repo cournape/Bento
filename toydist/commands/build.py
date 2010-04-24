@@ -4,7 +4,7 @@ import sys
 from toydist.core.utils import \
         find_package
 from toydist.installed_package_description import \
-        InstalledPkgDescription, InstalledSection
+        InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
 
 from toydist.commands.errors \
     import \
@@ -145,14 +145,7 @@ Usage:   toymaker build [OPTIONS]."""
             for ename, evalue in executables.items():
                 sections["executable"][ename] = evalue
 
-        meta = {}
-        for m in ["name", "version", "summary", "url", "author",
-                  "author_email", "license", "download_url", "description",
-                  "platforms", "classifiers", "install_requires"]:
-            meta[m] = getattr(pkg, m)
-
-        meta["top_levels"] = pkg.top_levels
-
+        meta = ipkg_meta_from_pkg(pkg)
         p = InstalledPkgDescription(sections, meta, scheme, pkg.executables)
         p.write('installed-pkg-info')
 

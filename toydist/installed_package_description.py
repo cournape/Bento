@@ -10,6 +10,17 @@ from toydist.core.pkg_objects import \
 META_DELIM = "!- FILELIST"
 FIELD_DELIM = ("\t", " ")
 
+def ipkg_meta_from_pkg(pkg):
+    """Return meta dict for Installed pkg from a PackageDescription
+    instance."""
+    meta = {}
+    for m in ["name", "version", "summary", "url", "author",
+              "author_email", "license", "download_url", "description",
+              "platforms", "classifiers", "install_requires", 
+              "top_levels"]:
+        meta[m] = getattr(pkg, m)
+    return meta
+
 class InstalledSection(object):
     @classmethod
     def from_data_files(cls, name, data_files):
