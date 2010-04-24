@@ -80,3 +80,59 @@ def build(opts):
     for ext in pkg.extensions.values():
         bld(features='cc cshlib pyext', source=ext.sources, target=ext.name)
     bld.compile()
+
+    from toydist.commands.build \
+        import build_python_files, \
+            build_data_files, build_executables
+    from toydist.installed_package_description \
+        import \
+            InstalledPkgDescription, InstalledSection, \
+            ipkg_meta_from_pkg
+    outputs = get_build_products(bld)
+
+    s = get_configured_state()
+    scheme = dict([(k, s.paths[k]) for k in s.paths])
+    pkg = s.pkg
+
+    sections = {
+            "pythonfiles": {},
+            "datafiles": {},
+            "extension": {},
+            "executable": {}
+    }
+
+    def build_extensions(pkg):
+        ret = {}
+        for e in pkg.extensions.values():
+            targets = outputs[e.name]
+            source_dir = os.path.dirname(targets[0])
+            fullname = os.path.basename(targets[0])
+            # FIXME: do package -> location translation correctly
+            pkg_dir = os.path.dirname(ext.name.replace('.', os.path.sep))
+            install_dir = os.path.join('$sitedir', pkg_dir)
+            section = InstalledSection("extensions", 
+                    fullname, source_dir, install_dir,
+                    [os.path.basename(t) for t in targets])
+            ret[fullname] = section
+        return ret
+
+    sections["pythonfiles"].update(build_python_files(pkg))
+    sections["datafiles"].update(build_data_files(pkg))
+    sections["extension"].update(build_extensions(pkg))
+    sections["executable"].update(build_executables(pkg))
+
+    meta = ipkg_meta_from_pkg(pkg)
+    p = InstalledPkgDescription(sections, meta, scheme,
+                                pkg.executables)
+    p.write('installed-pkg-info')
+
+def get_build_products(bld):
+    outputs = {}
+    for target in bld.all_task_gen:
+        try:
+            link_task = target.link_task
+            outputs[target.name] = [o.abspath(target.env) for o in link_task.outputs]
+        except AttributeError:
+            pass
+
+    return outputs
