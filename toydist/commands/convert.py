@@ -2,8 +2,9 @@ import os
 import sys
 import traceback
 
-from cStringIO import \
-        StringIO
+from optparse \
+    import \
+        Option
 
 from toydist.core.utils import \
         pprint, find_package
@@ -138,15 +139,18 @@ Purpose: convert a setup.py to an .info file
 Usage:   toymaker convert [OPTIONS] setup.py"""
     short_descr = "convert the project to toydist."
     opts = Command.opts + [
-        {"opts": ["-t"], "help": "TODO", "default": "automatic", "dest": "type"},
-        {"opts": ["-o", "--output"], "help": "output file", "default": "toysetup.info",
-                  "dest": "output_filename"},
-        {"opts": ["-v", "--verbose"], "help": "verbose run", "action" : "store_true"},
-        {"opts": ["--setup-arguments"], "help": "arguments to give to setup. " \
-                  "For example, --setup-arguments=-q,-n,--with-speedup will " \
-                  "call python setup.py -q -n --with-speedup",
-                  "dest" : "setup_args"},
-    ]
+        Option("-t", help="TODO", default="automatic",
+               dest="type"),
+        Option("-o", "--output", help="output file",
+               default="toysetup.info",
+               dest="output_filename"),
+        Option("-v", "--verbose", help="verbose run",
+               action="store_true"),
+        Option("--setup-arguments",
+               help="arguments to give to setup" \
+                    "For example, --setup-arguments=-q,-n,--with-speedup will " \
+                    "call python setup.py -q -n --with-speedup",
+               dest="setup_args")]
 
     def run(self, opts):
         self.set_option_parser()
