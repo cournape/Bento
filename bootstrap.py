@@ -25,6 +25,9 @@ def install_inplace(pkg):
         pprint("GREEN", "installing %s in current directory" % installed)
 
 if __name__ == "__main__":
+    from setup_common import generate_version_py
+    generate_version_py("toydist/__dev_version.py")
+
     pkg = PackageDescription.from_file("toysetup.info")
     if pkg.executables:
         install_inplace(pkg)
