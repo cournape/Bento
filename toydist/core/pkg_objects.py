@@ -105,7 +105,7 @@ class Extension(object):
     def from_parse_dict(cls, d):
         return cls(**d)
 
-    def __init__(self, name, sources, include_dirs):
+    def __init__(self, name, sources, include_dirs=None):
         self.name = name
         self.sources = sources
         if include_dirs is None:

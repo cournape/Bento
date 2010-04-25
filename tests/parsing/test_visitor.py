@@ -137,7 +137,8 @@ Library:
 """
         descr = _empty_description()
         library = _empty_library()
-        library["extensions"]["_foo"] = {"name": "_foo", "sources": ["foo.c"]}
+        library["extensions"]["_foo"] = {"name": "_foo", "sources": ["foo.c"],
+                                         "include_dirs": []}
         descr["libraries"]["default"] = library
 
         assert_equal(parse_and_analyse(data), descr)
