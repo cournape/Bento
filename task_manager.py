@@ -5,19 +5,16 @@ from cPickle \
         load, dump, dumps
 
 from task import Task
-from ctasks \
-    import \
-        ccompile_task
-from tpl_tasks \
-    import \
-        template_task
 
-RULES_REGISTRY = {
-        ".c": ccompile_task,
-        ".in": template_task,
-}
+RULES_REGISTRY = {}
 
 CACHE_FILE = ".cache.lock"
+
+def extension(ext):
+    def _f(f):
+        RULES_REGISTRY[ext] = f
+        return f
+    return _f
 
 class BuildContext(object):
     def __init__(self):
@@ -34,7 +31,7 @@ def create_tasks(ctx, sources):
             task_gen = RULES_REGISTRY[ext]
             tasks.append(task_gen(ctx, s))
         except KeyError:
-            pass
+            print "Don't know how to handle %s" % ext
     return tasks
 
 def run_tasks(ctx, tasks):

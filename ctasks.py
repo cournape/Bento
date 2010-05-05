@@ -9,6 +9,9 @@ from toydist.core.utils \
 from task \
     import \
         Task
+from task_manager \
+    import \
+        extension
 from utils \
     import \
         find_deps
@@ -16,6 +19,7 @@ from utils \
 VARS = {"cc": ["CC", "CFLAGS"],
         "cc_link": ["SHLINK", "SHLINKFLAGS"]}
 
+@extension('.c')
 def ccompile_task(self, node):
     base = os.path.splitext(node)[0]
     target = base + ".o"

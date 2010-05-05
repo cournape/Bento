@@ -8,6 +8,9 @@ from toydist.core.utils \
 from task \
     import \
         Task
+from task_manager \
+    import \
+        extension
 
 VARS = {"template": ["SUBST_DICT"]}
 
@@ -26,6 +29,7 @@ def template(self):
     with open(self.outputs[0], "w") as fid:
         fid.write(cnt)
 
+@extension(".in")
 def template_task(self, node):
     base = os.path.splitext(node)[0]
     target = base

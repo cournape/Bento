@@ -9,6 +9,9 @@ from task_manager \
     import \
         get_bld, create_tasks, topo_sort, build_dag, run_tasks, CACHE_FILE
 
+# import necessary to register ".in" hook
+import tpl_tasks
+
 def create_pyext(name, sources):
     base = name.split(".")[-1]
 
