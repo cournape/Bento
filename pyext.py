@@ -52,7 +52,7 @@ if __name__ == "__main__":
     bld.env = {"CC": ["gcc"],
             "CFLAGS": ["-W"],
             "CPPPATH": [],
-            "SHLINK": ["gcc", "-O1"], 
+            "SHLINK": ["gcc", "-O1"],
             "SHLINKFLAGS": ["-shared", "-g"],
             "SUBST_DICT": {"VERSION": "0.0.2"},
     }
