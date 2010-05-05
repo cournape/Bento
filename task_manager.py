@@ -13,7 +13,7 @@ RULES_REGISTRY = {
 
 CACHE_FILE = ".cache.lock"
 
-class Foo(object):
+class BuildContext(object):
     def __init__(self):
         self.object_tasks = []
         self.cache = {}
@@ -95,10 +95,10 @@ def create_pyext(name, sources):
 
     tasks = []
 
-    foo = get_foo()
+    bld = get_bld()
 
-    tasks = create_tasks(foo, sources)
-    tasks.append(link_task(foo, name.split(".")[-1]))
+    tasks = create_tasks(bld, sources)
+    tasks.append(link_task(bld, name.split(".")[-1]))
 
     tuid_to_task = dict([(t.get_uid(), t) for t in tasks])
 
@@ -111,38 +111,38 @@ def create_pyext(name, sources):
             ordered_tasks.append(tuid_to_task[output_to_tuid[output]])
 
     for t in tasks:
-        t.env = foo.env
+        t.env = bld.env
 
-    run_tasks(foo, ordered_tasks)
+    run_tasks(bld, ordered_tasks)
 
     with open(CACHE_FILE, "w") as fid:
-        dump(foo.cache, fid)
+        dump(bld.cache, fid)
 
-def get_foo():
-    foo = Foo()
-    foo.env = {"CC": ["gcc"],
+def get_bld():
+    bld = BuildContext()
+    bld.env = {"CC": ["gcc"],
             "CFLAGS": ["-W"],
             "SHLINK": ["gcc", "-O1"], 
             "SHLINKFLAGS": ["-shared", "-g"],
-            "SUBST_DICT": {"VERSION": "0.0.1"},
+            "SUBST_DICT": {"VERSION": "0.0.2"},
     }
 
     if os.path.exists(CACHE_FILE):
         with open(CACHE_FILE) as fid:
-            foo.cache = load(fid)
+            bld.cache = load(fid)
     else:
-        foo.cache = {}
+        bld.cache = {}
 
-    return foo
+    return bld
 
 def create_sources(sources):
-    foo = get_foo()
+    bld = get_bld()
 
-    tasks = create_tasks(foo, sources)
-    run_tasks(foo, tasks)
+    tasks = create_tasks(bld, sources)
+    run_tasks(bld, tasks)
 
     with open(CACHE_FILE, "w") as fid:
-        dump(foo.cache, fid)
+        dump(bld.cache, fid)
 
 if __name__ == "__main__":
     create_sources(sources=["foo.h.in"])
