@@ -1,3 +1,5 @@
+import distutils.sysconfig
+
 from cPickle \
     import \
         load, dump, dumps
@@ -18,6 +20,12 @@ def create_pyext(name, sources):
     tasks = []
 
     bld = get_bld()
+
+    cpppaths = bld.env["CPPPATH"]
+    pyinc = distutils.sysconfig.get_python_inc()
+    cpppaths.append(pyinc)
+    bld.env["INCPATH"] = " ".join(["-I%s" % p
+                                    for p in cpppaths])
 
     tasks = create_tasks(bld, sources)
     tasks.append(link_task(bld, name.split(".")[-1]))

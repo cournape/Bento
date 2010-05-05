@@ -17,7 +17,6 @@ VARS = {"template": ["SUBST_DICT"]}
 def template(self):
     if not len(self.inputs) == 1:
         raise ValueError("template func needs exactly one input")
-    pprint('GREEN', "TEMPLATE   %s" % self.inputs[0])
 
     subs_re = dict([(k, re.compile("@" + k + "@")) 
                      for k in self.env["SUBST_DICT"]])
