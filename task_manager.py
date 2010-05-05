@@ -95,13 +95,6 @@ def topo_sort(task_deps):
 
 def get_bld():
     bld = BuildContext()
-    bld.env = {"CC": ["gcc"],
-            "CFLAGS": ["-W"],
-            "CPPPATH": [],
-            "SHLINK": ["gcc", "-O1"], 
-            "SHLINKFLAGS": ["-shared", "-g"],
-            "SUBST_DICT": {"VERSION": "0.0.2"},
-    }
 
     if os.path.exists(CACHE_FILE):
         with open(CACHE_FILE) as fid:

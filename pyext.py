@@ -14,12 +14,10 @@ from task_manager \
 # import necessary to register ".in" hook
 import tpl_tasks
 
-def create_pyext(name, sources):
+def create_pyext(bld, name, sources):
     base = name.split(".")[-1]
 
     tasks = []
-
-    bld = get_bld()
 
     cpppaths = bld.env["CPPPATH"]
     pyinc = distutils.sysconfig.get_python_inc()
@@ -45,17 +43,22 @@ def create_pyext(name, sources):
 
     run_tasks(bld, ordered_tasks)
 
-    with open(CACHE_FILE, "w") as fid:
-        dump(bld.cache, fid)
-
-def create_sources(sources):
-    bld = get_bld()
-
+def create_sources(bld, name, sources):
     tasks = create_tasks(bld, sources)
     run_tasks(bld, tasks)
 
+if __name__ == "__main__":
+    bld = get_bld()
+    bld.env = {"CC": ["gcc"],
+            "CFLAGS": ["-W"],
+            "CPPPATH": [],
+            "SHLINK": ["gcc", "-O1"], 
+            "SHLINKFLAGS": ["-shared", "-g"],
+            "SUBST_DICT": {"VERSION": "0.0.2"},
+    }
+
+    create_sources(bld, "template", sources=["foo.h.in"])
+    create_pyext(bld, "_bar", ["hellomodule.c", "foo.c"])
+
     with open(CACHE_FILE, "w") as fid:
         dump(bld.cache, fid)
-if __name__ == "__main__":
-    create_sources(sources=["foo.h.in"])
-    create_pyext("_bar", ["hellomodule.c", "foo.c"])
