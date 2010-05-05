@@ -4,7 +4,9 @@ from cPickle \
     import \
         load, dump, dumps
 
-from task import Task, ccompile_task, template_task, link_task
+from task import Task, template_task
+from ctasks \
+    import ccompile_task, link_task
 
 RULES_REGISTRY = {
         ".c": ccompile_task,
