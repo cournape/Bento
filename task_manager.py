@@ -103,3 +103,17 @@ def get_bld():
         bld.cache = {}
 
     return bld
+
+class TaskGen(object):
+    def __init__(self, name, sources, target):
+        self.name = name
+        self.sources = sources
+        self.target = target
+
+        self.env = {}
+
+class CompiledTaskGen(TaskGen):
+    def __init__(self, name, sources, target):
+        TaskGen.__init__(self, name, sources, target)
+        self.object_tasks = []
+

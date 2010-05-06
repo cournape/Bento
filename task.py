@@ -71,10 +71,13 @@ class Task(object):
     # execution
     #----------
     def run(self):
-        pprint('GREEN', "%s     %s" % (self.name.upper(), " ".join(self.inputs)))
         self.func(self)
 
     def exec_command(self, cmd, cwd):
+        if self.env["VERBOSE"]:
+            pprint('GREEN', " ".join(cmd))
+        else:
+            pprint('GREEN', "%s     %s" % (self.name.upper(), " ".join(self.inputs)))
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()

@@ -36,4 +36,4 @@ def template_task(self, node):
     task.func = template
     task.env_vars = VARS["template"]
     task.env = self.env
-    return task
+    return [task]

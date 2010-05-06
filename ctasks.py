@@ -27,8 +27,9 @@ cshlink = compile_fun("cshlib", "${SHLINK} ${SHLINKFLAGS} -o ${TGT[0]} ${SRC}", 
 
 @extension('.c')
 def c_hook(self, node):
-    task = ccompile_task(self, node)
-    self.object_tasks.extend(task)
+    tasks = ccompile_task(self, node)
+    self.object_tasks.extend(tasks)
+    return tasks
 
 def ccompile_task(self, node):
     base = os.path.splitext(node)[0]
