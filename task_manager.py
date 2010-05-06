@@ -27,11 +27,11 @@ def create_tasks(ctx, sources):
 
     for s in sources:
         base, ext = os.path.splitext(s)
-        try:
+        if not RULES_REGISTRY.has_key(ext):
+            raise RuntimeError("No rule defined for extension %s" % ext)
+        else:
             task_gen = RULES_REGISTRY[ext]
-            tasks.append(task_gen(ctx, s))
-        except KeyError:
-            print "Don't know how to handle %s" % ext
+            tasks.extend(task_gen(ctx, s))
     return tasks
 
 def run_tasks(ctx, tasks):

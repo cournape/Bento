@@ -1,3 +1,5 @@
+import os
+import copy
 import distutils.sysconfig
 
 from cPickle \
@@ -26,7 +28,7 @@ def create_pyext(bld, name, sources):
                                     for p in cpppaths])
 
     tasks = create_tasks(bld, sources)
-    tasks.append(link_task(bld, name.split(".")[-1]))
+    tasks.extend(link_task(bld, name.split(".")[-1]))
 
     tuid_to_task = dict([(t.get_uid(), t) for t in tasks])
 
