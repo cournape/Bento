@@ -12,7 +12,9 @@ Before inclusion in toydist:
 	  env flags)
 
 This means:
+	- Understand waf execution model - in particular how to deal with
+	  signatures for generated nodes (e.g. find dependencies of generated
+	  files)
 	- Finish task basic design
-	- Use compiled functions from string for execution
 	- Add basic task manager
 	- Implement simple sys configuration for linux, mac os x and windows
