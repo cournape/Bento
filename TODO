@@ -1,0 +1,18 @@
+"Killer" features:
+	- simplicity above all
+	- // build
+	- easy customization of build
+	- basic dependency handling
+
+Before inclusion in toydist:
+	- being able to build simple extensions on unix/macosx/windows
+	- basic customization (through env variables)
+	- easy customization for new extension (e.g. .pyx)
+	- basic configuration stage ? (at least to check env sanity + setting
+	  env flags)
+
+This means:
+	- Finish task basic design
+	- Use compiled functions from string for execution
+	- Add basic task manager
+	- Implement simple sys configuration for linux, mac os x and windows
