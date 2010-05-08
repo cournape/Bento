@@ -1,6 +1,11 @@
 import re
 import os
 
+def ensure_dir(path):
+    dirname = os.path.dirname(path)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+
 re_inc = re.compile(\
     '^[ \t]*(#|%:)[ \t]*(include)[ \t]*(.*)\r*$',
     re.IGNORECASE | re.MULTILINE)
