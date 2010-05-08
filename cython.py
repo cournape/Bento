@@ -12,15 +12,20 @@ from task \
 from compiled_fun \
     import \
         compile_fun
+from utils \
+    import \
+        ensure_dir
 
 @extension(".pyx")
 def cython_task(self, node):
     base = os.path.splitext(node)[0]
-    target = base + ".c"
+    target = os.path.join(self.env["BLDDIR"], base + ".c")
+    ensure_dir(target)
     task = Task("cython", inputs=node, outputs=target)
     task.env_vars = []
     task.env = self.env
-    task.func = compile_fun("cython", "cython ${SRC}", False)[0]
+    task.func = compile_fun("cython", "cython ${SRC} -o ${TGT}",
+                            False)[0]
     ctask = ccompile_task(self, target)
     self.object_tasks.extend(ctask)
     return [task] + ctask
