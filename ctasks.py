@@ -33,7 +33,12 @@ def c_hook(self, node):
 
 def ccompile_task(self, node):
     base = os.path.splitext(node)[0]
-    target = os.path.join(self.env["BLDDIR"], base + ".o")
+    # XXX: hack to avoid creating build/build/... when source is
+    # generated. Dealing with this most likely requires a node concept
+    if not os.path.commonprefix([self.env["BLDDIR"], base]):
+        target = os.path.join(self.env["BLDDIR"], base + ".o")
+    else:
+        target = base + ".o"
     ensure_dir(target)
     task = Task("cc", inputs=node, outputs=target)
     task.env_vars = VARS["cc"]
