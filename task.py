@@ -77,7 +77,7 @@ class Task(object):
         if self.env["VERBOSE"]:
             pprint('GREEN', " ".join(cmd))
         else:
-            pprint('GREEN', "%s     %s" % (self.name.upper(), " ".join(self.inputs)))
+            pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join(self.inputs)))
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()

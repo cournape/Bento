@@ -21,7 +21,7 @@ def template(self):
     if not len(self.inputs) == 1:
         raise ValueError("template func needs exactly one input")
 
-    pprint('GREEN', "%s     %s" % (self.name.upper(), " ".join(self.inputs)))
+    pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join(self.inputs)))
     subs_re = dict([(k, re.compile("@" + k + "@")) 
                      for k in self.env["SUBST_DICT"]])
     with open(self.inputs[0]) as fid:

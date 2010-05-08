@@ -86,7 +86,7 @@ if __name__ == "__main__":
             "F77": ["gfortran"],
             "F77FLAGS": ["-W", "-g"],
             "SUBST_DICT": {"VERSION": "0.0.2"},
-            "VERBOSE": True,
+            "VERBOSE": False,
             "BLDDIR": "build",
     }
 
