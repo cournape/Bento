@@ -24,8 +24,8 @@ import fortran
 def apply_cpppath(task_gen):
     cpppaths = task_gen.env["CPPPATH"]
     cpppaths.extend(task_gen.env["PYEXT_CPPPATH"])
-    task_gen.env["INCPATH"] = " ".join(["-I%s" % p
-                                   for p in cpppaths])
+    task_gen.env["INCPATH"] = ["-I%s" % p
+                                   for p in cpppaths]
 
 def order_tasks(tasks):
     tuid_to_task = dict([(t.get_uid(), t) for t in tasks])
