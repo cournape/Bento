@@ -90,10 +90,10 @@ if __name__ == "__main__":
             "BLDDIR": "build",
     }
 
-    create_sources(bld, "template", sources=["foo.h.in"])
-    create_pyext(bld, "_bar", ["hellomodule.c", "foo.c"])
-    create_pyext(bld, "_von", ["vonmises_cython.pyx"])
-    create_pyext(bld, "_yo", ["bar.f"])
+    create_sources(bld, "template", sources=["src/foo.h.in"])
+    create_pyext(bld, "_bar", ["src/hellomodule.c", "src/foo.c"])
+    create_pyext(bld, "_von", ["src/vonmises_cython.pyx"])
+    create_pyext(bld, "_yo", ["src/bar.f"])
 
     with open(CACHE_FILE, "w") as fid:
         dump(bld.cache, fid)
