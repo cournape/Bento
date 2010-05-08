@@ -13,7 +13,7 @@ from task_manager \
         extension
 from utils \
     import \
-        find_deps
+        find_deps, ensure_dir
 from compiled_fun \
     import \
         compile_fun
@@ -33,7 +33,8 @@ def c_hook(self, node):
 
 def ccompile_task(self, node):
     base = os.path.splitext(node)[0]
-    target = base + ".o"
+    target = os.path.join(self.env["BLDDIR"], base + ".o")
+    ensure_dir(target)
     task = Task("cc", inputs=node, outputs=target)
     task.env_vars = VARS["cc"]
     #print find_deps("foo.c", ["."])
@@ -45,7 +46,8 @@ def ccompile_task(self, node):
 
 def link_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    target = name + ".so"
+    target = os.path.join(self.env["BLDDIR"], name + ".so")
+    ensure_dir(target)
     task = Task("cc_link", inputs=objects, outputs=target)
     task.func = cshlink
     task.env_vars = VARS["cc_link"]

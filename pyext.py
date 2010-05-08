@@ -24,6 +24,10 @@ import fortran
 def apply_cpppath(task_gen):
     cpppaths = task_gen.env["CPPPATH"]
     cpppaths.extend(task_gen.env["PYEXT_CPPPATH"])
+    implicit_paths = set([
+        os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
+        for s in task_gen.sources])
+    cpppaths = list(implicit_paths) + cpppaths
     task_gen.env["INCPATH"] = ["-I%s" % p
                                    for p in cpppaths]
 
@@ -78,11 +82,12 @@ if __name__ == "__main__":
             "CPPPATH": [],
             "PYEXT_CPPPATH": [distutils.sysconfig.get_python_inc()],
             "SHLINK": ["gcc", "-O1"],
-            "SHLINKFLAGS": ["-shared", "-g"],
+            "SHLINKFLAGS": ["-shared", "-g", "-O1"],
             "F77": ["gfortran"],
             "F77FLAGS": ["-W", "-g"],
             "SUBST_DICT": {"VERSION": "0.0.2"},
             "VERBOSE": True,
+            "BLDDIR": "build",
     }
 
     create_sources(bld, "template", sources=["foo.h.in"])
