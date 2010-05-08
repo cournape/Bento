@@ -37,8 +37,8 @@ def ccompile_task(self, node):
     task = Task("cc", inputs=node, outputs=target)
     task.env_vars = VARS["cc"]
     #print find_deps("foo.c", ["."])
-    task.scan = lambda : find_deps(node, ["."])
-    task.deps.extend(task.scan())
+    #task.scan = lambda : find_deps(node, ["."])
+    #task.deps.extend(task.scan())
     task.env = self.env
     task.func = ccompile
     return [task]
