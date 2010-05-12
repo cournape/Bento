@@ -1,8 +1,8 @@
 import os
 
-from ctasks \
+from pyext \
     import \
-        ccompile_task
+        pycc_task
 from task_manager \
     import \
         extension
@@ -26,6 +26,6 @@ def cython_task(self, node):
     task.env = self.env
     task.func = compile_fun("cython", "cython ${SRC} -o ${TGT}",
                             False)[0]
-    ctask = ccompile_task(self, target)
+    ctask = pycc_task(self, target)
     self.object_tasks.extend(ctask)
     return [task] + ctask
