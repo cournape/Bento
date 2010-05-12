@@ -1,9 +1,4 @@
 import os
-import subprocess
-
-from toydist.core.utils \
-    import \
-        pprint
 
 from task \
     import \

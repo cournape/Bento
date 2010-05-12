@@ -3,7 +3,7 @@ import sys
 
 from cPickle \
     import \
-        load, dump, dumps
+        dump
 
 from pyext import create_pyext
 

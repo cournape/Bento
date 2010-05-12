@@ -1,24 +1,15 @@
-import sys
 import os
 import copy
-import distutils.sysconfig
-
-from cPickle \
-    import \
-        load, dump, dumps
 
 from utils \
     import \
         ensure_dir
-from ctasks \
-    import \
-        link_task
 from task \
     import \
         Task
 from task_manager \
     import \
-        get_bld, create_tasks, topo_sort, build_dag, run_tasks, CACHE_FILE, TaskGen, CompiledTaskGen, set_extension_hook
+        create_tasks, topo_sort, build_dag, run_tasks, CompiledTaskGen, set_extension_hook
 from compiled_fun \
     import \
         compile_fun

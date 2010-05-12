@@ -1,11 +1,9 @@
-import re
-import os
 from hashlib import md5
 import subprocess
 
 from cPickle \
     import \
-        load, dump, dumps
+        dumps
 
 from toydist.core.utils \
     import \

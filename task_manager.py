@@ -2,9 +2,7 @@ import os
 
 from cPickle \
     import \
-        load, dump, dumps
-
-from task import Task
+        load
 
 RULES_REGISTRY = {}
 
