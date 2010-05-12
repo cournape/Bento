@@ -11,6 +11,9 @@ from toydist.core.utils \
     import \
         pprint
 
+# TODO:
+#   - factory for tasks, so that tasks can be created from strings
+#   instead of import (import not extensible)
 class Task(object):
     def __init__(self, name, outputs, inputs, func=None, deps=None):
         if isinstance(inputs, basestring):
@@ -59,6 +62,8 @@ class Task(object):
         self._sig_explicit_deps(m)
         for k in self.env_vars:
             m.update(dumps(self.env[k]))
+        if self.func:
+            m.update(self.func.func_code.co_code)
         return m.digest()
 
     def _sig_explicit_deps(self, m):
