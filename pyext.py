@@ -25,7 +25,7 @@ from compiled_fun \
 
 # import necessary to register corresponding hooks
 import tpl_tasks
-import cython
+#import cython
 import fortran
 
 def apply_cpppath(task_gen):
@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
     create_sources(bld, "template", sources=["src/foo.h.in"])
     create_pyext(bld, "_bar", ["src/hellomodule.c", "src/foo.c"])
-    create_pyext(bld, "_von", ["src/vonmises_cython.pyx"])
+    #create_pyext(bld, "_von", ["src/vonmises_cython.pyx"])
     create_pyext(bld, "_yo", ["src/bar.f"])
 
     with open(CACHE_FILE, "w") as fid:
