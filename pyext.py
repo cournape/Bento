@@ -71,6 +71,15 @@ def pycc_task(self, node):
     task.func = pycc
     return [task]
 
+def pylink_task(self, name):
+    objects = [tsk.outputs[0] for tsk in self.object_tasks]
+    target = os.path.join(self.env["BLDDIR"], name + ".so")
+    ensure_dir(target)
+    task = Task("pylink", inputs=objects, outputs=target)
+    task.func = pylink
+    task.env_vars = pylink_vars
+    return [task]
+
 def create_pyext(bld, name, sources):
     base = name.split(".")[-1]
 
@@ -84,9 +93,7 @@ def create_pyext(bld, name, sources):
 
     tasks = create_tasks(task_gen, sources)
 
-    ltask = link_task(task_gen, name.split(".")[-1])
-    ltask[0].env_vars = pylink_vars
-    ltask[0].func = pylink
+    ltask = pylink_task(task_gen, name.split(".")[-1])
     tasks.extend(ltask)
     for t in tasks:
         t.env = task_gen.env
