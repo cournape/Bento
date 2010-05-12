@@ -16,6 +16,11 @@ def extension(ext):
         return f
     return _f
 
+def set_extension_hook(ext, hook):
+    old = RULES_REGISTRY[ext]
+    RULES_REGISTRY[ext] = hook
+    return old
+
 class BuildContext(object):
     def __init__(self):
         self.object_tasks = []
