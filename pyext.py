@@ -22,11 +22,15 @@ from task_manager \
 from compiled_fun \
     import \
         compile_fun
+from sysconfig \
+    import \
+        get_configuration
 
 # import necessary to register corresponding hooks
 import tpl_tasks
 #import cython
 import fortran
+
 
 def apply_cpppath(task_gen):
     cpppaths = task_gen.env["CPPPATH"]
@@ -105,8 +109,25 @@ def create_sources(bld, name, sources):
     run_tasks(bld, tasks)
 
 if __name__ == "__main__":
+
+    p = {
+            "PYEXT_SHCC": "CC",
+            "PYEXT_CCSHARED": "CCSHARED",
+            "PYEXT_SHLINK": "LDSHARED",
+            "PYEXT_SO": "SO",
+            "PYEXT_CFLAGS": "CFLAGS",
+            "PYEXT_OPT": "OPT",
+            "PYEXT_LIBS": "LIBS",
+            "PYEXT_INCPATH_FMT": "INCPATH_FMT",
+    }
+
     bld = get_bld()
-    bld.env = {"CC": ["gcc"],
+    pyenv = get_configuration()
+    bld.env = {}
+    for i, j in p.items():
+        bld.env[i] = pyenv[j]
+
+    bld.env.update({"CC": ["gcc"],
             "CFLAGS": ["-W"],
             "CPPPATH": [],
             "PYEXT_CPPPATH": [distutils.sysconfig.get_python_inc()],
@@ -116,8 +137,12 @@ if __name__ == "__main__":
             "F77FLAGS": ["-W", "-g"],
             "SUBST_DICT": {"VERSION": "0.0.2"},
             "VERBOSE": False,
-            "BLDDIR": "build",
-    }
+            "BLDDIR": "build"})
+
+    if "-v" in sys.argv:
+        bld.env["VERBOSE"] = True
+    #from pprint import pprint
+    #pprint(bld.env)
 
     create_sources(bld, "template", sources=["src/foo.h.in"])
     create_pyext(bld, "_bar", ["src/hellomodule.c", "src/foo.c"])
