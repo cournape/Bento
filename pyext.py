@@ -1,3 +1,4 @@
+import sys
 import os
 import copy
 import distutils.sysconfig
@@ -6,9 +7,15 @@ from cPickle \
     import \
         load, dump, dumps
 
+from utils \
+    import \
+        ensure_dir
 from ctasks \
     import \
         link_task
+from task \
+    import \
+        Task
 from task_manager \
     import \
         get_bld, create_tasks, topo_sort, build_dag, run_tasks, CACHE_FILE, TaskGen, CompiledTaskGen
@@ -44,7 +51,29 @@ def order_tasks(tasks):
 
     return ordered_tasks
 
-pylink = compile_fun("pylink", "${LDSHARED} -o ${TGT[0]} ${SRC}", False)[0]
+pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} -o ${TGT[0]} ${SRC}", False)
+
+pycc, pycc_vars = compile_fun("pycc", "${PYEXT_SHCC} ${PYEXT_CCSHARED} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} -o ${TGT[0]} -c ${SRC}", False)
+
+def pycc_hook(self, node):
+    tasks = pycc_task(self, node)
+    self.object_tasks.extend(tasks)
+    return tasks
+
+def pycc_task(self, node):
+    base = os.path.splitext(node)[0]
+    # XXX: hack to avoid creating build/build/... when source is
+    # generated. Dealing with this most likely requires a node concept
+    if not os.path.commonprefix([self.env["BLDDIR"], base]):
+        target = os.path.join(self.env["BLDDIR"], base + ".o")
+    else:
+        target = base + ".o"
+    ensure_dir(target)
+    task = Task("pycc", inputs=node, outputs=target)
+    task.env_vars = pycc_vars
+    task.env = self.env
+    task.func = pycc
+    return [task]
 
 def create_pyext(bld, name, sources):
     base = name.split(".")[-1]
