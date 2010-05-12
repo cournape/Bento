@@ -22,15 +22,6 @@ from task_manager \
 from compiled_fun \
     import \
         compile_fun
-from sysconfig \
-    import \
-        get_configuration
-
-# import necessary to register corresponding hooks
-import tpl_tasks
-#import cython
-import fortran
-
 
 def apply_cpppath(task_gen):
     cpppaths = task_gen.env["CPPPATH"]
@@ -103,51 +94,3 @@ def create_pyext(bld, name, sources):
 
     ordered_tasks = order_tasks(tasks)
     run_tasks(bld, ordered_tasks)
-
-def create_sources(bld, name, sources):
-    tasks = create_tasks(bld, sources)
-    run_tasks(bld, tasks)
-
-if __name__ == "__main__":
-
-    p = {
-            "PYEXT_SHCC": "CC",
-            "PYEXT_CCSHARED": "CCSHARED",
-            "PYEXT_SHLINK": "LDSHARED",
-            "PYEXT_SO": "SO",
-            "PYEXT_CFLAGS": "CFLAGS",
-            "PYEXT_OPT": "OPT",
-            "PYEXT_LIBS": "LIBS",
-            "PYEXT_INCPATH_FMT": "INCPATH_FMT",
-    }
-
-    bld = get_bld()
-    pyenv = get_configuration()
-    bld.env = {}
-    for i, j in p.items():
-        bld.env[i] = pyenv[j]
-
-    bld.env.update({"CC": ["gcc"],
-            "CFLAGS": ["-W"],
-            "CPPPATH": [],
-            "PYEXT_CPPPATH": [distutils.sysconfig.get_python_inc()],
-            "SHLINK": ["gcc", "-O1"],
-            "SHLINKFLAGS": ["-shared", "-g", "-O1"],
-            "F77": ["gfortran"],
-            "F77FLAGS": ["-W", "-g"],
-            "SUBST_DICT": {"VERSION": "0.0.2"},
-            "VERBOSE": False,
-            "BLDDIR": "build"})
-
-    if "-v" in sys.argv:
-        bld.env["VERBOSE"] = True
-    #from pprint import pprint
-    #pprint(bld.env)
-
-    create_sources(bld, "template", sources=["src/foo.h.in"])
-    create_pyext(bld, "_bar", ["src/hellomodule.c", "src/foo.c"])
-    #create_pyext(bld, "_von", ["src/vonmises_cython.pyx"])
-    create_pyext(bld, "_yo", ["src/bar.f"])
-
-    with open(CACHE_FILE, "w") as fid:
-        dump(bld.cache, fid)
