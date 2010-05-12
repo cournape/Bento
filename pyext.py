@@ -18,7 +18,7 @@ from task \
         Task
 from task_manager \
     import \
-        get_bld, create_tasks, topo_sort, build_dag, run_tasks, CACHE_FILE, TaskGen, CompiledTaskGen
+        get_bld, create_tasks, topo_sort, build_dag, run_tasks, CACHE_FILE, TaskGen, CompiledTaskGen, set_extension_hook
 from compiled_fun \
     import \
         compile_fun
@@ -30,8 +30,9 @@ def apply_cpppath(task_gen):
         os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
         for s in task_gen.sources])
     cpppaths = list(implicit_paths) + cpppaths
-    task_gen.env["INCPATH"] = ["-I%s" % p
-                                   for p in cpppaths]
+    task_gen.env["PYEXT_INCPATH"] = [
+            task_gen.env["PYEXT_INCPATH_FMT"] % p
+            for p in cpppaths]
 
 def order_tasks(tasks):
     tuid_to_task = dict([(t.get_uid(), t) for t in tasks])
@@ -76,17 +77,15 @@ def create_pyext(bld, name, sources):
     tasks = []
 
     task_gen = CompiledTaskGen("pyext", sources, name)
-    task_gen.env.update(copy.deepcopy(bld.env))
-    for v in ["CC", "CFLAGS", "LDSHARED"]:
-        # braindead sysconfig returns string instead of list - we
-        # should take quoting into account to do this correctly...
-        task_gen.env[v] = distutils.sysconfig.get_config_var(v).split()
+    old_hook = set_extension_hook(".c", pycc_hook)
 
+    task_gen.env.update(copy.deepcopy(bld.env))
     apply_cpppath(task_gen)
 
     tasks = create_tasks(task_gen, sources)
-    # XXX: hack, create a pylink task gen
+
     ltask = link_task(task_gen, name.split(".")[-1])
+    ltask[0].env_vars = pylink_vars
     ltask[0].func = pylink
     tasks.extend(ltask)
     for t in tasks:
@@ -94,3 +93,5 @@ def create_pyext(bld, name, sources):
 
     ordered_tasks = order_tasks(tasks)
     run_tasks(bld, ordered_tasks)
+
+    set_extension_hook(".c", old_hook)
