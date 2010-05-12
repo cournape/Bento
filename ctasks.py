@@ -18,12 +18,9 @@ from compiled_fun \
     import \
         compile_fun
 
-VARS = {"cc": ["CC", "CFLAGS", "CPPPATH"],
-        "cc_link": ["SHLINK", "SHLINKFLAGS"]}
+ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${INCPATH} -o ${TGT[0]} -c ${SRC}", False)
 
-ccompile = compile_fun("cc", "${CC} ${INCPATH} -o ${TGT[0]} -c ${SRC}", False)[0]
-
-cshlink = compile_fun("cshlib", "${SHLINK} ${SHLINKFLAGS} -o ${TGT[0]} ${SRC}", False)[0]
+cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${SHLINKFLAGS} -o ${TGT[0]} ${SRC}", False)
 
 @extension('.c')
 def c_hook(self, node):
@@ -41,7 +38,7 @@ def ccompile_task(self, node):
         target = base + ".o"
     ensure_dir(target)
     task = Task("cc", inputs=node, outputs=target)
-    task.env_vars = VARS["cc"]
+    task.env_vars = cc_vars
     #print find_deps("foo.c", ["."])
     #task.scan = lambda : find_deps(node, ["."])
     #task.deps.extend(task.scan())
@@ -55,5 +52,5 @@ def link_task(self, name):
     ensure_dir(target)
     task = Task("cc_link", inputs=objects, outputs=target)
     task.func = cshlink
-    task.env_vars = VARS["cc_link"]
+    task.env_vars = cshlink_vars
     return [task]
