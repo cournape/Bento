@@ -19,6 +19,12 @@ def set_extension_hook(ext, hook):
     RULES_REGISTRY[ext] = hook
     return old
 
+def get_extension_hook(ext):
+    try:
+        return RULES_REGISTRY[ext]
+    except KeyError:
+        raise ValueError("No hook registered for extension '%s'" % ext)
+
 class BuildContext(object):
     def __init__(self):
         self.object_tasks = []
