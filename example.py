@@ -18,10 +18,12 @@ from sysconfig \
 import tpl_tasks
 import cython
 import fortran
+import swig
 
 def create_sources(bld, name, sources):
     tasks = create_tasks(bld, sources)
     run_tasks(bld, tasks)
+
 
 if __name__ == "__main__":
     p = {
@@ -49,6 +51,8 @@ if __name__ == "__main__":
             "SHLINKFLAGS": ["-g", "-O1"],
             "F77": ["gfortran"],
             "F77FLAGS": ["-W", "-g"],
+            "SWIG": ["swig"],
+            "SWIGFLAGS": ["-python"],
             "SUBST_DICT": {"VERSION": "0.0.2"},
             "VERBOSE": False,
             "BLDDIR": "build"})
@@ -61,7 +65,8 @@ if __name__ == "__main__":
     create_sources(bld, "template", sources=["src/foo.h.in"])
     create_pyext(bld, "_bar", ["src/hellomodule.c", "src/foo.c"])
     create_pyext(bld, "_von", ["src/vonmises_cython.pyx"])
-    create_pyext(bld, "_yo", ["src/bar.f"])
+    create_pyext(bld, "_fortran_yo", ["src/bar.f"])
+    create_pyext(bld, "_swig_yo", ["src/yo.i"])
 
     with open(CACHE_FILE, "w") as fid:
         dump(bld.cache, fid)
