@@ -8,6 +8,9 @@ from cPickle \
 from toydist.core.utils \
     import \
         pprint
+from errors \
+    import \
+        TaskRunFailure
 
 # TODO:
 #   - factory for tasks, so that tasks can be created from strings
@@ -85,4 +88,4 @@ class Task(object):
                              stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         if p.returncode:
-            raise ValueError("cmd %s failed: %s" % (" ".join(cmd), stderr))
+            raise TaskRunFailure("cmd %s failed: %s" % (" ".join(cmd), stderr))
