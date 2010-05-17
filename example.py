@@ -13,17 +13,15 @@ from task_manager \
 from sysconfig \
     import \
         get_configuration
+from tools \
+    import \
+        import_tools
 
-# import necessary to register corresponding hooks
-import tpl_tasks
-import cython
-import fortran
-import swig
+import_tools(["tpl_tasks", "cython", "fortran", "swig"])
 
 def create_sources(bld, name, sources):
     tasks = create_tasks(bld, sources)
     run_tasks(bld, tasks)
-
 
 if __name__ == "__main__":
     p = {
