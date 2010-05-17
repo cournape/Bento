@@ -1,8 +1,5 @@
 import os
 
-from ctasks \
-    import \
-        ccompile_task
 from task_manager \
     import \
         extension
@@ -33,4 +30,3 @@ def fortran_task(self, node):
                             False)[0]
     self.object_tasks.append(task)
     return [task]
-
