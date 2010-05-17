@@ -36,6 +36,7 @@ class Task(object):
         self.env = None
         self.env_vars = None
         self.scan = None
+        self.disable_output = False
 
     # UID and signature functionalities
     #----------------------------------
@@ -80,10 +81,11 @@ class Task(object):
         self.func(self)
 
     def exec_command(self, cmd, cwd):
-        if self.env["VERBOSE"]:
-            pprint('GREEN', " ".join(cmd))
-        else:
-            pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join(self.inputs)))
+        if not self.disable_output:
+            if self.env["VERBOSE"]:
+                pprint('GREEN', " ".join(cmd))
+            else:
+                pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join(self.inputs)))
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
