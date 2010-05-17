@@ -23,7 +23,7 @@ def get_extension_hook(ext):
     try:
         return RULES_REGISTRY[ext]
     except KeyError:
-        raise ValueError("No hook registered for extension '%s'" % ext)
+        raise ValueError("No hook registered for extension %r" % ext)
 
 class BuildContext(object):
     def __init__(self):
@@ -37,7 +37,7 @@ def create_tasks(ctx, sources):
     for s in sources:
         base, ext = os.path.splitext(s)
         if not RULES_REGISTRY.has_key(ext):
-            raise RuntimeError("No rule defined for extension %s" % ext)
+            raise RuntimeError("No rule defined for extension %r" % ext)
         else:
             task_gen = RULES_REGISTRY[ext]
             tasks.extend(task_gen(ctx, s))
