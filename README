@@ -1,0 +1,69 @@
+What is Yaku
+============
+
+Yaku is a simple system (think make) in python, aimed at building
+python extensions, although it could be used for other tasks if python
+is your thing
+
+Main features
+=============
+
+The main features of Yaku are:
+
+    - Simplicity above all (main code ~ 1000 LOC)
+    - Easy to extend:
+        - adding handler for new source types (.pyx for cython, .f for
+          Fortran, .i for SWIG) may be done in one importable module,
+          without the need for monkey-patching or subclasses as
+          currently required by distutils
+        - adding new compilers or new tools is also easier
+    - Simple dependency handling: whenever a source file content
+      changes, all targets which depend on it will be considered out
+      of date
+    - Although not yet implemented, parallel builds may be added
+      relatively simply
+
+Why Yaku ?
+==========
+
+Currently, the vast majority of python C extensions are built using
+distutils. Distutils is an imperative, inflexible way of building
+extensions:
+
+	- Handling new kind of sources (SWIG, Cython, etc...) requires
+	  extending distutils Commands through subclassing, which
+	  cause various issues when you need to integrate distutils
+	  extensions through various sources.
+	- Distutils has no notion of dependency handling
+	- Adding new compiler or new type of targets (ctypes, etc...)
+	  is a black art that few people master
+
+Instead, Yaku is based around a Task concept similar to make rules,
+and has a callback-like system to register new source files types
+(.pyx for cython or pyrex, .i for swig, etc...).
+
+    - Each task has a signature, which is used to determine whether a
+      task should be executed. The signature depends on the source
+      file content, the target content, the build environment as well
+      as the dependencies content (md5 checksum), so that changes can
+      be reliably detected.
+	- It uses dependencies defined in each task to build things in
+	  the correct order.
+    - Task are automatically built for files with registered file
+      extension, and new hooks for extension can be added.
+    - Automatic dependency handling (scanning C/C++ files to detect
+      its dependencies) may be added later
+
+What Yaku is not
+================
+
+Yaku is not a replacement for real build systems like scons or waf. To keep it simple, I made a few design choices which significantly impact what it can do:
+
+    - Contrary to scons or waf, Yaku has no concept of nodes. This
+      means things like dependency handling on generated files,
+      variant builds, etc... will never be implemented. The author
+      feels that in those cases, developers should use
+      waf/scons/etc... instead.
+    - Yaku does not aim at being very fast. It does not uses fancy
+      algorithms, and is unlikely to work very well for hundreds of
+      source files
