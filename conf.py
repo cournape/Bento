@@ -26,7 +26,7 @@ from utils \
     import \
         ensure_dir
 
-from ctasks \
+from tools.ctasks \
     import \
         link_task, apply_libs, apply_libdir
 

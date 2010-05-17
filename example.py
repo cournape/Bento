@@ -17,7 +17,7 @@ from tools \
     import \
         import_tools
 
-import_tools(["tpl_tasks", "cython", "fortran", "swig"])
+import_tools(["ctasks", "tpl_tasks", "cython", "fortran", "swig"], ["tools"])
 
 def create_sources(bld, name, sources):
     tasks = create_tasks(bld, sources)
