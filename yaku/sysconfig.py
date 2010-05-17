@@ -14,7 +14,8 @@ UNIX_ENV_ATTR = {
 
 MSVC_ENV_ATTR = {
         "CC": "cc",
-        "CXX": "cxx",
+        "CXX": "cc",
+        "CFLAGS": "compile_options",
 }
 
 # XXX: unixccompiler instances are the only classes where we can hope
@@ -48,8 +49,14 @@ def get_configuration(compiler_type=None):
         # XXX: not tested
         compiler = distutils.ccompiler.new_compiler(
                 compiler=compiler_type)
+        compiler.initialize()
         for k, v in MSVC_ENV_ATTR.items():
             env[k] = getattr(compiler, v)
+        env.update({"LIBS": [],
+                "INCPATH_FMT": "/I%s",
+                "LIBPATH_FMT": "/L%s",
+                "LIBS_FMT": "%s.lib",
+                "CPPDEF_FMT": "/D%s"})
     else:
         compiler = distutils.ccompiler.new_compiler(
                 compiler=compiler_type)

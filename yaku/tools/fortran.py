@@ -1,15 +1,15 @@
 import os
 
-from task_manager \
+from yaku.task_manager \
     import \
         extension
-from task \
+from yaku.task \
     import \
         Task
-from compiled_fun \
+from yaku.compiled_fun \
     import \
         compile_fun
-from utils \
+from yaku.utils \
     import \
         ensure_dir
 

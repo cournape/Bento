@@ -5,13 +5,13 @@ from toydist.core.utils \
     import \
         pprint
 
-from task \
+from yaku.task \
     import \
         Task
-from task_manager \
+from yaku.task_manager \
     import \
         extension
-from utils \
+from yaku.utils \
     import \
         ensure_dir
 

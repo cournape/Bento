@@ -5,15 +5,17 @@ from cPickle \
     import \
         dump
 
-from pyext import create_pyext
-
-from task_manager \
+from yaku.pyext \
     import \
-        get_bld, create_tasks, run_tasks, CACHE_FILE
-from sysconfig \
+        create_pyext
+
+from yaku.task_manager \
+    import \
+        get_bld, CACHE_FILE, create_tasks, run_tasks
+from yaku.sysconfig \
     import \
         get_configuration
-from tools \
+from yaku.tools \
     import \
         import_tools
 
