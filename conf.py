@@ -168,6 +168,6 @@ def generate_config_h(conf_res, name):
             if entry["result"]:
                 fid.write("#define %s 1\n\n" % var)
             else:
-                fid.write("/*#under %s*/\n\n" % var)
+                fid.write("/*#undef %s*/\n\n" % var)
     finally:
         fid.close()
