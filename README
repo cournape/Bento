@@ -64,6 +64,10 @@ Yaku is not a replacement for real build systems like scons or waf. To keep it s
       variant builds, etc... will never be implemented. The author
       feels that in those cases, developers should use
       waf/scons/etc... instead.
+    - Yaku has no notion of source directory - you have to build
+      things from the original source directory
+    - Once Yaku's DAG is built, it is assumed to never change, and
+      adding new dependencies on the fly is not possible.
     - Yaku does not aim at being very fast. It does not uses fancy
       algorithms, and is unlikely to work very well for hundreds of
-      source files
+      source files.
