@@ -1,8 +1,5 @@
 import os
 
-#from pyext \
-#    import \
-#        pycc_task
 from task_manager \
     import \
         extension, get_extension_hook
