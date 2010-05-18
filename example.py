@@ -26,6 +26,9 @@ def create_sources(bld, name, sources):
     run_tasks(bld, tasks)
 
 if __name__ == "__main__":
+    from yaku.tools.gcc import detect as gcc_detect
+    from yaku.tools.gfortran import detect as gfortran_detect
+
     p = {
             "PYEXT_SHCC": "CC",
             "PYEXT_CCSHARED": "CCSHARED",
@@ -43,12 +46,10 @@ if __name__ == "__main__":
     for i, j in p.items():
         bld.env[i] = pyenv[j]
 
-    bld.env.update({"CC": ["gcc"],
-            "CFLAGS": ["-W"],
-            "CPPPATH": [],
+    gcc_detect(bld)
+    gfortran_detect(bld)
+    bld.env.update({"CPPPATH": [], "LIBPATH": [], "LIBS": [],
             "PYEXT_CPPPATH": [distutils.sysconfig.get_python_inc()],
-            "SHLINK": ["gcc", "-shared"],
-            "SHLINKFLAGS": ["-g", "-O1"],
             "F77": ["gfortran"],
             "F77FLAGS": ["-W", "-g"],
             "SWIG": ["swig"],

@@ -17,6 +17,8 @@ from yaku.conftests \
 CONF_CACHE_FILE = ".conf.cpk"
 
 if __name__ == "__main__":
+    from yaku.tools.gcc import detect
+
     # TODO
     #  - support for env update
     #  - config header support
@@ -26,14 +28,8 @@ if __name__ == "__main__":
         with open(CONF_CACHE_FILE) as fid:
             conf.cache = load(fid)
 
-    conf.env.update({"CC": ["gcc"],
-        "CFLAGS": ["-Wall"],
-        "SHLINK": ["gcc"],
-        "SHLINKFLAGS": [],
-        "LIBS": [],
-        "LIBS_FMT": "-l%s",
-        "LIBDIR": [],
-        "LIBDIR_FMT": "-L%s",
+    detect(conf)
+    conf.env.update({"LIBDIR": [], "LIBS": [],
         "BLDDIR": "build/conf",
         "VERBOSE": False})
     log_filename = os.path.join("build", "config.log")
