@@ -1,3 +1,4 @@
+import distutils
 import sys
 
 from cPickle \
@@ -15,8 +16,7 @@ from yaku.tools \
     import \
         import_tools
 
-import_tools(["ctasks", "tpl_tasks", "cython", "fortran", "swig"],
-        ["tools"])
+import_tools(["ctasks", "tpl_tasks", "cython", "fortran", "swig"], ["tools"])
 
 def create_sources(bld, name, sources):
     tasks = create_tasks(bld, sources)
@@ -27,15 +27,11 @@ if __name__ == "__main__":
     from yaku.tools.gfortran import detect as gfortran_detect
 
     bld = get_bld()
-    bld.env = {}
-
     bld.env.update(get_pyenv())
 
     gcc_detect(bld)
     gfortran_detect(bld)
     bld.env.update({"CPPPATH": [], "LIBPATH": [], "LIBS": [],
-            "F77": ["gfortran"],
-            "F77FLAGS": ["-W", "-g"],
             "SWIG": ["swig"],
             "SWIGFLAGS": ["-python"],
             "SUBST_DICT": {"VERSION": "0.0.2"},
