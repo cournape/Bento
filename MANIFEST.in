@@ -1,0 +1,7 @@
+include src/*.c
+include src/*.h
+include src/*.h.in
+include src/*.pyx
+include conf_example.py
+include example.py
+include NOTES
