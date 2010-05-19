@@ -70,7 +70,7 @@ class Task(object):
         return m.digest()
 
     def _sig_explicit_deps(self, m):
-        for s in self.inputs + self.deps + self.outputs:
+        for s in self.inputs + self.deps:
             #if os.path.exists(s):
             #    m.update(open(s).read())
             m.update(open(s).read())
