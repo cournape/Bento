@@ -9,4 +9,4 @@ def detect(ctx):
         "SHLINK": ["gcc", "-shared"],
         "SHLINKFLAGS": [],
         "LIBS_FMT": "-l%s",
-        "LIBDIR_FMT": "-L%s"})
+        "LIBPATH_FMT": "-L%s"})
