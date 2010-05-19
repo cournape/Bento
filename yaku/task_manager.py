@@ -126,3 +126,16 @@ class CompiledTaskGen(TaskGen):
         TaskGen.__init__(self, name, sources, target)
         self.object_tasks = []
 
+def order_tasks(tasks):
+    tuid_to_task = dict([(t.get_uid(), t) for t in tasks])
+
+    task_deps, output_to_tuid = build_dag(tasks)
+
+    yo = topo_sort(task_deps)
+    ordered_tasks = []
+    for output in yo:
+        if output in output_to_tuid:
+            ordered_tasks.append(tuid_to_task[output_to_tuid[output]])
+
+    return ordered_tasks
+

@@ -10,7 +10,7 @@ from task \
         Task
 from task_manager \
     import \
-        create_tasks, topo_sort, build_dag, run_tasks, CompiledTaskGen, set_extension_hook
+        create_tasks, topo_sort, build_dag, run_tasks, CompiledTaskGen, set_extension_hook, order_tasks
 from compiled_fun \
     import \
         compile_fun
@@ -28,19 +28,6 @@ def apply_cpppath(task_gen):
     task_gen.env["PYEXT_INCPATH"] = [
             task_gen.env["PYEXT_INCPATH_FMT"] % p
             for p in cpppaths]
-
-def order_tasks(tasks):
-    tuid_to_task = dict([(t.get_uid(), t) for t in tasks])
-
-    task_deps, output_to_tuid = build_dag(tasks)
-
-    yo = topo_sort(task_deps)
-    ordered_tasks = []
-    for output in yo:
-        if output in output_to_tuid:
-            ordered_tasks.append(tuid_to_task[output_to_tuid[output]])
-
-    return ordered_tasks
 
 pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBPATH} ${PYEXT_APP_LIBS} -o ${TGT[0]} ${SRC}", False)
 
