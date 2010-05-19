@@ -42,7 +42,7 @@ def order_tasks(tasks):
 
     return ordered_tasks
 
-pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} -o ${TGT[0]} ${SRC}", False)
+pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBPATH} ${PYEXT_APP_LIBS} -o ${TGT[0]} ${SRC}", False)
 
 pycc, pycc_vars = compile_fun("pycc", "${PYEXT_SHCC} ${PYEXT_CCSHARED} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} -o ${TGT[0]} -c ${SRC}", False)
 
@@ -63,6 +63,7 @@ def get_pyenv():
     for i, j in _SYS_TO_PYENV.items():
         pyenv[i] = sysenv[j]
     pyenv["PYEXT_CPPPATH"] = [distutils.sysconfig.get_python_inc()]
+    pyenv["PYEXT_SHLINKFLAGS"] = []
     return pyenv
 
 def pycc_hook(self, node):
@@ -104,6 +105,8 @@ def create_pyext(bld, name, sources):
 
     task_gen.env.update(copy.deepcopy(bld.env))
     apply_cpppath(task_gen)
+    apply_libpath(task_gen)
+    apply_libs(task_gen)
 
     tasks = create_tasks(task_gen, sources)
 
@@ -116,3 +119,18 @@ def create_pyext(bld, name, sources):
     run_tasks(bld, ordered_tasks)
 
     set_extension_hook(".c", old_hook)
+
+# FIXME: find a way to reuse this kind of code between tools
+def apply_libs(task_gen):
+    libs = task_gen.env["LIBS"]
+    task_gen.env["PYEXT_APP_LIBS"] = [
+            task_gen.env["LIBS_FMT"] % lib for lib in libs]
+
+def apply_libpath(task_gen):
+    libdir = task_gen.env["LIBPATH"]
+    implicit_paths = set([
+        os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
+        for s in task_gen.sources])
+    libdir = list(implicit_paths) + libdir
+    task_gen.env["PYEXT_APP_LIBPATH"] = [
+            task_gen.env["LIBPATH_FMT"] % d for d in libdir]
