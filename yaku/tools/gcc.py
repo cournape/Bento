@@ -8,5 +8,8 @@ def detect(ctx):
         "LINKFLAGS": [],
         "SHLINK": ["gcc", "-shared"],
         "SHLINKFLAGS": [],
+        "CPPPATH": [],
+        "LIBPATH": [],
+        "LIBS": [],
         "LIBS_FMT": "-l%s",
         "LIBPATH_FMT": "-L%s"})
