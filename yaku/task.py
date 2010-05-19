@@ -1,3 +1,4 @@
+import os
 from hashlib import md5
 import subprocess
 
@@ -85,7 +86,7 @@ class Task(object):
             if self.env["VERBOSE"]:
                 pprint('GREEN', " ".join(cmd))
             else:
-                pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join(self.inputs)))
+                pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join([os.path.basename(i) for i in self.outputs])))
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
