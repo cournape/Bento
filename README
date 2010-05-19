@@ -57,7 +57,8 @@ and has a callback-like system to register new source files types
 What Yaku is not
 ================
 
-Yaku is not a replacement for real build systems like scons or waf. To keep it simple, I made a few design choices which significantly impact what it can do:
+Yaku is not a replacement for real build systems like scons or waf. To keep it
+simple, I made a few design choices which significantly impact what it can do:
 
     - Contrary to scons or waf, Yaku has no concept of nodes. This
       means things like dependency handling on generated files,
