@@ -1,5 +1,6 @@
 import os
 import copy
+import distutils
 
 from utils \
     import \
@@ -13,6 +14,9 @@ from task_manager \
 from compiled_fun \
     import \
         compile_fun
+from yaku.sysconfig \
+    import \
+        get_configuration
 
 def apply_cpppath(task_gen):
     cpppaths = task_gen.env["CPPPATH"]
@@ -41,6 +45,25 @@ def order_tasks(tasks):
 pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} -o ${TGT[0]} ${SRC}", False)
 
 pycc, pycc_vars = compile_fun("pycc", "${PYEXT_SHCC} ${PYEXT_CCSHARED} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} -o ${TGT[0]} -c ${SRC}", False)
+
+_SYS_TO_PYENV = {
+        "PYEXT_SHCC": "CC",
+        "PYEXT_CCSHARED": "CCSHARED",
+        "PYEXT_SHLINK": "LDSHARED",
+        "PYEXT_SO": "SO",
+        "PYEXT_CFLAGS": "CFLAGS",
+        "PYEXT_OPT": "OPT",
+        "PYEXT_LIBS": "LIBS",
+        "PYEXT_INCPATH_FMT": "INCPATH_FMT",
+}
+
+def get_pyenv():
+    sysenv = get_configuration()
+    pyenv = {}
+    for i, j in _SYS_TO_PYENV.items():
+        pyenv[i] = sysenv[j]
+    pyenv["PYEXT_CPPPATH"] = [distutils.sysconfig.get_python_inc()]
+    return pyenv
 
 def pycc_hook(self, node):
     tasks = pycc_task(self, node)

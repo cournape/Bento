@@ -1,4 +1,3 @@
-import distutils
 import sys
 
 from cPickle \
@@ -7,19 +6,17 @@ from cPickle \
 
 from yaku.pyext \
     import \
-        create_pyext
+        create_pyext, get_pyenv
 
 from yaku.task_manager \
     import \
         get_bld, CACHE_FILE, create_tasks, run_tasks
-from yaku.sysconfig \
-    import \
-        get_configuration
 from yaku.tools \
     import \
         import_tools
 
-import_tools(["ctasks", "tpl_tasks", "cython", "fortran", "swig"], ["tools"])
+import_tools(["ctasks", "tpl_tasks", "cython", "fortran", "swig"],
+        ["tools"])
 
 def create_sources(bld, name, sources):
     tasks = create_tasks(bld, sources)
@@ -29,27 +26,14 @@ if __name__ == "__main__":
     from yaku.tools.gcc import detect as gcc_detect
     from yaku.tools.gfortran import detect as gfortran_detect
 
-    p = {
-            "PYEXT_SHCC": "CC",
-            "PYEXT_CCSHARED": "CCSHARED",
-            "PYEXT_SHLINK": "LDSHARED",
-            "PYEXT_SO": "SO",
-            "PYEXT_CFLAGS": "CFLAGS",
-            "PYEXT_OPT": "OPT",
-            "PYEXT_LIBS": "LIBS",
-            "PYEXT_INCPATH_FMT": "INCPATH_FMT",
-    }
-
     bld = get_bld()
-    pyenv = get_configuration()
     bld.env = {}
-    for i, j in p.items():
-        bld.env[i] = pyenv[j]
+
+    bld.env.update(get_pyenv())
 
     gcc_detect(bld)
     gfortran_detect(bld)
     bld.env.update({"CPPPATH": [], "LIBPATH": [], "LIBS": [],
-            "PYEXT_CPPPATH": [distutils.sysconfig.get_python_inc()],
             "F77": ["gfortran"],
             "F77FLAGS": ["-W", "-g"],
             "SWIG": ["swig"],
