@@ -1,35 +1,34 @@
 import sys
 
-from cPickle \
-    import \
-        dump
-
 from yaku.pyext \
     import \
         create_pyext, get_pyenv
 
-from yaku.task_manager \
+from yaku.build_context \
     import \
-        get_bld, CACHE_FILE
+        get_bld
 from yaku.tools \
     import \
         import_tools
 
-import_tools(["ctasks"], ["tools"])
+from yaku.tools.gcc import detect as gcc_detect
 
-if __name__ == "__main__":
-    from yaku.tools.gcc import detect as gcc_detect
+# Use dot in the name to avoid accidental import of it
+CONFIG_INFO = "default.config.py"
 
-    bld = get_bld()
-    bld.env.update({
-            "VERBOSE": False,
-            "BLDDIR": "build"})
+def configure(ctx):
+    import_tools(["ctasks"], ["tools"])
+
     if "-v" in sys.argv:
-        bld.env["VERBOSE"] = True
-    bld.env.update(get_pyenv())
-    gcc_detect(bld)
+        ctx.env["VERBOSE"] = True
+    gcc_detect(ctx)
+    ctx.env.update(get_pyenv())
 
+def build(ctx):
     create_pyext(bld, "_bar", ["src/hellomodule.c"])
 
-    with open(CACHE_FILE, "w") as fid:
-        dump(bld.cache, fid)
+if __name__ == "__main__":
+    bld = get_bld()
+    configure(bld)
+    build(bld)
+    bld.save()

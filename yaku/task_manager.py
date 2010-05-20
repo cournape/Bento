@@ -1,12 +1,6 @@
 import os
 
-from cPickle \
-    import \
-        load
-
 RULES_REGISTRY = {}
-
-CACHE_FILE = ".cache.lock"
 
 def extension(ext):
     def _f(f):
@@ -24,12 +18,6 @@ def get_extension_hook(ext):
         return RULES_REGISTRY[ext]
     except KeyError:
         raise ValueError("No hook registered for extension %r" % ext)
-
-class BuildContext(object):
-    def __init__(self):
-        self.object_tasks = []
-        self.cache = {}
-        self.env = {}
 
 def create_tasks(ctx, sources):
     tasks = []
@@ -101,17 +89,6 @@ def topo_sort(task_deps):
         visit(node)
 
     return tmp
-
-def get_bld():
-    bld = BuildContext()
-
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE) as fid:
-            bld.cache = load(fid)
-    else:
-        bld.cache = {}
-
-    return bld
 
 class TaskGen(object):
     def __init__(self, name, sources, target):
