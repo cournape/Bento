@@ -2,13 +2,9 @@ import os
 import re
 import sys
 
-class myenv(dict):
-    def get_flat(self, k):
-        s = self[k]
-        if isinstance(s, str):
-            return s
-        else:
-            return " ".join(s)
+from yaku.environment \
+    import \
+        Environment
 
 COMPILE_TEMPLATE_SHELL = '''
 def f(task):
@@ -151,7 +147,7 @@ if __name__ == "__main__":
             print "execute %r in %s" % (cmd, cwd)
 
     foo = Foo()
-    foo.env = myenv([("CC", "gcc")])
+    foo.env = Environment([("CC", "gcc")])
     foo.cwd = os.getcwd() + "/build"
 
     f(foo)
