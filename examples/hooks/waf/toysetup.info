@@ -7,5 +7,5 @@ AuthorEmail: cournape@gmail.com
 License: BSD
 
 Library:
-    Extension: _bar
+    Extension: hook._bar
         Sources: src/hellomodule.c
