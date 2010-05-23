@@ -86,6 +86,7 @@ def p_meta_stmt(p):
                  | meta_license_stmt
                  | meta_platforms_stmt
                  | meta_classifiers_stmt
+                 | meta_hook_file_stmt
     """
     p[0] = p[1]
 
@@ -143,6 +144,11 @@ def p_meta_version_stmt(p):
     """meta_version_stmt : VERSION_ID COLON version
     """
     p[0] = Node("version", value=p[3].value)
+
+def p_meta_hook_file_sstmt(p):
+    """meta_hook_file_stmt : HOOK_FILE_ID COLON anyword
+    """
+    p[0] = Node("hook_file", value=p[3].value)
 
 def p_meta_classifiers_stmt_single_line(p):
     """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifier"""

@@ -24,6 +24,7 @@ Classifiers:
     Operating System :: POSIX,
     Operating System :: Unix,
     Operating System :: MacOS
+HookFile: toysetup.py
 
 DataFiles: windows_arch_data
     SourceDir: toydist/commands

@@ -77,9 +77,10 @@ class PackageDescription:
             platforms=None, packages=None, py_modules=None, extensions=None,
             install_requires=None, build_requires=None,
             download_url=None, extra_source_files=None, data_files=None,
-            classifiers=None, provides=None, obsoletes=None, executables=None):
+            classifiers=None, provides=None, obsoletes=None, executables=None, hook_file=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
+        self.hook_file = hook_file
 
         # Package content
         if not packages:

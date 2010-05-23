@@ -38,6 +38,7 @@ class Dispatcher(object):
             "summary": self.summary,
             "author": self.author,
             "maintainer": self.author,
+            "hook_file": self.hook_file,
             # Library
             "library": self.library,
             "library_name": self.library_name,
@@ -80,7 +81,7 @@ class Dispatcher(object):
             if c.type in ["name", "description", "version", "summary", "url",
                           "download_url", "author", "author_email",
                           "maintainer", "maintainer_email", "license",
-                          "platforms", "classifiers"]:
+                          "platforms", "classifiers", "hook_file"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
                 self._d["path_options"][c.value["name"]] = c.value
@@ -106,6 +107,10 @@ class Dispatcher(object):
 
     def maintainer(self, node):
         node.value = "".join([i.value for i in node.value])
+        return node
+
+    def hook_file(self, node):
+        #node.value = "".join([i.value for i in node.value])
         return node
 
     def description(self, node):
