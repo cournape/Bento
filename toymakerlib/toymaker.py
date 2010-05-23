@@ -43,6 +43,10 @@ from toydist.commands.core import \
 from toydist.commands.errors import \
         ConvertionError, UsageException
 
+from toymakerlib.hooks \
+    import \
+        get_pre_hooks, get_post_hooks, get_command_override
+
 if os.environ.get("TOYMAKER_DEBUG", None) is not None:
     TOYMAKER_DEBUG = True
 else:
@@ -67,7 +71,48 @@ def register_commands():
     register_command("parse", ParseCommand, public=False)
     register_command("detect_type", DetectTypeCommand, public=False)
  
+def dummy_startup():
+    pass
+
+def dummy_shutdown():
+    pass
+
+def set_main():
+    import imp
+
+    main_file = "toysetup.py"
+    if not os.path.exists(main_file):
+        return None
+
+    module = imp.new_module("toysetup_module")
+    code = open(main_file).read()
+
+    sys.path.insert(0, os.path.dirname(main_file))
+    try:
+        exec(compile(code, main_file, 'exec'), module.__dict__)
+    finally:
+        sys.path.pop(0)
+
+    module.root_path = main_file
+    if not hasattr(module, "startup"):
+        module.startup = dummy_startup
+    if not hasattr(module, "shutdown"):
+        module.shutdown = dummy_shutdown
+
+    return module
+
 def main(argv=None):
+    mod = set_main()
+    if mod:
+        mod.startup()
+
+    try:
+        return _main(argv)
+    finally:
+        if mod:
+            mod.shutdown()
+
+def _main(argv=None):
     register_commands()
 
     if argv is None:
@@ -118,8 +163,22 @@ def main(argv=None):
         if not cmd_name in get_command_names():
             raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
         else:
-            cmd = get_command(cmd_name)()
-            cmd.run(cmd_opts)
+            run_cmd(cmd_name, cmd_opts)
+
+def run_cmd(cmd_name, cmd_opts):
+    if get_command_override(cmd_name):
+        cmd_func = get_command_override(cmd_name)[0]
+    else:
+        cmd = get_command(cmd_name)()
+        cmd_func = cmd.run
+
+    if get_pre_hooks(cmd_name) is not None:
+        for f, a, kw in get_pre_hooks(cmd_name):
+            f(*a, **kw)
+    cmd_func(cmd_opts)
+    if get_post_hooks(cmd_name) is not None:
+        for f, a, kw in get_post_hooks(cmd_name):
+            f(*a, **kw)
 
 def noexc_main(argv=None):
     try:
