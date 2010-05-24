@@ -1,0 +1,35 @@
+.. vim syntax=rst
+
+TODO:
+
+    - add msi support
+    - add proper egg support
+    - add mpkg support
+    - port stdeb to toydist
+    - rename toydist to bento
+    - specify hook mechanism
+    - integrate yaku or fbuild
+    - add runtime support to install paths
+    - test command support
+    - distcheck support
+    - think about integration with sphinx for doc
+
+Not well thought out yet:
+    - pkg_resources: the thing is a giant unmaintainable mess, but can
+      we afford ignoring it ?
+
+Release 0.0.3
+=============
+
+0.0.3 goals:
+
+    - integrate yaku (without exposing yaku API)
+    - put everything in a build directory
+    - specify hook mechanism
+
+Release 0.0.4
+=============
+
+0.0.4 goals:
+
+    - test and distcheck support
