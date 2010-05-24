@@ -13,6 +13,10 @@ from toydist.core.platforms import \
         get_scheme
 from toydist.core.parser.api import \
         ParseError
+from toydist.core.package import \
+        PackageDescription
+from toydist._config import \
+        TOYDIST_SCRIPT
 
 from toydist.commands.core import \
         Command, HelpCommand, get_usage
@@ -80,9 +84,15 @@ def dummy_shutdown():
 def set_main():
     import imp
 
-    main_file = "toysetup.py"
-    if not os.path.exists(main_file):
+    pkg = PackageDescription.from_file(TOYDIST_SCRIPT)
+    main_file = pkg.hook_file
+
+    #main_file = "toysetup.py"
+    if main_file is None:
         return None
+    else:
+        if not os.path.exists(main_file):
+            raise ValueError("Hook file %s not found" % main_file)
 
     module = imp.new_module("toysetup_module")
     code = open(main_file).read()
