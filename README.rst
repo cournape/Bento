@@ -1,5 +1,5 @@
 A pythonic, no-nonsense packaging tool for python software. Packaging is as
-simple as writing a file toysetup.info with a file which looks as follows::
+simple as writing a toysetup.info file with a file which looks as follows::
 
     Name: Foo
     Author: John Doe
@@ -112,8 +112,8 @@ may be described as follows::
 Building, installing
 ~~~~~~~~~~~~~~~~~~~~
 
-Assuming the file is named toysetup.info, the command line interface toymaker
-can be used to configure, build, install, etc... the distribution::
+Toydist currently only has a command-line interface, toymaker. It can be used
+to configure, build, install, etc... the distribution::
 
     toymaker configure --prefix=/usr/local
     toymaker build
@@ -130,13 +130,13 @@ following advantages:
 
     * Inspection of packages becomes easier for third parties, like OS
       vendors.
-    * No arbitrary code execution, you only have to trust toydist code
-      instead of setup.py (which can do anything that python can)
-    * Altough the current toydist implementation uses distutils to actually
-      build the extensions, distutils becomes an implementation detail of
-      the system, in the sense that another build system can be build on
-      top of toydist. This gives a simple but powerful way forward for
-      improving the situation of python packaging.
+    * No arbitrary code execution for simple packages, you only have to trust
+      toydist code instead of setup.py (which can do anything that python can)
+    * Although the current toydist implementation uses distutils to actually
+      build the extensions, distutils becomes an implementation detail of the
+      system, in the sense that another build system can be build on top of
+      toydist. This gives a simple but powerful way forward for improving the
+      situation of python packaging.
 
 Useful discussions which are related to toydist design:
 
