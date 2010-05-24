@@ -7,7 +7,7 @@ from toydist.commands.errors \
     import \
         UsageException
 from toydist.commands.core import \
-        Command, SCRIPT_NAME
+        Command, SCRIPT_NAME, Option
 from toydist.core.parser.api \
     import \
         parse_to_dict, ParseError
@@ -18,10 +18,12 @@ Purpose: query the given package description file (debugging tool)
 Usage:   toymaker parse [OPTIONS]"""
     short_descr = "parse the package description file."
     opts = Command.opts + [
-        {"opts": ["-f", "--flags"], "action": "store_true", "help": "print flags variables"},
-        {"opts": ["-p", "--path"], "action": "store_true", "help": "print paths variables"},
-        {"opts": ["-m", "--meta-field"], "dest": "meta_field", "help": "print given meta field"}
-    ]
+        Option("-f", "--flags", action="store_true",
+               help="print flags variables"),
+        Option("-p", "--path", action="store_true",
+               help="print paths variables"),
+        Option("-m", "--meta-field", dest="meta_field",
+               help="print given meta field")]
 
     def run(self, opts):
         self.set_option_parser()
