@@ -80,7 +80,6 @@ class PackageDescription:
             classifiers=None, provides=None, obsoletes=None, executables=None, hook_file=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
-        self.hook_file = hook_file
 
         # Package content
         if not packages:
@@ -126,6 +125,10 @@ class PackageDescription:
         _args = locals()
         kw = dict([(k, _args[k]) for k in _METADATA_FIELDS if k in _args])
         _set_metadata(self, **kw)
+
+        self.hook_file = hook_file
+        if self.hook_file is not None:
+            self.extra_source_files.append(self.hook_file)
 
 def file_list(pkg, root_src=""):
     # FIXME: root_src
