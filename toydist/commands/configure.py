@@ -1,6 +1,11 @@
 import sys
 import os
 
+try:
+    from cPickle import loads, dumps
+except ImportError:
+    from pickle import loads, dumps
+
 from toydist.core.utils import \
         pprint
 from toydist.core.platforms import \
@@ -18,26 +23,38 @@ from toydist.commands.errors \
         UsageException
 
 class ConfigureState(object):
-    def __init__(self):
-        self.flags = {}
-        self.paths = {}
+    def __init__(self, filename, pkg, paths=None, flags=None):
+        self.filename = filename
+        self.pkg = pkg
 
-    def dump(self, file=CONFIGURED_STATE_DUMP):
-        import cPickle
-        f = open(file, 'wb')
+        if flags is None:
+            self.flags = {}
+        else:
+            self.flags = flags
+
+        if paths is None:
+            self.paths = {}
+        else:
+            self.paths = paths
+
+    def dump(self, filename=CONFIGURED_STATE_DUMP):
+        # Write into tmp file and atomtically rename the file to avoid
+        # corruption
+        f = open(filename + ".tmp", 'wb')
         try:
-            str = cPickle.dumps(self)
-            f.write(str)
+            s = dumps(self)
+            f.write(s)
         finally:
             f.close()
 
+        os.rename(filename + ".tmp", filename)
+
     @classmethod
-    def from_dump(cls, file=CONFIGURED_STATE_DUMP):
-        import cPickle
-        f = open(file, 'rb')
+    def from_dump(cls, filename=CONFIGURED_STATE_DUMP):
+        f = open(filename, 'rb')
         try:
-            str = f.read()
-            return cPickle.loads(str)
+            s = f.read()
+            return loads(s)
         finally:
             f.close()
 
@@ -111,11 +128,7 @@ Usage: toymaker configure [OPTIONS]"""
         # subsequent commands
         pkg = PackageDescription.from_file(filename, flag_vals)
 
-        s = ConfigureState()
-        s.paths = scheme
-        s.flags = flag_vals
-        s.package_description = filename
-        s.pkg = pkg
+        s = ConfigureState(filename, pkg, scheme, flag_vals)
         s.dump()
 
     def add_configuration_options(self, pkg_opts):
