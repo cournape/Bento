@@ -8,11 +8,7 @@ from toydist.commands.core \
         register_command, Command, get_command
 from toydist.core.utils \
     import \
-        pprint
-
-def ensure_directory(d):
-    if not os.path.exists(d):
-        os.makedirs(d)
+        pprint, ensure_directory
 
 class TestCommand(Command):
     def run(self, opts):
@@ -41,7 +37,7 @@ class DistCheckCommand(Command):
         saved = os.getcwd()
         if os.path.exists(".distcheck"):
             shutil.rmtree(".distcheck")
-        ensure_directory(".distcheck")
+        os.makedirs(".distcheck")
         os.rename(tarname, os.path.join(".distcheck", tarname))
 
         os.chdir(".distcheck")

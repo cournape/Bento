@@ -174,3 +174,8 @@ def find_package(pkg_name, basedir=''):
     return [os.path.join(basedir, f)
                 for f in
                     os.listdir(basedir) if f.endswith('.py')]
+
+def ensure_directory(path):
+    d = os.path.dirname(path)
+    if d and not os.path.exists(d):
+        os.makedirs(d)

@@ -18,6 +18,7 @@ _DEBUG_YACC = 0
 # Windows binaries
 _CLI = os.path.join(ARCH_DATA, "commands", "cli.exe")
 
-CONFIGURED_STATE_DUMP = ".config.bin"
+BUILD_DIR = "build/toydist"
+CONFIGURED_STATE_DUMP = os.path.join(BUILD_DIR, ".config.bin")
 TOYDIST_SCRIPT = "toysetup.info"
-PKG_CACHE = ".pkg.cache"
+PKG_CACHE = os.path.join(BUILD_DIR, ".pkg.cache")

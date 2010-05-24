@@ -16,6 +16,9 @@ from toydist._config \
 from toydist.utils \
     import \
         pickle_memoize
+from toydist.core.utils \
+    import \
+        ensure_directory
 from toydist.core.parser.parser \
     import \
         parse as _parse
@@ -48,6 +51,7 @@ def get_parsed_script(data):
         # Write to a temp file to avoid writing corrupted file if
         # ctrl+c is caught during write
         p = _parse(data)
+        ensure_directory(PKG_CACHE + ".tmp")
         tmp = open(PKG_CACHE + ".tmp", "wb")
         try:
             dump(p, tmp)
