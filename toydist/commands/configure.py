@@ -9,7 +9,7 @@ from toydist.core import \
         PackageOptions, PackageDescription
 from toydist._config \
     import \
-        CONFIGURED_STATE_DUMP
+        CONFIGURED_STATE_DUMP, TOYDIST_SCRIPT
 
 from toydist.commands.core import \
         Command, SCRIPT_NAME, Option
@@ -40,21 +40,6 @@ class ConfigureState(object):
             return cPickle.loads(str)
         finally:
             f.close()
-
-def ensure_info_exists(opts):
-    if len(opts) < 1 or opts[-1].startswith('-'):
-        msg = "%s: Error: No toysetup.info found, and no toydist " \
-              "configuration file given at the command line." % SCRIPT_NAME
-        msg += "\nTry: %s help configure" % SCRIPT_NAME
-        raise UsageException(msg)
-    else:
-        filename = opts[-1]
-        if not os.path.exists(filename):
-            msg = "%s: Error: configuration file %s not found." % \
-                    (SCRIPT_NAME, filename)
-            raise UsageException(msg)
-
-    return filename
 
 def set_scheme_options(scheme, options):
     """Set path variables given in options in scheme dictionary."""
@@ -89,7 +74,7 @@ def set_flag_options(flag_opts, options):
 class ConfigureCommand(Command):
     long_descr = """\
 Purpose: configure the project
-Usage: toymaker configure [OPTIONS] [package description file]."""
+Usage: toymaker configure [OPTIONS]"""
     short_descr = "configure the project."
     opts = [Option('-h', '--help',
                    help="Show package-specific configuration options",
@@ -98,21 +83,16 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
 
         # We need to obtain the package description ASAP, as we need to parse
         # it to get the options (i.e. we cannot use the option handling mechanism).
-        candidate = "toysetup.info"
-        if len(opts) < 1 or opts[-1].startswith('-'):
-            pass
-        else:
-            candidate = opts[-1]
-
-        if os.path.exists(candidate):
-            filename = candidate
-        else:
-            filename = ensure_info_exists(opts)
+        filename = TOYDIST_SCRIPT
+        if not os.path.exists(filename):
+            msg = "%s: Error: No %s found" % (SCRIPT_NAME, TOYDIST_SCRIPT)
+            msg += "\nTry: %s help configure" % SCRIPT_NAME
+            raise UsageException(msg)
 
         pkg_opts = PackageOptions.from_file(filename)
 
         # As the configure command line handling is customized from
-        # the toysetup.info (flags, paths variables), we cannot just
+        # the script file (flags, paths variables), we cannot just
         # call set_options_parser, and we set it up manually instead
         self.reset_parser()
         for opt in self.opts:
@@ -140,7 +120,7 @@ Usage: toymaker configure [OPTIONS] [package description file]."""
 
     def add_configuration_options(self, pkg_opts):
         """Add the path and flags-related options as defined in the
-        toysetup.info file to the command."""
+        script file to the command."""
         scheme, scheme_opts_d = get_scheme(sys.platform)
 
         scheme_opts = {}

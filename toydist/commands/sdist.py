@@ -9,6 +9,8 @@ from toydist.commands.errors \
         UsageException
 from toydist.commands.core import \
     Command
+from toydist._config import \
+    TOYDIST_SCRIPT
 
 def tarball_basename(dist_name, version=None):
     if version:
@@ -28,10 +30,10 @@ Usage:   toymaker sdist [OPTIONS]."""
             self.parser.print_help()
             return
 
-        filename = "toysetup.info"
+        filename = TOYDIST_SCRIPT
         if not len(a) > 0:
             if not os.path.exists(filename):
-                raise UsageException("Missing %s file" % "toysetup.info")
+                raise UsageException("Missing %s file" % TOYDIST_SCRIPT)
 
         pkg = PackageDescription.from_file(filename)
         create_tarball(pkg)

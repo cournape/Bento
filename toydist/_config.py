@@ -19,3 +19,4 @@ _DEBUG_YACC = 0
 _CLI = os.path.join(ARCH_DATA, "commands", "cli.exe")
 
 CONFIGURED_STATE_DUMP = ".config.bin"
+TOYDIST_SCRIPT = "toysetup.info"
