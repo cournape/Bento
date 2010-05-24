@@ -5,3 +5,4 @@ Url: http://github.com/cournape/toydist
 Author: David Cournapeau
 AuthorEmail: cournape@gmail.com
 License: BSD
+HookFile: toysetup.py
