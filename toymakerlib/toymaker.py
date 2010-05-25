@@ -47,7 +47,7 @@ from toydist.commands.core import \
 from toydist.commands.errors import \
         ConvertionError, UsageException
 
-from toymakerlib.hooks \
+from toydist.commands.hooks \
     import \
         get_pre_hooks, get_post_hooks, get_command_override
 

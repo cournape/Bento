@@ -8,7 +8,7 @@ from toydist.core.utils \
 from toydist.commands.configure \
     import \
         get_configured_state
-from toymakerlib.hooks \
+from toydist.commands.hooks \
     import \
         override, post_configure
 
