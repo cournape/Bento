@@ -3,12 +3,18 @@ import sys
 import shutil
 import subprocess
 
+from toydist.core.package \
+    import \
+        PackageDescription
 from toydist.commands.core \
     import \
         register_command, Command, get_command
 from toydist.core.utils \
     import \
         pprint, ensure_directory
+from toydist._config \
+    import \
+        TOYDIST_SCRIPT
 
 class TestCommand(Command):
     def run(self, opts):
@@ -32,7 +38,9 @@ class DistCheckCommand(Command):
         sdist = get_command("sdist")
         sdist().run([])
 
-        tarname = "toydist-0.0.2.tar.gz"
+        pkg = PackageDescription.from_file(TOYDIST_SCRIPT)
+        tarname = "%s-%s.tar.gz" % (pkg.name, pkg.version)
+        tardir = "%s-%s" % (pkg.name, pkg.version)
 
         saved = os.getcwd()
         if os.path.exists(".distcheck"):
@@ -44,7 +52,7 @@ class DistCheckCommand(Command):
         try:
             pprint('PINK', "\t-> Extracting sdist...")
             subprocess.check_call(["tar", "-xzf", tarname])
-            os.chdir("toydist-0.0.2")
+            os.chdir(tardir)
 
             pprint('PINK', "\t-> Configuring from sdist...")
             subprocess.check_call(["../../toymaker", "configure", "--prefix=tmp"])
