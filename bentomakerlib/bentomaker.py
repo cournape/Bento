@@ -190,20 +190,26 @@ def _main(popts):
         else:
             run_cmd(cmd_name, cmd_opts)
 
+class Context(object):
+    def __init__(self, cmd, cmd_opts):
+        self.cmd = cmd
+        self.cmd_opts = cmd_opts
+
 def run_cmd(cmd_name, cmd_opts):
+    cmd = get_command(cmd_name)()
+    ctx = Context(cmd, cmd_opts)
     if get_command_override(cmd_name):
         cmd_func = get_command_override(cmd_name)[0]
     else:
-        cmd = get_command(cmd_name)()
-        cmd_func = cmd.run
+        cmd_func = lambda ctx: cmd.run(ctx.cmd_opts)
 
     if get_pre_hooks(cmd_name) is not None:
-        for f, a, kw in get_pre_hooks(cmd_name):
-            f(*a, **kw)
-    cmd_func(cmd_opts)
+        for f in get_pre_hooks(cmd_name):
+            f[0]()
+    cmd_func(ctx)
     if get_post_hooks(cmd_name) is not None:
-        for f, a, kw in get_post_hooks(cmd_name):
-            f(*a, **kw)
+        for f in get_post_hooks(cmd_name):
+            f[0]()
 
 def noexc_main(argv=None):
     try:
