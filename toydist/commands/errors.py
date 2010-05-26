@@ -7,3 +7,6 @@ class UsageException(Exception):
 
 class ConvertionError(Exception):
     pass
+
+class CommandExecutionFailure(Exception):
+    pass

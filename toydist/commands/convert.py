@@ -185,38 +185,39 @@ Usage:   toymaker convert [OPTIONS] setup.py"""
         convert_log = "convert.log"
         log = open(convert_log, "w")
         try:
-            if tp == "automatic":
-                try:
-                    pprint("PINK",
-                           "Catching monkey (this may take a while) ...")
-                    tp = detect_monkeys(filename, show_output, log)
-                    pprint("PINK", "Detected mode: %s" % tp)
-                except ValueError, e:
-                    raise UsageException("Error while detecting setup.py type " \
-                                         "(original error: %s)" % str(e))
+            try:
+                if tp == "automatic":
+                    try:
+                        pprint("PINK",
+                               "Catching monkey (this may take a while) ...")
+                        tp = detect_monkeys(filename, show_output, log)
+                        pprint("PINK", "Detected mode: %s" % tp)
+                    except ValueError, e:
+                        raise UsageException("Error while detecting setup.py type " \
+                                             "(original error: %s)" % str(e))
 
-            monkey_patch(tp, filename)
-            # analyse_setup_py put results in LIVE_OBJECTS
-            dist = analyse_setup_py(filename, setup_args)
-            pkg, options = build_pkg(dist, LIVE_OBJECTS)
+                monkey_patch(tp, filename)
+                # analyse_setup_py put results in LIVE_OBJECTS
+                dist = analyse_setup_py(filename, setup_args)
+                pkg, options = build_pkg(dist, LIVE_OBJECTS)
 
-            out = static_representation(pkg, options)
-            if output == '-':
-                for line in out.splitlines():
-                    pprint("YELLOW", line)
-            else:
-                fid = open(output, "w")
-                try:
-                    fid.write(out)
-                finally:
-                    fid.close()
-        except Exception, e:
-            log.write("Error while converting - traceback:\n")
-            tb = sys.exc_info()[2]
-            traceback.print_tb(tb, file=log)
-            msg = "Error while converting %s - you may look at %s for " \
-                  "details (Original exception: %s %s)" 
-            raise ConvertionError(msg % (filename, convert_log, type(e), str(e)))
+                out = static_representation(pkg, options)
+                if output == '-':
+                    for line in out.splitlines():
+                        pprint("YELLOW", line)
+                else:
+                    fid = open(output, "w")
+                    try:
+                        fid.write(out)
+                    finally:
+                        fid.close()
+            except Exception, e:
+                log.write("Error while converting - traceback:\n")
+                tb = sys.exc_info()[2]
+                traceback.print_tb(tb, file=log)
+                msg = "Error while converting %s - you may look at %s for " \
+                      "details (Original exception: %s %s)" 
+                raise ConvertionError(msg % (filename, convert_log, type(e), str(e)))
         finally:
             log.flush()
             log.close()
@@ -236,17 +237,18 @@ def analyse_setup_py(filename, setup_args):
     _saved_argv = sys.argv[:]
     _saved_sys_path = sys.path
     try:
-        sys.argv = [filename] + setup_args + ["build_py"]
-        # XXX: many packages import themselves to get version at build
-        # time, and setuptools screw this up by inserting stuff first. Is
-        # there a better way ?
-        sys.path.insert(0, os.path.dirname(filename))
-        execfile(filename, exec_globals)
-        if type == "distutils" and "setuptools" in sys.modules:
-            pprint("YELLOW", "Setuptools detected in distutils mode !!!")
-    except Exception, e:
-        pprint('RED', "Got exception: %s" % e)
-        raise e
+        try:
+            sys.argv = [filename] + setup_args + ["build_py"]
+            # XXX: many packages import themselves to get version at build
+            # time, and setuptools screw this up by inserting stuff first. Is
+            # there a better way ?
+            sys.path.insert(0, os.path.dirname(filename))
+            execfile(filename, exec_globals)
+            if type == "distutils" and "setuptools" in sys.modules:
+                pprint("YELLOW", "Setuptools detected in distutils mode !!!")
+        except Exception, e:
+            pprint('RED', "Got exception: %s" % e)
+            raise e
     finally:
         sys.argv = _saved_argv
         sys.path = _saved_sys_path
