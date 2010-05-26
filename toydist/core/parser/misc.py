@@ -13,9 +13,6 @@ except ImportError:
 from toydist._config \
     import \
         TOYDIST_SCRIPT, PKG_CACHE
-from toydist.utils \
-    import \
-        pickle_memoize
 from toydist.core.utils \
     import \
         ensure_directory
@@ -28,10 +25,6 @@ from toydist.core.parser.nodes \
 from toydist.core.parser.visitor \
     import \
         Dispatcher
-
-@pickle_memoize
-def parse(data):
-    return _parse(data)
 
 # XXX: Make a decorator to make this reusable in other parts of
 # toydist

@@ -1,0 +1,13 @@
+import os
+
+if os.name == "posix":
+    from posix_path \
+        import \
+            relpath
+elif os.name == "nt":
+    from nt_path \
+        import \
+            relpath
+else:
+    raise ImportError("relpath implementation for os %s not included" \
+                      % os.name)

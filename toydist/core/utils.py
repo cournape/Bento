@@ -4,7 +4,11 @@ import re
 import glob
 
 from os.path import \
-    join, split, splitext, dirname, relpath
+    join, split, splitext, dirname
+
+from toydist.compat.api \
+    import \
+        relpath
 
 from toydist.core.errors \
     import \
