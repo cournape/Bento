@@ -47,7 +47,7 @@ from toydist.commands.core import \
         get_command_names, get_command, \
         get_public_command_names
 from toydist.commands.errors import \
-        ConvertionError, UsageException
+        ConvertionError, UsageException, CommandExecutionFailure
 
 from toydist.commands.hooks \
     import \
@@ -205,6 +205,9 @@ def noexc_main(argv=None):
     except ConvertionError, e:
         pprint('RED', "".join(e.args))
         sys.exit(3)
+    except CommandExecutionFailure, e:
+        pprint('RED', "".join(e.args))
+        sys.exit(4)
     except Exception, e:
         if TOYMAKER_DEBUG:
             tb = sys.exc_info()[2]

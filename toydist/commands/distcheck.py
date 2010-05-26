@@ -1,8 +1,14 @@
 import os
 import sys
 import shutil
-import subprocess
 
+from toydist.compat.api \
+    import \
+        check_call, CalledProcessError
+
+from toydist.commands.errors \
+    import \
+        CommandExecutionFailure
 from toydist.commands.core \
     import \
         Command, get_command, get_command_names
@@ -38,21 +44,25 @@ class DistCheckCommand(Command):
         os.chdir(DISTCHECK_DIR)
         try:
             pprint('PINK', "\t-> Extracting sdist...")
-            subprocess.check_call(["tar", "-xzf", tarname])
+            check_call(["tar", "-xzf", tarname])
             os.chdir(tardir)
 
             pprint('PINK', "\t-> Configuring from sdist...")
-            subprocess.check_call([toymaker_script, "configure", "--prefix=tmp"])
+            check_call([toymaker_script, "configure", "--prefix=tmp"])
 
             pprint('PINK', "\t-> Building from sdist...")
-            subprocess.check_call([toymaker_script, "build"])
+            check_call([toymaker_script, "build"])
 
             pprint('PINK', "\t-> Building egg from sdist...")
-            subprocess.check_call([toymaker_script, "build_egg"])
+            check_call([toymaker_script, "build_egg"])
 
             if "test" in get_command_names():
                 pprint('PINK', "\t-> Testing from sdist...")
-                subprocess.check_call([toymaker_script, "test"])
+                try:
+                    check_call([toymaker_script, "test"])
+                except CalledProcessError, e:
+                    raise CommandExecutionFailure(
+                            "test command failed")
             else:
                 pprint('YELLOW', "\t-> No test command defined, no testing")
         finally:

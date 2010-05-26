@@ -11,3 +11,12 @@ elif os.name == "nt":
 else:
     raise ImportError("relpath implementation for os %s not included" \
                       % os.name)
+
+try:
+    from subprocess \
+        import \
+            check_call, CalledProcessError
+except ImportError:
+    from toydist.compat._subprocess \
+        import \
+            check_call, CalledProcessError

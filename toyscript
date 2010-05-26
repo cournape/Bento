@@ -1,6 +1,9 @@
 import os
 import sys
 
+from toydist.commands.errors \
+    import \
+        CommandExecutionFailure
 from toydist.commands.core \
     import \
         register_command, Command, get_command
@@ -16,9 +19,13 @@ class TestCommand(Command):
         os.chdir("tests")
         try:
             from nose.core import main
-            # XXX: find out why nose.core.main screws up traceback,
-            # and exits python interpreter here
-            main(argv=sys.argv[:1])
+            try:
+                main(argv=sys.argv[:1])
+            except SystemExit, e:
+                if e.code:
+                    msg = "Command test failed (nose threw a SystemExit" \
+                          "(code=True))"
+                    raise CommandExecutionFailure(msg)
         finally:
             os.chdir(saved)
 
