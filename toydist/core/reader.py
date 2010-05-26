@@ -110,15 +110,16 @@ Parser traceback: %s''' %
         for p in parsers:
             self._traceback.append(p.func_name)
             try:
-                if store is not None:
-                    p(self, store, opt_arg)
+                try:
+                    if store is not None:
+                        p(self, store, opt_arg)
+                    else:
+                        p(self, opt_arg)
+                except NextParser:
+                    pass
                 else:
-                    p(self, opt_arg)
-            except NextParser:
-                pass
-            else:
-                assert self.index > index_before
-                return True
+                    assert self.index > index_before
+                    return True
             finally:
                 self._traceback.pop()
 
