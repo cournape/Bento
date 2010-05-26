@@ -103,7 +103,9 @@ _DIST_CONV_DICT = {
 }
 
 def to_distutils_meta(meta):
-    from distutils.dist import DistributionMetadata
+    from toydist.compat.dist \
+        import \
+            DistributionMetadata
     ret = DistributionMetadata()
     for m in ret._METHOD_BASENAMES:
         try:
