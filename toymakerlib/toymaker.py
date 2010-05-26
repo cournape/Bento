@@ -40,6 +40,8 @@ from toydist.commands.build_egg import \
         BuildEggCommand
 from toydist.commands.build_wininst import \
         BuildWininstCommand
+from toydist.commands.distcheck import \
+        DistCheckCommand
 from toydist.commands.core import \
         register_command, \
         get_command_names, get_command, \
@@ -70,6 +72,7 @@ def register_commands():
     register_command("sdist", SdistCommand)
     register_command("build_egg", BuildEggCommand)
     register_command("build_wininst", BuildWininstCommand)
+    register_command("distcheck", DistCheckCommand)
 
     register_command("build_pkg_info", BuildPkgInfoCommand, public=False)
     register_command("parse", ParseCommand, public=False)
