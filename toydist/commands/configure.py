@@ -138,7 +138,8 @@ Usage: toymaker configure [OPTIONS]"""
 
         scheme_opts = {}
         for name, opt_d in scheme_opts_d.items():
-            opt = Option(*opt_d["opts"], help=opt_d["help"])
+            kw = {"help": opt_d["help"]}
+            opt = Option(*opt_d["opts"], **kw)
             scheme_opts[name] = opt
 
         # XXX: abstract away those, as it is copied from distutils
