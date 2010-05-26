@@ -18,7 +18,10 @@ _DEBUG_YACC = 0
 # Windows binaries
 _CLI = os.path.join(ARCH_DATA, "commands", "cli.exe")
 
+# Use subdist toydist to avoid clashing with distutils ATM
 BUILD_DIR = "build/toydist"
 CONFIGURED_STATE_DUMP = os.path.join(BUILD_DIR, ".config.bin")
-TOYDIST_SCRIPT = "toysetup.info"
 PKG_CACHE = os.path.join(BUILD_DIR, ".pkg.cache")
+DISTCHECK_DIR = os.path.join(BUILD_DIR, "distcheck")
+
+TOYDIST_SCRIPT = "toysetup.info"

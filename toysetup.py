@@ -24,5 +24,5 @@ class TestCommand(Command):
 
 def startup():
     from toydist.commands.distcheck import DistCheckCommand
-    #register_command("test", TestCommand)
+    register_command("test", TestCommand)
     register_command("distcheck", DistCheckCommand)

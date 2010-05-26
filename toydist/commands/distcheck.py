@@ -14,7 +14,7 @@ from toydist.core.package \
         PackageDescription
 from toydist._config \
     import \
-        TOYDIST_SCRIPT
+        TOYDIST_SCRIPT, DISTCHECK_DIR
 
 class DistCheckCommand(Command):
     def run(self, opts):
@@ -30,12 +30,12 @@ class DistCheckCommand(Command):
         tardir = "%s-%s" % (pkg.name, pkg.version)
 
         saved = os.getcwd()
-        if os.path.exists(".distcheck"):
-            shutil.rmtree(".distcheck")
-        os.makedirs(".distcheck")
-        os.rename(tarname, os.path.join(".distcheck", tarname))
+        if os.path.exists(DISTCHECK_DIR):
+            shutil.rmtree(DISTCHECK_DIR)
+        os.makedirs(DISTCHECK_DIR)
+        os.rename(tarname, os.path.join(DISTCHECK_DIR, tarname))
 
-        os.chdir(".distcheck")
+        os.chdir(DISTCHECK_DIR)
         try:
             pprint('PINK', "\t-> Extracting sdist...")
             subprocess.check_call(["tar", "-xzf", tarname])
