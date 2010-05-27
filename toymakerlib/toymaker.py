@@ -118,12 +118,22 @@ def set_main():
     return module
 
 def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+    popts = parse_global_options(argv)
+    cmd_name = popts["cmd_name"]
+    if cmd_name and cmd_name in ["convert"]:
+        _main(popts)
+    else:
+        _wrapped_main(popts)
+
+def _wrapped_main(popts):
     mod = set_main()
     if mod:
         mod.startup()
 
     try:
-        return _main(argv)
+        return _main(popts)
     finally:
         if mod:
             mod.shutdown()
@@ -152,28 +162,24 @@ def parse_global_options(argv):
 
     return ret
 
-def _main(argv=None):
+def _main(popts):
     register_commands()
 
-    if argv is None:
-        argv = sys.argv[1:]
-
-    ret = parse_global_options(argv)
-    if ret["show_version"]:
+    if popts["show_version"]:
         print toydist.__version__
         return 0
 
-    if ret["show_full_version"]:
+    if popts["show_full_version"]:
         print toydist.__version__ + "git" + toydist.__git_revision__
         return 0
 
-    if ret["show_usage"]:
+    if popts["show_usage"]:
         cmd = get_command('help')()
         cmd.run([])
         return 0
 
-    cmd_name = ret["cmd_name"]
-    cmd_opts = ret["cmd_opts"]
+    cmd_name = popts["cmd_name"]
+    cmd_opts = popts["cmd_opts"]
 
     if not cmd_name:
         print "Type '%s help' for usage." % SCRIPT_NAME
