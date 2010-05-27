@@ -15,7 +15,7 @@ from yaku.compiled_fun \
 
 ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${INCPATH} -o ${TGT[0]} -c ${SRC}", False)
 
-cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${SHLINKFLAGS} ${APP_LIBPATH} ${APP_LIBS} -o ${TGT[0]} ${SRC}", False)
+cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${SHLINKFLAGS} ${APP_LIBDIR} ${APP_LIBS} -o ${TGT[0]} ${SRC}", False)
 
 @extension('.c')
 def c_hook(self, node):
@@ -56,11 +56,11 @@ def apply_libs(task_gen):
     task_gen.env["APP_LIBS"] = [
             task_gen.env["LIBS_FMT"] % lib for lib in libs]
 
-def apply_libpath(task_gen):
-    libdir = task_gen.env["LIBPATH"]
+def apply_libdir(task_gen):
+    libdir = task_gen.env["LIBDIR"]
     implicit_paths = set([
         os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
         for s in task_gen.sources])
     libdir = list(implicit_paths) + libdir
-    task_gen.env["APP_LIBPATH"] = [
-            task_gen.env["LIBPATH_FMT"] % d for d in libdir]
+    task_gen.env["APP_LIBDIR"] = [
+            task_gen.env["LIBDIR_FMT"] % d for d in libdir]
