@@ -6,10 +6,10 @@ from toydist.commands.errors \
         CommandExecutionFailure
 from toydist.commands.core \
     import \
-        register_command, Command, get_command
+        register_command, Command
 from toydist.core.utils \
     import \
-        pprint, ensure_directory
+        pprint
 
 class TestCommand(Command):
     def run(self, opts):
@@ -30,6 +30,4 @@ class TestCommand(Command):
             os.chdir(saved)
 
 def startup():
-    from toydist.commands.distcheck import DistCheckCommand
     register_command("test", TestCommand)
-    register_command("distcheck", DistCheckCommand)
