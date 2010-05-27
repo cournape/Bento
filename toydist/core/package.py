@@ -227,7 +227,8 @@ def static_representation(pkg, options={}):
         for name, ext in pkg.extensions.items():
             r.append(' ' * indent_level + "Extension: %s" % name)
             indented_list("Sources", ext.sources, 3)
-            indented_list("IncludeDirs", ext.include_dirs, 3)
+            if ext.include_dirs:
+                indented_list("IncludeDirs", ext.include_dirs, 3)
     r.append("")
 
     for name, value in pkg.executables.items():
