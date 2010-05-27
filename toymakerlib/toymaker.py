@@ -125,17 +125,10 @@ def main(argv=None):
         if mod:
             mod.shutdown()
 
-def _main(argv=None):
-    register_commands()
-
-    if argv is None:
-        argv = sys.argv[1:]
-
-    show_usage = False
-    show_version = False
-    show_full_version = False
-    cmd_name = None
-    cmd_opts = None
+def parse_global_options(argv):
+    ret = {"cmd_name": None, "cmd_opts": None,
+           "show_version": False, "show_full_version": False,
+           "show_usage": False}
 
     try:
         opts, pargs = getopt.getopt(argv, "hv", ["help", "version", "full-version"])
@@ -148,26 +141,36 @@ def _main(argv=None):
                 show_full_version = True
 
         if len(pargs) > 0:
-            cmd_name = pargs.pop(0)
-            cmd_opts = pargs
+            ret["cmd_name"] = pargs.pop(0)
+            ret["cmd_opts"] = pargs
     except getopt.GetoptError, e:
-        emsg = "%s: illegal global option -- %s" % (SCRIPT_NAME, e.opt)
-        print emsg
-        print get_usage()
-        return 1
+        emsg = "%s: illegal global option: %r" % (SCRIPT_NAME, e.opt)
+        raise UsageException(emsg)
 
-    if show_version:
+    return ret
+
+def _main(argv=None):
+    register_commands()
+
+    if argv is None:
+        argv = sys.argv[1:]
+
+    ret = parse_global_options(argv)
+    if ret["show_version"]:
         print toydist.__version__
         return 0
 
-    if show_full_version:
+    if ret["show_full_version"]:
         print toydist.__version__ + "git" + toydist.__git_revision__
         return 0
 
-    if show_usage:
+    if ret["show_usage"]:
         cmd = get_command('help')()
         cmd.run([])
         return 0
+
+    cmd_name = ret["cmd_name"]
+    cmd_opts = ret["cmd_opts"]
 
     if not cmd_name:
         print "Type '%s help' for usage." % SCRIPT_NAME
