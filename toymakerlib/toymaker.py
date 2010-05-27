@@ -87,6 +87,9 @@ def dummy_shutdown():
 def set_main():
     import imp
 
+    # Some commands work without a toydist description file (convert, help)
+    if not os.path.exists(TOYDIST_SCRIPT):
+        return None
     pkg = PackageDescription.from_file(TOYDIST_SCRIPT)
     main_file = pkg.hook_file
 
