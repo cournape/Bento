@@ -23,6 +23,10 @@ from toydist._config \
         TOYDIST_SCRIPT, DISTCHECK_DIR
 
 class DistCheckCommand(Command):
+    long_descr = """\
+Purpose: configure, build and test the project from sdist output
+Usage:   toymaker distcheck [OPTIONS]."""
+    short_descr = "check that sdist output is buildable."
     def run(self, opts):
         pprint('BLUE', "Distcheck...")
         toymaker_script = os.path.abspath(sys.argv[0])
