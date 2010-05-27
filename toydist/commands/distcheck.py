@@ -28,18 +28,19 @@ class DistCheckCommand(Command):
         toymaker_script = os.path.abspath(sys.argv[0])
 
         pprint('PINK', "\t-> Running sdist...")
-        sdist = get_command("sdist")
-        sdist().run([])
-
-        pkg = PackageDescription.from_file(TOYDIST_SCRIPT)
-        tarname = "%s-%s.tar.gz" % (pkg.name, pkg.version)
-        tardir = "%s-%s" % (pkg.name, pkg.version)
+        sdist = get_command("sdist")()
+        sdist.run([])
+        tarname = sdist.tarname
+        tardir = sdist.topdir
 
         saved = os.getcwd()
         if os.path.exists(DISTCHECK_DIR):
             shutil.rmtree(DISTCHECK_DIR)
         os.makedirs(DISTCHECK_DIR)
-        os.rename(tarname, os.path.join(DISTCHECK_DIR, tarname))
+        target = os.path.join(DISTCHECK_DIR,
+                              os.path.basename(tarname))
+        os.rename(tarname, target)
+        tarname = os.path.basename(target)
 
         os.chdir(DISTCHECK_DIR)
         try:
