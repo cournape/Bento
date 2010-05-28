@@ -1,3 +1,4 @@
+import os
 import sys
 
 from yaku.pyext \
@@ -17,7 +18,7 @@ from yaku.tools.gcc import detect as gcc_detect
 CONFIG_INFO = "default.config.py"
 
 def configure(ctx):
-    import_tools(["ctasks"], ["tools"])
+    ctx.load_tools(["ctasks"], ["tools"])
 
     if "-v" in sys.argv:
         ctx.env["VERBOSE"] = True
@@ -27,8 +28,47 @@ def configure(ctx):
 def build(ctx):
     create_pyext(bld, "_bar", ["src/hellomodule.c"])
 
+BUILD_DIR = "build"
+DEFAULT_ENV = os.path.join(BUILD_DIR, "default.env.py")
+BUILD_CONFIG = os.path.join(BUILD_DIR, "build.config.py")
+CONFIG_CACHE = os.path.join(BUILD_DIR, ".config.pck")
+BUILD_CACHE = os.path.join(BUILD_DIR, ".build.pck")
+
+from yaku.environment \
+    import \
+        Environment
+
+class ConfigureContext(object):
+    def __init__(self):
+        self.env = {}
+        self.tools = []
+        self.cache = {}
+
+    def load_tools(self, tools, tooldir=None):
+        for t in tools:
+            self.tools.append({"tool": t, "tooldir": tooldir})
+            import_tools([t], tooldir)
+
+    def store(self):
+        self.env.store(DEFAULT_ENV)
+
+class BuildContext(object):
+    def __init__(self):
+        self.env = {}
+        self.tools = {}
+        self.cache = {}
+
+def get_cfg():
+    ctx = ConfigureContext()
+    if os.path.exists(DEFAULT_ENV):
+        env = Environment()
+        env.load(DEFAULT_ENV)
+    else:
+        env = Environment()
+    ctx.env = env
+    return ctx
+
 if __name__ == "__main__":
-    bld = get_bld()
-    configure(bld)
-    build(bld)
-    bld.save()
+    ctx = get_cfg()
+    configure(ctx)
+    ctx.store()
