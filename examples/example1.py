@@ -31,6 +31,7 @@ CONFIG_INFO = "default.config.py"
 def configure(ctx):
     ctx.load_tools(["ctasks"], ["tools"])
 
+    ctx.env["VERBOSE"] = False
     if "-v" in sys.argv:
         ctx.env["VERBOSE"] = True
     gcc_detect(ctx)
@@ -70,11 +71,54 @@ class ConfigureContext(object):
         with open(CONFIG_CACHE, "w") as fid:
             dump(self.cache, fid)
 
+        fid = myopen(BUILD_CONFIG, "w")
+        try:
+            fid.write("%r\n" % self.tools)
+        finally:
+            fid.close()
+
 class BuildContext(object):
     def __init__(self):
         self.env = {}
-        self.tools = {}
+        self.tools = []
         self.cache = {}
+
+    def load(self):
+        f = open(BUILD_CONFIG)
+        try:
+            tools = eval(f.read())
+            for t in tools:
+                import_tools([t["tool"]], t["tooldir"])
+        finally:
+            f.close()
+
+        if os.path.exists(BUILD_CACHE):
+            fid = open(BUILD_CACHE, "rb")
+            try:
+                self.cache = load(fid)
+            finally:
+                fid.close()
+        else:
+            self.cache = {}
+
+        self.env = Environment()
+        if os.path.exists(DEFAULT_ENV):
+            self.env.load(DEFAULT_ENV)
+
+    def store(self):
+        # Use rename to avoid corrupting the cache if interrupted
+        tmp_fid = open(BUILD_CACHE + ".tmp", "w")
+        try:
+            dump(self.cache, tmp_fid)
+        finally:
+            tmp_fid.close()
+
+        try:
+            os.unlink(BUILD_CACHE)
+        except OSError:
+            pass
+        os.rename(BUILD_CACHE + ".tmp", BUILD_CACHE)
+
 
 def myopen(filename, mode="r"):
     if "w" in mode:
@@ -98,7 +142,16 @@ def get_cfg():
     ctx.log = myopen(os.path.join(env["BLDDIR"], "config.log"), "w")
     return ctx
 
+def get_bld():
+    ctx = BuildContext()
+    ctx.load()
+    return ctx
+
 if __name__ == "__main__":
     ctx = get_cfg()
     configure(ctx)
+    ctx.store()
+
+    ctx = get_bld()
+    build(ctx)
     ctx.store()
