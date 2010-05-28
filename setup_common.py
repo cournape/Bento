@@ -6,7 +6,7 @@ from bento.core \
         PackageDescription
 
 def generate_version_py(filename):
-    pkg = PackageDescription.from_file("toysetup.info")
+    pkg = PackageDescription.from_file("bento.info")
 
     FULL_VERSION = pkg.version
     if "dev" in FULL_VERSION:

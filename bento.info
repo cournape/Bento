@@ -1,9 +1,9 @@
-Name: toydist
+Name: bento
 Version: 0.0.3
-Summary: A toy distribution tool
+Summary: A tool to nicely packages your python sotftware
 Url: http://github.com/cournape/toydist
 Description:
-    Toydist is a toy distribution tool for python packages, The goal are
+    Bento is a distribution tool for python packages, The goal are
     extensibility, flexibility, and easy interoperation with external tools.
     
     Toydist is still in infancy; discussions happen on the NumPy Mailing list

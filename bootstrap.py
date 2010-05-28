@@ -28,6 +28,6 @@ if __name__ == "__main__":
     from setup_common import generate_version_py
     generate_version_py("bento/__dev_version.py")
 
-    pkg = PackageDescription.from_file("toysetup.info")
+    pkg = PackageDescription.from_file("bento.info")
     if pkg.executables:
         install_inplace(pkg)

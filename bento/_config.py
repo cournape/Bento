@@ -24,4 +24,4 @@ CONFIGURED_STATE_DUMP = os.path.join(BUILD_DIR, ".config.bin")
 PKG_CACHE = os.path.join(BUILD_DIR, ".pkg.cache")
 DISTCHECK_DIR = os.path.join(BUILD_DIR, "distcheck")
 
-TOYDIST_SCRIPT = "toysetup.info"
+TOYDIST_SCRIPT = "bento.info"
