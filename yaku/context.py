@@ -5,6 +5,9 @@ from cPickle \
     import \
         load, dump
 
+from yaku._config \
+    import \
+        BUILD_DIR, DEFAULT_ENV, BUILD_CONFIG, BUILD_CACHE, CONFIG_CACHE
 from yaku.environment \
     import \
         Environment
@@ -14,13 +17,6 @@ from yaku.tools \
 from yaku.utils \
     import \
         ensure_dir
-
-BUILD_DIR = "build"
-# Use dot in the name to avoid accidental import of it
-DEFAULT_ENV = os.path.join(BUILD_DIR, "default.env.py")
-BUILD_CONFIG = os.path.join(BUILD_DIR, "build.config.py")
-CONFIG_CACHE = os.path.join(BUILD_DIR, ".config.pck")
-BUILD_CACHE = os.path.join(BUILD_DIR, ".build.pck")
 
 class ConfigureContext(object):
     def __init__(self):
