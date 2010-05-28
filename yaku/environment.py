@@ -1,6 +1,10 @@
 import re
 import os
 
+from yaku.utils \
+    import \
+        ensure_dir
+
 re_imp = re.compile('^(#)*?([^#=]*?)\ =\ (.*?)$', re.M)
 
 class Environment(dict):
@@ -13,6 +17,7 @@ class Environment(dict):
 
     def store(self, filename):
         tmp = filename + ".tmp"
+        ensure_dir(tmp)
         fid = open(tmp, "w")
         for k in sorted(self.keys()):
             fid.write("%s = %r\n" % (k, self[k]))
