@@ -54,8 +54,8 @@ Library:
         bento.core.platforms,
         bento.private,
         bento.private.ply,
-        toymakerlib
+        bentomakerlib
 
-Executable: toymaker
-    Module: toymakerlib.toymaker
+Executable: bentomaker
+    Module: bentomakerlib.bentomaker
     Function: noexc_main
