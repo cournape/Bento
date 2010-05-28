@@ -29,7 +29,7 @@ def apply_cpppath(task_gen):
             task_gen.env["PYEXT_INCPATH_FMT"] % p
             for p in cpppaths]
 
-pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBPATH} ${PYEXT_APP_LIBS} -o ${TGT[0]} ${SRC}", False)
+pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} -o ${TGT[0]} ${SRC}", False)
 
 pycc, pycc_vars = compile_fun("pycc", "${PYEXT_SHCC} ${PYEXT_CCSHARED} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} -o ${TGT[0]} -c ${SRC}", False)
 
@@ -114,10 +114,10 @@ def apply_libs(task_gen):
             task_gen.env["LIBS_FMT"] % lib for lib in libs]
 
 def apply_libpath(task_gen):
-    libdir = task_gen.env["LIBPATH"]
+    libdir = task_gen.env["LIBDIR"]
     implicit_paths = set([
         os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
         for s in task_gen.sources])
     libdir = list(implicit_paths) + libdir
-    task_gen.env["PYEXT_APP_LIBPATH"] = [
-            task_gen.env["LIBPATH_FMT"] % d for d in libdir]
+    task_gen.env["PYEXT_APP_LIBDIR"] = [
+            task_gen.env["LIBDIR_FMT"] % d for d in libdir]
