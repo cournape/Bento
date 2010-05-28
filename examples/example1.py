@@ -39,7 +39,7 @@ def configure(ctx):
     ctx.env.update(get_pyenv())
 
 def build(ctx):
-    create_pyext(bld, "_bar", ["src/hellomodule.c"])
+    create_pyext(ctx, "_bar", ["src/hellomodule.c"])
 
 BUILD_DIR = "build"
 DEFAULT_ENV = os.path.join(BUILD_DIR, "default.env.py")
