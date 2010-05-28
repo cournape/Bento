@@ -15,7 +15,7 @@ class Environment(dict):
         tmp = filename + ".tmp"
         fid = open(tmp, "w")
         for k in sorted(self.keys()):
-            fid.write("%s = %r" % (k, self[k]))
+            fid.write("%s = %r\n" % (k, self[k]))
 
         try:
             os.unlink(filename)
