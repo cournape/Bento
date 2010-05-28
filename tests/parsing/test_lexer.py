@@ -7,7 +7,7 @@ from nose.tools \
     import \
         assert_equal, assert_raises
 
-from toydist.core.parser.lexer \
+from bento.core.parser.lexer \
     import \
         MyLexer, indent_generator, post_process
 

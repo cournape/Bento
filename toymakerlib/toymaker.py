@@ -5,51 +5,51 @@ import getopt
 import optparse
 import traceback
 
-import toydist
+import bento
 
-from toydist.core.utils import \
+from bento.core.utils import \
         subst_vars, pprint
-from toydist.core.platforms import \
+from bento.core.platforms import \
         get_scheme
-from toydist.core.parser.api import \
+from bento.core.parser.api import \
         ParseError
-from toydist.core.package import \
+from bento.core.package import \
         PackageDescription
-from toydist._config import \
+from bento._config import \
         TOYDIST_SCRIPT
 
-from toydist.commands.core import \
+from bento.commands.core import \
         Command, HelpCommand, get_usage
-from toydist.commands.configure import \
+from bento.commands.configure import \
         ConfigureCommand
-from toydist.commands.build import \
+from bento.commands.build import \
         BuildCommand
-from toydist.commands.install import \
+from bento.commands.install import \
         InstallCommand
-from toydist.commands.parse import \
+from bento.commands.parse import \
         ParseCommand
-from toydist.commands.convert import \
+from bento.commands.convert import \
         ConvertCommand
-from toydist.commands.sdist import \
+from bento.commands.sdist import \
         SdistCommand
-from toydist.commands.detect_type import \
+from bento.commands.detect_type import \
         DetectTypeCommand
-from toydist.commands.build_pkg_info import \
+from bento.commands.build_pkg_info import \
         BuildPkgInfoCommand
-from toydist.commands.build_egg import \
+from bento.commands.build_egg import \
         BuildEggCommand
-from toydist.commands.build_wininst import \
+from bento.commands.build_wininst import \
         BuildWininstCommand
-from toydist.commands.distcheck import \
+from bento.commands.distcheck import \
         DistCheckCommand
-from toydist.commands.core import \
+from bento.commands.core import \
         register_command, \
         get_command_names, get_command, \
         get_public_command_names
-from toydist.commands.errors import \
+from bento.commands.errors import \
         ConvertionError, UsageException, CommandExecutionFailure
 
-from toydist.commands.hooks \
+from bento.commands.hooks \
     import \
         get_pre_hooks, get_post_hooks, get_command_override
 

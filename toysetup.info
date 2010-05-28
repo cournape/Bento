@@ -27,13 +27,13 @@ Classifiers:
 HookFile: toyscript
 
 DataFiles: windows_arch_data
-    SourceDir: toydist/commands
-    TargetDir: $sitedir/toydist/commands/
+    SourceDir: bento/commands
+    TargetDir: $sitedir/bento/commands/
     Files: cli.exe, wininst/*.exe
 
 DataFiles: ply_data
-    SourceDir: toydist
-    TargetDir: $sitedir/toydist
+    SourceDir: bento
+    TargetDir: $sitedir/bento
     Files: parsetab
 
 ExtraSourceFiles:
@@ -47,13 +47,13 @@ ExtraSourceFiles:
 
 Library:
     Packages:
-        toydist,
-        toydist.commands,
-        toydist.core,
-        toydist.core.parser,
-        toydist.core.platforms,
-        toydist.private,
-        toydist.private.ply,
+        bento,
+        bento.commands,
+        bento.core,
+        bento.core.parser,
+        bento.core.platforms,
+        bento.private,
+        bento.private.ply,
         toymakerlib
 
 Executable: toymaker

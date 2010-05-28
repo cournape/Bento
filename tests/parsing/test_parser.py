@@ -11,10 +11,10 @@ from nose.tools \
 
 import ply
 
-from toydist.core.parser.nodes \
+from bento.core.parser.nodes \
     import \
         Node, ast_pprint
-from toydist.core.parser.parser \
+from bento.core.parser.parser \
     import \
         parse, Parser
 

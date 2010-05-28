@@ -1,6 +1,6 @@
-from toydist.core import \
+from bento.core import \
         PackageDescription
-from toydist.core.pkg_objects import \
+from bento.core.pkg_objects import \
         Extension
 
 DESCR = """\

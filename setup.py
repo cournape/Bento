@@ -18,7 +18,7 @@ from distutils.core \
     import \
         setup
 
-from toydist.core \
+from bento.core \
     import \
         PackageDescription
 
@@ -27,7 +27,7 @@ from setup_common \
         generate_version_py
 
 def create_ply_tabfile():
-    from toydist.core.parser.parser import parse
+    from bento.core.parser.parser import parse
     parse('')
 
 class install(old_install):
@@ -44,16 +44,16 @@ class install(old_install):
     def run(self):
         create_ply_tabfile()
 
-        self._copy(join("toydist", "parsetab"),
-                   join(self.install_purelib, "toydist", "parsetab"))
+        self._copy(join("bento", "parsetab"),
+                   join(self.install_purelib, "bento", "parsetab"))
 
-        tdir = join(self.install_platlib, "toydist", "commands", "wininst")
-        for source in glob(join("toydist", "commands", "wininst", "*.exe")):
+        tdir = join(self.install_platlib, "bento", "commands", "wininst")
+        for source in glob(join("bento", "commands", "wininst", "*.exe")):
             target = join(tdir, basename(source))
             self._copy(source, target)
 
-        source = join("toydist", "commands", "cli.exe")
-        target = join(self.install_platlib, "toydist", "commands", "cli.exe")
+        source = join("bento", "commands", "cli.exe")
+        target = join(self.install_platlib, "bento", "commands", "cli.exe")
         self._copy(source, target)
 
         # MUST be run after __files contains everything
@@ -91,7 +91,7 @@ PACKAGE_DATA = {
 }
 
 if __name__ == '__main__':
-    generate_version_py("toydist/__dev_version.py")
+    generate_version_py("bento/__dev_version.py")
     config = {}
     for d in (METADATA, PACKAGE_DATA):
         for k, v in d.items():

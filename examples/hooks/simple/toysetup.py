@@ -1,8 +1,8 @@
-from toydist.commands.sdist import create_tarball
-from toydist.commands.core import register_command, Command
-from toydist.commands.configure import get_configured_state
-from toydist.core.utils import pprint
-from toydist.commands.hooks import override
+from bento.commands.sdist import create_tarball
+from bento.commands.core import register_command, Command
+from bento.commands.configure import get_configured_state
+from bento.core.utils import pprint
+from bento.commands.hooks import override
 
 class TestCommand(Command):
     def run(self, opts):

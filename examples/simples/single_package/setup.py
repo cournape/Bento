@@ -9,7 +9,7 @@ dist = setup(name='foo',
 
 # The code below can be used to generate a setup.info, which can then be used
 # to feed a totally new build tool
-from toydist import \
+from bento.import \
         distutils_to_package_description, static_representation
 
 pkg = distutils_to_package_description(dist)

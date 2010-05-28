@@ -1,14 +1,14 @@
 import sys
 import os
 
-from toydist.core \
+from bento.core \
     import \
         PackageDescription
-from toydist.core.utils \
+from bento.core.utils \
     import \
         pprint
 
-from toydist.commands.script_utils \
+from bento.commands.script_utils \
     import \
         create_posix_script, create_win32_script
 
@@ -26,7 +26,7 @@ def install_inplace(pkg):
 
 if __name__ == "__main__":
     from setup_common import generate_version_py
-    generate_version_py("toydist/__dev_version.py")
+    generate_version_py("bento/__dev_version.py")
 
     pkg = PackageDescription.from_file("toysetup.info")
     if pkg.executables:

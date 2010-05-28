@@ -7,13 +7,13 @@ from nose.tools \
     import \
         assert_equal, assert_raises
 
-from toydist.core.parser.nodes \
+from bento.core.parser.nodes \
     import \
         ast_walk
-from toydist.core.parser.visitor \
+from bento.core.parser.visitor \
     import \
         Dispatcher
-from toydist.core.parser.parser \
+from bento.core.parser.parser \
     import \
         parse as _parse
 

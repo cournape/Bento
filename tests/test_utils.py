@@ -8,7 +8,7 @@ from os.path import \
 from nose.tools import \
     assert_equal
 
-from toydist.core.utils import \
+from bento.core.utils import \
     validate_glob_pattern, expand_glob, subst_vars
 
 class TestParseGlob(unittest.TestCase):

@@ -5,10 +5,10 @@ import tempfile
 from nose.tools import \
     assert_equal
 
-from toydist import PackageDescription
-from toydist.core.package import file_list
-from toydist.core.meta import PackageMetadata
-from toydist.core.pkg_objects import DataFiles
+from bento import PackageDescription
+from bento.core.package import file_list
+from bento.core.meta import PackageMetadata
+from bento.core.pkg_objects import DataFiles
 
 def create_file(file, makedirs=True):
     if makedirs:

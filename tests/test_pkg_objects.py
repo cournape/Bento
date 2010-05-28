@@ -11,7 +11,7 @@ try:
 finally:
     from StringIO import StringIO
 
-from toydist.core.pkg_objects import \
+from bento.core.pkg_objects import \
     DataFiles, Executable
 
 class TestDataFiles(unittest.TestCase):

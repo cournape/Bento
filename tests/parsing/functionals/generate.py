@@ -4,9 +4,9 @@ from pprint \
     import \
         pprint
 
-from toydist.core.parser.nodes import ast_walk
-from toydist.core.parser.visitor import Dispatcher
-from toydist.core.parser.parser import parse
+from bento.core.parser.nodes import ast_walk
+from bento.core.parser.visitor import Dispatcher
+from bento.core.parser.parser import parse
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

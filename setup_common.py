@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from toydist.core \
+from bento.core \
     import \
         PackageDescription
 

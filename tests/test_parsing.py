@@ -14,14 +14,15 @@ try:
 finally:
     from StringIO import StringIO
 
-from toydist.core.pkg_objects import \
+from bento.core.pkg_objects import \
     PathOption, FlagOption, Executable, DataFiles
-from toydist.core.parse_utils import \
+from bento.core.parse_utils import \
     CommaListLexer, comma_list_split
-from toydist.core.options import \
+from bento.core.options import \
     PackageOptions
 
-from toydist import PackageDescription, static_representation
+from bento \
+    import PackageDescription, static_representation
 
 old = sys.path[:]
 try:

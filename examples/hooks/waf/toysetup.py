@@ -2,13 +2,13 @@ from cStringIO import StringIO
 from cPickle import dump, load
 import os, sys
 
-from toydist.core.utils \
+from bento.core.utils \
     import \
         pprint
-from toydist.commands.configure \
+from bento.commands.configure \
     import \
         get_configured_state
-from toydist.commands.hooks \
+from bento.commands.hooks \
     import \
         override, post_configure
 
@@ -115,10 +115,10 @@ def build(opts):
         bld(features='cc cshlib pyext', source=ext.sources, target=target)
     bld.compile()
 
-    from toydist.commands.build \
+    from bento.commands.build \
         import build_python_files, \
             build_data_files, build_executables
-    from toydist.installed_package_description \
+    from bento.installed_package_description \
         import \
             InstalledPkgDescription, InstalledSection, \
             ipkg_meta_from_pkg
