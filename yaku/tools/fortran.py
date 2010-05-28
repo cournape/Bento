@@ -23,10 +23,12 @@ def fortran_task(self, node):
     else:
         target = base + ".o"
     ensure_dir(target)
+
+    func, env_vars = compile_fun("f77",
+            "${F77} ${F77FLAGS} -c ${SRC} -o ${TGT[0]}", False)
     task = Task("f77", inputs=node, outputs=target)
-    task.env_vars = ["F77", "F77FLAGS"]
+    task.env_vars = env_vars
     task.env = self.env
-    task.func = compile_fun("f77", "${F77} -c ${SRC} -o ${TGT[0]}",
-                            False)[0]
+    task.func = func
     self.object_tasks.append(task)
     return [task]
