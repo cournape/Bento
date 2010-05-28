@@ -1,3 +1,5 @@
+.. vim syntax=rst
+
 What is Yaku
 ============
 
@@ -23,37 +25,6 @@ The main features of Yaku are:
     - Although not yet implemented, parallel builds may be added
       relatively simply
 
-Why Yaku ?
-==========
-
-Currently, the vast majority of python C extensions are built using
-distutils. Distutils is an imperative, inflexible way of building
-extensions:
-
-	- Handling new kind of sources (SWIG, Cython, etc...) requires
-	  extending distutils Commands through subclassing, which
-	  cause various issues when you need to integrate distutils
-	  extensions through various sources.
-	- Distutils has no notion of dependency handling
-	- Adding new compiler or new type of targets (ctypes, etc...)
-	  is a black art that few people master
-
-Instead, Yaku is based around a Task concept similar to make rules,
-and has a callback-like system to register new source files types
-(.pyx for cython or pyrex, .i for swig, etc...).
-
-    - Each task has a signature, which is used to determine whether a
-      task should be executed. The signature depends on the source
-      file content, the target content, the build environment as well
-      as the dependencies content (md5 checksum), so that changes can
-      be reliably detected.
-	- It uses dependencies defined in each task to build things in
-	  the correct order.
-    - Task are automatically built for files with registered file
-      extension, and new hooks for extension can be added.
-    - Automatic dependency handling (scanning C/C++ files to detect
-      its dependencies) may be added later
-
 What Yaku is not
 ================
 
@@ -72,3 +43,52 @@ simple, I made a few design choices which significantly impact what it can do:
     - Yaku does not aim at being very fast. It does not uses fancy
       algorithms, and is unlikely to work very well for hundreds of
       source files.
+Why Yaku ?
+==========
+
+Currently, the vast majority of python C extensions are built using distutils.
+Distutils is an imperative, inflexible way of building extensions.  Instead,
+one could use a real build system like the aforementioned waf or scons. But
+both are rather large codebases, with their own release schedule.  Yaky aims at
+replacing the build infrastructure from distutils. It is used as the default
+build engine for bento, but I hope it may become a simple, default engine for
+other distributions tools like setuptools/distribute.
+
+Yaku vs distutils
+=================
+
+With distutils:
+
+    - Handling new kind of sources (SWIG, Cython, etc...) requires
+      extending distutils Commands through subclassing, which
+      cause various issues when you need to integrate distutils
+      extensions through various sources.
+    - Distutils has no notion of dependency handling
+    - Adding new compiler or new type of targets (ctypes, etc...)
+      is a black art that few people master
+    - Distutils codebase is horrible, and needlessly complex.
+
+Yaku is based around a Task concept similar to make rules, and has a
+callback-like system to register new source files types (.pyx for cython or
+pyrex, .i for swig, etc...).
+
+    - Each task has a signature, which is used to determine whether a
+      task should be executed. The signature depends on the source
+      file content, the target content, the build environment as well
+      as the dependencies content (md5 checksum), so that changes can
+      be reliably detected.
+    - It uses dependencies defined in each task to build things in
+      the correct order.
+    - Task are automatically built for files with registered file
+      extension, and new hooks for extension can be added.
+    - Automatic dependency handling (scanning C/C++ files to detect
+      its dependencies) may be added later
+
+Note that by default, yaku currently uses the same compilation options as
+distutils.
+
+What's with the name ?
+======================
+
+Yaku means "bake" or "grill" in Japanese. It also happens that yaki-niku
+("grilled meat") is one of my favorite food in Japan.
