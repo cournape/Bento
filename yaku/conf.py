@@ -13,20 +13,20 @@ from cStringIO \
     import \
         StringIO
 
-from errors \
+from yaku.errors \
     import \
         TaskRunFailure
-from task_manager \
+from yaku.task_manager \
     import \
         CompiledTaskGen, create_tasks, run_tasks
-from compiled_fun \
+from yaku.compiled_fun \
     import \
         compile_fun
-from utils \
+from yaku.utils \
     import \
         ensure_dir
 
-from tools.ctasks \
+from yaku.tools.ctasks \
     import \
         link_task, apply_libs, apply_libdir
 
