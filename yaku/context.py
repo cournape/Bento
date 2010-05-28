@@ -25,11 +25,6 @@ class ConfigureContext(object):
         self.cache = {}
         self.conf_results = []
 
-        # FIXME: nothing to do here
-        self.env["VERBOSE"] = False
-        if "-v" in sys.argv:
-            self.env["VERBOSE"] = True
-
     def load_tools(self, tools, tooldir=None):
         for t in tools:
             self.tools.append({"tool": t, "tooldir": tooldir})
@@ -108,6 +103,11 @@ def get_cfg():
         env = Environment()
     if not env.has_key("BLDDIR"):
         env["BLDDIR"] = BUILD_DIR
+    # FIXME: nothing to do here
+    env["VERBOSE"] = False
+    if "-v" in sys.argv:
+        env["VERBOSE"] = True
+
     ctx.env = env
     ctx.log = myopen(os.path.join(env["BLDDIR"], "config.log"), "w")
     return ctx
