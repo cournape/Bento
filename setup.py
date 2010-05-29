@@ -64,7 +64,7 @@ class install(old_install):
         outfiles.extend(self.__files)
         return outfiles
 
-pkg = PackageDescription.from_file("toysetup.info")
+pkg = PackageDescription.from_file("bento.info")
 
 DESCR = pkg.description
 CLASSIFIERS = pkg.classifiers
