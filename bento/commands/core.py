@@ -136,7 +136,7 @@ def fill_string(s, minlen):
 
 def get_simple_usage():
     ret = [USAGE % {"name": SCRIPT_NAME,
-                    "version": toydist.__version__}]
+                    "version": bento.__version__}]
     ret.append("Basic Commands:")
 
     commands = []
@@ -168,7 +168,7 @@ def get_simple_usage():
 
 def get_usage():
     ret = [USAGE % {"name": SCRIPT_NAME,
-                    "version": toydist.__version__}]
+                    "version": bento.__version__}]
     ret.append("Toydist commands:")
 
     commands = []

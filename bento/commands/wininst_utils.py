@@ -73,7 +73,7 @@ def get_exe_bytes (target_version=None, plat_name=None):
     filename = os.path.join(directory, "wininst-%.1f%s.exe" % (bv, sfix))
     return open(filename, "rb").read()
 
-def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="toydist"):
+def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="bento"):
     import struct
 
     if not os.path.exists(dist_dir):
@@ -168,7 +168,7 @@ def get_inidata(ipkg):
 
     title = meta.fullname
     lines.append("title=%s" % escape(title))
-    build_info = "Built %s with toydist-%s" % \
-                 (time.ctime(time.time()), toydist.__version__)
+    build_info = "Built %s with bento-%s" % \
+                 (time.ctime(time.time()), bento.__version__)
     lines.append("build_info=%s" % build_info)
     return string.join(lines, "\n")

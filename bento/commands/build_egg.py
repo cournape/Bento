@@ -42,7 +42,7 @@ Usage:   toymaker build_egg [OPTIONS]"""
         egg_info = EggInfo.from_ipkg(ipkg)
 
         # FIXME: fix egg name
-        egg = egg_filename(os.path.join("toydist", meta.fullname))
+        egg = egg_filename(os.path.join("bento", meta.fullname))
         egg_dir = os.path.dirname(egg)
         if egg_dir:
             if not os.path.exists(egg_dir):

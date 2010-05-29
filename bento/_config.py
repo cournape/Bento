@@ -18,8 +18,8 @@ _DEBUG_YACC = 0
 # Windows binaries
 _CLI = os.path.join(ARCH_DATA, "commands", "cli.exe")
 
-# Use subdist toydist to avoid clashing with distutils ATM
-BUILD_DIR = "build/toydist"
+# Use subdist bento to avoid clashing with distutils ATM
+BUILD_DIR = "build/bento"
 CONFIGURED_STATE_DUMP = os.path.join(BUILD_DIR, ".config.bin")
 PKG_CACHE = os.path.join(BUILD_DIR, ".pkg.cache")
 DISTCHECK_DIR = os.path.join(BUILD_DIR, "distcheck")

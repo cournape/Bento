@@ -52,7 +52,7 @@ Usage:   toymaker build_wininst [OPTIONS]"""
         meta = PackageMetadata.from_ipkg(ipkg)
 
         # XXX: do this correctly, maybe use same as distutils ?
-        wininst = wininst_filename(os.path.join("toydist", meta.fullname))
+        wininst = wininst_filename(os.path.join("bento", meta.fullname))
         wininst_dir = os.path.dirname(wininst)
         if wininst_dir:
             if not os.path.exists(wininst_dir):

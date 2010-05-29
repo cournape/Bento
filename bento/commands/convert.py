@@ -137,7 +137,7 @@ class ConvertCommand(Command):
     long_descr = """\
 Purpose: convert a setup.py to an .info file
 Usage:   toymaker convert [OPTIONS] setup.py"""
-    short_descr = "convert distutils/setuptools project to toydist."
+    short_descr = "convert distutils/setuptools project to bento."
     opts = Command.opts + [
         Option("-t", help="TODO", default="automatic",
                dest="type"),
