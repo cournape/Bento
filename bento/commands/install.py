@@ -36,7 +36,7 @@ def unix_installer(source, target, kind):
 class InstallCommand(Command):
     long_descr = """\
 Purpose: install the project
-Usage:   toymaker install [OPTIONS]."""
+Usage:   bentomaker install [OPTIONS]."""
     short_descr = "install the project."
     def run(self, opts):
         self.set_option_parser()

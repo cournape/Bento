@@ -113,7 +113,7 @@ def build_data_files(pkg):
 class BuildCommand(Command):
     long_descr = """\
 Purpose: build the project
-Usage:   toymaker build [OPTIONS]."""
+Usage:   bentomaker build [OPTIONS]."""
     short_descr = "build the project."
 
     def run(self, opts):

@@ -91,7 +91,7 @@ def set_flag_options(flag_opts, options):
 class ConfigureCommand(Command):
     long_descr = """\
 Purpose: configure the project
-Usage: toymaker configure [OPTIONS]"""
+Usage: bentomaker configure [OPTIONS]"""
     short_descr = "configure the project."
     opts = [Option('-h', '--help',
                    help="Show package-specific configuration options",

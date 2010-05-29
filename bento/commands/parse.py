@@ -15,7 +15,7 @@ from bento.core.parser.api \
 class ParseCommand(Command):
     long_descr = """\
 Purpose: query the given package description file (debugging tool)
-Usage:   toymaker parse [OPTIONS]"""
+Usage:   bentomaker parse [OPTIONS]"""
     short_descr = "parse the package description file."
     opts = Command.opts + [
         Option("-f", "--flags", action="store_true",

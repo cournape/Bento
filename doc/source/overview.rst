@@ -80,7 +80,7 @@ this is not done automatically (yet).
 From existing setup.py
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Toymaker has an experimental convert command to convert existing setup.py::
+Bentomaker has an experimental convert command to convert existing setup.py::
 
     bentomaker convert
 

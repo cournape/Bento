@@ -33,7 +33,7 @@ from bento.commands.wininst_utils import \
 class BuildWininstCommand(Command):
     long_descr = """\
 Purpose: build wininst
-Usage:   toymaker build_wininst [OPTIONS]"""
+Usage:   bentomaker build_wininst [OPTIONS]"""
     short_descr = "build wininst."
 
     def run(self, opts):

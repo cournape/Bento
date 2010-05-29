@@ -24,7 +24,7 @@ def tarball_basename(dist_name, version=None):
 class SdistCommand(Command):
     long_descr = """\
 Purpose: create a tarball for the project
-Usage:   toymaker sdist [OPTIONS]."""
+Usage:   bentomaker sdist [OPTIONS]."""
     short_descr = "create a tarball."
     def __init__(self):
         Command.__init__(self)

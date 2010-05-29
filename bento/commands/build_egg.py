@@ -21,7 +21,7 @@ from bento.commands.egg_utils import \
 class BuildEggCommand(Command):
     long_descr = """\
 Purpose: build egg
-Usage:   toymaker build_egg [OPTIONS]"""
+Usage:   bentomaker build_egg [OPTIONS]"""
     short_descr = "build egg."
 
     def run(self, opts):

@@ -84,7 +84,7 @@ class Command(object):
 class HelpCommand(Command):
     long_descr = """\
 Purpose: Show help on a command or other topic.
-Usage:   toymaker help [TOPIC] or toymaker help [COMMAND]."""
+Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
     short_descr = "gives help on a given topic or command."
     def run(self, cmd_args):
         if len(cmd_args) < 1:

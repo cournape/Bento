@@ -209,35 +209,35 @@ def _test(code, setup_py, show_output, log):
 
 def test_distutils(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))
-    log.write("toymaker: convert\n")
+    log.write("bentomaker: convert\n")
     log.write(" -> testing straight distutils\n")
     return _test(distutils_code % {"filename": setup_py, "odir": odir}, setup_py,
                  show_output, log)
 
 def test_setuptools(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))
-    log.write("toymaker: convert\n")
+    log.write("bentomaker: convert\n")
     log.write(" -> testing setuptools\n")
     return _test(setuptools_code % {"filename": setup_py, "odir": odir}, setup_py,
                  show_output, log)
 
 def test_numpy(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))
-    log.write("toymaker: convert\n")
+    log.write("bentomaker: convert\n")
     log.write(" -> testing straight numpy.distutils\n")
     return _test(numpy_code % {"filename": setup_py, "odir": odir}, setup_py,
                  show_output, log)
 
 def test_setuptools_numpy(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))
-    log.write("toymaker: convert\n")
+    log.write("bentomaker: convert\n")
     log.write(" -> testing numpy.distutils monkey-patched by setuptools\n")
     return _test(setuptools_numpy_code % {"filename": setup_py, "odir": odir}, setup_py,
                  show_output, log)
 
 def test_can_run(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))
-    log.write("toymaker: convert\n")
+    log.write("bentomaker: convert\n")
     log.write(" -> testing whether setup.py can be executed without errors\n")
     return _test(can_run_code % {"filename": setup_py, "odir": odir}, setup_py,
                  show_output, log)

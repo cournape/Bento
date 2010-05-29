@@ -10,7 +10,7 @@ from bento.commands.convert_utils import \
 class DetectTypeCommand(Command):
     long_descr = """\
 Purpose: detect type of distutils extension used by given setup.py
-Usage:   toymaker detect_type [OPTIONS]."""
+Usage:   bentomaker detect_type [OPTIONS]."""
     short_descr = "detect extension type."
     opts = Command.opts + [
         {"opts": ["-i", "--input"], "help": "TODO", "default": "setup.py",

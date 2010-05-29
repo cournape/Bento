@@ -269,7 +269,7 @@ A new path option may be added::
         Description: octave directory
         Default: $datadir/octave
 
-Toymaker automatically adds an --octavedir option (with help taken from the
+Bentomaker automatically adds an --octavedir option (with help taken from the
 description), and $octavedir may be used inside the .info file.
 
 Flag option
@@ -281,30 +281,30 @@ A new flag option may be added::
         Description: build debug
         Default: false
 
-Toymaker automatically adds an --octavedir option (with help taken from the
+Bentomaker automatically adds an --octavedir option (with help taken from the
 description), and $octavedir may be used inside the .info file.
 
 -----------------------------------------------
-Toymaker, the command line interface to bento
+Bentomaker, the command line interface to bento
 -----------------------------------------------
 
 Introduction
 ============
 
-Toymaker is a simple python package which uses bento API to configure, build
+Bentomaker is a simple python package which uses bento API to configure, build
 and install packages. A simple install with bentomaker looks like this::
 
     bentomaker configure --prefix=/home/david/local
     bentomaker build
     bentomaker install
 
-Toymaker has a basic help facility::
+Bentomaker has a basic help facility::
 
     bentomaker help
 
 will list all available commands. Once the project is configured, every
 installation path and user customization is setup, and cannot be changed
-(except by reconfiguring the package, of course). Toymaker is still in infancy,
+(except by reconfiguring the package, of course). Bentomaker is still in infancy,
 and quite limited:
 
     - it will complain when you try to install without having run build first (it

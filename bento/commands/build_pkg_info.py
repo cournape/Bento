@@ -12,7 +12,7 @@ from bento.commands.core import \
 class BuildPkgInfoCommand(Command):
     long_descr = """\
 Purpose: generate PKG-INFO file
-Usage:   toymaker build_pkg_info [OPTIONS]"""
+Usage:   bentomaker build_pkg_info [OPTIONS]"""
     short_descr = "generate PKG-INFO file."
     opts = Command.opts + [
         {"opts": ["-o", "--output"], "dest": "output", "help": "Output file for PKG-INFO"},

@@ -74,7 +74,7 @@ distutils (which relies on autoconf on many platforms).
 What about existing projects using distutils ?
 ==============================================
 
-Toymaker, the command line interface to bento, contains an experimental
+Bentomaker, the command line interface to bento, contains an experimental
 command to convert existing setup.py to bento format.
 
 I also believe it is possible to support most distutils/setuptools features in

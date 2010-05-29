@@ -25,11 +25,11 @@ from bento._config \
 class DistCheckCommand(Command):
     long_descr = """\
 Purpose: configure, build and test the project from sdist output
-Usage:   toymaker distcheck [OPTIONS]."""
+Usage:   bentomaker distcheck [OPTIONS]."""
     short_descr = "check that sdist output is buildable."
     def run(self, opts):
         pprint('BLUE', "Distcheck...")
-        toymaker_script = os.path.abspath(sys.argv[0])
+        bentomaker_script = os.path.abspath(sys.argv[0])
 
         pprint('PINK', "\t-> Running sdist...")
         sdist = get_command("sdist")()
@@ -53,18 +53,18 @@ Usage:   toymaker distcheck [OPTIONS]."""
             os.chdir(tardir)
 
             pprint('PINK', "\t-> Configuring from sdist...")
-            check_call([toymaker_script, "configure", "--prefix=tmp"])
+            check_call([bentomaker_script, "configure", "--prefix=tmp"])
 
             pprint('PINK', "\t-> Building from sdist...")
-            check_call([toymaker_script, "build"])
+            check_call([bentomaker_script, "build"])
 
             pprint('PINK', "\t-> Building egg from sdist...")
-            check_call([toymaker_script, "build_egg"])
+            check_call([bentomaker_script, "build_egg"])
 
             if "test" in get_command_names():
                 pprint('PINK', "\t-> Testing from sdist...")
                 try:
-                    check_call([toymaker_script, "test"])
+                    check_call([bentomaker_script, "test"])
                 except CalledProcessError, e:
                     raise CommandExecutionFailure(
                             "test command failed")
