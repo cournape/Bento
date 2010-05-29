@@ -6,7 +6,7 @@ from cPickle \
     import \
         dumps
 
-from toydist.core.utils \
+from yaku.pprint \
     import \
         pprint
 from errors \

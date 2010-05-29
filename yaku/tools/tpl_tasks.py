@@ -1,10 +1,9 @@
 import re
 import os
 
-from toydist.core.utils \
+from yaku.pprint \
     import \
         pprint
-
 from yaku.task \
     import \
         Task
