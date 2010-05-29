@@ -147,11 +147,11 @@ def parse_global_options(argv):
         opts, pargs = getopt.getopt(argv, "hv", ["help", "version", "full-version"])
         for opt, arg in opts:
             if opt in ("--help", "-h"):
-                show_usage = True
+                ret["show_usage"] = True
             if opt in ("--version", "-v"):
-                show_version = True
+                ret["show_version"] = True
             if opt in ("--full-version"):
-                show_full_version = True
+                ret["show_full_version"] = True
 
         if len(pargs) > 0:
             ret["cmd_name"] = pargs.pop(0)
@@ -166,11 +166,11 @@ def _main(popts):
     register_commands()
 
     if popts["show_version"]:
-        print toydist.__version__
+        print bento.__version__
         return 0
 
     if popts["show_full_version"]:
-        print toydist.__version__ + "git" + toydist.__git_revision__
+        print bento.__version__ + "git" + bento.__git_revision__
         return 0
 
     if popts["show_usage"]:
