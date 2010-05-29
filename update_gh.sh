@@ -7,10 +7,10 @@ else
 	ISED="sed -i ''";
 fi
 
-MASTER_REPO=$PWD/../toydist.git
+MASTER_REPO=$PWD/../bento-git
 GH_PAGES_REPO=$PWD
 MASTER_BRANCH=master
-TEMPDIR=`mktemp -d /tmp/toydist.XXXXXX` || exit 1
+TEMPDIR=`mktemp -d /tmp/bento.XXXXXX` || exit 1
 
 if [ $MASTER_REPO/.git -ef $GH_PAGES_REPO/.git ]; then
 	echo "You cannot run this script in the master repo (=$MASTER_REPO)"
