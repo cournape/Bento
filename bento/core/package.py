@@ -59,13 +59,13 @@ class PackageDescription:
 
     @classmethod
     def from_file(cls, filename, user_flags=None):
-        """Create a PackageDescription from a toysetup.info file."""
+        """Create a PackageDescription from a bento.info file."""
         info_file = open(filename, 'r')
         try:
             data = info_file.read()
             ret = cls.__from_data(data, user_flags)
             # FIXME: find a better way to automatically include the
-            # toysetup.info file
+            # bento.info file
             ret.extra_source_files.append(filename)
             return ret
         finally:

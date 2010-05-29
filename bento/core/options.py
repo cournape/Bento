@@ -30,12 +30,12 @@ class PackageOptions(object):
 
     @classmethod
     def from_string(cls, str):
-        """Create a PackageOptions instance from a toysetup.info content."""
+        """Create a PackageOptions instance from a bento.info content."""
         return cls.__from_data(str)
 
     @classmethod
     def from_file(cls, filename):
-        """Create a PackageOptions instance from a toysetup.info file."""
+        """Create a PackageOptions instance from a bento.info file."""
         fid = open(filename, 'r')
         try:
             data = fid.read()

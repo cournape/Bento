@@ -33,7 +33,7 @@ Usage:   bentomaker parse [OPTIONS]"""
             return
 
         if len(a) < 1:
-            filename = "toysetup.info"
+            filename = "bento.info"
         else:
             filename = a[0]
 

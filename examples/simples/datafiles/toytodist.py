@@ -3,5 +3,5 @@ from distutils.core import setup
 
 from bento.import PackageDescription
 
-info_dict = PackageDescription.from_setup('toysetup.info').to_dict()
+info_dict = PackageDescription.from_setup('bento.info').to_dict()
 setup(**info_dict)

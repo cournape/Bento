@@ -15,7 +15,7 @@ def startup():
     register_command("test", TestCommand)
 
 # Example to override existing toydist command: we add an extra source file
-# here instead of adding it in toysetup.info. This may be used to e.g. support
+# here instead of adding it in bento.info. This may be used to e.g. support
 # the setuptools feature of automatically adding files in VCS.
 @override
 def sdist(opts):

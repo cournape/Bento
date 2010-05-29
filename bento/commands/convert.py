@@ -26,7 +26,7 @@ class SetupCannotRun(Exception):
     pass
 
 # ====================================================
-# Code to convert existing setup.py to toysetup.info
+# Code to convert existing setup.py to bento.info
 # ====================================================
 LIVE_OBJECTS = {}
 def _process_data_files(seq):
@@ -142,7 +142,7 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
         Option("-t", help="TODO", default="automatic",
                dest="type"),
         Option("-o", "--output", help="output file",
-               default="toysetup.info",
+               default="bento.info",
                dest="output_filename"),
         Option("-v", "--verbose", help="verbose run",
                action="store_true"),
