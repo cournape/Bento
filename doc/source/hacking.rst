@@ -3,7 +3,7 @@ Design document
 
 .. Version: 0.0.2
 
-Toydist is currently split into two parts: a core API to parse the
+Bento is currently split into two parts: a core API to parse the
 package description into a simple object API, and a commands API which
 gives a command line interface to bento.
 
@@ -30,7 +30,7 @@ stage.
 Although those stages are very similar to distutils/setuptools
 mechanism, the implementation is fundamentally different, because each
 stage is independent from the other. No python object is passed
-between commands - the current toymaker implementation implements each
+between commands - the current bentomaker implementation implements each
 stage as a separate run:
 
         - the configuration stage produces a Configuration Context

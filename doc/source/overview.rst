@@ -1,7 +1,7 @@
 Overview
 ========
 
-.. Toydist is born out of my frustration dealing with distutils/setuptools
+.. Bento is born out of my frustration dealing with distutils/setuptools
 .. idiosyncraties and limitations, especially when working with complex builds
 .. such as numpy, scipy or matplotlib. Distutils is too complex for simple needs,
 .. and too inflexible for complex builds.
@@ -9,7 +9,7 @@ Overview
 .. Philosophy
 .. ----------
 .. 
-.. Toydist's main characteristics are:
+.. Bento's main characteristics are:
 .. 
 ..     - Pythonic: simple, hackable, explicit and one way to do it.
 ..     - Extensibility: avoid tight internal coupling, make it possible to plug-in
@@ -24,7 +24,7 @@ Overview
 ..     - Simpler, and more obvious behavior compared to distutils/setuptools for
 ..       simple projects
 
-Toydist is based on a declarative package description, which is parsed by the
+Bento is based on a declarative package description, which is parsed by the
 different build tools to do the actual work. There are currently two ways to
 create such a package description: by writing it from scratch, or by converting
 existing setup.py.
@@ -35,7 +35,7 @@ Simple example
 From scratch
 ~~~~~~~~~~~~
 
-Toydist packages are created from a toysetup.info file, which describes
+Bento packages are created from a bento.info file, which describes
 metadata as well as package content in a mostly declarative manner.
 
 For a simple python package hello consisting of two files::
@@ -43,7 +43,7 @@ For a simple python package hello consisting of two files::
     hello/__init__.py
     hello/hello.py
 
-a simple toysetup.info may be written as follows::
+a simple bento.info may be written as follows::
 
     Name: hello
     Version: 1.0
@@ -59,7 +59,7 @@ character will cause an error when used at the beginning of a line).
 Building and installing
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Toydist includes toymaker, a command-line interface to configure, build and
+Bento includes bentomaker, a command-line interface to configure, build and
 install simple packages. Its interface is similar to autotools::
 
     bento configure --prefix=somedirectory
@@ -82,9 +82,9 @@ From existing setup.py
 
 Toymaker has an experimental convert command to convert existing setup.py::
 
-    toymaker convert
+    bentomaker convert
 
-If successfull, it will write a file named toysetup.info. The convert command
+If successfull, it will write a file named bento.info. The convert command
 is inherently fragile, because it has to hook into distutils/setuptools
 internals.
 
@@ -103,7 +103,7 @@ setup.py::
 
     setup(name="foo", install_requires=requires)
 
-If run on windows, the generated toysetup.info will be::
+If run on windows, the generated bento.info will be::
 
     Name: foo
 

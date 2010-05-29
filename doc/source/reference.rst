@@ -12,7 +12,7 @@ Package description
 Introduction
 ============
 
-The package description is a text file, by default named toysetup.info. Its
+The package description is a text file, by default named bento.info. Its
 syntax is indentation-based, and lines starting with `#` are ignored (comments).
 
 A typical .info file contains the following information:
@@ -37,7 +37,7 @@ Package metadata
 
 Almost every metadata supported in distutils/setuptools is supported in bento
 file format. For a simple package containing one module hello, the
-toysetup.info metadata definition would look like::
+bento.info metadata definition would look like::
 
     Name: hello
     Version: 0.0.1
@@ -153,7 +153,7 @@ Installed data files
 --------------------
 
 It is often needed to install data files within the rest of the package.
-Toydist's system is both simple and flexible enough so that any file in your
+Bento's system is both simple and flexible enough so that any file in your
 sources can be installed anywhere. The most simple syntax for data files is as
 follows::
 
@@ -163,7 +163,7 @@ follows::
             somefile.conf
 
 This installs the file somefile.conf into /etc. Using hardcoded paths should be
-avoided, though. Toydist allows you to use "dynamic" path instead. This scheme
+avoided, though. Bento allows you to use "dynamic" path instead. This scheme
 should be familiar to people who have used autotools::
 
     DataFiles:
@@ -292,15 +292,15 @@ Introduction
 ============
 
 Toymaker is a simple python package which uses bento API to configure, build
-and install packages. A simple install with toymaker looks like this::
+and install packages. A simple install with bentomaker looks like this::
 
-    toymaker configure --prefix=/home/david/local
-    toymaker build
-    toymaker install
+    bentomaker configure --prefix=/home/david/local
+    bentomaker build
+    bentomaker install
 
 Toymaker has a basic help facility::
 
-    toymaker help
+    bentomaker help
 
 will list all available commands. Once the project is configured, every
 installation path and user customization is setup, and cannot be changed
@@ -324,7 +324,7 @@ This commands must be run before any build/install command. It is similar to
 the well-known configure script from autoconf. Every customizable option is
 available from the command help::
 
-    toymaker configure -h
+    bentomaker configure -h
 
 build
 -----
@@ -357,9 +357,9 @@ convert
 
 This convert a package built from distutils, setuptools or numpy.distutils::
 
-    toymaker convert
+    bentomaker convert
 
-If successful, it will produce a toysetup.info file.
+If successful, it will produce a bento.info file.
 
 *This is experimental, and may not work. Also, it cannot convert every package
 accurately, as it is based on inspecting setup.py's execution*. Nevertheless,

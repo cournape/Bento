@@ -5,7 +5,7 @@ FAQ
 Why to create a new tool ?
 ==========================
 
-Toydist is mainly born out of my frustration with distutils while dealing with
+Bento is mainly born out of my frustration with distutils while dealing with
 complex build issues in NumPy and SciPy. I found distutils poorly documented,
 being tightly coupled internally, and inflexible. Other tools built on top only
 made it worse by making putting more cruft over distutils instead of fixing it.
@@ -55,7 +55,7 @@ package description, so that it can be easily reused within custom build
 frameworks (make, waf, scons, etc...). A simple build system is also provided
 so that simple packages do not need to deal with anything besides bento.
 
-Toydist aims at being part of a grander vision for Scientific computing, to
+Bento aims at being part of a grander vision for Scientific computing, to
 make something like CRAN available to python users.  By being simpler, more
 explicit, it is hoped that bento will make the development of a
 scientific-specific Pypi easier.

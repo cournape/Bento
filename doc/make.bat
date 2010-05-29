@@ -73,9 +73,9 @@ if "%1" == "qthelp" (
 	echo.
 	echo.Build finished; now you can run "qcollectiongenerator" with the ^
 .qhcp project file in build/qthelp, like this:
-	echo.^> qcollectiongenerator build\qthelp\Toydist.qhcp
+	echo.^> qcollectiongenerator build\qthelp\Bento.qhcp
 	echo.To view the help file:
-	echo.^> assistant -collectionFile build\qthelp\Toydist.ghc
+	echo.^> assistant -collectionFile build\qthelp\Bento.ghc
 	goto end
 )
 

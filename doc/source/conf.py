@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Toydist documentation build configuration file, created by
+# Bento documentation build configuration file, created by
 # sphinx-quickstart on Sun Jan  3 12:53:13 2010.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -38,7 +38,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Toydist'
+project = u'Bento'
 copyright = u'2010, David Cournapeau'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -165,7 +165,7 @@ html_use_modindex = True
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Toydistdoc'
+htmlhelp_basename = 'Bentodoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -179,7 +179,7 @@ htmlhelp_basename = 'Toydistdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Toydist.tex', u'Toydist Documentation',
+  ('index', 'Bento.tex', u'Bento Documentation',
    u'David Cournapeau', 'manual'),
 ]
 
