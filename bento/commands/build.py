@@ -19,11 +19,11 @@ from bento.commands.script_utils import \
 __USE_NUMPY_DISTUTILS = False
 
 def toyext_to_distext(e):
-    """Convert a toydist Extension instance to a distutils
+    """Convert a bento Extension instance to a distutils
     Extension."""
     # FIXME: this is temporary, will be removed once we do not depend
     # on distutils to build extensions anymore. That's why this is not
-    # a method of the toydist Extension class.
+    # a method of the bento Extension class.
     from distutils.extension import Extension as DistExtension
     return DistExtension(e.name, sources=[s for s in e.sources],
                          include_dirs=[inc for inc in e.include_dirs])

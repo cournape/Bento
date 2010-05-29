@@ -1,7 +1,7 @@
 """Option handling module.
 
 This module is concerned with options/argument parsing from both
-toydist and toydist subcommands, as well as help message
+bento and bento subcommands, as well as help message
 formatting."""
 import optparse
 

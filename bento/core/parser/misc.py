@@ -27,7 +27,7 @@ from bento.core.parser.visitor \
         Dispatcher
 
 # XXX: Make a decorator to make this reusable in other parts of
-# toydist
+# bento
 def get_parsed_script(data):
     """Return parsed dictionary of the given file content, but cache
     the result so that one does not have to parse the same content

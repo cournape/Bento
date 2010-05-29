@@ -1,6 +1,6 @@
 """
 This module centralizes every internal configuration parameter used throughout
-toydist.
+bento.
 """
 import os
 
