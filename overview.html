@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview &mdash; Bento v0.0.3dev6d45d24b9c documentation</title>
+    <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.0.3dev6d45d24b9c',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="Bento v0.0.3dev6d45d24b9c documentation" href="index.html" />
+    <link rel="next" title="Features" href="features.html" />
+    <link rel="prev" title="Bento: an no-nonsense packaging tool for python" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="features.html" title="Features"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Bento: an no-nonsense packaging tool for python"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Bento v0.0.3dev6d45d24b9c documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Overview</a><ul>
+<li><a class="reference external" href="#simple-example">Simple example</a><ul>
+<li><a class="reference external" href="#from-scratch">From scratch</a></li>
+<li><a class="reference external" href="#building-and-installing">Building and installing</a></li>
+<li><a class="reference external" href="#from-existing-setup-py">From existing setup.py</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="index.html"
+                                  title="previous chapter">Bento: an no-nonsense packaging tool for python</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="features.html"
+                                  title="next chapter">Features</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/overview.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>Bento is based on a declarative package description, which is parsed by the
+different build tools to do the actual work. There are currently two ways to
+create such a package description: by writing it from scratch, or by converting
+existing setup.py.</p>
+<div class="section" id="simple-example">
+<h2>Simple example<a class="headerlink" href="#simple-example" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="from-scratch">
+<h3>From scratch<a class="headerlink" href="#from-scratch" title="Permalink to this headline">¶</a></h3>
+<p>Bento packages are created from a bento.info file, which describes
+metadata as well as package content in a mostly declarative manner.</p>
+<p>For a simple python package hello consisting of two files:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">hello</span><span class="o">/</span><span class="n">__init__</span><span class="o">.</span><span class="n">py</span>
+<span class="n">hello</span><span class="o">/</span><span class="n">hello</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>a simple bento.info may be written as follows:</p>
+<div class="highlight-python"><pre>Name: hello
+Version: 1.0
+
+Library:
+    Packages:
+        hello</pre>
+</div>
+<p>The file contains some metadata, like package name and version. Its syntax is
+indentation-based, like python, except that only spaces are allowed (tab
+character will cause an error when used at the beginning of a line).</p>
+</div>
+<div class="section" id="building-and-installing">
+<h3>Building and installing<a class="headerlink" href="#building-and-installing" title="Permalink to this headline">¶</a></h3>
+<p>Bento includes bentomaker, a command-line interface to configure, build and
+install simple packages. Its interface is similar to autotools:</p>
+<div class="highlight-python"><pre>bento configure --prefix=somedirectory
+bento build
+bento install</pre>
+</div>
+<p>In addition, the following subcommands are available:</p>
+<div class="highlight-python"><pre>bento sdist</pre>
+</div>
+<p>to build a source distribution and:</p>
+<div class="highlight-python"><pre>bento build_egg</pre>
+</div>
+<p>to build an egg. Building an egg requires to run configure and build first -
+this is not done automatically (yet).</p>
+</div>
+<div class="section" id="from-existing-setup-py">
+<h3>From existing setup.py<a class="headerlink" href="#from-existing-setup-py" title="Permalink to this headline">¶</a></h3>
+<p>Toymaker has an experimental convert command to convert existing setup.py:</p>
+<div class="highlight-python"><pre>bentomaker convert</pre>
+</div>
+<p>If successfull, it will write a file named bento.info. The convert command
+is inherently fragile, because it has to hook into distutils/setuptools
+internals.</p>
+<p>Note: because the convert command does not parse the setup.py, but runs it
+instead, it only handles package description as defined by one run of setup.py.
+For example, bento convert cannot automatically handle the following
+setup.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span>
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&quot;win32&quot;</span><span class="p">:</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;sphinx&quot;</span><span class="p">,</span> <span class="s">&quot;pywin32&quot;</span><span class="p">]</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;sphinx&quot;</span><span class="p">]</span>
+
+<span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="n">install_requires</span><span class="o">=</span><span class="n">requires</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If run on windows, the generated bento.info will be:</p>
+<div class="highlight-python"><pre>Name: foo
+
+Library:
+    InstallRequires:
+        pywin32,
+        sphinx</pre>
+</div>
+<p>and:</p>
+<div class="highlight-python"><pre>Name: foo
+
+Library:
+    InstallRequires:
+        sphinx</pre>
+</div>
+<p>otherwise.</p>
+<p>Note:: bento syntax supports simple conditional, so after conversion, you
+could modify the generated file as follows:</p>
+<div class="highlight-python"><pre>Name: foo
+
+Library:
+    InstallRequires:
+        sphinx
+    if os(win32):
+        InstallRequires:
+            pywin32</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="features.html" title="Features"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Bento: an no-nonsense packaging tool for python"
+             >previous</a> |</li>
+        <li><a href="index.html">Bento v0.0.3dev6d45d24b9c documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

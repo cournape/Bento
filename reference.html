@@ -1,0 +1,500 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>User guide &mdash; Bento v0.0.3dev6d45d24b9c documentation</title>
+    <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.0.3dev6d45d24b9c',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="Bento v0.0.3dev6d45d24b9c documentation" href="index.html" />
+    <link rel="next" title="FAQ" href="faq.html" />
+    <link rel="prev" title="Features" href="features.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="faq.html" title="FAQ"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="features.html" title="Features"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Bento v0.0.3dev6d45d24b9c documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">User guide</a><ul>
+<li><a class="reference external" href="#package-description">Package description</a><ul>
+<li><a class="reference external" href="#introduction">Introduction</a><ul>
+<li><a class="reference external" href="#package-metadata">Package metadata</a></li>
+<li><a class="reference external" href="#library-section">Library section</a></li>
+<li><a class="reference external" href="#executable-section">Executable section</a></li>
+<li><a class="reference external" href="#user-options-declaration">User-options declaration</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#pure-python-packages">Pure python packages</a></li>
+<li><a class="reference external" href="#packages-containing-c-extensions">Packages containing C extensions</a></li>
+<li><a class="reference external" href="#packages-with-data-files">Packages with data files</a><ul>
+<li><a class="reference external" href="#extra-source-files">Extra source files</a></li>
+<li><a class="reference external" href="#installed-data-files">Installed data files</a><ul>
+<li><a class="reference external" href="#srcdir-field">Srcdir field</a></li>
+<li><a class="reference external" href="#named-data-files-section">Named data files section</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference external" href="#conditionals">Conditionals</a></li>
+<li><a class="reference external" href="#adding-custom-options">Adding custom options</a><ul>
+<li><a class="reference external" href="#path-option">Path option</a></li>
+<li><a class="reference external" href="#flag-option">Flag option</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference external" href="#toymaker-the-command-line-interface-to-bento">Toymaker, the command line interface to bento</a><ul>
+<li><a class="reference external" href="#id1">Introduction</a></li>
+<li><a class="reference external" href="#available-commands">Available commands</a><ul>
+<li><a class="reference external" href="#configure">configure</a></li>
+<li><a class="reference external" href="#build">build</a></li>
+<li><a class="reference external" href="#install">install</a></li>
+<li><a class="reference external" href="#build-egg">build_egg</a></li>
+<li><a class="reference external" href="#sdist">sdist</a></li>
+<li><a class="reference external" href="#convert">convert</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#implementation-details">Implementation details</a><ul>
+<li><a class="reference external" href="#build-manifest">Build manifest</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="features.html"
+                                  title="previous chapter">Features</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="faq.html"
+                                  title="next chapter">FAQ</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/reference.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <ul class="simple">
+</ul>
+<div class="section" id="user-guide">
+<h1>User guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="package-description">
+<h2>Package description<a class="headerlink" href="#package-description" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="introduction">
+<h3>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h3>
+<p>The package description is a text file, by default named bento.info. Its
+syntax is indentation-based, and lines starting with <cite>#</cite> are ignored (comments).</p>
+<p>A typical .info file contains the following information:</p>
+<blockquote>
+<ul class="simple">
+<li>The package metadata (name, version, etc...)</li>
+<li>Optionally, it may contain addition user-customizable options such as
+path or flags, which exact value may be set at configure time.</li>
+<li>A Library section, which defines the package content (packages, modules,
+C extensions, etc...)</li>
+<li>Optionally, the .info file may contain one or several Executable
+sections, to describe programs expected to be run from the command line
+or from a GUI. This is where distutils scripts and setuptools console
+scripts are defined.</li>
+</ul>
+</blockquote>
+<p>Each section consists of field:value pairs:</p>
+<blockquote>
+<ul class="simple">
+<li>Both fields and values are case-sensitive.</li>
+<li>Tab characters for indentation are not supported.</li>
+</ul>
+</blockquote>
+<div class="section" id="package-metadata">
+<h4>Package metadata<a class="headerlink" href="#package-metadata" title="Permalink to this headline">¶</a></h4>
+<p>Almost every metadata supported in distutils/setuptools is supported in bento
+file format. For a simple package containing one module hello, the
+bento.info metadata definition would look like:</p>
+<div class="highlight-python"><pre>Name: hello
+Version: 0.0.1
+Summary: A one-line description of the distribution
+Description:
+    A longer, potentially multi-line string.
+
+    As long as the indentation is maintained, the field is considered as
+    continued.
+Author: John Doe
+AuthorEmail: john@doe.org
+License: BSD</pre>
+</div>
+</div>
+<div class="section" id="library-section">
+<h4>Library section<a class="headerlink" href="#library-section" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="executable-section">
+<h4>Executable section<a class="headerlink" href="#executable-section" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="user-options-declaration">
+<h4>User-options declaration<a class="headerlink" href="#user-options-declaration" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+<div class="section" id="pure-python-packages">
+<h3>Pure python packages<a class="headerlink" href="#pure-python-packages" title="Permalink to this headline">¶</a></h3>
+<p>Assuming a package with the following layout:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">hello</span><span class="o">/</span><span class="n">pkg1</span><span class="o">/</span><span class="n">__init__</span><span class="o">.</span><span class="n">py</span>
+<span class="n">hello</span><span class="o">/</span><span class="n">pkg1</span><span class="o">/...</span>
+<span class="n">hello</span><span class="o">/</span><span class="n">pkg2</span><span class="o">/</span><span class="n">__init__</span><span class="o">.</span><span class="n">py</span>
+<span class="n">hello</span><span class="o">/</span><span class="n">pkg2</span><span class="o">/...</span>
+<span class="n">hello</span><span class="o">/</span><span class="n">__init__</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>it would be declared as follows:</p>
+<div class="highlight-python"><pre>Name: hello
+Version: 0.0.1
+
+Library:
+    Packages:
+        hello.pkg1,
+        hello.pkg2,
+        hello</pre>
+</div>
+<p>The following syntax is also allowed:</p>
+<div class="highlight-python"><pre>Library:
+    Packages:
+        hello.pkg1, hello.pkg2, hello</pre>
+</div>
+<p>as well as:</p>
+<div class="highlight-python"><pre>Library:
+    Packages: hello.pkg1, hello.pkg2, hello</pre>
+</div>
+</div>
+<div class="section" id="packages-containing-c-extensions">
+<h3>Packages containing C extensions<a class="headerlink" href="#packages-containing-c-extensions" title="Permalink to this headline">¶</a></h3>
+<p>For a simple extension hello._foo, built from sources src/foo.c and src/bar.c,
+the declaration is as follows:</p>
+<div class="highlight-python"><pre>Library:
+    Extension: hello._foo
+        Sources:
+            src/foo.c,
+            src/bar.c</pre>
+</div>
+<p>Note: none of the other distutils Extension arguments (macro definitions,
+etc...) are supported yet.</p>
+</div>
+<div class="section" id="packages-with-data-files">
+<h3>Packages with data files<a class="headerlink" href="#packages-with-data-files" title="Permalink to this headline">¶</a></h3>
+<p>Adding data files in bento is easy. By data files, we mean any file other
+than C extension sources and python files. There are two kinds of data files in bento:</p>
+<blockquote>
+<ul class="simple">
+<li>Installed data files: those are installed somewhere on the user system at
+installation time (distutils package_data and data_files, numpy.distutils
+add_data_files and add_data_dir).</li>
+<li>Extra source files: those are only necessary to build the package, and
+are not installed. As such, they only need to be included in the source
+tarball (distutils MANIFEST[.in] mechanism, automatic inclusion from the
+VCS in setuptools, etc...)</li>
+</ul>
+</blockquote>
+<div class="section" id="extra-source-files">
+<h4>Extra source files<a class="headerlink" href="#extra-source-files" title="Permalink to this headline">¶</a></h4>
+<p>Extra source files are simply declared in the section ExtraSourceFiles (outside
+any Library section):</p>
+<div class="highlight-python"><pre>ExtraSourceFiles:
+    AUTHORS,
+    CHANGES,
+    EXAMPLES,
+    LICENSE,
+    Makefile,
+    README,
+    TODO,
+    babel.cfg</pre>
+</div>
+<p>Those will be always be included in the tarball generated by bento sdist. A
+limited form of globbing is allowed:</p>
+<div class="highlight-python"><pre>ExtraSourceFiles:
+    doc/source/*.rst
+    doc/source/chapter1/*.rst</pre>
+</div>
+<p>that is globbing on every file with the same extension is allowed. Any other
+form of globbing, in particular recursive ones are purposedly not supported to
+avoid cluttering the tarball by accident.</p>
+</div>
+<div class="section" id="installed-data-files">
+<h4>Installed data files<a class="headerlink" href="#installed-data-files" title="Permalink to this headline">¶</a></h4>
+<p>It is often needed to install data files within the rest of the package.
+Bento&#8217;s system is both simple and flexible enough so that any file in your
+sources can be installed anywhere. The most simple syntax for data files is as
+follows:</p>
+<div class="highlight-python"><pre>DataFiles:
+    TargetDir: /etc
+    Files:
+        somefile.conf</pre>
+</div>
+<p>This installs the file somefile.conf into /etc. Using hardcoded paths should be
+avoided, though. Bento allows you to use &#8220;dynamic&#8221; path instead. This scheme
+should be familiar to people who have used autotools:</p>
+<div class="highlight-python"><pre>DataFiles:
+    TargetDir: $sysconfdir
+    Files:
+        somefile.conf</pre>
+</div>
+<p>$sysconfigdir is a path variable: bento defines several path variables
+(available on every platform), which may be customized at the configure stage.
+For example, on Unix, $sysconfdir is defined as $prefix/etc, and prefix is
+itself defined as /usr/local. If prefix is changed, sysconfdir will be changed
+accordingly. Of course, sysconfdir itself may be customized as well. This
+allows for very flexible installation layout, and every particular install
+scheme (distutils &#8211;user, self-contained as in GoboLinux or Mac OS X) may be
+implemented on top.</p>
+<p>It is also possible to define your own path variables (see <a class="reference internal" href="#path-option">Path option</a>
+section).</p>
+<div class="section" id="srcdir-field">
+<h5>Srcdir field<a class="headerlink" href="#srcdir-field" title="Permalink to this headline">¶</a></h5>
+<p>By default, the installed name is the concatenation of target and the values in
+files, e.g.:</p>
+<div class="highlight-python"><pre>DataFiles:
+    TargetDir: $includedir
+    Files:
+        foo/bar.h</pre>
+</div>
+<p>will be installed as $includedir/foo/bar.h. If instead, you want to install
+foo/bar.h as $includedir/bar.h, you need to use the srcdir field:</p>
+<div class="highlight-python"><pre>DataFiles:
+    TargetDir: $includedir
+    SourceDir: foo
+    Files:
+        bar.h</pre>
+</div>
+</div>
+<div class="section" id="named-data-files-section">
+<h5>Named data files section<a class="headerlink" href="#named-data-files-section" title="Permalink to this headline">¶</a></h5>
+<p>You can define as many DataFiles sections as you want, as long as you name
+them, i.e.:</p>
+<div class="highlight-python"><pre>DataFiles: man1
+    TargetDir: $mandir/man1
+    SourceDir: doc/man
+    Files:
+        *.1
+
+DataFiles: man3
+    TargetDir: $mandir/man3
+    SourceDir: doc/man
+    Files:
+        *.3</pre>
+</div>
+<p>is ok, but:</p>
+<div class="highlight-python"><pre>DataFiles:
+    TargetDir: $mandir/man1
+    SourceDir: doc/man
+    Files:
+        *.1
+
+DataFiles:
+    TargetDir: $mandir/man3
+    SourceDir: doc/man
+    Files:
+        *.3</pre>
+</div>
+<p>is not.</p>
+</div>
+</div>
+</div>
+<div class="section" id="conditionals">
+<h3>Conditionals<a class="headerlink" href="#conditionals" title="Permalink to this headline">¶</a></h3>
+<p>It is not always possible to have one same package description for every
+platform. It may also be desirable to enable/disable some parts of a package
+depending on some option. For this reason, the .info file supports a limited
+form of conditional. For example:</p>
+<div class="highlight-python"><pre>Library:
+    InstallRequires:
+        docutils,
+        sphinx
+        if os(windows):
+            pywin32</pre>
+</div>
+<p>The following conditional forms are available:</p>
+<blockquote>
+<ul class="simple">
+<li>os(value): condition on the OS</li>
+<li>flag(value): user-defined flag, boolean</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="adding-custom-options">
+<h3>Adding custom options<a class="headerlink" href="#adding-custom-options" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="path-option">
+<h4>Path option<a class="headerlink" href="#path-option" title="Permalink to this headline">¶</a></h4>
+<p>A new path option may be added:</p>
+<div class="highlight-python"><pre>Path: octavedir
+    Description: octave directory
+    Default: $datadir/octave</pre>
+</div>
+<p>Toymaker automatically adds an &#8211;octavedir option (with help taken from the
+description), and $octavedir may be used inside the .info file.</p>
+</div>
+<div class="section" id="flag-option">
+<h4>Flag option<a class="headerlink" href="#flag-option" title="Permalink to this headline">¶</a></h4>
+<p>A new flag option may be added:</p>
+<div class="highlight-python"><pre>Flag: debug
+    Description: build debug
+    Default: false</pre>
+</div>
+<p>Toymaker automatically adds an &#8211;octavedir option (with help taken from the
+description), and $octavedir may be used inside the .info file.</p>
+</div>
+</div>
+</div>
+<div class="section" id="toymaker-the-command-line-interface-to-bento">
+<h2>Toymaker, the command line interface to bento<a class="headerlink" href="#toymaker-the-command-line-interface-to-bento" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Introduction<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Toymaker is a simple python package which uses bento API to configure, build
+and install packages. A simple install with bentomaker looks like this:</p>
+<div class="highlight-python"><pre>bentomaker configure --prefix=/home/david/local
+bentomaker build
+bentomaker install</pre>
+</div>
+<p>Toymaker has a basic help facility:</p>
+<div class="highlight-python"><pre>bentomaker help</pre>
+</div>
+<p>will list all available commands. Once the project is configured, every
+installation path and user customization is setup, and cannot be changed
+(except by reconfiguring the package, of course). Toymaker is still in infancy,
+and quite limited:</p>
+<blockquote>
+<ul class="simple">
+<li>it will complain when you try to install without having run build first (it
+will not automatically run build for you).</li>
+<li>Both build and install commands are simplistic: no dependency checking is
+done (everything is rebuilt everytime you run build, every install
+installs everything), everything is built in sources, etc...</li>
+<li>As a starting point, building C extensions is still done through distutils</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="available-commands">
+<h3>Available commands<a class="headerlink" href="#available-commands" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="configure">
+<h4>configure<a class="headerlink" href="#configure" title="Permalink to this headline">¶</a></h4>
+<p>This commands must be run before any build/install command. It is similar to
+the well-known configure script from autoconf. Every customizable option is
+available from the command help:</p>
+<div class="highlight-python"><pre>bentomaker configure -h</pre>
+</div>
+</div>
+<div class="section" id="build">
+<h4>build<a class="headerlink" href="#build" title="Permalink to this headline">¶</a></h4>
+<p>This simply builds the package. For pure-python packages, it does almost
+nothing, except producing a <a class="reference internal" href="#build-manifest">Build manifest</a>. For packages with C extensions,
+the C extensions are built (through distutils ATM).</p>
+</div>
+<div class="section" id="install">
+<h4>install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="build-egg">
+<h4>build_egg<a class="headerlink" href="#build-egg" title="Permalink to this headline">¶</a></h4>
+<p>This command builds an egg from the package description. It currently requires
+that configure and build commands have been run.</p>
+<p><em>This is experimental - although I intend to produce eggs which are as backward
+compatible as possible with existing tools (in particular enstaller, and
+hopefully virtualenv and buildout), eggs are implementation defined, and depend
+a lot on distutils idiosyncraties.</em></p>
+</div>
+<div class="section" id="sdist">
+<h4>sdist<a class="headerlink" href="#sdist" title="Permalink to this headline">¶</a></h4>
+<p>This simply produces a source tarball. Currently, only .tar.gz is supported.</p>
+</div>
+<div class="section" id="convert">
+<h4>convert<a class="headerlink" href="#convert" title="Permalink to this headline">¶</a></h4>
+<p>This convert a package built from distutils, setuptools or numpy.distutils:</p>
+<div class="highlight-python"><pre>bentomaker convert</pre>
+</div>
+<p>If successful, it will produce a bento.info file.</p>
+<p><em>This is experimental, and may not work. Also, it cannot convert every package
+accurately, as it is based on inspecting setup.py&#8217;s execution</em>. Nevertheless,
+it can already convert simple, but non trivial packages such as sphinx pretty
+accurately.</p>
+</div>
+</div>
+<div class="section" id="implementation-details">
+<h3>Implementation details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="build-manifest">
+<h4>Build manifest<a class="headerlink" href="#build-manifest" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="faq.html" title="FAQ"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="features.html" title="Features"
+             >previous</a> |</li>
+        <li><a href="index.html">Bento v0.0.3dev6d45d24b9c documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

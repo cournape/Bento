@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Design document &mdash; Bento v0.0.3dev6d45d24b9c documentation</title>
+    <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.0.3dev6d45d24b9c',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="Bento v0.0.3dev6d45d24b9c documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">Bento v0.0.3dev6d45d24b9c documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Design document</a><ul>
+<li><a class="reference external" href="#commands-protocol">Commands &#8220;protocol&#8221;</a></li>
+</ul>
+</li>
+</ul>
+
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/hacking.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="design-document">
+<h1>Design document<a class="headerlink" href="#design-document" title="Permalink to this headline">¶</a></h1>
+<p>Bento is currently split into two parts: a core API to parse the
+package description into a simple object API, and a commands API which
+gives a command line interface to bento.</p>
+<p>The principle philosophy of bento is to clearly separate the
+different stages of packaging deployment, as we believe it is the only
+way to make a build tool extensible.</p>
+<div class="section" id="commands-protocol">
+<h2>Commands &#8220;protocol&#8221;<a class="headerlink" href="#commands-protocol" title="Permalink to this headline">¶</a></h2>
+<p>The command line interface of bento currently supports 3 stages:</p>
+<blockquote>
+<ul class="simple">
+<li>configuration: is concerned with configuring user options
+(build/install customization).</li>
+<li>build: compile C extensions</li>
+<li>install: deploy the software into the system as configured
+at the first stage</li>
+</ul>
+</blockquote>
+<p>In addition, there are a few binary build, which build various
+platform-specific binary installers (windows installer-only for now)
+and eggs. From an implementation POV, those are similar to the install
+stage.</p>
+<p>Although those stages are very similar to distutils/setuptools
+mechanism, the implementation is fundamentally different, because each
+stage is independent from the other. No python object is passed
+between commands - the current bentomaker implementation implements each
+stage as a separate run:</p>
+<blockquote>
+<ul class="simple">
+<li>the configuration stage produces a Configuration Context
+object which records every user option (+ some caching
+information) which is dumped into a file.</li>
+<li>the build stages starts from the dump, and has to produce a
+package manifest (InstalledPkgDescription). The package
+manifst contains the package metadata, installation path
+details as well as file sections.</li>
+<li>Both installation and binary installers builders stages
+starts from the build manifest.</li>
+</ul>
+</blockquote>
+<p>The package manifest is inspired by the Cabal concept of installed
+package info, but has been extended to be independent of the
+installation scheme. In particular, for a given build, the same build
+manifest can be used to install the package, produces an egg or a
+windows installer.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">Bento v0.0.3dev6d45d24b9c documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

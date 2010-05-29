@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing bento &mdash; Bento v0.0.3dev6d45d24b9c documentation</title>
+    <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.0.3dev6d45d24b9c',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="Bento v0.0.3dev6d45d24b9c documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">Bento v0.0.3dev6d45d24b9c documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Installing bento</a><ul>
+<li><a class="reference external" href="#setuptools-based-installation-deprecated">setuptools-based installation (deprecated)</a></li>
+<li><a class="reference external" href="#bento-based-installer">bento-based installer</a></li>
+</ul>
+</li>
+</ul>
+
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/install.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installing-bento">
+<h1>Installing bento<a class="headerlink" href="#installing-bento" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="setuptools-based-installation-deprecated">
+<h2>setuptools-based installation (deprecated)<a class="headerlink" href="#setuptools-based-installation-deprecated" title="Permalink to this headline">¶</a></h2>
+<p>Bento has a setup.py file, and can be installed as any other
+conventional python software:</p>
+<div class="highlight-python"><pre>python setup.py install --user # for python &gt;= 2.6
+python setup.py install # otherwise</pre>
+</div>
+</div>
+<div class="section" id="bento-based-installer">
+<h2>bento-based installer<a class="headerlink" href="#bento-based-installer" title="Permalink to this headline">¶</a></h2>
+<p>Bento is now able to install itself. First, you need to create the bentomaker script:</p>
+<div class="highlight-python"><pre>python bootstrap.py</pre>
+</div>
+<p>This will create a script (or an exe on windows) which can be used to
+install bento. Once created, bento is installed as a regular
+bento package:</p>
+<div class="highlight-python"><pre>./bentomaker configure
+./bentomaker build
+./bentomaker install
+# Or an egg
+./bentomaker build_egg
+# Or a windows installer
+./bentomaker build_wininst</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">Bento v0.0.3dev6d45d24b9c documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>
