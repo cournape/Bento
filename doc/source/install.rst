@@ -1,4 +1,4 @@
-Installing toydist
+Installing bento
 ==================
 
 setuptools-based installation (deprecated)
@@ -10,7 +10,7 @@ conventional python software::
     python setup.py install --user # for python >= 2.6
     python setup.py install # otherwise
 
-toydist-based installer
+bento-based installer
 -----------------------
 
 Toydist is now able to install itself. First, you need to create the toymaker script::
@@ -18,8 +18,8 @@ Toydist is now able to install itself. First, you need to create the toymaker sc
     python bootstrap.py
 
 This will create a script (or an exe on windows) which can be used to
-install toydist. Once created, toydist is installed as a regular
-toydist package::
+install bento. Once created, bento is installed as a regular
+bento package::
 
     ./toymaker configure
     ./toymaker build

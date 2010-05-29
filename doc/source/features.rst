@@ -6,7 +6,7 @@ Main features currently implemented
 
 * Package descriptions are done in a declarative file (inspired from Cabal_ and
   RPM_ .spec files), so you can easily introspect basic features of packages
-  without running any python code (besides toydist).
+  without running any python code (besides bento).
 * A command line interface to configure, build, install projects.
 * Easy integration with native filesystem conventions: every install directory
   is customizable at the configure stage (autoconf-inspired).

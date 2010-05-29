@@ -17,7 +17,7 @@ writing the following toysetup.info file::
     Library:
         Packages: foo
 
-Toydist contains a command line tools to build and install toydist
+Toydist contains a command line tools to build and install bento
 packages::
 
     toymaker configure
@@ -26,7 +26,7 @@ packages::
 
 Toydist aims at being simpler, more pythonic and more extensible than
 existing tools. It is currenly in very early stage, and is not
-recommended for any production use. Discussions on toydist design
+recommended for any production use. Discussions on bento design
 happens on the NumPy Mailing List.
 
 .. toctree::

@@ -7,7 +7,7 @@ source files, etc\.\.\. The goal is to be able to build, install and produce
 installers/distributions from the static data, so that the setup.py looks like::
 
         from distutils.core import setup
-        from toydist import parse_static
+        from bento import parse_static
 
         static_info = parse_static('setup.static').to_dict()
         setup(\*\*static_info)
@@ -16,7 +16,7 @@ There is also a function to do the contrary, that is generating the static file
 from a standard setup.py::
 
         from distutils.core import setup, Extension
-        from toydist import distutils_to_package_description, \
+        from bento import distutils_to_package_description, \
                 static_representation
 
         from distutils.core import setup, Extension

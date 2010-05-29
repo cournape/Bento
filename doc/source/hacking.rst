@@ -5,16 +5,16 @@ Design document
 
 Toydist is currently split into two parts: a core API to parse the
 package description into a simple object API, and a commands API which
-gives a command line interface to toydist.
+gives a command line interface to bento.
 
-The principle philosophy of toydist is to clearly separate the
+The principle philosophy of bento is to clearly separate the
 different stages of packaging deployment, as we believe it is the only
 way to make a build tool extensible.
 
 Commands "protocol"
 -------------------
 
-The command line interface of toydist currently supports 3 stages:
+The command line interface of bento currently supports 3 stages:
 
         - configuration: is concerned with configuring user options
           (build/install customization).

@@ -47,17 +47,17 @@ of web-developers, who have a different vision of what packaging means.  Most
 of their goals are specific to web-development needs, often against known good
 practices for packaging.
 
-What are the goals of toydist ?
+What are the goals of bento ?
 ===============================
 
-The main goal of toydist is to separate the concerns on building, packaging and
+The main goal of bento is to separate the concerns on building, packaging and
 package description, so that it can be easily reused within custom build
 frameworks (make, waf, scons, etc...). A simple build system is also provided
-so that simple packages do not need to deal with anything besides toydist.
+so that simple packages do not need to deal with anything besides bento.
 
 Toydist aims at being part of a grander vision for Scientific computing, to
 make something like CRAN available to python users.  By being simpler, more
-explicit, it is hoped that toydist will make the development of a
+explicit, it is hoped that bento will make the development of a
 scientific-specific Pypi easier.
 
 Surely, supporting building extensions on every platform is a huge task ?
@@ -74,22 +74,22 @@ distutils (which relies on autoconf on many platforms).
 What about existing projects using distutils ?
 ==============================================
 
-Toymaker, the command line interface to toydist, contains an experimental
-command to convert existing setup.py to toydist format.
+Toymaker, the command line interface to bento, contains an experimental
+command to convert existing setup.py to bento format.
 
 I also believe it is possible to support most distutils/setuptools features in
-toydist file format, and convert a package description to a
-distutils/setuptools Distribution instance. As conversion from toydist to
+bento file format, and convert a package description to a
+distutils/setuptools Distribution instance. As conversion from bento to
 distutils would be much easier to do reliably than the contrary, it could be
 used as a transition, so that packages who have heavily invested in distutils
 can still use distutils extensions.
 
-Is toydist based on existing tools ?
+Is bento based on existing tools ?
 ====================================
 
-The main inspirations for toydist current design are taken from:
+The main inspirations for bento current design are taken from:
 
-    - `Cabal`_, the packaging tool for Haskell: the toydist file format is
+    - `Cabal`_, the packaging tool for Haskell: the bento file format is
       mainly an adaptation of Cabal to python.
     - `Autoconf`_, for the flexible install scheme, automake's way of declaring
       extra distribution files (data files).

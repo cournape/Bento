@@ -1,4 +1,4 @@
-Here is a non exhaustive list of things to do before toydist can be a realistic
+Here is a non exhaustive list of things to do before bento can be a realistic
 alternative to distutils.
 
 Syntax and features of the package description file
@@ -18,7 +18,7 @@ Extending the simple build
     - Simple build framework with dependency handling
     - Pre/Post hooks for every stage of a typical install
     - Integration with at least one real build tool (Scons or waf)
-    - Avoid cluttering source tree with toydist junk
+    - Avoid cluttering source tree with bento junk
     - Integration with sphinx
     - Implement a distcheck-like command
     - Handle reliable install/uninstall
@@ -33,7 +33,7 @@ For complex packages, the solution is clearly make/scons/waf/etc....
 
 For simple packages, one needs something simpler:
     
-    - How hard would it be to have dependency handling in toydist ?
+    - How hard would it be to have dependency handling in bento ?
     - Do we need full dependency ? Since it would arguably used for simple
       problems, brute force may be considered. For example, one could
       always install, byte-compile everything from scratch, and only do
@@ -46,14 +46,14 @@ InstalledPkgInfo should be enough to install/uninstall things, so including it
 in installers should be sufficient to get all the data, although it may not be
 very efficient.
 
-Fundamental problem: toydist vs native packages. Possible solutions:
+Fundamental problem: bento vs native packages. Possible solutions:
 
-    1 create a new local site-packages specific to toydist, and only use
-      toydist-enabled package for dependencies:
+    1 create a new local site-packages specific to bento, and only use
+      bento-enabled package for dependencies:
 
         - advantages: reliable, relatively simple
         - disadvantages: invasive, requires all dependencies to be
-          under toydist (in particular numpy/scipy/matplotlib)
+          under bento (in particular numpy/scipy/matplotlib)
 
     2 try to cope with existing, already installed packages.
 

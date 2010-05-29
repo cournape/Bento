@@ -62,17 +62,17 @@ Building and installing
 Toydist includes toymaker, a command-line interface to configure, build and
 install simple packages. Its interface is similar to autotools::
 
-    toydist configure --prefix=somedirectory
-    toydist build
-    toydist install
+    bento configure --prefix=somedirectory
+    bento build
+    bento install
 
 In addition, the following subcommands are available::
 
-    toydist sdist
+    bento sdist
 
 to build a source distribution and::
 
-    toydist build_egg
+    bento build_egg
 
 to build an egg. Building an egg requires to run configure and build first -
 this is not done automatically (yet).
@@ -90,7 +90,7 @@ internals.
 
 Note: because the convert command does not parse the setup.py, but runs it
 instead, it only handles package description as defined by one run of setup.py.
-For example, toydist convert cannot automatically handle the following
+For example, bento convert cannot automatically handle the following
 setup.py::
 
     import sys
@@ -122,7 +122,7 @@ and::
 
 otherwise.
 
-Note:: toydist syntax supports simple conditional, so after conversion, you
+Note:: bento syntax supports simple conditional, so after conversion, you
 could modify the generated file as follows::
 
     Name: foo
