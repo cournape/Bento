@@ -24,7 +24,7 @@ Classifiers:
     Operating System :: POSIX,
     Operating System :: Unix,
     Operating System :: MacOS
-HookFile: toyscript
+HookFile: hscript
 
 DataFiles: windows_arch_data
     SourceDir: bento/commands
