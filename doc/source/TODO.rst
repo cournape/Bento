@@ -1,6 +1,47 @@
 Here is a non exhaustive list of things to do before bento can be a realistic
 alternative to distutils.
 
+TODO:
+
+    - add msi support
+    - add proper egg support
+    - add mpkg support
+    - port stdeb to toydist
+    - specify hook mechanism
+    - integrate yaku or fbuild
+    - add runtime support to install paths
+    - test command support
+    - distcheck support
+    - think about integration with sphinx for doc
+    - pre/post hooks for every stage of a typical install
+    - integration with at least one real build tool (Scons or waf)
+    - avoid cluttering source tree with bento junk
+    - handle reliable install/uninstall
+
+Not well thought out yet:
+    - pkg_resources: the thing is a giant unmaintainable mess, but can
+      we afford ignoring it ?
+
+Milestone
+=========
+
+Release 0.0.3
+-------------
+
+0.0.3 goals:
+
+    - integrate yaku (without exposing yaku API)
+    - put everything in a build directory
+    - specify hook mechanism
+
+Release 0.0.4
+-------------
+
+0.0.4 goals:
+
+    - test and distcheck support
+    - one file distribution
+
 Syntax and features of the package description file
 ===================================================
 
@@ -15,29 +56,11 @@ Missing features:
 Extending the simple build
 ==========================
 
-    - Simple build framework with dependency handling
-    - Pre/Post hooks for every stage of a typical install
-    - Integration with at least one real build tool (Scons or waf)
-    - Avoid cluttering source tree with bento junk
-    - Integration with sphinx
-    - Implement a distcheck-like command
-    - Handle reliable install/uninstall
+    - this is yaku in the short term, maybe something like fbuild in the long
+      term
 
 Install-Reinstall-Rebuild-Clean problem
 =======================================
-
-Reliable builds
----------------
-
-For complex packages, the solution is clearly make/scons/waf/etc....
-
-For simple packages, one needs something simpler:
-    
-    - How hard would it be to have dependency handling in bento ?
-    - Do we need full dependency ? Since it would arguably used for simple
-      problems, brute force may be considered. For example, one could
-      always install, byte-compile everything from scratch, and only do
-      dependency handling for build
 
 Reliable install/reinstall
 --------------------------
