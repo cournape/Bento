@@ -55,6 +55,7 @@ Library:
         bento.core.platforms,
         bento.private,
         bento.private.ply,
+        bento.private._yaku.yaku,
         bentomakerlib
 
 Executable: bentomaker

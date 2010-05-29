@@ -1,0 +1,88 @@
+.. vim ft=rst
+
+TODO
+====
+
+Yaku, the trivial build system.
+
+Before inclusion in toydist:
+	- being able to build simple extensions on unix/macosx/windows -> needs testing
+	- basic customization (through env variables) -> internal ready, no API
+	- easy customization for new extension (e.g. .pyx) -> almost done
+	- basic configuration stage ? (at least to check env sanity + setting
+	  env flags) -> first prototype ready, needs API
+
+This means:
+	- Understand waf execution model - in particular how to deal with
+	  signatures for generated nodes (e.g. find dependencies of generated
+	  files)
+	- Finish task basic design
+	- Add basic task manager
+	- Implement simple sys configuration for linux, mac os x and windows
+
+Main limitations:
+
+    - Speed not a concern (will not scale well to hundred of source files)
+    - No thorough tool framework
+    - Simplistic dependency detection: all the nodes are scanned before the
+      first task is run (so implicit dependency on generated headers will not
+      be detected)
+    - No on-the-fly task creation
+    - No elaborate task manager (one simple model of task execution)
+    - No node abstraction: no variant dir, not source directory, build directly
+      support is naive
+    - Good autoconf-like support unlikely (but we need to be at least as "good"
+      as ditutils)
+
+Design
+======
+
+Task
+----
+
+Yaku is loosely modeled on waf (albeit signifcantly simpler and more
+limited). The core concept is the task: a task instance is more or
+less the equivalent of a make rule. Each task has a list of targets, a
+list of inputs, a list of explicit dependencies and a function run
+when the task is considered out-of-date.
+
+TaskGen
+-------
+
+Task generators are used to generate new tasks instances in a flexible
+way (task factory). For example, a shared library is defined as a set
+of tasks to compile each .c into .o files, and one link task. The
+logic as well as the configuration shared by the compile tasks and the
+link task are handled by a task generator.
+
+Task reuse
+~~~~~~~~~~
+
+Task generator also makes the association file -> task (.c -> compile
+task, .f -> fortran compile task, etc...). The association rules are
+decoupled from the task generator, though - this enables code reuse
+without depending on inheritance, which is too inflexible. For
+example, let's say one has a task generator to build python
+extensions, called create_pyext::
+
+    def create_pyext(name, sources):
+        ...
+
+where sources is a list of .c files. Adding cython suport so that::
+
+    create_pyext("_bar", ["foo.c", "bar.pyx"])
+
+works is as simply as setting a cython hook to the .pyx extension
+(done through the @extension decorator). Whereas distutils would force
+inheriting the build_ext command, yaku use something not unsimilar to
+callbacks here so that create_pyext is reused as is.
+
+Task runner
+-----------
+
+Not really implemented yet:
+    
+    - how to decide which task to run next
+    - task grouping for // runs
+    - dependency model for tools applications (can we get away without it ? It
+      complicates waf quite a bit, so better avoid it if we can)
