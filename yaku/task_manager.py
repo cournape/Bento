@@ -9,7 +9,7 @@ def extension(ext):
     return _f
 
 def set_extension_hook(ext, hook):
-    old = RULES_REGISTRY[ext]
+    old = RULES_REGISTRY.get(ext, None)
     RULES_REGISTRY[ext] = hook
     return old
 
