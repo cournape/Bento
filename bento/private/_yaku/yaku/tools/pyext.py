@@ -2,32 +2,29 @@ import os
 import copy
 import distutils
 
-from utils \
+from yaku.task_manager \
     import \
-        ensure_dir
-from task \
-    import \
-        Task
-from task_manager \
-    import \
-        create_tasks, topo_sort, build_dag, run_tasks, CompiledTaskGen, set_extension_hook, order_tasks
-from compiled_fun \
-    import \
-        compile_fun
+        create_tasks, topo_sort, build_dag, run_tasks, \
+        CompiledTaskGen, set_extension_hook, order_tasks
 from yaku.sysconfig \
     import \
         get_configuration
-
-def apply_cpppath(task_gen):
-    cpppaths = task_gen.env["CPPPATH"]
-    cpppaths.extend(task_gen.env["PYEXT_CPPPATH"])
-    implicit_paths = set([
-        os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
-        for s in task_gen.sources])
-    cpppaths = list(implicit_paths) + cpppaths
-    task_gen.env["PYEXT_INCPATH"] = [
-            task_gen.env["PYEXT_INCPATH_FMT"] % p
-            for p in cpppaths]
+from yaku.compiled_fun \
+    import \
+        compile_fun
+from yaku.task \
+    import \
+        Task
+from yaku.utils \
+    import \
+        ensure_dir
+# FIXME: should be done dynamically
+from yaku.tools.gcc \
+    import \
+        detect as gcc_detect
+from yaku.conftests \
+    import \
+        check_compiler, check_header
 
 pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} -o ${TGT[0]} ${SRC}", False)
 
@@ -82,7 +79,27 @@ def pylink_task(self, name):
     task.env_vars = pylink_vars
     return [task]
 
-def create_pyext(bld, name, sources):
+class PythonBuilder(object):
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self.env = copy.deepcopy(ctx.env)
+
+    def extension(self, name, sources, env=None):
+        _env = copy.deepcopy(self.env)
+        if env is not None:
+            _env.update(env)
+        return create_pyext(self.ctx, _env, name, sources)
+
+def get_builder(ctx):
+    return PythonBuilder(ctx)
+
+def configure(ctx):
+    gcc_detect(ctx)
+    check_compiler(ctx)
+
+    ctx.env.update(get_pyenv())
+
+def create_pyext(bld, env, name, sources):
     base = name.split(".")[-1]
 
     tasks = []
@@ -90,7 +107,7 @@ def create_pyext(bld, name, sources):
     task_gen = CompiledTaskGen("pyext", sources, name)
     old_hook = set_extension_hook(".c", pycc_hook)
 
-    task_gen.env.update(copy.deepcopy(bld.env))
+    task_gen.env = env
     apply_cpppath(task_gen)
     apply_libpath(task_gen)
     apply_libs(task_gen)
@@ -121,3 +138,14 @@ def apply_libpath(task_gen):
     libdir = list(implicit_paths) + libdir
     task_gen.env["PYEXT_APP_LIBDIR"] = [
             task_gen.env["LIBDIR_FMT"] % d for d in libdir]
+
+def apply_cpppath(task_gen):
+    cpppaths = task_gen.env["CPPPATH"]
+    cpppaths.extend(task_gen.env["PYEXT_CPPPATH"])
+    implicit_paths = set([
+        os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
+        for s in task_gen.sources])
+    cpppaths = list(implicit_paths) + cpppaths
+    task_gen.env["PYEXT_INCPATH"] = [
+            task_gen.env["PYEXT_INCPATH_FMT"] % p
+            for p in cpppaths]
