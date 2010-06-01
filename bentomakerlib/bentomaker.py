@@ -205,11 +205,11 @@ def run_cmd(cmd_name, cmd_opts):
 
     if get_pre_hooks(cmd_name) is not None:
         for f in get_pre_hooks(cmd_name):
-            f[0]()
+            f[0](ctx)
     cmd_func(ctx)
     if get_post_hooks(cmd_name) is not None:
         for f in get_post_hooks(cmd_name):
-            f[0]()
+            f[0](ctx)
 
 def noexc_main(argv=None):
     try:
