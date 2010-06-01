@@ -17,7 +17,8 @@ Usage:   bentomaker detect_type [OPTIONS]."""
                  "dest": "setup_file"},
         {"opts": ["-v", "--verbose"], "help": "verbose run", "action" : "store_true"},
     ]
-    def run(self, opts):
+    def run(self, ctx):
+        opts = ctx.cmd_opts
         self.set_option_parser()
         o, a = self.parser.parse_args(opts)
         if o.help:

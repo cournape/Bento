@@ -152,7 +152,8 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
                     "call python setup.py -q -n --with-speedup",
                dest="setup_args")]
 
-    def run(self, opts):
+    def run(self, ctx):
+        opts = ctx.cmd_opts
         self.set_option_parser()
         o, a = self.parser.parse_args(opts)
         if o.help:

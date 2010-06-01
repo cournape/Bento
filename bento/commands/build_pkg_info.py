@@ -18,9 +18,9 @@ Usage:   bentomaker build_pkg_info [OPTIONS]"""
         {"opts": ["-o", "--output"], "dest": "output", "help": "Output file for PKG-INFO"},
     ]
 
-    def run(self, opts):
+    def run(self, ctx):
         self.set_option_parser()
-        o, a = self.parser.parse_args(opts)
+        o, a = self.parser.parse_args(ctx.cmd_opts)
         if o.help:
             self.parser.print_help()
             return

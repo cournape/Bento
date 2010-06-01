@@ -201,7 +201,7 @@ def run_cmd(cmd_name, cmd_opts):
     if get_command_override(cmd_name):
         cmd_func = get_command_override(cmd_name)[0]
     else:
-        cmd_func = lambda ctx: cmd.run(ctx.cmd_opts)
+        cmd_func = cmd.run
 
     if get_pre_hooks(cmd_name) is not None:
         for f in get_pre_hooks(cmd_name):

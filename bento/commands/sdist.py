@@ -31,9 +31,9 @@ Usage:   bentomaker sdist [OPTIONS]."""
         self.tarname = None
         self.topdir = None
 
-    def run(self, opts):
+    def run(self, ctx):
         self.set_option_parser()
-        o, a = self.parser.parse_args(opts)
+        o, a = self.parser.parse_args(ctx.cmd_opts)
         if o.help:
             self.parser.print_help()
             return

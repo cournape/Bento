@@ -27,13 +27,13 @@ class DistCheckCommand(Command):
 Purpose: configure, build and test the project from sdist output
 Usage:   bentomaker distcheck [OPTIONS]."""
     short_descr = "check that sdist output is buildable."
-    def run(self, opts):
+    def run(self, ctx):
         pprint('BLUE', "Distcheck...")
         bentomaker_script = os.path.abspath(sys.argv[0])
 
         pprint('PINK', "\t-> Running sdist...")
         sdist = get_command("sdist")()
-        sdist.run([])
+        sdist.run(ctx)
         tarname = sdist.tarname
         tardir = sdist.topdir
 

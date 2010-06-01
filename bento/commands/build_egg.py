@@ -24,7 +24,8 @@ Purpose: build egg
 Usage:   bentomaker build_egg [OPTIONS]"""
     short_descr = "build egg."
 
-    def run(self, opts):
+    def run(self, ctx):
+        opts = ctx.cmd_opts
         self.set_option_parser()
         o, a = self.parser.parse_args(opts)
         if o.help:

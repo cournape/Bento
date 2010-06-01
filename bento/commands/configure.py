@@ -134,7 +134,8 @@ Usage: bentomaker configure [OPTIONS]"""
     def add_option_callback(self, func):
         self.option_callback = func
 
-    def run(self, opts):
+    def run(self, ctx):
+        opts = ctx.cmd_opts
 
         # We need to obtain the package description ASAP, as we need to parse
         # it to get the options (i.e. we cannot use the option handling mechanism).

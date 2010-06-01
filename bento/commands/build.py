@@ -32,7 +32,8 @@ Usage:   bentomaker build [OPTIONS]."""
                    help="Use distutils to build extension",
                    action="store_true")]
 
-    def run(self, opts):
+    def run(self, ctx):
+        opts = ctx.cmd_opts
         self.set_option_parser()
         o, a = self.parser.parse_args(opts)
         if o.help:

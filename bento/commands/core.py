@@ -78,7 +78,7 @@ class Command(object):
         except getopt.GetoptError, e:
             raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
 
-    def run(self, opts):
+    def run(self, ctx):
         raise NotImplementedError("run method should be implemented by command classes.")
 
 class HelpCommand(Command):
@@ -86,7 +86,8 @@ class HelpCommand(Command):
 Purpose: Show help on a command or other topic.
 Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
     short_descr = "gives help on a given topic or command."
-    def run(self, cmd_args):
+    def run(self, ctx):
+        cmd_args = ctx.cmd_opts
         if len(cmd_args) < 1:
             print get_simple_usage()
             return
