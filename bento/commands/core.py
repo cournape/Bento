@@ -3,7 +3,7 @@ import copy
 
 from optparse \
     import \
-        Option
+        Option, OptionGroup
 
 import bento
 
