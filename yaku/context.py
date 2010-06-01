@@ -77,7 +77,13 @@ class BuildContext(object):
         try:
             tools = eval(f.read())
             for t in tools:
-                import_tools([t["tool"]], t["tooldir"])
+                _t = import_tools([t["tool"]], t["tooldir"])
+                self._loaded_tools.update(_t)
+                tool_name = t["tool"]
+                tool_mod = _t[tool_name]
+                if hasattr(tool_mod, "get_builder"):
+                    self.builders[tool_name] = tool_mod.get_builder(self)
+            self.tools = tools
         finally:
             f.close()
 
