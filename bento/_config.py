@@ -3,6 +3,9 @@ This module centralizes every internal configuration parameter used throughout
 bento.
 """
 import os
+import sys
+
+import bento
 
 # Arch-independent path
 DATA_PATH = os.path.dirname(__file__)
@@ -25,3 +28,7 @@ PKG_CACHE = os.path.join(BUILD_DIR, ".pkg.cache")
 DISTCHECK_DIR = os.path.join(BUILD_DIR, "distcheck")
 
 TOYDIST_SCRIPT = "bento.info"
+
+USE_PRIVATE_MODULES = True
+if USE_PRIVATE_MODULES:
+    sys.path.insert(0, os.path.join(os.path.dirname(bento.__file__), "private", "_yaku"))
