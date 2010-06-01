@@ -50,6 +50,10 @@ class BuildContext(object):
         self.cache = {}
 
     def load(self):
+        self.env = Environment()
+        if os.path.exists(DEFAULT_ENV):
+            self.env.load(DEFAULT_ENV)
+
         f = open(BUILD_CONFIG)
         try:
             tools = eval(f.read())
@@ -66,10 +70,6 @@ class BuildContext(object):
                 fid.close()
         else:
             self.cache = {}
-
-        self.env = Environment()
-        if os.path.exists(DEFAULT_ENV):
-            self.env.load(DEFAULT_ENV)
 
     def store(self):
         # Use rename to avoid corrupting the cache if interrupted
