@@ -15,10 +15,10 @@ def add_to_registry(func, category):
     else:
         __HOOK_REGISTRY[category].append(func)
 
-def override_command(command, func, args, kw):
+def override_command(command, func):
     global __COMMANDS_OVERRIDE
 
-    __COMMANDS_OVERRIDE[command] = (func, args, kw)
+    __COMMANDS_OVERRIDE[command] = (func,)
 
 def add_to_pre_registry(func, cmd_name):
     global __PRE_HOOK_REGISTRY
