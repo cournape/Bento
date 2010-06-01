@@ -23,7 +23,8 @@ from bento.commands.errors \
         UsageException
 
 class ConfigureState(object):
-    def __init__(self, filename, pkg, paths=None, flags=None):
+    def __init__(self, filename, pkg, paths=None, flags=None,
+                 user_data=None):
         self.filename = filename
         self.pkg = pkg
 
@@ -36,6 +37,11 @@ class ConfigureState(object):
             self.paths = {}
         else:
             self.paths = paths
+
+        if user_data is None:
+            self.user_data = {}
+        else:
+            self.user_data = user_data
 
     def dump(self, filename=CONFIGURED_STATE_DUMP):
         # Write into tmp file and atomtically rename the file to avoid
