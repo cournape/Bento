@@ -6,85 +6,18 @@ from bento.core.utils import \
 from bento.installed_package_description import \
         InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
 
-from bento.commands.errors \
+from bento.commands.core \
     import \
-        UsageException
+        Option
+from bento.commands \
+    import \
+        build_distutils
 from bento.commands.core import \
-        Command, SCRIPT_NAME
+        Command
 from bento.commands.configure import \
-        ConfigureState, get_configured_state
+        get_configured_state
 from bento.commands.script_utils import \
         create_posix_script, create_win32_script
-
-def toyext_to_distext(e):
-    """Convert a bento Extension instance to a distutils
-    Extension."""
-    # FIXME: this is temporary, will be removed once we do not depend
-    # on distutils to build extensions anymore. That's why this is not
-    # a method of the bento Extension class.
-    from distutils.extension import Extension as DistExtension
-    return DistExtension(e.name, sources=[s for s in e.sources],
-                         include_dirs=[inc for inc in e.include_dirs])
-
-def build_extensions(pkg, use_numpy_distutils=False):
-    if not pkg.extensions:
-        return {}
-
-    # FIXME: import done here to avoid clashing with monkey-patch as done by
-    # the convert subcommand.
-    if use_numpy_distutils:
-        from numpy.distutils.numpy_distribution \
-            import \
-                NumpyDistribution as Distribution
-        from numpy.distutils.command.build_ext \
-            import \
-                build_ext
-        from numpy.distutils.command.build_src \
-            import \
-                build_src
-        from numpy.distutils.command.scons \
-            import \
-                scons
-        from numpy.distutils import log
-        import distutils.core
-    else:
-        from distutils.dist \
-            import \
-                Distribution
-        from distutils.command.build_ext \
-            import \
-                build_ext
-        from distutils import log
-
-    log.set_verbosity(1)
-
-    dist = Distribution()
-    if use_numpy_distutils:
-        dist.cmdclass['build_src'] = build_src
-        dist.cmdclass['scons'] = scons
-        distutils.core._setup_distribution = dist
-
-    dist.ext_modules = [toyext_to_distext(e) for e in
-                        pkg.extensions.values()]
-
-    bld_cmd = build_ext(dist)
-    bld_cmd.initialize_options()
-    bld_cmd.finalize_options()
-    bld_cmd.run()
-
-    ret = {}
-    for ext in bld_cmd.extensions:
-        # FIXME: do package -> location translation correctly
-        pkg_dir = os.path.dirname(ext.name.replace('.', os.path.sep))
-        target = os.path.join('$sitedir', pkg_dir)
-        fullname = bld_cmd.get_ext_fullname(ext.name)
-        ext_target = os.path.join(bld_cmd.build_lib,
-                                 bld_cmd.get_ext_filename(fullname))
-        srcdir = os.path.dirname(ext_target)
-        section = InstalledSection("extensions", fullname, srcdir,
-                                    target, [os.path.basename(ext_target)])
-        ret[fullname] = section
-    return ret
 
 class BuildCommand(Command):
     long_descr = """\
@@ -99,20 +32,10 @@ Usage:   bentomaker build [OPTIONS]."""
             self.parser.print_help()
             return
 
-        # XXX: import here because numpy import time slows down everything
-        # otherwise. This is ugly, but using numpy.distutils is temporary
-        # anyway
-        try:
-            import numpy
-            extension_callback = lambda pkg: build_extensions(pkg, True)
-        except ImportError:
-            extension_callback = lambda pkg: build_extensions(pkg, False)
-
         s = get_configured_state()
         pkg = s.pkg
 
         section_writer = SectionWriter()
-        section_writer.sections_callbacks["extension"] = extension_callback
         section_writer.update_sections(pkg)
         section_writer.store()
 
@@ -121,7 +44,7 @@ class SectionWriter(object):
         self.sections_callbacks = {
             "pythonfiles": build_python_files,
             "datafiles": build_data_files,
-            "extension": build_extensions,
+            "extension": build_distutils.build_extensions,
             "executable": build_executables
         }
         self.sections = {}
@@ -141,7 +64,6 @@ class SectionWriter(object):
         p = InstalledPkgDescription(self.sections, meta, scheme,
                                     pkg.executables)
         p.write('installed-pkg-info')
-
 
 def build_python_files(pkg):
     # FIXME: root_src
