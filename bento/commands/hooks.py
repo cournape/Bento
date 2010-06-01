@@ -58,24 +58,28 @@ def get_command_override(cmd_name):
     global __COMMANDS_OVERRIDE
     return __COMMANDS_OVERRIDE.get(cmd_name, None)
 
-def post_configure(f, *a, **kw):
-    add_to_registry((f, a, kw), "post_configure")
-    add_to_post_registry((f, a, kw), "configure")
+def pre_build(f):
+    add_to_registry((f,), "pre_build")
+    add_to_pre_registry((f,), "build")
 
-def pre_configure(f, *a, **kw):
-    add_to_registry((f, a, kw), "pre_configure")
-    add_to_pre_registry((f, a, kw), "configure")
+def post_configure(f):
+    add_to_registry((f,), "post_configure")
+    add_to_post_registry((f,), "configure")
 
-def post_sdist(f, *a, **kw):
-    add_to_registry((f, a, kw), "post_sdist")
-    add_to_post_registry((f, a, kw), "sdist")
+def pre_configure(f):
+    add_to_registry((f,), "pre_configure")
+    add_to_pre_registry((f,), "configure")
 
-def pre_sdist(f, *a, **kw):
-    add_to_registry((f, a, kw), "pre_sdist")
-    add_to_pre_registry((f, a, kw), "sdist")
+def post_sdist(f):
+    add_to_registry((f,), "post_sdist")
+    add_to_post_registry((f,), "sdist")
 
-def override(f, *a, **kw):
-    override_command(f.__name__, f, a, kw)
+def pre_sdist(f):
+    add_to_registry((f,), "pre_sdist")
+    add_to_pre_registry((f,), "sdist")
+
+def override(f):
+    override_command(f.__name__, f)
 
 def command_register(f, *a, **kw):
     ret = f(*a, **kw)
