@@ -12,6 +12,9 @@ from bento.commands.core \
 from bento.commands \
     import \
         build_distutils
+from bento.commands \
+    import \
+        build_yaku
 from bento.commands.core import \
         Command
 from bento.commands.configure import \
@@ -24,6 +27,10 @@ class BuildCommand(Command):
 Purpose: build the project
 Usage:   bentomaker build [OPTIONS]."""
     short_descr = "build the project."
+    opts = Command.opts + [
+            Option("--use-distutils",
+                   help="Use distutils to build extension",
+                   action="store_true")]
 
     def run(self, opts):
         self.set_option_parser()
@@ -32,11 +39,21 @@ Usage:   bentomaker build [OPTIONS]."""
             self.parser.print_help()
             return
 
+        if o.use_distutils is None:
+            o.use_distutils = True
+
+        if o.use_distutils:
+            build_extensions = build_distutils.build_extensions
+        else:
+            build_extensions = build_yaku.build_extensions
+
         s = get_configured_state()
         pkg = s.pkg
 
         section_writer = SectionWriter()
         section_writer.update_sections(pkg)
+        section_writer.sections_callbacks["extension"] = \
+                build_extensions
         section_writer.store()
 
 class SectionWriter(object):
