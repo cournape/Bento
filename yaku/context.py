@@ -22,13 +22,30 @@ class ConfigureContext(object):
     def __init__(self):
         self.env = {}
         self.tools = []
+        self._tool_modules = {}
+        self.builders = {}
         self.cache = {}
         self.conf_results = []
 
-    def load_tools(self, tools, tooldir=None):
+    def load_tool(self, tool, tooldir=None):
+        _t = import_tools([tool], tooldir)
+        self.tools.append({"tool": tool, "tooldir": tooldir})
+        mod = _t[tool]
+        self._tool_modules[tool] = mod
+        if hasattr(mod, "get_builder"):
+            self.builders[tool] = mod.get_builder(self)
+        if not hasattr(mod, "configure"):
+            mod.configure = lambda x: None
+        return mod
+
+    def use_tools(self, tools, tooldir=None):
+        ret = {}
         for t in tools:
-            self.tools.append({"tool": t, "tooldir": tooldir})
-            import_tools([t], tooldir)
+            _t = self.load_tool(t, tooldir)
+            ret[t] = _t
+        for mod in self._tool_modules.values():
+            mod.configure(self)
+        return ret
 
     def store(self):
         self.env.store(DEFAULT_ENV)
@@ -47,7 +64,9 @@ class BuildContext(object):
     def __init__(self):
         self.env = {}
         self.tools = []
+        self._loaded_tools = {}
         self.cache = {}
+        self.builders = {}
 
     def load(self):
         self.env = Environment()

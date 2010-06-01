@@ -14,8 +14,8 @@ from yaku.tools.gcc import detect as gcc_detect
 from yaku.tools.gfortran import detect as gfortran_detect
 
 def configure(ctx):
-    ctx.load_tools(["ctasks", "tpl_tasks", "cython",
-                    "fortran", "swig"], ["tools"])
+    ctx.use_tools(["ctasks", "tpl_tasks", "cython",
+                   "fortran", "swig"], ["tools"])
     ctx.env.update({
             #"SWIG": ["swig"],
             #"SWIGFLAGS": ["-python"],
