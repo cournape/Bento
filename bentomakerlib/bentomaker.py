@@ -21,7 +21,7 @@ from bento._config import \
 from bento.commands.core import \
         Command, HelpCommand, get_usage
 from bento.commands.configure import \
-        ConfigureCommand
+        ConfigureCommand, get_configured_state
 from bento.commands.build import \
         BuildCommand
 from bento.commands.install import \
@@ -194,6 +194,10 @@ class Context(object):
     def __init__(self, cmd, cmd_opts):
         self.cmd = cmd
         self.cmd_opts = cmd_opts
+
+    def get_package(self):
+        state = get_configured_state()
+        return state.pkg
 
 def run_cmd(cmd_name, cmd_opts):
     cmd = get_command(cmd_name)()
