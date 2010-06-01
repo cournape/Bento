@@ -17,7 +17,7 @@ from bento._config \
         CONFIGURED_STATE_DUMP, TOYDIST_SCRIPT
 
 from bento.commands.core import \
-        Command, SCRIPT_NAME, Option
+        Command, SCRIPT_NAME, Option, OptionGroup
 from bento.commands.errors \
     import \
         UsageException
@@ -102,6 +102,38 @@ Usage: bentomaker configure [OPTIONS]"""
     opts = [Option('-h', '--help',
                    help="Show package-specific configuration options",
                    action="store_true")]
+
+    def __init__(self):
+        Command.__init__(self)
+        self._user_opt_groups = {}
+        def _dummy(self, o, a):
+            pass
+        self.option_callback = _dummy
+        self.user_data = {}
+
+        # As the configure command line handling is customized from
+        # the script file (flags, paths variables), we cannot just
+        # call set_options_parser, and we set it up manually instead
+        self.reset_parser()
+        for opt in self.opts:
+            self.parser.add_option(opt)
+
+    def add_user_option(self, opt, group_name=None):
+        #self.opts.append(opt)
+        if group_name is not None:
+            self.opts.append(opt)
+            self._user_opt_groups[group_name].add_option(opt)
+        else:
+            self.parser.add_option(opt)
+
+    def add_user_group(self, name, title):
+        grp = OptionGroup(self.parser, title)
+        self._user_opt_groups[name] = grp
+        self.parser.add_option_group(grp)
+
+    def add_option_callback(self, func):
+        self.option_callback = func
+
     def run(self, opts):
 
         # We need to obtain the package description ASAP, as we need to parse
@@ -113,19 +145,13 @@ Usage: bentomaker configure [OPTIONS]"""
             raise UsageException(msg)
 
         pkg_opts = PackageOptions.from_file(filename)
-
-        # As the configure command line handling is customized from
-        # the script file (flags, paths variables), we cannot just
-        # call set_options_parser, and we set it up manually instead
-        self.reset_parser()
-        for opt in self.opts:
-            self.parser.add_option(opt)
         scheme, flag_opts = self.add_configuration_options(pkg_opts)
 
         o, a = self.parser.parse_args(opts)
         if o.help:
             self.parser.print_help()
             return
+        self.option_callback(self, o, a)
 
         set_scheme_options(scheme, o)
         flag_vals = set_flag_options(flag_opts, o)
@@ -134,7 +160,8 @@ Usage: bentomaker configure [OPTIONS]"""
         # subsequent commands
         pkg = PackageDescription.from_file(filename, flag_vals)
 
-        s = ConfigureState(filename, pkg, scheme, flag_vals)
+        s = ConfigureState(filename, pkg, scheme, flag_vals,
+                           self.user_data)
         s.dump()
 
     def add_configuration_options(self, pkg_opts):
