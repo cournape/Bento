@@ -175,7 +175,7 @@ def _main(popts):
 
     if popts["show_usage"]:
         cmd = get_command('help')()
-        cmd.run([])
+        cmd.run(Context(cmd, []))
         return 0
 
     cmd_name = popts["cmd_name"]
