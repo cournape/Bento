@@ -151,6 +151,7 @@ Usage: bentomaker configure [OPTIONS]"""
         o, a = self.parser.parse_args(opts)
         if o.help:
             self.parser.print_help()
+            ctx.help = True
             return
         self.option_callback(self, o, a)
 

@@ -194,6 +194,7 @@ class Context(object):
     def __init__(self, cmd, cmd_opts):
         self.cmd = cmd
         self.cmd_opts = cmd_opts
+        self.help = False
 
     def get_package(self):
         state = get_configured_state()
