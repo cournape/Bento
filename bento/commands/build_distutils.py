@@ -3,6 +3,9 @@ import os
 from bento.installed_package_description \
     import \
         InstalledSection
+from bento.commands.errors \
+    import \
+        CommandExecutionFailure
 
 def toyext_to_distext(e):
     """Convert a bento Extension instance to a distutils
@@ -52,6 +55,7 @@ def build_extensions(pkg):
             import \
                 build_ext
         from distutils import log
+    import distutils.errors
 
     log.set_verbosity(1)
 
@@ -64,22 +68,25 @@ def build_extensions(pkg):
     dist.ext_modules = [toyext_to_distext(e) for e in
                         pkg.extensions.values()]
 
-    bld_cmd = build_ext(dist)
-    bld_cmd.initialize_options()
-    bld_cmd.finalize_options()
-    bld_cmd.run()
+    try:
+        bld_cmd = build_ext(dist)
+        bld_cmd.initialize_options()
+        bld_cmd.finalize_options()
+        bld_cmd.run()
 
-    ret = {}
-    for ext in bld_cmd.extensions:
-        # FIXME: do package -> location translation correctly
-        pkg_dir = os.path.dirname(ext.name.replace('.', os.path.sep))
-        target = os.path.join('$sitedir', pkg_dir)
-        fullname = bld_cmd.get_ext_fullname(ext.name)
-        ext_target = os.path.join(bld_cmd.build_lib,
-                                 bld_cmd.get_ext_filename(fullname))
-        srcdir = os.path.dirname(ext_target)
-        section = InstalledSection("extensions", fullname, srcdir,
-                                    target, [os.path.basename(ext_target)])
-        ret[fullname] = section
-    return ret
+        ret = {}
+        for ext in bld_cmd.extensions:
+            # FIXME: do package -> location translation correctly
+            pkg_dir = os.path.dirname(ext.name.replace('.', os.path.sep))
+            target = os.path.join('$sitedir', pkg_dir)
+            fullname = bld_cmd.get_ext_fullname(ext.name)
+            ext_target = os.path.join(bld_cmd.build_lib,
+                                     bld_cmd.get_ext_filename(fullname))
+            srcdir = os.path.dirname(ext_target)
+            section = InstalledSection("extensions", fullname, srcdir,
+                                        target, [os.path.basename(ext_target)])
+            ret[fullname] = section
+        return ret
+    except distutils.errors.DistutilsError, e:
+        raise CommandExecutionFailure(str(e))
 
