@@ -16,8 +16,6 @@ from bento.commands.configure import \
 from bento.commands.script_utils import \
         create_posix_script, create_win32_script
 
-__USE_NUMPY_DISTUTILS = False
-
 def toyext_to_distext(e):
     """Convert a bento Extension instance to a distutils
     Extension."""
@@ -28,7 +26,7 @@ def toyext_to_distext(e):
     return DistExtension(e.name, sources=[s for s in e.sources],
                          include_dirs=[inc for inc in e.include_dirs])
 
-def build_extensions(pkg, use_numpy_distutils):
+def build_extensions(pkg, use_numpy_distutils=False):
     if not pkg.extensions:
         return {}
 
@@ -88,6 +86,63 @@ def build_extensions(pkg, use_numpy_distutils):
         ret[fullname] = section
     return ret
 
+class BuildCommand(Command):
+    long_descr = """\
+Purpose: build the project
+Usage:   bentomaker build [OPTIONS]."""
+    short_descr = "build the project."
+
+    def run(self, opts):
+        self.set_option_parser()
+        o, a = self.parser.parse_args(opts)
+        if o.help:
+            self.parser.print_help()
+            return
+
+        # XXX: import here because numpy import time slows down everything
+        # otherwise. This is ugly, but using numpy.distutils is temporary
+        # anyway
+        try:
+            import numpy
+            extension_callback = lambda pkg: build_extensions(pkg, True)
+        except ImportError:
+            extension_callback = lambda pkg: build_extensions(pkg, False)
+
+        s = get_configured_state()
+        pkg = s.pkg
+
+        section_writer = SectionWriter()
+        section_writer.sections_callbacks["extension"] = extension_callback
+        section_writer.update_sections(pkg)
+        section_writer.store()
+
+class SectionWriter(object):
+    def __init__(self):
+        self.sections_callbacks = {
+            "pythonfiles": build_python_files,
+            "datafiles": build_data_files,
+            "extension": build_extensions,
+            "executable": build_executables
+        }
+        self.sections = {}
+        for k in self.sections_callbacks:
+            self.sections[k] = {}
+
+    def update_sections(self, pkg):
+        for name, updater in self.sections_callbacks.iteritems():
+            self.sections[name].update(updater(pkg))
+
+    def store(self, filename="installed-pkg-info"):
+        s = get_configured_state()
+        pkg = s.pkg
+        scheme = dict([(k, s.paths[k]) for k in s.paths])
+
+        meta = ipkg_meta_from_pkg(pkg)
+        p = InstalledPkgDescription(self.sections, meta, scheme,
+                                    pkg.executables)
+        p.write('installed-pkg-info')
+
+
 def build_python_files(pkg):
     # FIXME: root_src
     root_src = ""
@@ -109,53 +164,6 @@ def build_data_files(pkg):
         ret[name] = InstalledSection.from_data_files(name, data_section)
 
     return ret
-
-class BuildCommand(Command):
-    long_descr = """\
-Purpose: build the project
-Usage:   bentomaker build [OPTIONS]."""
-    short_descr = "build the project."
-
-    def run(self, opts):
-        global __USE_NUMPY_DISTUTILS
-
-        self.set_option_parser()
-        o, a = self.parser.parse_args(opts)
-        if o.help:
-            self.parser.print_help()
-            return
-
-        # XXX: import here because numpy import time slows down everything
-        # otherwise. This is ugly, but using numpy.distutils is temporary
-        # anyway
-        try:
-            import numpy
-            __USE_NUMPY_DISTUTILS = True
-        except ImportError:
-            __USE_NUMPY_DISTUTILS = False
-
-        s = get_configured_state()
-
-        pkg = s.pkg
-        scheme = dict([(k, s.paths[k]) for k in s.paths])
-
-        sections = {
-                "pythonfiles": {},
-                "datafiles": {},
-                "extension": {},
-                "executable": {}
-        }
-
-        sections["pythonfiles"].update(build_python_files(pkg))
-        sections["datafiles"].update(build_data_files(pkg))
-        sections["extension"].update(build_extensions(pkg,
-                __USE_NUMPY_DISTUTILS))
-        sections["executable"].update(build_executables(pkg))
-
-        meta = ipkg_meta_from_pkg(pkg)
-        p = InstalledPkgDescription(sections, meta, scheme,
-                                    pkg.executables)
-        p.write('installed-pkg-info')
 
 def build_dir():
     # FIXME: handle build directory differently, wo depending on distutils
