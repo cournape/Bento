@@ -60,11 +60,20 @@ class ConfigureContext(object):
         finally:
             fid.close()
 
+def load_tools(self, fid):
+    tools = eval(fid.read())
+    for t in tools:
+        _t = import_tools([t["tool"]], t["tooldir"])
+        tool_name = t["tool"]
+        tool_mod = _t[tool_name]
+        if hasattr(tool_mod, "get_builder"):
+            self.builders[tool_name] = tool_mod.get_builder(self)
+    self.tools = tools
+
 class BuildContext(object):
     def __init__(self):
         self.env = {}
         self.tools = []
-        self._loaded_tools = {}
         self.cache = {}
         self.builders = {}
 
@@ -75,15 +84,7 @@ class BuildContext(object):
 
         f = open(BUILD_CONFIG)
         try:
-            tools = eval(f.read())
-            for t in tools:
-                _t = import_tools([t["tool"]], t["tooldir"])
-                self._loaded_tools.update(_t)
-                tool_name = t["tool"]
-                tool_mod = _t[tool_name]
-                if hasattr(tool_mod, "get_builder"):
-                    self.builders[tool_name] = tool_mod.get_builder(self)
-            self.tools = tools
+            load_tools(self, f)
         finally:
             f.close()
 
