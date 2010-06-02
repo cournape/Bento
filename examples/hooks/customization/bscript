@@ -1,18 +1,12 @@
-import sys
-import os
-
 from bento.commands.hooks \
     import \
-        override, post_configure
-from bento.commands.core \
-    import \
-        Option
+        post_configure
 
 import yaku.context
 
 @post_configure
-def yaku_configure(ctx):
+def myconfigure(ctx):
     if not ctx.help:
         ctx = yaku.context.get_cfg()
-        ctx.use_tools(["pyext", "cython"], ["tools"])
+        ctx.use_tools(["cython"])
         ctx.store()
