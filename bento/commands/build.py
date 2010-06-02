@@ -46,9 +46,9 @@ Usage:   bentomaker build [OPTIONS]."""
         pkg = s.pkg
 
         section_writer = SectionWriter()
-        section_writer.update_sections(pkg)
         section_writer.sections_callbacks["extension"] = \
                 build_extensions
+        section_writer.update_sections(pkg)
         section_writer.store()
 
 class SectionWriter(object):
