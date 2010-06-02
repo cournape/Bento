@@ -1,0 +1,17 @@
+Name: HookExample
+Version: 0.0.1
+Summary: An example for toydist hooks
+Url: http://github.com/cournape/Bento
+Author: David Cournapeau
+AuthorEmail: cournape@gmail.com
+License: BSD
+HookFile: bscript
+
+ExtraSourceFiles:
+    src/heap.pxd
+
+Library:
+    Extension: hello._bar
+        Sources: src/hellomodule.c
+    Extension: graph.heap
+        Sources: src/heap.pyx
