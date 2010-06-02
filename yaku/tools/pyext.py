@@ -124,6 +124,11 @@ def create_pyext(bld, env, name, sources):
 
     set_extension_hook(".c", old_hook)
 
+    outputs = []
+    for t in ltask:
+        outputs.extend(t.outputs)
+    return outputs
+
 # FIXME: find a way to reuse this kind of code between tools
 def apply_libs(task_gen):
     libs = task_gen.env["LIBS"]
