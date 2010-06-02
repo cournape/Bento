@@ -27,10 +27,7 @@ class BuildCommand(Command):
 Purpose: build the project
 Usage:   bentomaker build [OPTIONS]."""
     short_descr = "build the project."
-    opts = Command.opts + [
-            Option("--use-distutils",
-                   help="Use distutils to build extension",
-                   action="store_true")]
+    opts = Command.opts
 
     def run(self, ctx):
         opts = ctx.cmd_opts
@@ -40,10 +37,7 @@ Usage:   bentomaker build [OPTIONS]."""
             self.parser.print_help()
             return
 
-        if o.use_distutils is None:
-            o.use_distutils = True
-
-        if o.use_distutils:
+        if ctx.get_user_data()["use_distutils"]:
             build_extensions = build_distutils.build_extensions
         else:
             build_extensions = build_yaku.build_extensions
