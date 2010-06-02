@@ -22,6 +22,8 @@ from bento.commands.errors \
     import \
         UsageException
 
+import yaku.context
+
 class ConfigureState(object):
     def __init__(self, filename, pkg, paths=None, flags=None,
                  user_data=None):
@@ -162,6 +164,9 @@ Usage: bentomaker configure [OPTIONS]"""
             self.user_data["use_distutils"] = True
         else:
             self.user_data["use_distutils"] = False
+            yaku_ctx = yaku.context.get_cfg()
+            yaku_ctx.use_tools(["pyext"])
+            yaku_ctx.store()
 
         self.option_callback(self, o, a)
 
