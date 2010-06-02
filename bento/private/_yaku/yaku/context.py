@@ -122,6 +122,13 @@ def get_cfg():
         with open(CONFIG_CACHE) as fid:
             ctx.cache = load(fid)
 
+    if os.path.exists(BUILD_CONFIG):
+        fid = myopen(BUILD_CONFIG, "rb")
+        try:
+            load_tools(ctx, fid)
+        finally:
+            fid.close()
+
     if os.path.exists(DEFAULT_ENV):
         env = Environment()
         env.load(DEFAULT_ENV)
