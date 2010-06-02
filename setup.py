@@ -85,7 +85,7 @@ METADATA = {
 PACKAGE_DATA = {
     'packages': pkg.packages,
     'entry_points': {
-        'console_scripts': ['toymaker=toymakerlib.toymaker:noexc_main']
+        'console_scripts': ['bentomaker=bentomakerlib.bentomaker:noexc_main']
     },
     'cmdclass': {"install": install}
 }
