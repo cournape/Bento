@@ -4,17 +4,20 @@ import os
 from bento.installed_package_description \
     import \
         InstalledSection
+from bento.commands.errors \
+    import \
+        CommandExecutionFailure
 
 import yaku.context
 
-def build_extensions(pkg):
-    bld = yaku.context.get_bld()
-    if "-v" in sys.argv:
-        bld.env["VERBOSE"] = True
-
+def build_extension(bld, pkg):
     ret = {}
     for ext in pkg.extensions.values():
-        outputs = bld.builders["pyext"].extension(ext.name, ext.sources)
+        try:
+            outputs = bld.builders["pyext"].extension(ext.name, ext.sources)
+        except RuntimeError, e:
+            msg = "Building extension %s failed: %s" % (ext.name, str(e))
+            raise CommandExecutionFailure(msg)
 
         # FIXME: do package -> location translation correctly
         pkg_dir = os.path.dirname(ext.name.replace('.', os.path.sep))
@@ -26,6 +29,14 @@ def build_extensions(pkg):
         section = InstalledSection("extensions", fullname, srcdir,
                                     target, [os.path.basename(o) for o in outputs])
         ret[fullname] = section
-    bld.store()
-
     return ret
+
+def build_extensions(pkg):
+    bld = yaku.context.get_bld()
+    if "-v" in sys.argv:
+        bld.env["VERBOSE"] = True
+
+    try:
+        return build_extension(bld, pkg)
+    finally:
+        bld.store()
