@@ -142,6 +142,9 @@ def file_list(pkg, root_src=""):
     for m in pkg.py_modules:
         files.append(os.path.join(root_src, '%s.py' % m))
 
+    for e in pkg.extensions.values():
+        for source in e.sources:
+            files.append(os.path.join(root_src, source))
     for section in pkg.data_files.values():
         for entry in section.files:
             files.extend([os.path.join(root_src, section.source_dir, f) 
