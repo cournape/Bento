@@ -200,6 +200,10 @@ class Context(object):
         state = get_configured_state()
         return state.pkg
 
+    def get_user_data(self):
+        state = get_configured_state()
+        return state.user_data
+
 def run_cmd(cmd_name, cmd_opts):
     cmd = get_command(cmd_name)()
     ctx = Context(cmd, cmd_opts)

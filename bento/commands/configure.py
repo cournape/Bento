@@ -137,6 +137,11 @@ Usage: bentomaker configure [OPTIONS]"""
     def run(self, ctx):
         opts = ctx.cmd_opts
 
+        self.add_user_group("build_customization", "Build customization")
+        opt = Option("--use-distutils", help="Build extensions with distutils",
+                     action="store_true")
+        self.add_user_option(opt, "build_customization")
+
         # We need to obtain the package description ASAP, as we need to parse
         # it to get the options (i.e. we cannot use the option handling mechanism).
         filename = TOYDIST_SCRIPT
@@ -153,6 +158,11 @@ Usage: bentomaker configure [OPTIONS]"""
             self.parser.print_help()
             ctx.help = True
             return
+        if o.use_distutils:
+            self.user_data["use_distutils"] = True
+        else:
+            self.user_data["use_distutils"] = False
+
         self.option_callback(self, o, a)
 
         set_scheme_options(scheme, o)
