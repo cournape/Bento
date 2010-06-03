@@ -62,6 +62,7 @@ def p_stmt(p):
             | flag
             | extra_sources
             | data_files
+            | dummy
     """
     p[0] = p[1]
 
@@ -182,6 +183,10 @@ def p_classifier(p):
     p[0] = p[1]
     p[0].value = "".join(p[0].value)
     p[0].type = "classifier"
+
+def p_dummy(p):
+    """dummy : AND BACKSLASH"""
+    pass
 
 #---------------------------------------
 # Data files and extra sources handling
