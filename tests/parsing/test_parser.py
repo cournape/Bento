@@ -9,8 +9,6 @@ from nose.tools \
     import \
         assert_equal, assert_raises
 
-import ply
-
 from bento.core.parser.nodes \
     import \
         Node, ast_pprint

@@ -1,5 +1,3 @@
-import ply
-
 from unittest \
     import \
         TestCase
