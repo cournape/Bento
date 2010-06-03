@@ -5,6 +5,8 @@ TODO:
 
     - add msi support
     - add proper egg support
+    - namespace packages: how to deal with them (file description and runtime
+      support) ?
     - add mpkg support
     - port stdeb to toydist
     - specify hook mechanism
@@ -30,7 +32,10 @@ Release 0.0.3
 
 0.0.3 goals:
 
-    - integrate yaku (without exposing yaku API)
+    - integrate yaku (without exposing yaku API), yaku should have the
+      following features:
+        - naive // build (extension-based ala waf)
+        - tool specification
     - put everything in a build directory
     - specify hook mechanism
 
