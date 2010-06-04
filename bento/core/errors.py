@@ -1,5 +1,5 @@
-class ToydistError(Exception):
+class BentoError(Exception):
     pass
 
-class InvalidPackage(ToydistError):
+class InvalidPackage(BentoError):
     pass

@@ -27,7 +27,7 @@ CONFIGURED_STATE_DUMP = os.path.join(BUILD_DIR, ".config.bin")
 PKG_CACHE = os.path.join(BUILD_DIR, ".pkg.cache")
 DISTCHECK_DIR = os.path.join(BUILD_DIR, "distcheck")
 
-TOYDIST_SCRIPT = "bento.info"
+BENTO_SCRIPT = "bento.info"
 
 USE_PRIVATE_MODULES = True
 if USE_PRIVATE_MODULES:

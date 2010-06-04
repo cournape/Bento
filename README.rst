@@ -51,11 +51,11 @@ Code-wise, bento has the following advantages:
     * No dependency on distutils or setuptools code, with a focus on
       using standard python idioms
 
-Toydist discussion happen on NumPy Mailing list, and development is on
+Bento discussion happen on NumPy Mailing list, and development is on
 `github`_. Bugs should be reported on bento `issue-tracker`_. Online
 `documentation`_ is available on github as well.
 
-TOYDIST IS IN (VERY) EARLY STAGES: ANY PRODUCTION USAGE IS STRONGLY DISCOURAGED
+BENTO IS IN (VERY) EARLY STAGES: ANY PRODUCTION USAGE IS STRONGLY DISCOURAGED
 AT THIS POINT.
 
 .. _github: http://github.com/cournape/bento.git
@@ -65,7 +65,7 @@ AT THIS POINT.
 Installing bento
 ------------------
 
-Toydist may be installed the usual way from setup.py::
+Bento may be installed the usual way from setup.py::
 
     python setup.py install --user # python 2.6 and later
     python setup.py install --prefix=some_directory
@@ -112,7 +112,7 @@ may be described as follows::
 Building, installing
 ~~~~~~~~~~~~~~~~~~~~
 
-Toydist currently only has a command-line interface, bentomaker. It can be used
+Bento currently only has a command-line interface, bentomaker. It can be used
 to configure, build, install, etc... the distribution::
 
     bentomaker configure --prefix=/usr/local
@@ -147,7 +147,7 @@ Useful discussions which are related to bento design:
     * 'Just use debian' on distutils-sig:
       http://mail.python.org/pipermail/distutils-sig/2008-September/010129.html
 
-Toydist design borrows from:
+Bento design borrows from:
 
     * Cabal
     * Automake (for data files description) and autoconf

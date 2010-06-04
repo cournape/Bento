@@ -1,4 +1,4 @@
-"""toydist version of setup.py."""
+"""bento version of setup.py."""
 from distutils.core import setup
 from bento.import PackageDescription
 from bento.conv import package_description_to_distutils

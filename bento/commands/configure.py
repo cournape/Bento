@@ -14,7 +14,7 @@ from bento.core import \
         PackageOptions, PackageDescription
 from bento._config \
     import \
-        CONFIGURED_STATE_DUMP, TOYDIST_SCRIPT
+        CONFIGURED_STATE_DUMP, BENTO_SCRIPT
 
 from bento.commands.core import \
         Command, SCRIPT_NAME, Option, OptionGroup
@@ -146,9 +146,9 @@ Usage: bentomaker configure [OPTIONS]"""
 
         # We need to obtain the package description ASAP, as we need to parse
         # it to get the options (i.e. we cannot use the option handling mechanism).
-        filename = TOYDIST_SCRIPT
+        filename = BENTO_SCRIPT
         if not os.path.exists(filename):
-            msg = "%s: Error: No %s found" % (SCRIPT_NAME, TOYDIST_SCRIPT)
+            msg = "%s: Error: No %s found" % (SCRIPT_NAME, BENTO_SCRIPT)
             msg += "\nTry: %s help configure" % SCRIPT_NAME
             raise UsageException(msg)
 

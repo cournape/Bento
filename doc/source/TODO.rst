@@ -8,7 +8,7 @@ TODO:
     - namespace packages: how to deal with them (file description and runtime
       support) ?
     - add mpkg support
-    - port stdeb to toydist
+    - port stdeb to bento
     - specify hook mechanism
     - integrate yaku or fbuild
     - add runtime support to install paths

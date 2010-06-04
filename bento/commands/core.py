@@ -170,7 +170,7 @@ def get_simple_usage():
 def get_usage():
     ret = [USAGE % {"name": SCRIPT_NAME,
                     "version": bento.__version__}]
-    ret.append("Toydist commands:")
+    ret.append("Bento commands:")
 
     commands = []
     cmd_names = sorted(get_public_command_names())

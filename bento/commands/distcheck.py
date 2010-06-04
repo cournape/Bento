@@ -20,7 +20,7 @@ from bento.core.package \
         PackageDescription
 from bento._config \
     import \
-        TOYDIST_SCRIPT, DISTCHECK_DIR
+        BENTO_SCRIPT, DISTCHECK_DIR
 
 class DistCheckCommand(Command):
     long_descr = """\

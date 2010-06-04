@@ -12,7 +12,7 @@ except ImportError:
 
 from bento._config \
     import \
-        TOYDIST_SCRIPT, PKG_CACHE
+        BENTO_SCRIPT, PKG_CACHE
 from bento.core.utils \
     import \
         ensure_directory

@@ -16,7 +16,7 @@ from bento.core.parser.api import \
 from bento.core.package import \
         PackageDescription
 from bento._config import \
-        TOYDIST_SCRIPT
+        BENTO_SCRIPT
 
 from bento.commands.core import \
         Command, HelpCommand, get_usage
@@ -53,12 +53,12 @@ from bento.commands.hooks \
     import \
         get_pre_hooks, get_post_hooks, get_command_override
 
-if os.environ.get("TOYMAKER_DEBUG", None) is not None:
-    TOYMAKER_DEBUG = True
+if os.environ.get("BENTOMAKER_DEBUG", None) is not None:
+    BENTOMAKER_DEBUG = True
 else:
-    TOYMAKER_DEBUG = False
+    BENTOMAKER_DEBUG = False
 
-SCRIPT_NAME = 'toymaker'
+SCRIPT_NAME = 'bentomaker'
 
 #================================
 #   Create the command line UI
@@ -87,13 +87,12 @@ def dummy_shutdown():
 def set_main():
     import imp
 
-    # Some commands work without a toydist description file (convert, help)
-    if not os.path.exists(TOYDIST_SCRIPT):
+    # Some commands work without a bento description file (convert, help)
+    if not os.path.exists(BENTO_SCRIPT):
         return None
-    pkg = PackageDescription.from_file(TOYDIST_SCRIPT)
+    pkg = PackageDescription.from_file(BENTO_SCRIPT)
     main_file = pkg.hook_file
 
-    #main_file = "toysetup.py"
     if main_file is None:
         return None
     else:
@@ -236,12 +235,12 @@ def noexc_main(argv=None):
         pprint('RED', "".join(e.args))
         sys.exit(4)
     except Exception, e:
-        if TOYMAKER_DEBUG:
+        if BENTOMAKER_DEBUG:
             tb = sys.exc_info()[2]
             traceback.print_tb(tb)
         pprint('RED', "%s: Error: %s crashed (uncaught exception %s: %s).\n"
-                "Please report this on toydist issue tracker: \n" \
-                "\thttp://github.com/cournape/toydist/issues" %
+                "Please report this on bento issue tracker: \n" \
+                "\thttp://github.com/cournape/bento/issues" %
                (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e)))
         sys.exit(1)
     sys.exit(ret)

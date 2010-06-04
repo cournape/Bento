@@ -4,8 +4,8 @@ Maintainer: John Doe
 MaintainerEmail: john@doe.com
 Description:
     A simple example showing how to create executables (so-called entry-points
-    in setuptools) with toydist.
-Summary: simple example to create executables with toydist.
+    in setuptools) with bento.
+Summary: simple example to create executables with bento.
 
 Executable: simple_executable
     Function: main

@@ -6,7 +6,7 @@ Description:
     Bento is a distribution tool for python packages, The goal are
     extensibility, flexibility, and easy interoperation with external tools.
     
-    Toydist is still in infancy; discussions happen on the NumPy Mailing list
+    Bento is still in infancy; discussions happen on the NumPy Mailing list
     (http://mail.scipy.org/pipermail/numpy-discussion/).
 Author: David Cournapeau
 AuthorEmail: cournape@gmail.com

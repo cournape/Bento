@@ -13,7 +13,7 @@ from bento.core.utils \
     import \
         ensure_directory
 from bento._config import \
-    TOYDIST_SCRIPT
+    BENTO_SCRIPT
 
 def tarball_basename(dist_name, version=None):
     if version:
@@ -38,10 +38,10 @@ Usage:   bentomaker sdist [OPTIONS]."""
             self.parser.print_help()
             return
 
-        filename = TOYDIST_SCRIPT
+        filename = BENTO_SCRIPT
         if not len(a) > 0:
             if not os.path.exists(filename):
-                raise UsageException("Missing %s file" % TOYDIST_SCRIPT)
+                raise UsageException("Missing %s file" % BENTO_SCRIPT)
 
         pkg = PackageDescription.from_file(filename)
         tarname = tarball_basename(pkg.name, pkg.version) + ".tar.gz"
