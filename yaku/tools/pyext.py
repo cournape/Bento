@@ -4,8 +4,8 @@ import distutils
 
 from yaku.task_manager \
     import \
-        create_tasks, topo_sort, build_dag, run_tasks, \
-        CompiledTaskGen, set_extension_hook, order_tasks
+        create_tasks, topo_sort, build_dag, \
+        CompiledTaskGen, set_extension_hook
 from yaku.sysconfig \
     import \
         get_configuration
@@ -119,10 +119,8 @@ def create_pyext(bld, env, name, sources):
     for t in tasks:
         t.env = task_gen.env
 
-    ordered_tasks = order_tasks(tasks)
-    run_tasks(bld, ordered_tasks)
-
     set_extension_hook(".c", old_hook)
+    bld.tasks.extend(tasks)
 
     outputs = []
     for t in ltask:

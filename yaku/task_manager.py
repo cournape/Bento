@@ -128,10 +128,6 @@ class TaskManager(object):
                 return 1
         return 0
 
-def run_tasks(ctx, tasks):
-    for t in tasks:
-        run_task(ctx, t)
-
 def run_task(ctx, task):
     def _run(t):
         t.run()
@@ -147,7 +143,7 @@ def run_task(ctx, task):
     else:
         sig = task.signature()
         if sig != ctx.cache[tuid]:
-            _run(t)
+            _run(task)
 
 def build_dag(tasks):
     # Build dependency graph (DAG)
