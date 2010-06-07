@@ -27,7 +27,8 @@ class BuildCommand(Command):
 Purpose: build the project
 Usage:   bentomaker build [OPTIONS]."""
     short_descr = "build the project."
-    opts = Command.opts
+    opts = Command.opts + [Option("-i", "--inplace",
+                                  help="Build extensions in place", action="store_true")]
 
     def run(self, ctx):
         opts = ctx.cmd_opts
@@ -36,11 +37,17 @@ Usage:   bentomaker build [OPTIONS]."""
         if o.help:
             self.parser.print_help()
             return
+        if o.inplace is None:
+            inplace = False
+        else:
+            inplace = True
 
         if ctx.get_user_data()["use_distutils"]:
             build_extensions = build_distutils.build_extensions
         else:
-            build_extensions = build_yaku.build_extensions
+            def builder(pkg):
+                return build_yaku.build_extensions(pkg, inplace)
+            build_extensions = builder
 
         s = get_configured_state()
         pkg = s.pkg
