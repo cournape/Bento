@@ -62,6 +62,10 @@ def pre_build(f):
     add_to_registry((f,), "pre_build")
     add_to_pre_registry((f,), "build")
 
+def post_build(f):
+    add_to_registry((f,), "post_build")
+    add_to_post_registry((f,), "build")
+
 def post_configure(f):
     add_to_registry((f,), "post_configure")
     add_to_post_registry((f,), "configure")
