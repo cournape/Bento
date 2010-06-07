@@ -31,23 +31,119 @@ def create_tasks(ctx, sources):
             tasks.extend(task_gen(ctx, s))
     return tasks
 
-def run_tasks(ctx, tasks):
-    def run(t):
+def hash_task(t):
+    ext_in = [os.path.splitext(s)[1] for s in t.inputs]
+    ext_out = [os.path.splitext(s)[1] for s in t.outputs]
+    ext_t = tuple(ext_in + ext_out)
+    return hash((t.__class__.__name__, ext_t))
+
+class TaskManager(object):
+    def __init__(self, tasks):
+        self.tasks = tasks
+
+        self.groups = {}
+        self.order = {}
+        self.make_groups()
+        self.make_order()
+
+    def set_order(self, a, b):
+        if not self.order.has_key(a):
+            self.order[a] = set()
+        self.order[a].add(b)
+
+    def make_order(self):
+        keys = self.groups.keys()
+        max = len(keys)
+        for i in xrange(max):
+            t1 = self.groups[keys[i]][0]
+            for j in xrange(i + 1, max):
+                t2 = self.groups[keys[j]][0]
+
+                # add the constraints based on the comparisons
+                val = self.compare_exts(t1, t2)
+                if val > 0:
+                    self.set_order(keys[i], keys[j])
+                elif val < 0:
+                    self.set_order(keys[j], keys[i])
+
+    def make_groups(self):
+        # XXX: we assume tasks with same input/output suffix can run
+        # in // (naive emulation of csr-like scheduler in waf)
+        groups = self.groups
+        for t in self.tasks:
+            h = hash_task(t)
+            if groups.has_key(h):
+                groups[h].append(t)
+            else:
+                groups[h] = [t]
+
+    def next_set(self):
+        keys = self.groups.keys()
+
+        unconnected = []
+        remainder = []
+
+        for u in keys:
+            for k in self.order.values():
+                if u in k:
+                    remainder.append(u)
+                    break
+            else:
+                unconnected.append(u)
+
+        toreturn = []
+        for y in unconnected:
+            toreturn.extend(self.groups[y])
+
+        # remove stuff only after
+        for y in unconnected:
+                try:
+                    self.order.__delitem__(y)
+                except KeyError:
+                    pass
+                self.groups.__delitem__(y)
+
+        if not toreturn and remainder:
+            raise Exception("circular order constraint detected %r" % remainder)
+
+        return toreturn
+
+
+    def compare_exts(self, t1, t2):
+        "extension production"
+        def _get_in(t):
+            return [os.path.splitext(s)[1] for s in t.inputs]
+        def _get_out(t):
+            return [os.path.splitext(s)[1] for s in t.outputs]
+
+        in_ = _get_in(t1)
+        out_ = _get_out(t2)
+        for k in in_:
+            if k in out_:
+                return -1
+        in_ = _get_in(t2)
+        out_ = _get_out(t1)
+        for k in in_:
+            if k in out_:
+                return 1
+        return 0
+
+def run_task(ctx, task):
+    def _run(t):
         t.run()
         ctx.cache[tuid] = t.signature()
 
-    for t in tasks:
-        tuid = t.get_uid()
-        for o in t.outputs:
-            if not os.path.exists(o):
-                run(t)
-                break
-        if not tuid in ctx.cache:
-            run(t)
-        else:
-            sig = t.signature()
-            if sig != ctx.cache[tuid]:
-                run(t)
+    tuid = task.get_uid()
+    for o in task.outputs:
+        if not os.path.exists(o):
+            _run(task)
+            break
+    if not tuid in ctx.cache:
+        _run(task)
+    else:
+        sig = task.signature()
+        if sig != ctx.cache[tuid]:
+            _run(task)
 
 def build_dag(tasks):
     # Build dependency graph (DAG)

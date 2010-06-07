@@ -1,9 +1,9 @@
 import os
 import sys
 
-from yaku.pyext \
+from yaku.scheduler \
     import \
-        create_pyext, get_pyenv
+        run_tasks
 from yaku.context \
     import \
         get_bld, get_cfg
@@ -18,15 +18,15 @@ from yaku.conftests \
         check_compiler, check_header
 
 def configure(ctx):
-    ctx.use_tools(["ctasks"], ["tools"])
+    ctx.use_tools(["pyext"], ["tools"])
 
     gcc_detect(ctx)
     check_compiler(ctx)
     check_header(ctx, "stdio.h")
-    ctx.env.update(get_pyenv())
 
 def build(ctx):
-    create_pyext(ctx, "_bar", ["src/hellomodule.c"])
+    builder = ctx.builders["pyext"]
+    builder.extension("_bar", ["src/hellomodule.c"])
 
 if __name__ == "__main__":
     ctx = get_cfg()
@@ -35,4 +35,5 @@ if __name__ == "__main__":
 
     ctx = get_bld()
     build(ctx)
+    run_tasks(ctx)
     ctx.store()

@@ -76,6 +76,7 @@ class BuildContext(object):
         self.tools = []
         self.cache = {}
         self.builders = {}
+        self.tasks = []
 
     def load(self):
         self.env = Environment()
