@@ -51,8 +51,11 @@ class ConfigureContext(object):
         self.env.store(DEFAULT_ENV)
 
         self.log.close()
-        with open(CONFIG_CACHE, "w") as fid:
+        fid = open(CONFIG_CACHE, "w")
+        try:
             dump(self.cache, fid)
+        finally:
+            fid.close()
 
         fid = myopen(BUILD_CONFIG, "w")
         try:
@@ -120,8 +123,11 @@ def myopen(filename, mode="r"):
 def get_cfg():
     ctx = ConfigureContext()
     if os.path.exists(CONFIG_CACHE):
-        with open(CONFIG_CACHE) as fid:
+        fid = open(CONFIG_CACHE)
+        try:
             ctx.cache = load(fid)
+        finally:
+            fid.close()
 
     if os.path.exists(BUILD_CONFIG):
         fid = myopen(BUILD_CONFIG, "rb")

@@ -3,9 +3,11 @@ import sys
 import os
 import types
 
-from hashlib \
-    import \
-        md5
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
+
 from os.path \
     import \
         join
