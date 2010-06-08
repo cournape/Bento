@@ -164,9 +164,6 @@ Usage: bentomaker configure [OPTIONS]"""
             self.user_data["use_distutils"] = True
         else:
             self.user_data["use_distutils"] = False
-            yaku_ctx = yaku.context.get_cfg()
-            yaku_ctx.use_tools(["pyext"])
-            yaku_ctx.store()
 
         self.option_callback(self, o, a)
 
@@ -176,6 +173,11 @@ Usage: bentomaker configure [OPTIONS]"""
         # Cache the built package description to avoid reparsing it for
         # subsequent commands
         pkg = PackageDescription.from_file(filename, flag_vals)
+        if not self.user_data["use_distutils"]:
+            yaku_ctx = yaku.context.get_cfg()
+            if pkg.extensions:
+                yaku_ctx.use_tools(["pyext"])
+            yaku_ctx.store()
 
         s = ConfigureState(filename, pkg, scheme, flag_vals,
                            self.user_data)
