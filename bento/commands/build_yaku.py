@@ -23,7 +23,7 @@ def build_extension(bld, pkg, inplace):
                 for o in outputs:
                     target = os.path.join(
                                 os.path.dirname(ext.name.replace(".", os.sep)),
-                                os.path.basename(o) + os.path.splitext(o)[1])
+                                os.path.basename(o))
                     shutil.copy(o, target)
         except RuntimeError, e:
             msg = "Building extension %s failed: %s" % (ext.name, str(e))
