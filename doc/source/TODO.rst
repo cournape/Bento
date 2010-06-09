@@ -37,7 +37,9 @@ Release 0.0.3
         - naive // build (extension-based ala waf)
         - tool specification
     - put everything in a build directory
-    - specify hook mechanism
+    - specify hook mechanism: document contexts + command flow in bento
+    - add basic distutils support
+    - one file distribution
 
 Release 0.0.4
 -------------
@@ -45,7 +47,15 @@ Release 0.0.4
 0.0.4 goals:
 
     - test and distcheck support
-    - one file distribution
+    - rewrite installed-pkg-info mechanism (using json ?)
+    - add options to "unbundle" private modules for distribution packagers
+    - generate module for data access ($prefix, etc...)
+
+Post 0.0.4
+----------
+
+Start working on scipi (nest ?). First proto could be purely static,
+file-based. An index easy to parse/update is all we need, really.
 
 Syntax and features of the package description file
 ===================================================
