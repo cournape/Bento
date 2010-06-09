@@ -8,8 +8,13 @@ from bento.installed_package_description \
 from bento.commands.errors \
     import \
         CommandExecutionFailure
+from bento.core.utils \
+    import \
+        cpu_count
 
+import yaku.task_manager
 import yaku.context
+import yaku.scheduler
 
 def build_extension(bld, pkg, inplace):
     ret = {}
@@ -39,6 +44,11 @@ def build_extension(bld, pkg, inplace):
         section = InstalledSection("extensions", fullname, srcdir,
                                     target, [os.path.basename(o) for o in outputs])
         ret[fullname] = section
+
+    task_manager = yaku.task_manager.TaskManager(bld.tasks)
+    runner = yaku.scheduler.ParallelRunner(bld, task_manager, cpu_count())
+    runner.start()
+    runner.run()
     return ret
 
 def build_extensions(pkg, inplace=False):
