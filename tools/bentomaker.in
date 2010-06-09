@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+# encoding: ISO8859-1
+import os
+import sys
+
+cwd = os.getcwd()
+
+SCRIPT_NAME = @script_name@
+SCRIPT_PKG_ROOT = @script_pkg_root@
+
+VERSION = @script_version@
+REVISION="x"
+
+C1='x'
+C2='x'
+
+def b(x):
+    return x
+
+def err(m):
+    print "Error: %s" % m
+    sys.exit(1)
+
+def test(d):
+    try:
+        os.stat(os.path.join(d, SCRIPT_PKG_ROOT))
+        return os.path.abspath(d)
+    except OSError:
+        pass
+
+def unpack_dir(dir):
+    f = open(sys.argv[0],'rb')
+    c = "corrupted %s (%%d)" % SCRIPT_NAME
+    while 1:
+        line = f.readline()
+        if not line: err("run foo-light from a folder containing fooadmin")
+        if line == b('#==>\n'):
+            txt = f.readline()
+            if not txt: err(c % 1)
+            if f.readline()!=b('#<==\n'): err(c % 2)
+            break
+    if not txt: err(c % 3)
+    txt = txt[1:-1].replace(b(C1), b('\n')).replace(b(C2), b('\r'))
+
+    import shutil, tarfile
+    try:
+        shutil.rmtree(dir)
+    except OSError:
+        pass
+    try:
+        for x in ['.']:
+            os.makedirs(os.path.join(dir, SCRIPT_PKG_ROOT, x))
+    except OSError:
+        err("Cannot unpack foo lib into %s\nMove foo into a writeable directory" % dir)
+
+    os.chdir(dir)
+    tmp = 't.bz2'
+    t = open(tmp,'wb')
+    t.write(txt)
+    t.close()
+
+    t = None
+    try:
+        t = tarfile.open(tmp)
+    except:
+        try:
+            os.system('bunzip2 t.bz2')
+            t = tarfile.open('t')
+        except:
+            os.chdir(cwd)
+            try: shutil.rmtree(dir)
+            except OSError: pass
+            err("foo cannot be unpacked, check that bzip2 support is present")
+
+    for x in t: t.extract(x)
+    t.close()
+
+    for x in ['.']:
+        os.chmod(os.path.join(SCRIPT_PKG_ROOT, x), 493)
+
+    os.chdir(cwd)
+
+def find_lib():
+    name = sys.argv[0]
+    base = os.path.dirname(os.path.abspath(name))
+
+    # local
+    s = '.%s-%s-%s'
+    if sys.platform == 'win32':
+        s = s[1:]
+    d = os.path.join(base, s % (SCRIPT_NAME, VERSION, REVISION))
+    w = test(d)
+    if w:
+        return w
+
+    unpack_dir(d)
+    return d
+
+d = find_lib()
+sys.path.insert(0, d)
+@script_entry_point@
