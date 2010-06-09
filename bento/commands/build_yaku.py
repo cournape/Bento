@@ -18,20 +18,13 @@ import yaku.scheduler
 
 def build_extension(bld, pkg, inplace, verbose):
     ret = {}
+    all_outputs = {}
     for ext in pkg.extensions.values():
         try:
             if verbose:
                 bld.builders["pyext"].env["VERBOSE"] = True
             outputs = bld.builders["pyext"].extension(ext.name, ext.sources)
-            so_ext = bld.builders["pyext"].env["PYEXT_SO"]
-            if inplace:
-                # FIXME: do package -> location + remove hardcoded extension
-                # FIXME: handle in-place at yaku level
-                for o in outputs:
-                    target = os.path.join(
-                                os.path.dirname(ext.name.replace(".", os.sep)),
-                                os.path.basename(o))
-                    shutil.copy(o, target)
+            all_outputs[ext.name] = outputs
         except RuntimeError, e:
             msg = "Building extension %s failed: %s" % (ext.name, str(e))
             raise CommandExecutionFailure(msg)
@@ -51,6 +44,17 @@ def build_extension(bld, pkg, inplace, verbose):
     runner = yaku.scheduler.ParallelRunner(bld, task_manager, cpu_count())
     runner.start()
     runner.run()
+
+    if inplace:
+        so_ext = bld.builders["pyext"].env["PYEXT_SO"]
+        # FIXME: do package -> location + remove hardcoded extension
+        # FIXME: handle in-place at yaku level
+        for ext, outputs in all_outputs.items():
+            for o in outputs:
+                target = os.path.join(
+                            os.path.dirname(ext.replace(".", os.sep)),
+                            os.path.basename(o))
+                shutil.copy(o, target)
     return ret
 
 def build_extensions(pkg, inplace=False, verbose=False):
