@@ -3,9 +3,11 @@ import sys
 import os
 import types
 
-from hashlib \
-    import \
-        md5
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
+
 from os.path \
     import \
         join
@@ -18,7 +20,10 @@ from yaku.errors \
         TaskRunFailure
 from yaku.task_manager \
     import \
-        CompiledTaskGen, create_tasks, run_tasks
+        CompiledTaskGen, create_tasks
+from yaku.scheduler \
+    import \
+        run_tasks
 from yaku.compiled_fun \
     import \
         compile_fun

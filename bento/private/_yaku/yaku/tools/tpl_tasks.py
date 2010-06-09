@@ -23,14 +23,20 @@ def template(self):
     pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join(self.inputs)))
     subs_re = dict([(k, re.compile("@" + k + "@")) 
                      for k in self.env["SUBST_DICT"]])
-    with open(self.inputs[0]) as fid:
+    fid = open(self.inputs[0])
+    try:
         cnt = fid.read()
         for k, v in self.env["SUBST_DICT"].items():
             cnt = subs_re[k].sub(v, cnt)
+    finally:
+        fid.close()
 
     ensure_dir(self.outputs[0])
-    with open(self.outputs[0], "w") as fid:
+    fid = open(self.outputs[0], "w")
+    try:
         fid.write(cnt)
+    finally:
+        fid.close()
 
 @extension(".in")
 def template_task(self, node):
