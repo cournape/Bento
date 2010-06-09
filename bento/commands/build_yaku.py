@@ -16,10 +16,12 @@ import yaku.task_manager
 import yaku.context
 import yaku.scheduler
 
-def build_extension(bld, pkg, inplace):
+def build_extension(bld, pkg, inplace, verbose):
     ret = {}
     for ext in pkg.extensions.values():
         try:
+            if verbose:
+                bld.builders["pyext"].env["VERBOSE"] = True
             outputs = bld.builders["pyext"].extension(ext.name, ext.sources)
             so_ext = bld.builders["pyext"].env["PYEXT_SO"]
             if inplace:
@@ -51,12 +53,10 @@ def build_extension(bld, pkg, inplace):
     runner.run()
     return ret
 
-def build_extensions(pkg, inplace=False):
+def build_extensions(pkg, inplace=False, verbose=False):
     bld = yaku.context.get_bld()
-    if "-v" in sys.argv:
-        bld.env["VERBOSE"] = True
 
     try:
-        return build_extension(bld, pkg, inplace)
+        return build_extension(bld, pkg, inplace, verbose)
     finally:
         bld.store()

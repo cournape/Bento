@@ -28,7 +28,10 @@ Purpose: build the project
 Usage:   bentomaker build [OPTIONS]."""
     short_descr = "build the project."
     opts = Command.opts + [Option("-i", "--inplace",
-                                  help="Build extensions in place", action="store_true")]
+                                  help="Build extensions in place", action="store_true"),
+                           Option("-v", "--verbose",
+                                  help="Verbose output (yaku build only)",
+                                  action="store_true")]
 
     def run(self, ctx):
         opts = ctx.cmd_opts
@@ -41,12 +44,16 @@ Usage:   bentomaker build [OPTIONS]."""
             inplace = False
         else:
             inplace = True
+        if o.verbose is None:
+            verbose = False
+        else:
+            verbose = True
 
         if ctx.get_user_data()["use_distutils"]:
             build_extensions = build_distutils.build_extensions
         else:
             def builder(pkg):
-                return build_yaku.build_extensions(pkg, inplace)
+                return build_yaku.build_extensions(pkg, inplace, verbose)
             build_extensions = builder
 
         s = get_configured_state()
