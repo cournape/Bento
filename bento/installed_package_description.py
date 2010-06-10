@@ -1,14 +1,12 @@
 import os
+import StringIO
 
-from bento.core.reader import \
-        Reader
+import simplejson
+
 from bento.core.utils import \
     subst_vars
 from bento.core.pkg_objects import \
     Executable
-
-META_DELIM = "!- FILELIST"
-FIELD_DELIM = ("\t", " ")
 
 def ipkg_meta_from_pkg(pkg):
     """Return meta dict for Installed pkg from a PackageDescription
@@ -40,11 +38,6 @@ class InstalledSection(object):
     def fullname(self):
         return self.tp + ":" + self.name
 
-    def write_section(self, fid):
-        if len(self.files) > 0:
-            fid.write(write_file_section(self.fullname, self.srcdir,
-                                         self.target, self.files))
-
 def iter_source_files(file_sections):
     for kind in file_sections:
         if not kind in ["executables"]:
@@ -61,100 +54,36 @@ def iter_files(file_sections):
 class InstalledPkgDescription(object):
     @classmethod
     def from_file(cls, filename):
-        f = open(filename)
+        fid = open(filename)
         try:
-            vars = []
-            r = Reader(f.readlines())
+            data = simplejson.load(fid)
+            meta_vars = data["meta"]
+            path_vars = data["variables"]["paths"]
 
-            meta_vars = {}
-            meta_vars["description"] = []
-            meta_vars["classifiers"] = []
-            meta_vars["platforms"] = []
-            meta_vars["install_requires"] = []
-            meta_vars["top_levels"] = []
-            while r.wait_for("!- VARIABLES\n"):
-                line = r.pop().strip()
-                k, v = line.split("=", 1)
-                if k in ["description", "classifiers", "platforms",
-                         "install_requires", "top_levels"]:
-                    meta_vars[k].append(v)
-                else:
-                    meta_vars[k] = v
-
-            if r.eof():
-                r.parse_error("Missing variables section")
-            r.pop()
-            meta_vars["description"] = "\n".join(meta_vars["description"])
-
-            def read_var_section(section_name):
-                r.flush_empty()
-                line = r.peek()
-                if line and line[0] in FIELD_DELIM:
-                    r.parse_error("No section found ?")
-                line = r.pop()
-                if section_name != line.strip():
-                    r.parse_error("Expected section %s, got %s" % section_name, line.strip())
-
-                fields = []
-                line = r.peek()
-                while line and line[0] in FIELD_DELIM:
-                    fields.append(r.pop().strip())
-                    line = r.peek()
-
-                return fields
-
-            vars = read_var_section("paths")
-            path_vars = {}
-            for i in vars:
-                name, value = [j.strip() for j in i.split("=")]
-                path_vars[name] = value
-
-            vars = read_var_section("executables")
             executables = {}
-            for var in vars:
-                exe = Executable.from_representation(var)
-                executables[exe.name] = exe
-
-            if r.eof():
-                r.parse_error("Missing filelist section")
-            r.pop()
-
-            def read_section():
-                r.flush_empty()
-                line = r.peek()
-                if line and line[0] in FIELD_DELIM:
-                    r.parse_error("No section found ?")
-                line = r.pop()
-                type, section_name = line.strip().split(":", 1)
-
-                srcdir = r.pop().strip()
-                target = r.pop().strip()
-                assert srcdir.startswith("srcdir=")
-                assert target.startswith("target=")
-                srcdir = srcdir.split("=")[1]
-                target = target.split("=")[1]
-
-                files = []
-                line = r.peek()
-                while line and line[0] in FIELD_DELIM:
-                    files.append(r.pop().strip())
-                    line = r.peek()
-
-                return type, section_name, {'files': files, 'srcdir': srcdir, 'target': target}
+            for name, executable in data["variables"]["executable"].items():
+                executables[name] = Executable.from_parse_dict(executable)
 
             file_sections = {}
-            while not r.eof():
-                type, name, files = read_section()
-                if type in file_sections:
-                    if name in file_sections[type]:
-                        raise ValueError("section %s of type %s already exists !" % (name, type))
-                    file_sections[type][name] = files
-                else:
-                    file_sections[type] = {name: files}
 
+            def json_to_file_section(data):
+                tp, section_name = data["name"].split(":", 1)
+                return tp, section_name, \
+                        {"files": data["files"],
+                         "srcdir": data["source_dir"],
+                         "target": data["target_dir"]}
+
+            for section in data["file_sections"]:
+                tp, name, files = json_to_file_section(section)
+                if tp in file_sections:
+                    if name in file_sections[tp]:
+                        raise ValueError("section %s of type %s already exists !" % (name, type))
+                    file_sections[tp][name] = files
+                else:
+                    file_sections[tp] = {name: files}
             return cls(file_sections, meta_vars, path_vars, executables)
         finally:
-            f.close()
+            fid.close()
 
     def __init__(self, files, meta, path_options, executables):
         self.files = files
@@ -163,56 +92,41 @@ class InstalledPkgDescription(object):
         self.executables = executables
 
     def write(self, filename):
+        def executable_to_json(executable):
+            return {"name": executable.name,
+                    "module": executable.module,
+                    "function": executable.function}
+
+        def section_to_json(section):
+            return {"name": section.fullname,
+                    "source_dir": section.srcdir,
+                    "target_dir": section.target,
+                    "files": section.files}
+
         fid = open(filename, "w")
         try:
-            meta = []
-            for k, v in self.meta.items():
-                if k == "description" and v is not None:
-                    for line in v.splitlines():
-                        meta.append("description=%s" % line)
-                elif k in ["classifiers", "platforms", "install_requires", "top_levels"]:
-                    for i in v:
-                        meta.append("%s=%s" % (k, i))
-                elif k == "console_scripts":
-                    raise ValueError("Using console_scripts is not supported anymore")
-                else:
-                    meta.append("%s=%s" % (k, v))
+            data = {}
+            data["meta"] = self.meta
 
-            fid.write("\n".join(meta))
-            fid.write("\n!- VARIABLES\n")
+            executables = dict([(k, executable_to_json(v)) \
+                                for k, v in self.executables.items()])
+            variables = {"paths": self.path_variables,
+                         "executable": executables}
+            data["variables"] = variables
 
-            path_fields = "\n".join([
-                "\t%s=%s" % (name, value) for name, value in
-                                              self.path_variables.items()])
-
-            path_section = """\
-paths
-%s
-""" % path_fields
-            fid.write(path_section)
-
-            executables_fields = "\n".join(["\t%s=%s" % \
-                                            (name, value.representation()) 
-                                            for name, value in 
-                                                self.executables.items()])
-            executables_section = """\
-executables
-%s
-""" % executables_fields
-            fid.write(executables_section)
-            fid.write(META_DELIM + "\n")
-
-            for type, value in self.files.items():
-                if type in ["pythonfiles"]:
+            file_sections = []
+            for tp, value in self.files.items():
+                if tp in ["pythonfiles"]:
                     for i in value.values():
                         i.srcdir = "$_srcrootdir"
-                        i.write_section(fid)
-                elif type in ["datafiles", "extension", "executable"]:
+                        file_sections.append(section_to_json(i))
+                elif tp in ["datafiles", "extension", "executable"]:
                     for i in value.values():
-                        i.write_section(fid)
+                        file_sections.append(section_to_json(i))
                 else:
                     raise ValueError("Unknown section %s" % type)
-
+            data["file_sections"] = file_sections
+            simplejson.dump(data, fid, separators=(',', ':'))
         finally:
             fid.close()
 
@@ -231,15 +145,3 @@ executables
                          for f in value["files"]]
 
         return file_sections 
-
-def write_file_section(name, srcdir, target, files):
-    section = """\
-%(section)s
-%(srcdir)s
-%(target)s
-%(files)s
-""" % {"section": name,
-       "srcdir": "\tsrcdir=%s" % srcdir,
-       "target": "\ttarget=%s" % target,
-       "files": "\n".join(["\t%s" % f for f in files])}
-    return section
