@@ -126,7 +126,10 @@ class InstalledPkgDescription(object):
                 else:
                     raise ValueError("Unknown section %s" % type)
             data["file_sections"] = file_sections
-            simplejson.dump(data, fid, separators=(',', ':'))
+            if os.environ.has_key("BENTOMAKER_PRETTY"):
+                simplejson.dump(data, fid, sort_keys=True, indent=4)
+            else:
+                simplejson.dump(data, fid, separators=(',', ':'))
         finally:
             fid.close()
 
