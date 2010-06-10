@@ -5,6 +5,9 @@ from bento.core.utils import \
         find_package
 from bento.installed_package_description import \
         InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
+from bento._config \
+    import \
+        IPKG_PATH
 
 from bento.commands.core \
     import \
@@ -63,7 +66,7 @@ Usage:   bentomaker build [OPTIONS]."""
         section_writer.sections_callbacks["extension"] = \
                 build_extensions
         section_writer.update_sections(pkg)
-        section_writer.store()
+        section_writer.store(IPKG_PATH)
 
 class SectionWriter(object):
     def __init__(self):
@@ -81,7 +84,7 @@ class SectionWriter(object):
         for name, updater in self.sections_callbacks.iteritems():
             self.sections[name].update(updater(pkg))
 
-    def store(self, filename="installed-pkg-info"):
+    def store(self, filename):
         s = get_configured_state()
         pkg = s.pkg
         scheme = dict([(k, s.paths[k]) for k in s.paths])
@@ -89,7 +92,7 @@ class SectionWriter(object):
         meta = ipkg_meta_from_pkg(pkg)
         p = InstalledPkgDescription(self.sections, meta, scheme,
                                     pkg.executables)
-        p.write('installed-pkg-info')
+        p.write(filename)
 
 def build_python_files(pkg):
     # FIXME: root_src

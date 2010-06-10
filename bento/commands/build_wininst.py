@@ -13,6 +13,9 @@ from bento.private.bytecode import \
         compile
 from bento.core.utils import \
         pprint
+from bento._config \
+    import \
+        IPKG_PATH
 from bento.core import \
         PackageMetadata
 from bento.conv import \
@@ -44,12 +47,11 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
             self.parser.print_help()
             return
 
-        filename = "installed-pkg-info"
-        if not os.path.exists(filename):
+        if not os.path.exists(IPKG_PATH):
             raise UsageException("%s: error: %s subcommand require executed build" \
                     % (SCRIPT_NAME, "build_wininst"))
 
-        ipkg = InstalledPkgDescription.from_file(filename)
+        ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
         meta = PackageMetadata.from_ipkg(ipkg)
 
         # XXX: do this correctly, maybe use same as distutils ?

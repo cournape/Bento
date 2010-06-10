@@ -26,6 +26,7 @@ BUILD_DIR = "build/bento"
 CONFIGURED_STATE_DUMP = os.path.join(BUILD_DIR, ".config.bin")
 PKG_CACHE = os.path.join(BUILD_DIR, ".pkg.cache")
 DISTCHECK_DIR = os.path.join(BUILD_DIR, "distcheck")
+IPKG_PATH = os.path.join(BUILD_DIR, "ipkg.info")
 
 BENTO_SCRIPT = "bento.info"
 

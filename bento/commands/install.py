@@ -2,6 +2,9 @@ import os
 import shutil
 import subprocess
 
+from bento._config \
+    import \
+        IPKG_PATH
 from bento.installed_package_description import \
     InstalledPkgDescription, iter_files
 
@@ -46,11 +49,11 @@ Usage:   bentomaker install [OPTIONS]."""
             self.parser.print_help()
             return
 
-        if not os.path.exists("installed-pkg-info"):
-            msg = "No installed-pkg-info file found ! (Did you run build ?)"
+        if not os.path.exists(IPKG_PATH):
+            msg = "%s file not found ! (Did you run build ?)" % IPKG_PATH
             raise UsageException(msg)
 
-        ipkg = InstalledPkgDescription.from_file("installed-pkg-info")
+        ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
         file_sections = ipkg.resolve_paths()
 
         for kind, source, target in iter_files(file_sections):

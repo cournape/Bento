@@ -9,6 +9,9 @@ from bento.core import \
         PackageMetadata
 from bento.installed_package_description import \
         InstalledPkgDescription, iter_files
+from bento._config \
+    import \
+        IPKG_PATH
 
 from bento.commands.errors \
     import \
@@ -32,12 +35,11 @@ Usage:   bentomaker build_egg [OPTIONS]"""
             self.parser.print_help()
             return
 
-        filename = "installed-pkg-info"
-        if not os.path.exists(filename):
+        if not os.path.exists(IPKG_PATH):
             raise UsageException("%s: error: %s subcommand require executed build" \
                     % (SCRIPT_NAME, "build_egg"))
 
-        ipkg = InstalledPkgDescription.from_file(filename)
+        ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
         meta = PackageMetadata.from_ipkg(ipkg)
 
         egg_info = EggInfo.from_ipkg(ipkg)
