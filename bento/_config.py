@@ -33,3 +33,4 @@ BENTO_SCRIPT = "bento.info"
 USE_PRIVATE_MODULES = True
 if USE_PRIVATE_MODULES:
     sys.path.insert(0, os.path.join(os.path.dirname(bento.__file__), "private", "_yaku"))
+    sys.path.insert(0, os.path.join(os.path.dirname(bento.__file__), "private"))
