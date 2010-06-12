@@ -4,7 +4,7 @@ import shutil
 
 from bento.compat.api \
     import \
-        check_call, CalledProcessError
+        check_call, CalledProcessError, rename
 
 from bento.commands.errors \
     import \
@@ -43,7 +43,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
         os.makedirs(DISTCHECK_DIR)
         target = os.path.join(DISTCHECK_DIR,
                               os.path.basename(tarname))
-        os.rename(tarname, target)
+        rename(tarname, target)
         tarname = os.path.basename(target)
 
         os.chdir(DISTCHECK_DIR)

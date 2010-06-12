@@ -6,6 +6,9 @@ try:
 except ImportError:
     from pickle import loads, dumps
 
+from bento.compat.api \
+    import \
+        rename
 from bento.core.utils import \
         pprint
 from bento.core.platforms import \
@@ -54,8 +57,7 @@ class ConfigureState(object):
             f.write(s)
         finally:
             f.close()
-
-        os.rename(filename + ".tmp", filename)
+        rename(filename + ".tmp", filename)
 
     @classmethod
     def from_dump(cls, filename=CONFIGURED_STATE_DUMP):

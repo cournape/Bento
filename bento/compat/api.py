@@ -4,10 +4,11 @@ if os.name == "posix":
     from posix_path \
         import \
             relpath
+    rename = os.rename
 elif os.name == "nt":
     from nt_path \
         import \
-            relpath
+            relpath, rename
 else:
     raise ImportError("relpath implementation for os %s not included" \
                       % os.name)

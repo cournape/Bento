@@ -10,6 +10,9 @@ try:
 except ImportError:
     from pickle import dump, load
 
+from bento.compat.api \
+    import \
+        rename
 from bento._config \
     import \
         BENTO_SCRIPT, PKG_CACHE
@@ -52,7 +55,7 @@ def get_parsed_script(data):
         finally:
             tmp.close()
 
-        os.rename(PKG_CACHE + ".tmp", PKG_CACHE)
+        rename(PKG_CACHE + ".tmp", PKG_CACHE)
         return p
 
     if not os.path.exists(PKG_CACHE):
