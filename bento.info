@@ -57,6 +57,7 @@ Library:
         bento.private,
         bento.private.ply,
         bento.private._yaku.yaku,
+        bento.private._yaku.yaku.tools,
         bentomakerlib
 
 Executable: bentomaker
