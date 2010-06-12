@@ -54,15 +54,18 @@ def iter_files(file_sections):
 class InstalledPkgDescription(object):
     @classmethod
     def from_file(cls, filename):
+        def _encode_kw(d):
+            return dict([(k.encode(), v) for k, v in d.items()])
+
         fid = open(filename)
         try:
             data = simplejson.load(fid)
-            meta_vars = data["meta"]
+            meta_vars = _encode_kw(data["meta"])
             path_vars = data["variables"]["paths"]
 
             executables = {}
             for name, executable in data["variables"]["executable"].items():
-                executables[name] = Executable.from_parse_dict(executable)
+                executables[name] = Executable.from_parse_dict(_encode_kw(executable))
 
             file_sections = {}
 
