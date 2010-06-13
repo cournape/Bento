@@ -1,12 +1,4 @@
 #! /bin/sh
-OSNAME=`uname`
-if test x"$OSNAME" = x"Linux"
-then
-	ISED="sed -i";
-else
-	ISED="sed -i ''";
-fi
-
 MASTER_REPO=$PWD/../bento-git
 GH_PAGES_REPO=$PWD
 MASTER_BRANCH=master
@@ -33,7 +25,7 @@ python setup.py install
 (cd doc && make html)
 mv doc/build/html $TEMPDIR
 mv $TEMPDIR/html/_static $TEMPDIR/html/static
-find $TEMPDIR/html -type f -exec $ISED -e s/_static/static/g '{}' \;
+find $TEMPDIR/html -type f -exec perl -p -i -e s/_static/static/g '{}' \;
 git checkout gh-pages || exit
 rm -rf $GH_PAGES_REPO/*
 mv $TEMPDIR/html/* $GH_PAGES_REPO
