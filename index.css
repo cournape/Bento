@@ -4,6 +4,7 @@
 	@description  Screen stylesheet
 	vim: set noet ts=4 fdm=marker fenc=utf-8:
  
+ 	css originally taken from homebrew main page
 ***************************************************** */
  
 @import url("./reset.css");
