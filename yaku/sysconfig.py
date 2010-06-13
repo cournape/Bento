@@ -35,6 +35,7 @@ def get_configuration(compiler_type=None):
             "LIBPATH_FMT": "-L%s",
             "LIBS_FMT": "-l%s",
             "CPPDEF_FMT": "-D%s",
+            "PYCC_NAME": compiler_type,
             }
     if compiler_type == "unix":
         for k in ["CC", "CXX", "OPT", "CFLAGS", "CCSHARED",
