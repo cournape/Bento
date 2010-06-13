@@ -60,7 +60,7 @@ def create_script():
     script_name = config["script_name"]
     include_exe = config["include_exe"]
 
-    print "-> Creating script"
+    print "Created self-contained script %r in %s" % (script_name, os.getcwd())
     mw = "tmp-foo-" + VERSION
 
     zip_type = "bz2"
