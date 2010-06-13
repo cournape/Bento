@@ -125,7 +125,7 @@ def get_cfg():
             fid.close()
 
     if os.path.exists(BUILD_CONFIG):
-        fid = myopen(BUILD_CONFIG, "rb")
+        fid = myopen(BUILD_CONFIG, "r")
         try:
             load_tools(ctx, fid)
         finally:
