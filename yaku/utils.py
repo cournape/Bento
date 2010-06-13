@@ -1,6 +1,10 @@
 import re
 import os
 
+from yaku.utils \
+    import \
+        rename
+
 def ensure_dir(path):
     dirname = os.path.dirname(path)
     if not os.path.exists(dirname):

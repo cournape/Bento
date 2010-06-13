@@ -16,7 +16,7 @@ from yaku.tools \
         import_tools
 from yaku.utils \
     import \
-        ensure_dir
+        ensure_dir, rename
 
 class ConfigureContext(object):
     def __init__(self):
@@ -108,12 +108,7 @@ class BuildContext(object):
             dump(self.cache, tmp_fid)
         finally:
             tmp_fid.close()
-
-        try:
-            os.unlink(BUILD_CACHE)
-        except OSError:
-            pass
-        os.rename(BUILD_CACHE + ".tmp", BUILD_CACHE)
+        rename(BUILD_CACHE + ".tmp", BUILD_CACHE)
 
 def myopen(filename, mode="r"):
     if "w" in mode:

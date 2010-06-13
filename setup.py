@@ -9,5 +9,5 @@ setup(name="yaku",
     author="David Cournapeau",
     author_email="cournape@gmail.com",
     license="BSD",
-    packages=["yaku.tools", "yaku"],
+    packages=["yaku.tools", "yaku", "yaku.compat"],
 )

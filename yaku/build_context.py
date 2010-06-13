@@ -4,6 +4,10 @@ from cPickle \
     import \
         load, dump
 
+from yaku.utils \
+    import \
+        rename
+
 CACHE_FILE = ".cache.lock"
 
 class BuildContext(object):
@@ -29,12 +33,7 @@ class BuildContext(object):
             dump(self.cache, tmp_fid)
         finally:
             tmp_fid.close()
-
-        try:
-            os.unlink(CACHE_FILE)
-        except OSError:
-            pass
-        os.rename(CACHE_FILE + ".tmp", CACHE_FILE)
+        rename(CACHE_FILE + ".tmp", CACHE_FILE)
 
 def get_bld():
     bld = BuildContext()
