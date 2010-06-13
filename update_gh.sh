@@ -28,5 +28,5 @@ mv $TEMPDIR/html/_static $TEMPDIR/html/static
 find $TEMPDIR/html -type f -exec perl -p -i -e s/_static/static/g '{}' \;
 git checkout gh-pages || exit
 rm -rf $GH_PAGES_REPO/*
-mv $TEMPDIR/html/* $GH_PAGES_REPO
+mv $TEMPDIR/html $GH_PAGES_REPO
 rm -rf $TEMPDIR
