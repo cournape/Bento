@@ -1,7 +1,7 @@
 import re
 import os
 
-from yaku.utils \
+from yaku.compat.rename \
     import \
         rename
 
