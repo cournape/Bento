@@ -11,7 +11,7 @@ from bento.commands.core import \
     Command
 from bento.core.utils \
     import \
-        ensure_directory
+        ensure_dir
 from bento._config import \
     BENTO_SCRIPT
 
@@ -56,7 +56,7 @@ def create_tarball(pkg, tarname=None, topdir=None):
     if topdir is None:
         topdir = "%s-%s" % (pkg.name, pkg.version)
 
-    ensure_directory(tarname)
+    ensure_dir(tarname)
     tf = tarfile.open(tarname, "w:gz")
     try:
         for file in file_list(pkg):

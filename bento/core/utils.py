@@ -206,7 +206,7 @@ def find_package(pkg_name, basedir=''):
                 for f in
                     os.listdir(basedir) if f.endswith('.py')]
 
-def ensure_directory(path):
+def ensure_dir(path):
     d = os.path.dirname(path)
     if d and not os.path.exists(d):
         os.makedirs(d)

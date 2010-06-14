@@ -4,7 +4,7 @@ import zipfile
 from bento.private.bytecode import \
         compile
 from bento.core.utils import \
-        pprint
+        pprint, ensure_dir
 from bento.core import \
         PackageMetadata
 from bento.installed_package_description import \

@@ -14,7 +14,7 @@ from bento.commands.core \
         Command, get_command, get_command_names
 from bento.core.utils \
     import \
-        pprint, ensure_directory
+        pprint
 from bento.core.package \
     import \
         PackageDescription
