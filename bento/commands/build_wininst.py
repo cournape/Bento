@@ -52,15 +52,16 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
                     % (SCRIPT_NAME, "build_wininst"))
 
         ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
-        meta = PackageMetadata.from_ipkg(ipkg)
-        # XXX: do this correctly, maybe use same as distutils ?
-        wininst_name = wininst_filename(os.path.join("bento", meta.fullname))
-        create_wininst(ipkg, wininst=wininst_name)
+        create_wininst(ipkg)
 
 def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
+    meta = PackageMetadata.from_ipkg(ipkg)
     if egg_info is None:
         egg_info = EggInfo.from_ipkg(ipkg)
 
+    # XXX: do this correctly, maybe use same as distutils ?
+    if wininst is None:
+        wininst = wininst_filename(os.path.join("bento", meta.fullname))
     ensure_dir(wininst)
 
     egg_info_dir = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
