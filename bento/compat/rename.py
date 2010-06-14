@@ -1,5 +1,6 @@
 import os.path
 import os
+import random
 
 def rename(src, dst):
     "Atomic rename on windows."
@@ -15,7 +16,7 @@ def rename(src, dst):
             for i in range(5):
                 fn = '%s-%08x' % (prefix, random.randint(0, 0xffffffff))
                 if not os.path.exists(fn):
-                    return temp
+                    return fn
             raise IOError, (errno.EEXIST, "No usable temporary filename found")
 
         temp = tempname(dst)

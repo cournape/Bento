@@ -8,7 +8,8 @@ if os.name == "posix":
 elif os.name == "nt":
     from nt_path \
         import \
-            relpath, rename
+            relpath
+    from rename import rename
 else:
     raise ImportError("relpath implementation for os %s not included" \
                       % os.name)
