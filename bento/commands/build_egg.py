@@ -45,7 +45,7 @@ Usage:   bentomaker build_egg [OPTIONS]"""
         egg_info = EggInfo.from_ipkg(ipkg)
 
         # FIXME: fix egg name
-        egg = egg_filename(os.path.join("bento", meta.fullname))
+        egg = egg_filename(os.path.join("dist", meta.fullname))
         ensure_dir(egg)
 
         egg_info = EggInfo.from_ipkg(ipkg)
