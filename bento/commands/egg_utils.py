@@ -6,6 +6,9 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+from bento._config \
+    import \
+        IPKG_PATH
 from bento.installed_package_description import \
         iter_source_files
 from bento.conv import \
@@ -33,7 +36,9 @@ class EggInfo(object):
         file_sections = ipkg.resolve_paths()
         sources = list(iter_source_files(file_sections))
 
-        return cls(meta, executables, sources)
+        ret = cls(meta, executables, sources)
+        ret.ipkg = ipkg
+        return ret
 
     def __init__(self, meta, executables, sources):
         self._dist_meta = to_distutils_meta(meta)
@@ -41,6 +46,7 @@ class EggInfo(object):
         self.sources = sources
         self.meta = meta
         self.executables = executables
+        self.ipkg = None
 
     def get_pkg_info(self):
         tmp = StringIO()
@@ -73,6 +79,22 @@ class EggInfo(object):
         ret.append('')
         return "\n".join(ret)
 
+    def get_ipkg_info(self):
+        # FIXME: this is wrong. Rethink the EggInfo interface and its
+        # relationship with ipkg
+        if self.ipkg is None:
+            f = open(IPKG_PATH)
+            try:
+                return f.read()
+            finally:
+                f.close()
+        else:
+            tmp = StringIO()
+            self.ipkg._write(tmp)
+            ret = tmp.getvalue()
+            tmp.close()
+            return ret
+
     def iter_meta(self):
         func_table = {
                 "pkg_info": self.get_pkg_info,
@@ -82,6 +104,7 @@ class EggInfo(object):
                 "not_zip_safe": self.get_not_zip_safe,
                 "dependency_links": self.get_dependency_links,
                 "entry_points": self.get_entry_points,
+                "ipkg_info": self.get_ipkg_info,
             }
         file_table = {
                 "pkg_info": "PKG-INFO",
@@ -91,6 +114,7 @@ class EggInfo(object):
                 "not_zip_safe": "not-zip-safe",
                 "dependency_links": "dependency_links.txt",
                 "entry_points": "entry_points.txt",
+                "ipkg_info": "ipkg.info",
             }
 
         for k in func_table:
