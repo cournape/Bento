@@ -12,7 +12,7 @@ except ImportError:
 from bento.private.bytecode import \
         bcompile
 from bento.core.utils import \
-        pprint
+        pprint, ensure_dir
 from bento._config \
     import \
         IPKG_PATH
@@ -56,10 +56,7 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
 
         # XXX: do this correctly, maybe use same as distutils ?
         wininst = wininst_filename(os.path.join("bento", meta.fullname))
-        wininst_dir = os.path.dirname(wininst)
-        if wininst_dir:
-            if not os.path.exists(wininst_dir):
-                os.makedirs(wininst_dir)
+        ensure_dir(wininst)
 
         egg_info_dir = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
         egg_info = EggInfo.from_ipkg(ipkg)
