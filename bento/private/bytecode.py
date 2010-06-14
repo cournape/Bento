@@ -15,7 +15,7 @@ import __builtin__
 # Unfortunately, there is no way that I know of to write the bytecode into a
 # string to be used by ZipFile (using compiler is way too slow). Also, the
 # py_compile code has not changed much for 10 years.
-def compile(source):
+def bcompile(source):
     """Return the compiled bytecode from the given filename as a string ."""
     f = open(source, 'U')
     try:

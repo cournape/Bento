@@ -2,7 +2,7 @@ import os
 import zipfile
 
 from bento.private.bytecode import \
-        compile
+        bcompile
 from bento.core.utils import \
         pprint, ensure_dir
 from bento.core import \
@@ -64,7 +64,7 @@ Usage:   bentomaker build_egg [OPTIONS]"""
             pprint("PINK", "Byte-compiling ...")
             for kind, source, target in iter_files(file_sections):
                 if kind in ["pythonfiles"]:
-                    zid.writestr("%sc" % target, compile(source))
+                    zid.writestr("%sc" % target, bcompile(source))
         finally:
             zid.close()
 

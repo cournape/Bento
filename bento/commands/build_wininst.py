@@ -10,7 +10,7 @@ except ImportError:
     from StringIO import StringIO
 
 from bento.private.bytecode import \
-        compile
+        bcompile
 from bento.core.utils import \
         pprint
 from bento._config \
