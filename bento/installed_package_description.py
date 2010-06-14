@@ -53,39 +53,50 @@ def iter_files(file_sections):
 
 class InstalledPkgDescription(object):
     @classmethod
+    def from_json_dict(cls, d):
+        return cls.__from_data(d)
+
+    @classmethod
+    def from_string(cls, s):
+        return cls.__from_data(simplejson.loads(s))
+
+    @classmethod
     def from_file(cls, filename):
+        fid = open(filename)
+        try:
+            return cls.__from_data(simplejson.load(fid))
+        finally:
+            fid.close()
+
+    @classmethod
+    def __from_data(cls, data):
         def _encode_kw(d):
             return dict([(k.encode(), v) for k, v in d.items()])
 
-        fid = open(filename)
-        try:
-            data = simplejson.load(fid)
-            meta_vars = _encode_kw(data["meta"])
-            path_vars = data["variables"]["paths"]
+        meta_vars = _encode_kw(data["meta"])
+        path_vars = data["variables"]["paths"]
 
-            executables = {}
-            for name, executable in data["variables"]["executables"].items():
-                executables[name] = Executable.from_parse_dict(_encode_kw(executable))
+        executables = {}
+        for name, executable in data["variables"]["executables"].items():
+            executables[name] = Executable.from_parse_dict(_encode_kw(executable))
 
-            file_sections = {}
+        file_sections = {}
 
-            def json_to_file_section(data):
-                tp, section_name = data["name"].split(":", 1)
-                section = InstalledSection(tp, section_name, data["source_dir"],
-                                           data["target_dir"], data["files"])
-                return tp, section_name, section
+        def json_to_file_section(data):
+            tp, section_name = data["name"].split(":", 1)
+            section = InstalledSection(tp, section_name, data["source_dir"],
+                                       data["target_dir"], data["files"])
+            return tp, section_name, section
 
-            for section in data["file_sections"]:
-                tp, name, files = json_to_file_section(section)
-                if tp in file_sections:
-                    if name in file_sections[tp]:
-                        raise ValueError("section %s of type %s already exists !" % (name, type))
-                    file_sections[tp][name] = files
-                else:
-                    file_sections[tp] = {name: files}
-            return cls(file_sections, meta_vars, path_vars, executables)
-        finally:
-            fid.close()
+        for section in data["file_sections"]:
+            tp, name, files = json_to_file_section(section)
+            if tp in file_sections:
+                if name in file_sections[tp]:
+                    raise ValueError("section %s of type %s already exists !" % (name, type))
+                file_sections[tp][name] = files
+            else:
+                file_sections[tp] = {name: files}
+        return cls(file_sections, meta_vars, path_vars, executables)
 
     def __init__(self, files, meta, path_options, executables):
         self.files = files
