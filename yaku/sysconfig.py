@@ -16,6 +16,7 @@ MSVC_ENV_ATTR = {
         "CC": "cc",
         "CXX": "cc",
         "CFLAGS": "compile_options",
+        "LINKCC": "linker",
 }
 
 # XXX: unixccompiler instances are the only classes where we can hope
