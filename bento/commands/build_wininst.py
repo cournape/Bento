@@ -52,35 +52,39 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
                     % (SCRIPT_NAME, "build_wininst"))
 
         ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
-        meta = PackageMetadata.from_ipkg(ipkg)
+        create_wininst(ipkg)
 
-        # XXX: do this correctly, maybe use same as distutils ?
-        wininst = wininst_filename(os.path.join("bento", meta.fullname))
-        ensure_dir(wininst)
-
-        egg_info_dir = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
+def create_wininst(ipkg, egg_info=None):
+    meta = PackageMetadata.from_ipkg(ipkg)
+    if egg_info is None:
         egg_info = EggInfo.from_ipkg(ipkg)
 
-        fid, arcname = tempfile.mkstemp(prefix="zip")
-        zid = zipfile.ZipFile(arcname, "w", zipfile.ZIP_DEFLATED)
-        try:
-            for filename, cnt in egg_info.iter_meta():
-                zid.writestr(os.path.join(egg_info_dir, filename), cnt)
+    # XXX: do this correctly, maybe use same as distutils ?
+    wininst = wininst_filename(os.path.join("bento", meta.fullname))
+    ensure_dir(wininst)
 
-            ipkg.path_variables["bindir"] = "SCRIPTS"
-            ipkg.path_variables["sitedir"] = "PURELIB"
-            ipkg.path_variables["gendatadir"] = "$sitedir"
+    egg_info_dir = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
 
-            file_sections = ipkg.resolve_paths()
+    fid, arcname = tempfile.mkstemp(prefix="zip")
+    zid = zipfile.ZipFile(arcname, "w", zipfile.ZIP_DEFLATED)
+    try:
+        for filename, cnt in egg_info.iter_meta():
+            zid.writestr(os.path.join(egg_info_dir, filename), cnt)
 
-            def write_content(source, target, kind):
-                zid.write(source, target)
+        ipkg.path_variables["bindir"] = "SCRIPTS"
+        ipkg.path_variables["sitedir"] = "PURELIB"
+        ipkg.path_variables["gendatadir"] = "$sitedir"
 
-            for kind, source, target in iter_files(file_sections):
-                write_content(source, target, kind)
+        file_sections = ipkg.resolve_paths()
 
-        finally:
-            zid.close()
-            os.close(fid)
+        def write_content(source, target, kind):
+            zid.write(source, target)
 
-        create_exe(ipkg, arcname, wininst)
+        for kind, source, target in iter_files(file_sections):
+            write_content(source, target, kind)
+
+    finally:
+        zid.close()
+        os.close(fid)
+
+    create_exe(ipkg, arcname, wininst)
