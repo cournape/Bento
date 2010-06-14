@@ -31,10 +31,13 @@ def get_configuration(compiler_type=None):
     # Unix-like default (basically works everwhere but windows)
     env = {
             "LIBS": [],
+            "LIBDIR": [],
             "INCPATH_FMT": "-I%s",
-            "LIBPATH_FMT": "-L%s",
+            "LIBDIR_FMT": "-L%s",
             "LIBS_FMT": "-l%s",
             "CPPDEF_FMT": "-D%s",
+            "CC_TGT_F": ["-c", "-o"],
+            "CC_SRC_F": [],
             "PYCC_NAME": compiler_type,
             }
     if compiler_type == "unix":

@@ -28,7 +28,7 @@ from yaku.conftests \
 
 pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} -o ${TGT[0]} ${SRC}", False)
 
-pycc, pycc_vars = compile_fun("pycc", "${PYEXT_SHCC} ${PYEXT_CCSHARED} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} -o ${TGT[0]} -c ${SRC}", False)
+pycc, pycc_vars = compile_fun("pycc", "${PYEXT_SHCC} ${PYEXT_CCSHARED} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0]} ${PYEXT_CC_SRC_F}${SRC}", False)
 
 _SYS_TO_PYENV = {
         "PYEXT_SHCC": "CC",
@@ -37,8 +37,27 @@ _SYS_TO_PYENV = {
         "PYEXT_SO": "SO",
         "PYEXT_CFLAGS": "CFLAGS",
         "PYEXT_OPT": "OPT",
+        "PYEXT_LIBDIR": "LIBDIR",
+        "PYEXT_LIBDIR_FMT": "LIBDIR_FMT",
         "PYEXT_LIBS": "LIBS",
         "PYEXT_INCPATH_FMT": "INCPATH_FMT",
+        "PYEXT_CC_TGT_F": "CC_TGT_F",
+        "PYEXT_CC_SRC_F": "CC_SRC_F",
+}
+
+_SYS_TO_CCENV = {
+        "CC": "CC",
+        "SHCC": "CCSHARED",
+        "SHLINK": "LDSHARED",
+        "SO": "SO",
+        "CFLAGS": "CFLAGS",
+        "OPT": "OPT",
+        "LIBDIR": "LIBDIR",
+        "LIBDIR_FMT": "LIBDIR_FMT",
+        "LIBS": "LIBS",
+        "INCPATH_FMT": "INCPATH_FMT",
+        "CC_TGT_F": "CC_TGT_F",
+        "CC_SRC_F": "CC_SRC_F",
 }
 
 def get_pyenv():
@@ -46,8 +65,13 @@ def get_pyenv():
     pyenv = {}
     for i, j in _SYS_TO_PYENV.items():
         pyenv[i] = sysenv[j]
+    # FIXME: how to deal with CC* namespace ?
+    for i, j in _SYS_TO_CCENV.items():
+        pyenv[i] = sysenv[j]
     pyenv["PYEXT_CPPPATH"] = [distutils.sysconfig.get_python_inc()]
     pyenv["PYEXT_SHLINKFLAGS"] = []
+    pyenv["CPPPATH"] = []
+    pyenv["SHLINKFLAGS"] = []
     return pyenv
 
 def pycc_hook(self, node):
@@ -94,9 +118,8 @@ def get_builder(ctx):
     return PythonBuilder(ctx)
 
 def configure(ctx):
-    gcc_detect(ctx)
-    check_compiler(ctx)
-
+    #gcc_detect(ctx)
+    #check_compiler(ctx)
     ctx.env.update(get_pyenv())
 
 def create_pyext(bld, env, name, sources):
