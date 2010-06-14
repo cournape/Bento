@@ -30,8 +30,8 @@ class InstalledSection(object):
     def __init__(self, tp, name, srcdir, target, files):
         self.tp = tp
         self.name = name
-        self.srcdir = srcdir
-        self.target = target
+        self.source_dir = srcdir
+        self.target_dir = target
         self.files = files
 
     @property
@@ -64,17 +64,16 @@ class InstalledPkgDescription(object):
             path_vars = data["variables"]["paths"]
 
             executables = {}
-            for name, executable in data["variables"]["executable"].items():
+            for name, executable in data["variables"]["executables"].items():
                 executables[name] = Executable.from_parse_dict(_encode_kw(executable))
 
             file_sections = {}
 
             def json_to_file_section(data):
                 tp, section_name = data["name"].split(":", 1)
-                return tp, section_name, \
-                        {"files": data["files"],
-                         "srcdir": data["source_dir"],
-                         "target": data["target_dir"]}
+                section = InstalledSection(tp, section_name, data["source_dir"],
+                                           data["target_dir"], data["files"])
+                return tp, section_name, section
 
             for section in data["file_sections"]:
                 tp, name, files = json_to_file_section(section)
@@ -95,6 +94,13 @@ class InstalledPkgDescription(object):
         self.executables = executables
 
     def write(self, filename):
+        fid = open(filename, "w")
+        try:
+            return self._write(fid)
+        finally:
+            fid.close()
+
+    def _write(self, fid):
         def executable_to_json(executable):
             return {"name": executable.name,
                     "module": executable.module,
@@ -102,39 +108,35 @@ class InstalledPkgDescription(object):
 
         def section_to_json(section):
             return {"name": section.fullname,
-                    "source_dir": section.srcdir,
-                    "target_dir": section.target,
+                    "source_dir": section.source_dir,
+                    "target_dir": section.target_dir,
                     "files": section.files}
 
-        fid = open(filename, "w")
-        try:
-            data = {}
-            data["meta"] = self.meta
+        data = {}
+        data["meta"] = self.meta
 
-            executables = dict([(k, executable_to_json(v)) \
-                                for k, v in self.executables.items()])
-            variables = {"paths": self.path_variables,
-                         "executable": executables}
-            data["variables"] = variables
+        executables = dict([(k, executable_to_json(v)) \
+                            for k, v in self.executables.items()])
+        variables = {"paths": self.path_variables,
+                     "executables": executables}
+        data["variables"] = variables
 
-            file_sections = []
-            for tp, value in self.files.items():
-                if tp in ["pythonfiles"]:
-                    for i in value.values():
-                        i.srcdir = "$_srcrootdir"
-                        file_sections.append(section_to_json(i))
-                elif tp in ["datafiles", "extension", "executable"]:
-                    for i in value.values():
-                        file_sections.append(section_to_json(i))
-                else:
-                    raise ValueError("Unknown section %s" % type)
-            data["file_sections"] = file_sections
-            if os.environ.has_key("BENTOMAKER_PRETTY"):
-                simplejson.dump(data, fid, sort_keys=True, indent=4)
+        file_sections = []
+        for tp, value in self.files.items():
+            if tp in ["pythonfiles"]:
+                for i in value.values():
+                    i.srcdir = "$_srcrootdir"
+                    file_sections.append(section_to_json(i))
+            elif tp in ["datafiles", "extension", "executables"]:
+                for i in value.values():
+                    file_sections.append(section_to_json(i))
             else:
-                simplejson.dump(data, fid, separators=(',', ':'))
-        finally:
-            fid.close()
+                raise ValueError("Unknown section %s" % tp)
+        data["file_sections"] = file_sections
+        if os.environ.has_key("BENTOMAKER_PRETTY"):
+            simplejson.dump(data, fid, sort_keys=True, indent=4)
+        else:
+            simplejson.dump(data, fid, separators=(',', ':'))
 
     def resolve_paths(self, src_root_dir="."):
         self.path_variables['_srcrootdir'] = src_root_dir
@@ -142,12 +144,12 @@ class InstalledPkgDescription(object):
         file_sections = {}
         for tp in self.files:
             file_sections[tp] = {}
-            for name, value in self.files[tp].items():
-                srcdir = subst_vars(value["srcdir"], self.path_variables)
-                target = subst_vars(value["target"], self.path_variables)
+            for name, section in self.files[tp].items():
+                srcdir = subst_vars(section.source_dir, self.path_variables)
+                target = subst_vars(section.target_dir, self.path_variables)
 
                 file_sections[tp][name] = \
                         [(os.path.join(srcdir, f), os.path.join(target, f))
-                         for f in value["files"]]
+                         for f in section.files]
 
         return file_sections 

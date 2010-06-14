@@ -74,7 +74,7 @@ class SectionWriter(object):
             "pythonfiles": build_python_files,
             "datafiles": build_data_files,
             "extension": build_distutils.build_extensions,
-            "executable": build_executables
+            "executables": build_executables
         }
         self.sections = {}
         for k in self.sections_callbacks:
