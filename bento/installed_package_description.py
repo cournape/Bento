@@ -1,5 +1,6 @@
 import os
 import StringIO
+import zipfile
 
 import simplejson
 
@@ -52,6 +53,15 @@ def iter_files(file_sections):
                 yield kind, source, target
 
 class InstalledPkgDescription(object):
+    @classmethod
+    def from_egg(cls, egg_path):
+        zid = zipfile.ZipFile(egg_path)
+        try:
+            data = simplejson.loads(zid.read("EGG-INFO/ipkg.info"))
+            return cls.from_json_dict(data)
+        finally:
+            zid.close()
+
     @classmethod
     def from_json_dict(cls, d):
         return cls.__from_data(d)
