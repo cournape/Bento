@@ -61,7 +61,7 @@ def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
 
     # XXX: do this correctly, maybe use same as distutils ?
     if wininst is None:
-        wininst = wininst_filename(os.path.join("bento", meta.fullname))
+        wininst = wininst_filename(os.path.join("dist", meta.fullname))
     ensure_dir(wininst)
 
     egg_info_dir = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
