@@ -40,32 +40,34 @@ Usage:   bentomaker build_egg [OPTIONS]"""
                     % (SCRIPT_NAME, "build_egg"))
 
         ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
-        meta = PackageMetadata.from_ipkg(ipkg)
+        build_egg(ipkg)
 
-        egg_info = EggInfo.from_ipkg(ipkg)
+def build_egg(ipkg):
+    meta = PackageMetadata.from_ipkg(ipkg)
+    egg_info = EggInfo.from_ipkg(ipkg)
 
-        # FIXME: fix egg name
-        egg = egg_filename(os.path.join("dist", meta.fullname))
-        ensure_dir(egg)
+    # FIXME: fix egg name
+    egg = egg_filename(os.path.join("dist", meta.fullname))
+    ensure_dir(egg)
 
-        egg_info = EggInfo.from_ipkg(ipkg)
+    egg_info = EggInfo.from_ipkg(ipkg)
 
-        zid = zipfile.ZipFile(egg, "w", zipfile.ZIP_DEFLATED)
-        try:
-            for filename, cnt in egg_info.iter_meta():
-                zid.writestr(os.path.join("EGG-INFO", filename), cnt)
+    zid = zipfile.ZipFile(egg, "w", zipfile.ZIP_DEFLATED)
+    try:
+        for filename, cnt in egg_info.iter_meta():
+            zid.writestr(os.path.join("EGG-INFO", filename), cnt)
 
-            ipkg.path_variables["sitedir"] = "."
-            file_sections = ipkg.resolve_paths()
-            for kind, source, target in iter_files(file_sections):
-                if not kind in ["executables"]:
-                    zid.write(source, target)
+        ipkg.path_variables["sitedir"] = "."
+        file_sections = ipkg.resolve_paths()
+        for kind, source, target in iter_files(file_sections):
+            if not kind in ["executables"]:
+                zid.write(source, target)
 
-            pprint("PINK", "Byte-compiling ...")
-            for kind, source, target in iter_files(file_sections):
-                if kind in ["pythonfiles"]:
-                    zid.writestr("%sc" % target, bcompile(source))
-        finally:
-            zid.close()
+        pprint("PINK", "Byte-compiling ...")
+        for kind, source, target in iter_files(file_sections):
+            if kind in ["pythonfiles"]:
+                zid.writestr("%sc" % target, bcompile(source))
+    finally:
+        zid.close()
 
-        return 
+    return
