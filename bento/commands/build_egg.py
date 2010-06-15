@@ -42,12 +42,15 @@ Usage:   bentomaker build_egg [OPTIONS]"""
         ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
         build_egg(ipkg)
 
-def build_egg(ipkg):
+def build_egg(ipkg, source_root=".", path=None):
     meta = PackageMetadata.from_ipkg(ipkg)
     egg_info = EggInfo.from_ipkg(ipkg)
 
     # FIXME: fix egg name
-    egg = egg_filename(os.path.join("dist", meta.fullname))
+    if path is None:
+        egg = egg_filename(os.path.join("dist", meta.fullname))
+    else:
+        egg = egg_filename(os.path.join(path, meta.fullname))
     ensure_dir(egg)
 
     egg_info = EggInfo.from_ipkg(ipkg)
@@ -58,7 +61,7 @@ def build_egg(ipkg):
             zid.writestr(os.path.join("EGG-INFO", filename), cnt)
 
         ipkg.path_variables["sitedir"] = "."
-        file_sections = ipkg.resolve_paths()
+        file_sections = ipkg.resolve_paths(source_root)
         for kind, source, target in iter_files(file_sections):
             if not kind in ["executables"]:
                 zid.write(source, target)

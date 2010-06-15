@@ -210,3 +210,9 @@ def ensure_dir(path):
     d = os.path.dirname(path)
     if d and not os.path.exists(d):
         os.makedirs(d)
+
+def normalize_path(path):
+    return path.replace("\\", "/")
+
+def unnormalize_path(path):
+    return path.replace("/", "\\")

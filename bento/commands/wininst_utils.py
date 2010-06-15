@@ -2,6 +2,7 @@ import sys
 import os
 import string
 import time
+import base64
 
 from cStringIO \
     import \
@@ -177,7 +178,7 @@ def get_inidata(ipkg):
     lines.append("\n[IPKG_INFO]")
     s = StringIO()
     ipkg._write(s)
-    lines.append("value = %s" % s.getvalue())
+    lines.append("value = %s" % base64.b64encode(s.getvalue()))
     # Only used to avoid value to be the last line
     lines.append("dummy = 0")
     return string.join(lines, "\n")

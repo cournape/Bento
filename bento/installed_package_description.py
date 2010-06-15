@@ -5,7 +5,7 @@ import zipfile
 import simplejson
 
 from bento.core.utils import \
-    subst_vars
+    subst_vars, normalize_path, unnormalize_path
 from bento.core.pkg_objects import \
     Executable
 
@@ -31,9 +31,14 @@ class InstalledSection(object):
     def __init__(self, tp, name, srcdir, target, files):
         self.tp = tp
         self.name = name
-        self.source_dir = srcdir
-        self.target_dir = target
-        self.files = files
+        if os.sep != "/":
+            self.source_dir = normalize_path(srcdir)
+            self.target_dir = normalize_path(target)
+            self.files = [normalize_path(path) for path in files]
+        else:
+            self.source_dir = srcdir
+            self.target_dir = target
+            self.files = files
 
     @property
     def fullname(self):
@@ -47,10 +52,16 @@ def iter_source_files(file_sections):
                     yield f[0]
 
 def iter_files(file_sections):
-    for kind in file_sections:
-        for name, section in file_sections[kind].items():
-            for source, target in section:
-                yield kind, source, target
+    if os.sep != "/":
+        for kind in file_sections:
+            for name, section in file_sections[kind].items():
+                for source, target in section:
+                    yield kind, unnormalize_path(source), unnormalize_path(target)
+    else:
+        for kind in file_sections:
+            for name, section in file_sections[kind].items():
+                for source, target in section:
+                    yield kind, source, target
 
 class InstalledPkgDescription(object):
     @classmethod
