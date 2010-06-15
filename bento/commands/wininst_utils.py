@@ -3,6 +3,9 @@ import os
 import string
 import time
 
+from cStringIO \
+    import \
+        StringIO
 from distutils.util import \
         get_platform
 from distutils.sysconfig import \
@@ -171,4 +174,10 @@ def get_inidata(ipkg):
     build_info = "Built %s with bento-%s" % \
                  (time.ctime(time.time()), bento.__version__)
     lines.append("build_info=%s" % build_info)
+    lines.append("\n[IPKG_INFO]")
+    s = StringIO()
+    ipkg._write(s)
+    lines.append("value = %s" % s.getvalue())
+    # Only used to avoid value to be the last line
+    lines.append("dummy = 0")
     return string.join(lines, "\n")
