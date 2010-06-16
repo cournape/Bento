@@ -17,3 +17,6 @@ def detect(ctx):
     ctx.env["LIBS"] = []
     ctx.env["LIB_FMT"] = "-l%s"
     ctx.env["LIBDIR_FMT"] = "-L%s"
+
+    ctx.env["CC_OBJECT_FMT"] = "%s.o"
+    ctx.env["PROGRAM_FMT"] = "%s"

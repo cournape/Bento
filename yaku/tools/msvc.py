@@ -10,6 +10,8 @@ def detect(ctx):
     ctx.env["CPPPATH"] = []
     ctx.env["CPPPATH_FMT"] = "/I%s"
     ctx.env["LINK"] = ["link.exe"]
+    ctx.env["LINK_TGT_F"] = ["/out:"]
+    ctx.env["LINK_SRC_F"] = []
     ctx.env["LINKFLAGS"] = []
     ctx.env["LIBS"] = []
     ctx.env["LIB_FMT"] = "%s.lib"

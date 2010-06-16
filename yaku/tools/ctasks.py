@@ -31,9 +31,10 @@ def ccompile_task(self, node):
     # XXX: hack to avoid creating build/build/... when source is
     # generated. Dealing with this most likely requires a node concept
     if not os.path.commonprefix([self.env["BLDDIR"], base]):
-        target = os.path.join(self.env["BLDDIR"], base + ".o")
+        target = os.path.join(self.env["BLDDIR"],
+                self.env["CC_OBJECT_FMT"] % base)
     else:
-        target = base + ".o"
+        target = self.env["CC_OBJECT_FMT"] % base
     ensure_dir(target)
     task = Task("cc", inputs=node, outputs=target)
     task.env_vars = cc_vars
@@ -56,7 +57,8 @@ def link_task(self, name):
 
 def ccprogram_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    target = os.path.join(self.env["BLDDIR"], name)
+    target = os.path.join(self.env["BLDDIR"],
+                          self.env["PROGRAM_FMT"] % name)
     ensure_dir(target)
     task = Task("ccprogram", inputs=objects, outputs=target)
     task.env = self.env
