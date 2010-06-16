@@ -64,7 +64,6 @@ class ConfigureContext(object):
             fid.close()
 
 def load_tools(self, fid):
-    print "%r" % fid.read()
     tools = eval(fid.read())
     for t in tools:
         _t = import_tools([t["tool"]], t["tooldir"])
