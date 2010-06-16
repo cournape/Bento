@@ -64,6 +64,7 @@ class ConfigureContext(object):
             fid.close()
 
 def load_tools(self, fid):
+    print "%r" % fid.read()
     tools = eval(fid.read())
     for t in tools:
         _t = import_tools([t["tool"]], t["tooldir"])
@@ -131,11 +132,8 @@ def get_cfg():
         finally:
             fid.close()
 
-    if os.path.exists(DEFAULT_ENV):
-        env = Environment()
-        env.load(DEFAULT_ENV)
-    else:
-        env = Environment()
+    # XXX: how to reload existing environment ?
+    env = Environment()
     if not env.has_key("BLDDIR"):
         env["BLDDIR"] = BUILD_DIR
     # FIXME: nothing to do here
