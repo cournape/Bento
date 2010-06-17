@@ -73,6 +73,7 @@ def read_ipkg(wininst):
                 sdata.seek(cur, 0)
         truncate_null(sdata)
         parser.readfp(sdata)
+        raise ValueError("YO - fix wininst METADATA")
         ipkg_str = base64.b64decode(parser.get("IPKG_INFO", "value"))
 
         ipkg = InstalledPkgDescription.from_string(ipkg_str)
