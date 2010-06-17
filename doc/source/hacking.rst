@@ -1,13 +1,13 @@
 Design document
 ===============
 
-.. Version: 0.0.2
+.. Version: 0.0.3
 
 Bento is currently split into two parts: a core API to parse the
-package description into a simple object API, and a commands API which
-gives a command line interface to bento.
+package description into a simple object API, and a commands library
+which gives a command line interface to bento.
 
-The principle philosophy of bento is to clearly separate the
+The main design philosophy of bento is to clearly separate the
 different stages of packaging deployment, as we believe it is the only
 way to make a build tool extensible.
 
@@ -20,31 +20,47 @@ The command line interface of bento currently supports 3 stages:
           (build/install customization).
         - build: compile C extensions
         - install: deploy the software into the system as configured
-          at the first stage
-
-In addition, there are a few binary build, which build various
-platform-specific binary installers (windows installer-only for now)
-and eggs. From an implementation POV, those are similar to the install
-stage.
+          at the first stage. Installers are considered installation
+          as well for reasons explained later.
 
 Although those stages are very similar to distutils/setuptools
 mechanism, the implementation is fundamentally different, because each
-stage is independent from the other. No python object is passed
-between commands - the current bentomaker implementation implements each
-stage as a separate run:
+stage is as much independent as possible. No python object is directly
+shared between commands - the current bentomaker implementation
+implements each stage as a separate run.
 
-        - the configuration stage produces a Configuration Context
-          object which records every user option (+ some caching
-          information) which is dumped into a file.
-        - the build stages starts from the dump, and has to produce a
-          package manifest (InstalledPkgDescription). The package
-          manifst contains the package metadata, installation path
-          details as well as file sections.
-        - Both installation and binary installers builders stages
-          starts from the build manifest.
+Build manifest and building installers
+--------------------------------------
 
-The package manifest is inspired by the Cabal concept of installed
-package info, but has been extended to be independent of the
-installation scheme. In particular, for a given build, the same build
-manifest can be used to install the package, produces an egg or a
-windows installer.
+Bento uses a slightly unusal process to install the bits of your
+package. Instead of copying directly the files to the desired
+location, the install process is driven by a build manifest. This
+build manifest is produced by the build command. It contains a
+description of files per category as well as metadata.
+
+The built bits and the build manifest are enough to install the
+software to arbitrary location, so that the install process does not
+need to know anything about the build process.  Conversely, as long as
+you can produce a build manifest, you can use the installation
+commands as is.
+
+Besides installation, the manifest is also used to produce installers.
+Currently, only windows installers and eggs are supported, but adding
+new types of installers should be easier than with distutils. If you
+look at the build_wininst and build_egg commands source code, they are
+simple, and most of the "magic" happens in the build manifest. In
+particular, the build manifest still refers to installed bits
+relatively to abstract paths, and those paths are resolved when
+building the installers.
+
+Installers conversion
+~~~~~~~~~~~~~~~~~~~~~
+
+The build manifest is intended to be included in each produced
+installer, for easy convertion between various formats easily. The
+goal is to have idempotent conversion (e.g.  converting an egg to
+wininst and then converting it back to an egg produces the exact same
+egg).
+
+We also intend to use build manifest for the upcoming ''nest''
+service, which will contain a database of installed software.
