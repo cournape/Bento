@@ -1,0 +1,18 @@
+Bento is considered in planning phase, and as such, the authors discourage
+packaging it for linux and other OS for the time being.
+
+Nevertheless, this document contains a few packaging details to help for the
+packaging. Those details are unlikely to change once bento stabilitized.
+
+To ease its distribution, bento bundles all its dependencies besides the python
+standard library:
+
+	- Ply (version 3.3)
+	- Simplejson
+	- Yaku (git version)
+
+Of those three, only yaku will be updated frequently. Although bundled, those
+correspond to upstream versions, and no modification is allowed. This is so
+that using unbundled version is possible. It is not fully implemented yet, but
+bento will have a configuration option to install it without any bundled
+package.
