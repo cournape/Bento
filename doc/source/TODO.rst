@@ -17,12 +17,11 @@ TODO:
     - think about integration with sphinx for doc
     - pre/post hooks for every stage of a typical install
     - integration with at least one real build tool (Scons or waf)
-    - avoid cluttering source tree with bento junk
     - handle reliable install/uninstall
 
 Not well thought out yet:
-    - pkg_resources: the thing is a giant unmaintainable mess, but can
-      we afford ignoring it ?
+    - supporting everything that pkg_resources does (resource management
+      without __file__ hack, namespace package)
 
 Milestone
 =========
@@ -35,10 +34,7 @@ Release 0.0.3
     - integrate yaku (without exposing yaku API), yaku should have the
       following features:
         - naive // build (extension-based ala waf)
-        - tool specification
-    - put everything in a build directory
-    - specify hook mechanism: document contexts + command flow in bento
-    - add basic distutils support
+        - ensure it works on windows for simple extensions
     - one file distribution
 
 Release 0.0.4
@@ -46,6 +42,9 @@ Release 0.0.4
 
 0.0.4 goals:
 
+    - add basic distutils support
+    - specify hook mechanism: document contexts + command flow in bento
+    - add tool specification to yaku
     - test and distcheck support
     - rewrite installed-pkg-info mechanism (using json ?)
     - add options to "unbundle" private modules for distribution packagers
