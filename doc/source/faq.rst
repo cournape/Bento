@@ -19,8 +19,8 @@ common not shared by distutils and setuptools:
     - enforced policies
     - separate index of packages (so that you don't need to download a lot
       of software to know the dependencies of a package)
-    - simple implementations (even though I consider to know the distutils
-      code extremely well, the Haskell system is easier to understand - and
+    - simple implementations (even though I consider myself knowledgable about
+      distutils code, the Haskell system hackage is easier to understand - and
       I barely know any haskell !)
 
 Why not extending existing tools (distutils, etc...) ?
@@ -42,10 +42,8 @@ distutils is deeply flawed:
       dealing with setuptools in numpy.distutils extensions has been a constant
       source of bugs).
     - Customizing compilation flags, and more generally some tools involved in
-      compilation is way too complicated. Again, using classes for compilers
-      and linkers does not make much sense, as inheritence as an extending
-      mechanism does not work well in this situation either. It also makes
-      adding new tools in the chain quite difficult.
+      compilation is way too complicated. For example, adding a new tool in the
+      build chain requires rewriting the build command - this is insane.
     - Improving distutils to handle dependencies automatically (rebuild only
       the necessary .c files) is difficult because of the way distutils is
       designed (build split across different commands, which may be
@@ -93,7 +91,7 @@ compared to interactions with distutils.  Numscons is around 2000 LOC (compared
 to distutils 10 0000 LOC), and supports most major platforms, including Mac OS
 X, Windows 32 and 64 bits, Linux, Free BSD, Solaris, etc... To be fair,
 numscons depends on scons itself for some platform peculiarities, but so does
-distutils (which relies on autoconf on many platforms).
+distutils (which relies on autoconf on many platforms through syconfig).
 
 What about existing projects using distutils ?
 ==============================================
