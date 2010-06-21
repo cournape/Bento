@@ -131,7 +131,8 @@ def get_builder(ctx):
     return PythonBuilder(ctx)
 
 CC_SIGNATURE = {
-        "gcc": re.compile("gcc version")
+        "gcc": re.compile("gcc version"),
+        "msvc": re.compile("Microsoft \(R\) 32-bit C/C\+\+ Optimizing Compiler")
 }
 
 def detect_cc_type(ctx, cc_cmd):
@@ -151,12 +152,16 @@ def detect_cc_type(ctx, cc_cmd):
         return None
 
     sys.stderr.write("Detecting CC type... ")
-    for v in ["-v", "-V", "-###"]:
-        cc_type = detect_type(v)
-        if cc_type:
-            break
-    if cc_type is None:
-        cc_type = "cc"
+    if sys.platform == "win32":
+        for v in [""]:
+            cc_type = detect_type(v)
+    else:
+        for v in ["-v", "-V", "-###"]:
+            cc_type = detect_type(v)
+            if cc_type:
+                break
+        if cc_type is None:
+            cc_type = "cc"
     sys.stderr.write("%s\n" % cc_type)
     return cc_type
 
