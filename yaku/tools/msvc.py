@@ -16,7 +16,7 @@ def detect(ctx):
     ctx.env["LIBS"] = []
     ctx.env["LIB_FMT"] = "%s.lib"
     ctx.env["LIBDIR"] = []
-    ctx.env["LIBDIR_FMT"] = "/L%s"
+    ctx.env["LIBDIR_FMT"] = "/LIBPATH:%s"
 
     ctx.env["PROGRAM_FMT"] = "%s.exe"
     ctx.env["CC_OBJECT_FMT"] = "%s.obj"
