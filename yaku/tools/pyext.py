@@ -77,6 +77,7 @@ def get_pyenv(ctx):
     sysenv = get_configuration()
     for i, j in _SYS_TO_PYENV.items():
         pyenv[i] = sysenv[j]
+    pyenv["PYEXT_FMT"] = "%%s%s" % sysenv["SO"]
 
     for k in _PYENV_REQUIRED:
         pyenv["PYEXT_%s" % k] = ctx.env[k]
@@ -109,7 +110,8 @@ def pycc_task(self, node):
 
 def pylink_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    target = os.path.join(self.env["BLDDIR"], name + ".so")
+    target = os.path.join(self.env["BLDDIR"],
+            self.env["PYEXT_FMT"] % name)
     ensure_dir(target)
     task = Task("pylink", inputs=objects, outputs=target)
     task.func = pylink

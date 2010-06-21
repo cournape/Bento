@@ -85,6 +85,7 @@ def get_configuration(compiler_type=None):
             # something about it ?)
             env[k] = var.split(" ")
     elif compiler_type == "msvc":
+        env["SO"] = ".pyd"
         try:
             setup_msvc(env)
         except errors.DistutilsPlatformError, e:
