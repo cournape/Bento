@@ -28,6 +28,11 @@ DEFAULT_COMPILERS = {
         "default": [None]
 }
 
+def _mingw32_cc():
+    compiler_type = "mingw32"
+    compiler = distutils.ccompiler.new_compiler(compiler=compiler_type)
+    return compiler.compiler_so
+
 def detect_distutils_cc(ctx):
     if not sys.platform in DEFAULT_COMPILERS:
         plat = "default"
@@ -43,12 +48,11 @@ def detect_distutils_cc(ctx):
                 compiler = distutils.ccompiler.new_compiler(
                         compiler="msvc")
                 compiler.initialize()
-                cc = compiler.cc
+                cc = [compiler.cc]
             except errors.DistutilsPlatformError:
-                pass
-        compiler_type = "mingw32"
-        compiler = distutils.ccompiler.new_compiler(compiler=compiler_type)
-        cc = compiler.compiler_so
+                cc = _mingw32_cc()
+        else:
+            cc = _mingw32_cc()
     else:
         cc = distutils.sysconfig.get_config_var("CC")
         # FIXME: use shlex for proper escaping handling
