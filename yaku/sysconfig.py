@@ -3,6 +3,8 @@ import sys
 import distutils.unixccompiler
 import distutils.ccompiler
 import distutils.sysconfig
+import distutils.command.build_ext as build_ext
+import distutils.dist as dist
 
 from distutils \
     import \
@@ -20,6 +22,7 @@ MSVC_ENV_ATTR = {
         "CC": "cc",
         "CXX": "cc",
         "CFLAGS": "compile_options",
+        "LDSHARED": "linker",
         "LINKCC": "linker",
 }
 
@@ -106,11 +109,20 @@ def get_configuration(compiler_type=None):
 
     return env
 
+def _get_ext_library_dirs():
+    binst = build_ext.build_ext(dist.Distribution())
+    binst.initialize_options()
+    binst.finalize_options()
+    return binst.library_dirs
+
 def setup_msvc(env):
-    # XXX: not tested
     compiler = distutils.ccompiler.new_compiler(
             compiler="msvc")
     compiler.initialize()
 
     for k, v in MSVC_ENV_ATTR.items():
         env[k] = getattr(compiler, v)
+    env["LDSHARED"] = [env["LDSHARED"]] + compiler.ldflags_shared
+    env["CCSHARED"] = []
+    env["OPT"] = compiler.compile_options
+    env["LIBDIR"] = _get_ext_library_dirs()
