@@ -42,10 +42,10 @@ _SYS_TO_PYENV = {
         "PYEXT_SUFFIX": "SO",
         "PYEXT_CFLAGS": "CFLAGS",
         "PYEXT_OPT": "OPT",
+        "PYEXT_LIBDIR": "LIBDIR",
 }
 
 _PYENV_REQUIRED = [
-        "LIBDIR",
         "LIBDIR_FMT",
         "LIBS",
         "LIB_FMT",
@@ -217,7 +217,7 @@ def apply_libs(task_gen):
             task_gen.env["LIBS_FMT"] % lib for lib in libs]
 
 def apply_libpath(task_gen):
-    libdir = task_gen.env["LIBDIR"]
+    libdir = task_gen.env["PYEXT_LIBDIR"] + task_gen.env["LIBDIR"]
     implicit_paths = set([
         os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
         for s in task_gen.sources])
