@@ -78,13 +78,14 @@ def get_configuration(compiler_type=None):
     env["LIBDIR"] = []
     if compiler_type == "unix":
         for k in ["CC", "CXX", "OPT", "CFLAGS", "CCSHARED",
-                  "LDSHARED", "SO", "LINKCC"]:
+                  "LDSHARED", "LINKCC"]:
             var = distutils.sysconfig.get_config_var(k)
             # FIXME: Splitting most likely needs to be smarter to take
             # quote into account - OTOH, many compilers don't handle
             # quote in directories/CPP variables (Does C89 say
             # something about it ?)
             env[k] = var.split(" ")
+        env["SO"] = distutils.sysconfig.get_config_var("SO")
     elif compiler_type == "msvc":
         env["SO"] = ".pyd"
         try:
