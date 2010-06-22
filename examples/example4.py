@@ -9,16 +9,15 @@ from yaku.scheduler \
         run_tasks
 
 def configure(ctx):
-    from yaku.sysconfig import detect_distutils_cc
+    # The tool ctask works as follows:
+    # - When a tool is *loaded* (load_tool), get its configure function (dummy
+    # is setup if no configure is found)
+    # - When a tool is *used* (use_tool), run its configure function
+    # - given a list of candidates, run the detect function for every candidate
+    # until detect returns True
+    # - if one candidate found, record its name and run its setup function
+    # - if none found, fails
     tools = ctx.use_tools(["ctasks"])
-    # XXX: we have to use this until we have a detection framework
-    cc = detect_distutils_cc(ctx)
-    if sys.platform == "win32":
-        import yaku.tools.msvc as msvc
-        msvc.detect(ctx)
-    else:
-        import yaku.tools.gcc as gcc
-        gcc.detect(ctx)
 
 def build(ctx):
     builder = ctx.builders["ctasks"]
