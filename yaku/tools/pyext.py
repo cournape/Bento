@@ -78,6 +78,7 @@ def get_pyenv(ctx):
     for i, j in _SYS_TO_PYENV.items():
         pyenv[i] = sysenv[j]
     pyenv["PYEXT_FMT"] = "%%s%s" % sysenv["SO"]
+    pyenv["PYEXT_OBJ_FMT"] = "%%s%s" % sysenv["OBJ_SUFFIX"]
 
     for k in _PYENV_REQUIRED:
         pyenv["PYEXT_%s" % k] = ctx.env[k]
@@ -98,9 +99,11 @@ def pycc_task(self, node):
     # XXX: hack to avoid creating build/build/... when source is
     # generated. Dealing with this most likely requires a node concept
     if not os.path.commonprefix([self.env["BLDDIR"], base]):
-        target = os.path.join(self.env["BLDDIR"], base + ".o")
+        target = os.path.join(self.env["BLDDIR"],
+                self.env["PYEXT_OBJ_FMT"] % base)
     else:
-        target = base + ".o"
+        target = self.env["PYEXT_OBJ_FMT"] % base
+
     ensure_dir(target)
     task = Task("pycc", inputs=node, outputs=target)
     task.env_vars = pycc_vars

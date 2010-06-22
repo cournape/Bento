@@ -76,6 +76,7 @@ def get_configuration(compiler_type=None):
     # Unix-like default (basically works everwhere but windows)
     env = {"PYCC_NAME": compiler_type}
     env["LIBDIR"] = []
+    env["OBJ_SUFFIX"] = ".o"
     if compiler_type == "unix":
         for k in ["CC", "CXX", "OPT", "CFLAGS", "CCSHARED",
                   "LDSHARED", "LINKCC"]:
@@ -129,3 +130,4 @@ def setup_msvc(env):
     env["CCSHARED"] = []
     env["OPT"] = compiler.compile_options
     env["LIBDIR"] = _get_ext_library_dirs()
+    env["OBJ_SUFFIX"] = ".obj"
