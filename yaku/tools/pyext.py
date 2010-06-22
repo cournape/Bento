@@ -178,7 +178,7 @@ def configure(ctx):
     sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
     try:
         mod = __import__(cc_type)
-        mod.detect(ctx)
+        mod.setup(ctx)
     finally:
         sys.path.pop(0)
 

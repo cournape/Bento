@@ -1,4 +1,6 @@
-def detect(ctx):
+import yaku.utils
+
+def setup(ctx):
     env = ctx.env
 
     ctx.env["CC"] = ["gcc"]
@@ -20,3 +22,9 @@ def detect(ctx):
 
     ctx.env["CC_OBJECT_FMT"] = "%s.o"
     ctx.env["PROGRAM_FMT"] = "%s"
+
+def detect(ctx):
+    if yaku.utils.find_program("gcc") is None:
+        return False
+    else:
+        return True

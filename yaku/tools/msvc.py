@@ -1,6 +1,6 @@
 import yaku.task
 
-def detect(ctx):
+def setup(ctx):
     env = ctx.env
 
     ctx.env["CC"] = ["cl.exe"]
@@ -35,3 +35,12 @@ def detect(ctx):
                 new_cmd.append(c)
         saved(self, new_cmd, cwd)
     yaku.task.Task.exec_command = msvc_exec_command
+
+def detect(ctx):
+    from distutils.ccompiler import new_compiler
+    try:
+        cc = new_compiler(compiler="msvc")
+        cc.initialize()
+        return True
+    except Exception, e:
+        return False

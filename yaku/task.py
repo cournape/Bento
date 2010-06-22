@@ -90,8 +90,12 @@ class Task(object):
                 pprint('GREEN', " ".join(cmd))
             else:
                 pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join([os.path.basename(i) for i in self.outputs])))
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
-        stdout = p.communicate()[0]
-        if p.returncode:
-            raise TaskRunFailure("cmd %s failed: %s" % (" ".join(cmd), stdout))
+
+        try:
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT)
+            stdout = p.communicate()[0]
+            if p.returncode:
+                raise TaskRunFailure("cmd %s failed: %s" % (" ".join(cmd), stdout))
+        except WindowsError, e:
+            raise TaskRunFailure("cmd %s failed: %s" % (" ".join(cmd), str(e)))
