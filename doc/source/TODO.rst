@@ -35,7 +35,8 @@ Release 0.0.3
       following features:
         - naive // build (extension-based ala waf)
         - ensure it works on windows for simple extensions
-    - one file distribution
+    - make sure everything works on python 2.4 -> 2.7
+    - make sure everything works on windows
 
 Release 0.0.4
 -------------
