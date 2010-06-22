@@ -124,13 +124,6 @@ def get_cfg():
         finally:
             fid.close()
 
-    if os.path.exists(BUILD_CONFIG):
-        fid = myopen(BUILD_CONFIG, "r")
-        try:
-            load_tools(ctx, fid)
-        finally:
-            fid.close()
-
     # XXX: how to reload existing environment ?
     env = Environment()
     if not env.has_key("BLDDIR"):
