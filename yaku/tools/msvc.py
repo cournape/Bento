@@ -13,6 +13,10 @@ def setup(ctx):
     ctx.env["LINK_TGT_F"] = ["/out:"]
     ctx.env["LINK_SRC_F"] = []
     ctx.env["LINKFLAGS"] = []
+    ctx.env["SHLINK"] = ["link.exe"]
+    ctx.env["SHLINK_TGT_F"] = ["/out:"]
+    ctx.env["SHLINK_SRC_F"] = []
+    ctx.env["SHLINKFLAGS"] = []
     ctx.env["LIBS"] = []
     ctx.env["LIB_FMT"] = "%s.lib"
     ctx.env["LIBDIR"] = []

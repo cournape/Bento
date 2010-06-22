@@ -21,7 +21,7 @@ ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${INCPATH} ${CC_TGT_F}${T
 
 ccprogram, ccprogram_vars = compile_fun("ccprogram", "${LINK} ${LINKFLAGS} ${LINK_TGT_F}${TGT[0]} ${LINK_SRC_F}${SRC}", False)
 
-cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${SHLINKFLAGS} ${APP_LIBDIR} ${APP_LIBS} -o ${TGT[0]} ${SRC}", False)
+cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${SHLINKFLAGS} ${APP_LIBDIR} ${APP_LIBS} ${SHLINK_TGT_F}${TGT[0]} ${SHLINK_SRC_F}${SRC}", False)
 
 @extension('.c')
 def c_hook(self, node):
