@@ -75,6 +75,7 @@ def get_configuration(compiler_type=None):
 
     # Unix-like default (basically works everwhere but windows)
     env = {"PYCC_NAME": compiler_type}
+    env["LIBDIR"] = []
     if compiler_type == "unix":
         for k in ["CC", "CXX", "OPT", "CFLAGS", "CCSHARED",
                   "LDSHARED", "SO", "LINKCC"]:
