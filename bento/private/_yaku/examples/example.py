@@ -1,4 +1,5 @@
 import sys
+import os
 
 from yaku.task_manager \
     import \
@@ -9,26 +10,28 @@ from yaku.scheduler \
 from yaku.context \
     import \
         get_bld, get_cfg
-
-from yaku.tools.gcc import detect as gcc_detect
-from yaku.tools.gfortran import detect as gfortran_detect
+import yaku.errors
 
 def configure(ctx):
-    ctx.use_tools(["pyext", "ctasks", "tpl_tasks", "cython",
+    ctx.use_tools(["pyext", "ctasks", "tpl_tasks",
                    "fortran", "swig"], ["tools"])
+    try:
+        ctx.use_tools(["cython"])
+    except yaku.errors.ToolNotFound:
+        raise RuntimeError("Cython not found - please install Cython!")
     ctx.env.update({
             #"SWIG": ["swig"],
             #"SWIGFLAGS": ["-python"],
             "SUBST_DICT": {"VERSION": "0.0.2"}})
-
-    gcc_detect(ctx)
-    gfortran_detect(ctx)
+    import numpy.distutils
+    for p in numpy.distutils.misc_util.get_numpy_include_dirs()[::-1]:
+        ctx.env["CPPPATH"].insert(0, p)
 
 def build(ctx):
     pyext = ctx.builders["pyext"]
-    create_sources(ctx, "template", sources=["src/foo.h.in"])
-    pyext.extension("_bar", ["src/hellomodule.c", "src/foo.c"])
-    pyext.extension("_von", ["src/vonmises_cython.pyx"])
+    create_sources(ctx, "template", sources=[os.path.join("src", "foo.h.in")])
+    pyext.extension("_bar", [os.path.join("src", f) for f in ["hellomodule.c", "foo.c"]])
+    pyext.extension("_von", [os.path.join("src/vonmises_cython.pyx")])
     #create_pyext(ctx, "_fortran_yo", ["src/bar.f"])
     #create_pyext(ctx, "_swig_yo", ["src/yo.i"])
 

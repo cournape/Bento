@@ -16,7 +16,7 @@ from yaku.tools \
         import_tools
 from yaku.utils \
     import \
-        ensure_dir
+        ensure_dir, rename
 
 class ConfigureContext(object):
     def __init__(self):
@@ -108,12 +108,7 @@ class BuildContext(object):
             dump(self.cache, tmp_fid)
         finally:
             tmp_fid.close()
-
-        try:
-            os.unlink(BUILD_CACHE)
-        except OSError:
-            pass
-        os.rename(BUILD_CACHE + ".tmp", BUILD_CACHE)
+        rename(BUILD_CACHE + ".tmp", BUILD_CACHE)
 
 def myopen(filename, mode="r"):
     if "w" in mode:
@@ -129,18 +124,8 @@ def get_cfg():
         finally:
             fid.close()
 
-    if os.path.exists(BUILD_CONFIG):
-        fid = myopen(BUILD_CONFIG, "rb")
-        try:
-            load_tools(ctx, fid)
-        finally:
-            fid.close()
-
-    if os.path.exists(DEFAULT_ENV):
-        env = Environment()
-        env.load(DEFAULT_ENV)
-    else:
-        env = Environment()
+    # XXX: how to reload existing environment ?
+    env = Environment()
     if not env.has_key("BLDDIR"):
         env["BLDDIR"] = BUILD_DIR
     # FIXME: nothing to do here

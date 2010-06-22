@@ -3,6 +3,12 @@ import sys
 import distutils.unixccompiler
 import distutils.ccompiler
 import distutils.sysconfig
+import distutils.command.build_ext as build_ext
+import distutils.dist as dist
+
+from distutils \
+    import \
+        errors
 
 UNIX_ENV_ATTR = {
         "CC": "compiler",
@@ -16,7 +22,46 @@ MSVC_ENV_ATTR = {
         "CC": "cc",
         "CXX": "cc",
         "CFLAGS": "compile_options",
+        "LDSHARED": "linker",
+        "LINKCC": "linker",
 }
+
+DEFAULT_COMPILERS = {
+        "win32": [None, "mingw32"],
+        "default": [None]
+}
+
+def _mingw32_cc():
+    compiler_type = "mingw32"
+    compiler = distutils.ccompiler.new_compiler(compiler=compiler_type)
+    return compiler.compiler_so
+
+def detect_distutils_cc(ctx):
+    if not sys.platform in DEFAULT_COMPILERS:
+        plat = "default"
+    else:
+        plat = sys.platform
+
+    sys.stderr.write("Detecting distutils C compiler... ")
+    compiler_type = \
+            distutils.ccompiler.get_default_compiler()
+    if sys.platform == "win32":
+        if compiler_type == "msvc":
+            try:
+                compiler = distutils.ccompiler.new_compiler(
+                        compiler="msvc")
+                compiler.initialize()
+                cc = [compiler.cc]
+            except errors.DistutilsPlatformError:
+                cc = _mingw32_cc()
+        else:
+            cc = _mingw32_cc()
+    else:
+        cc = distutils.sysconfig.get_config_var("CC")
+        # FIXME: use shlex for proper escaping handling
+        cc = cc.split()
+    sys.stderr.write("%s\n" % compiler_type)
+    return cc
 
 # XXX: unixccompiler instances are the only classes where we can hope
 # to get semi-sensical data. Reusing them also makes transition easier
@@ -29,34 +74,25 @@ def get_configuration(compiler_type=None):
         compiler_type = distutils.ccompiler.get_default_compiler(plat)
 
     # Unix-like default (basically works everwhere but windows)
-    env = {
-            "LIBS": [],
-            "INCPATH_FMT": "-I%s",
-            "LIBPATH_FMT": "-L%s",
-            "LIBS_FMT": "-l%s",
-            "CPPDEF_FMT": "-D%s",
-            }
+    env = {"PYCC_NAME": compiler_type}
+    env["LIBDIR"] = []
+    env["OBJ_SUFFIX"] = ".o"
     if compiler_type == "unix":
         for k in ["CC", "CXX", "OPT", "CFLAGS", "CCSHARED",
-                  "LDSHARED", "SO", "LINKCC"]:
+                  "LDSHARED", "LINKCC"]:
             var = distutils.sysconfig.get_config_var(k)
             # FIXME: Splitting most likely needs to be smarter to take
             # quote into account - OTOH, many compilers don't handle
             # quote in directories/CPP variables (Does C89 say
             # something about it ?)
             env[k] = var.split(" ")
+        env["SO"] = distutils.sysconfig.get_config_var("SO")
     elif compiler_type == "msvc":
-        # XXX: not tested
-        compiler = distutils.ccompiler.new_compiler(
-                compiler=compiler_type)
-        compiler.initialize()
-        for k, v in MSVC_ENV_ATTR.items():
-            env[k] = getattr(compiler, v)
-        env.update({"LIBS": [],
-                "INCPATH_FMT": "/I%s",
-                "LIBPATH_FMT": "/L%s",
-                "LIBS_FMT": "%s.lib",
-                "CPPDEF_FMT": "/D%s"})
+        env["SO"] = ".pyd"
+        try:
+            setup_msvc(env)
+        except errors.DistutilsPlatformError, e:
+            setup_mingw(env)
     else:
         compiler = distutils.ccompiler.new_compiler(
                 compiler=compiler_type)
@@ -76,3 +112,22 @@ def get_configuration(compiler_type=None):
             env["LIBS"] = compiler.dll_libraries or []
 
     return env
+
+def _get_ext_library_dirs():
+    binst = build_ext.build_ext(dist.Distribution())
+    binst.initialize_options()
+    binst.finalize_options()
+    return binst.library_dirs
+
+def setup_msvc(env):
+    compiler = distutils.ccompiler.new_compiler(
+            compiler="msvc")
+    compiler.initialize()
+
+    for k, v in MSVC_ENV_ATTR.items():
+        env[k] = getattr(compiler, v)
+    env["LDSHARED"] = [env["LDSHARED"]] + compiler.ldflags_shared
+    env["CCSHARED"] = []
+    env["OPT"] = compiler.compile_options
+    env["LIBDIR"] = _get_ext_library_dirs()
+    env["OBJ_SUFFIX"] = ".obj"

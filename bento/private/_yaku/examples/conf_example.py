@@ -11,14 +11,10 @@ from yaku.conftests \
         check_compiler, check_header, check_func, check_lib, check_type, generate_config_h
 
 def configure(conf):
-    from yaku.tools.gcc import detect
-
     conf.use_tools(["ctasks"])
 
     log_filename = os.path.join("build", "config.log")
     ensure_dir(log_filename)
-
-    detect(conf)
 
     conf.log = open(log_filename, "w")
     try:

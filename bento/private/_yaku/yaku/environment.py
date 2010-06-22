@@ -3,7 +3,7 @@ import os
 
 from yaku.utils \
     import \
-        ensure_dir
+    ensure_dir, rename
 
 re_imp = re.compile('^(#)*?([^#=]*?)\ =\ (.*?)$', re.M)
 
@@ -19,15 +19,12 @@ class Environment(dict):
         tmp = filename + ".tmp"
         ensure_dir(tmp)
         fid = open(tmp, "w")
-        for k in sorted(self.keys()):
-            fid.write("%s = %r\n" % (k, self[k]))
-
         try:
-            os.unlink(filename)
-        except OSError:
-            pass
-
-        os.rename(tmp, filename)
+            for k in sorted(self.keys()):
+                fid.write("%s = %r\n" % (k, self[k]))
+        finally:
+            fid.close()
+        rename(tmp, filename)
 
     def load(self, filename):
         f = open(filename)

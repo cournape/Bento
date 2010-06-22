@@ -1,6 +1,10 @@
 import re
 import os
 
+from yaku.compat.rename \
+    import \
+        rename
+
 def ensure_dir(path):
     dirname = os.path.dirname(path)
     if not os.path.exists(dirname):
@@ -78,6 +82,17 @@ def find_deps(node, cpppaths=["/usr/include", "."]):
 
     _find_deps(node)
     return nodes
+
+def find_program(program, path_list=None):
+    if path_list is None:
+        path_list = os.environ["PATH"].split(os.pathsep)
+
+    for p in path_list:
+        ppath = os.path.join(p, program)
+        if os.path.exists(ppath):
+            return ppath
+
+    return None
 
 if __name__ == "__main__":
     print find_deps("tutorial.c", ["."])

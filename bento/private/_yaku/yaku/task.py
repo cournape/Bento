@@ -4,6 +4,10 @@ try:
 except ImportError:
     from md5 import md5
 import subprocess
+import __builtin__
+if not hasattr(__builtin__, "WindowsError"):
+    class WindowsError(Exception):
+        pass
 
 from cPickle \
     import \
@@ -90,8 +94,12 @@ class Task(object):
                 pprint('GREEN', " ".join(cmd))
             else:
                 pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join([os.path.basename(i) for i in self.outputs])))
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
-        if p.returncode:
-            raise TaskRunFailure("cmd %s failed: %s" % (" ".join(cmd), stderr))
+
+        try:
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT)
+            stdout = p.communicate()[0]
+            if p.returncode:
+                raise TaskRunFailure("cmd %s failed: %s" % (" ".join(cmd), stdout))
+        except WindowsError, e:
+            raise TaskRunFailure("cmd %s failed: %s" % (" ".join(cmd), str(e)))

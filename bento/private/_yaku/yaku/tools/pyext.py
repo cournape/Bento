@@ -1,6 +1,12 @@
+import sys
 import os
 import copy
 import distutils
+import re
+
+from subprocess \
+    import \
+        Popen, PIPE, STDOUT
 
 from yaku.task_manager \
     import \
@@ -8,7 +14,7 @@ from yaku.task_manager \
         CompiledTaskGen, set_extension_hook
 from yaku.sysconfig \
     import \
-        get_configuration
+        get_configuration, detect_distutils_cc
 from yaku.compiled_fun \
     import \
         compile_fun
@@ -18,34 +24,67 @@ from yaku.task \
 from yaku.utils \
     import \
         ensure_dir
-# FIXME: should be done dynamically
-from yaku.tools.gcc \
-    import \
-        detect as gcc_detect
 from yaku.conftests \
     import \
         check_compiler, check_header
 
-pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} -o ${TGT[0]} ${SRC}", False)
+import yaku.tools
 
-pycc, pycc_vars = compile_fun("pycc", "${PYEXT_SHCC} ${PYEXT_CCSHARED} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} -o ${TGT[0]} -c ${SRC}", False)
+pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_LINK_TGT_F}${TGT[0]} ${PYEXT_LINK_SRC_F}${SRC}", False)
 
+pycc, pycc_vars = compile_fun("pycc", "${PYEXT_SHCC} ${PYEXT_CCSHARED} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0]} ${PYEXT_CC_SRC_F}${SRC}", False)
+
+# pyext env <-> sysconfig env conversion
 _SYS_TO_PYENV = {
         "PYEXT_SHCC": "CC",
         "PYEXT_CCSHARED": "CCSHARED",
         "PYEXT_SHLINK": "LDSHARED",
-        "PYEXT_SO": "SO",
+        "PYEXT_SUFFIX": "SO",
         "PYEXT_CFLAGS": "CFLAGS",
         "PYEXT_OPT": "OPT",
-        "PYEXT_LIBS": "LIBS",
-        "PYEXT_INCPATH_FMT": "INCPATH_FMT",
+        "PYEXT_LIBDIR": "LIBDIR",
 }
 
-def get_pyenv():
-    sysenv = get_configuration()
+_PYENV_REQUIRED = [
+        "LIBDIR_FMT",
+        "LIBS",
+        "LIB_FMT",
+        "CPPPATH_FMT",
+        "CC_TGT_F",
+        "CC_SRC_F",
+        "LINK_TGT_F",
+        "LINK_SRC_F",
+]
+
+_SYS_TO_CCENV = {
+        "CC": "CC",
+        "SHCC": "CCSHARED",
+        "SHLINK": "LDSHARED",
+        "SO": "SO",
+        "CFLAGS": "CFLAGS",
+        "OPT": "OPT",
+        "LIBDIR": "LIBDIR",
+        "LIBDIR_FMT": "LIBDIR_FMT",
+        "LIBS": "LIBS",
+        "LIB_FMT": "LIB_FMT",
+        "CPPPATH_FMT": "CPPPATH_FMT",
+        "CC_TGT_F": "CC_TGT_F",
+        "CC_SRC_F": "CC_SRC_F",
+}
+
+def get_pyenv(ctx):
     pyenv = {}
+    sysenv = get_configuration()
     for i, j in _SYS_TO_PYENV.items():
         pyenv[i] = sysenv[j]
+    pyenv["PYEXT_FMT"] = "%%s%s" % sysenv["SO"]
+    pyenv["PYEXT_OBJ_FMT"] = "%%s%s" % sysenv["OBJ_SUFFIX"]
+
+    for k in _PYENV_REQUIRED:
+        pyenv["PYEXT_%s" % k] = ctx.env[k]
+    ## FIXME: how to deal with CC* namespace ?
+    #for i, j in _SYS_TO_CCENV.items():
+    #    pyenv[i] = sysenv[j]
     pyenv["PYEXT_CPPPATH"] = [distutils.sysconfig.get_python_inc()]
     pyenv["PYEXT_SHLINKFLAGS"] = []
     return pyenv
@@ -60,9 +99,11 @@ def pycc_task(self, node):
     # XXX: hack to avoid creating build/build/... when source is
     # generated. Dealing with this most likely requires a node concept
     if not os.path.commonprefix([self.env["BLDDIR"], base]):
-        target = os.path.join(self.env["BLDDIR"], base + ".o")
+        target = os.path.join(self.env["BLDDIR"],
+                self.env["PYEXT_OBJ_FMT"] % base)
     else:
-        target = base + ".o"
+        target = self.env["PYEXT_OBJ_FMT"] % base
+
     ensure_dir(target)
     task = Task("pycc", inputs=node, outputs=target)
     task.env_vars = pycc_vars
@@ -72,7 +113,8 @@ def pycc_task(self, node):
 
 def pylink_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    target = os.path.join(self.env["BLDDIR"], name + ".so")
+    target = os.path.join(self.env["BLDDIR"],
+            self.env["PYEXT_FMT"] % name)
     ensure_dir(target)
     task = Task("pylink", inputs=objects, outputs=target)
     task.func = pylink
@@ -93,11 +135,57 @@ class PythonBuilder(object):
 def get_builder(ctx):
     return PythonBuilder(ctx)
 
-def configure(ctx):
-    gcc_detect(ctx)
-    check_compiler(ctx)
+CC_SIGNATURE = {
+        "gcc": re.compile("gcc version"),
+        "msvc": re.compile("Microsoft \(R\) 32-bit C/C\+\+ Optimizing Compiler")
+}
 
-    ctx.env.update(get_pyenv())
+def detect_cc_type(ctx, cc_cmd):
+    cc_type = None
+
+    def detect_type(vflag):
+        cmd = cc_cmd + [vflag]
+        try:
+            p = Popen(cmd, stdout=PIPE, stderr=STDOUT)
+            out = p.communicate()[0]
+            for k, v in CC_SIGNATURE.items():
+                m = v.search(out)
+                if m:
+                    return k
+        except OSError:
+            pass
+        return None
+
+    sys.stderr.write("Detecting CC type... ")
+    if sys.platform == "win32":
+        for v in [""]:
+            cc_type = detect_type(v)
+    else:
+        for v in ["-v", "-V", "-###"]:
+            cc_type = detect_type(v)
+            if cc_type:
+                break
+        if cc_type is None:
+            cc_type = "cc"
+    sys.stderr.write("%s\n" % cc_type)
+    return cc_type
+
+def configure(ctx):
+    # What to do here:
+    # - get default compiler for host
+    # - check that it is found
+    # - check that it works
+
+    cc = detect_distutils_cc(ctx)
+    cc_type = detect_cc_type(ctx, cc)
+    sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
+    try:
+        mod = __import__(cc_type)
+        mod.setup(ctx)
+    finally:
+        sys.path.pop(0)
+
+    ctx.env.update(get_pyenv(ctx))
 
 def create_pyext(bld, env, name, sources):
     base = name.replace(".", os.sep)
@@ -134,7 +222,7 @@ def apply_libs(task_gen):
             task_gen.env["LIBS_FMT"] % lib for lib in libs]
 
 def apply_libpath(task_gen):
-    libdir = task_gen.env["LIBDIR"]
+    libdir = task_gen.env["PYEXT_LIBDIR"] + task_gen.env["LIBDIR"]
     implicit_paths = set([
         os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
         for s in task_gen.sources])
@@ -150,5 +238,5 @@ def apply_cpppath(task_gen):
         for s in task_gen.sources])
     cpppaths = list(implicit_paths) + cpppaths
     task_gen.env["PYEXT_INCPATH"] = [
-            task_gen.env["PYEXT_INCPATH_FMT"] % p
+            task_gen.env["PYEXT_CPPPATH_FMT"] % p
             for p in cpppaths]
