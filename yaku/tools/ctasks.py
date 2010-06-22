@@ -77,7 +77,7 @@ def apply_cpppath(task_gen):
 def apply_libs(task_gen):
     libs = task_gen.env["LIBS"]
     task_gen.env["APP_LIBS"] = [
-            task_gen.env["LIBS_FMT"] % lib for lib in libs]
+            task_gen.env["LIB_FMT"] % lib for lib in libs]
 
 def apply_libdir(task_gen):
     libdir = task_gen.env["LIBDIR"]
