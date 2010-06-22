@@ -74,7 +74,7 @@ class SectionWriter(object):
             "pythonfiles": build_python_files,
             "datafiles": build_data_files,
             "extension": build_distutils.build_extensions,
-            "executable": build_executables
+            "executables": build_executables
         }
         self.sections = {}
         for k in self.sections_callbacks:
@@ -103,7 +103,7 @@ def build_python_files(pkg):
     for m in pkg.py_modules:
         python_files.append(os.path.join(root_src, '%s.py' % m))
     py_section = InstalledSection("pythonfiles", "library",
-            root_src, "$sitedir", python_files)
+            "$_srcrootdir", "$sitedir", python_files)
 
     return {"library": py_section}
 
@@ -112,6 +112,7 @@ def build_data_files(pkg):
     # Get data files
     for name, data_section in pkg.data_files.items():
         data_section.files = data_section.resolve_glob()
+        data_section.source_dir = os.path.join("$_srcrootdir", data_section.source_dir)
         ret[name] = InstalledSection.from_data_files(name, data_section)
 
     return ret

@@ -101,6 +101,16 @@ def get_script_header(executable=SYS_EXECUTABLE, wininst=False):
     hdr = "#!%(executable)s%(options)s\n" % locals()
     return hdr
 
+def create_scripts(executables, bdir):
+    ret = {}
+
+    for name, executable in executables.items():
+        if sys.platform == "win32":
+            ret[name] = create_win32_script(name, executable, bdir)
+        else:
+            ret[name] = create_posix_script(name, executable, bdir)
+    return ret
+
 def create_win32_script(name, executable, bdir):
     script_text = SCRIPT_TEXT % {"python_exec": SYS_EXECUTABLE,
             "module": executable.module,

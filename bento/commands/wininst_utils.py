@@ -3,6 +3,9 @@ import os
 import string
 import time
 
+from cStringIO \
+    import \
+        StringIO
 from distutils.util import \
         get_platform
 from distutils.sysconfig import \

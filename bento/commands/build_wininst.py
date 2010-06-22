@@ -54,13 +54,14 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
         ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
         create_wininst(ipkg)
 
-def create_wininst(ipkg, egg_info=None):
+def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
     meta = PackageMetadata.from_ipkg(ipkg)
     if egg_info is None:
         egg_info = EggInfo.from_ipkg(ipkg)
 
     # XXX: do this correctly, maybe use same as distutils ?
-    wininst = wininst_filename(os.path.join("bento", meta.fullname))
+    if wininst is None:
+        wininst = wininst_filename(os.path.join("dist", meta.fullname))
     ensure_dir(wininst)
 
     egg_info_dir = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
@@ -75,7 +76,7 @@ def create_wininst(ipkg, egg_info=None):
         ipkg.path_variables["sitedir"] = "PURELIB"
         ipkg.path_variables["gendatadir"] = "$sitedir"
 
-        file_sections = ipkg.resolve_paths()
+        file_sections = ipkg.resolve_paths(src_root_dir)
 
         def write_content(source, target, kind):
             zid.write(source, target)
