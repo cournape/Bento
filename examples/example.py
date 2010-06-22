@@ -23,6 +23,9 @@ def configure(ctx):
             #"SWIG": ["swig"],
             #"SWIGFLAGS": ["-python"],
             "SUBST_DICT": {"VERSION": "0.0.2"}})
+    import numpy.distutils
+    for p in numpy.distutils.misc_util.get_numpy_include_dirs()[::-1]:
+        ctx.env["CPPPATH"].insert(0, p)
 
 def build(ctx):
     pyext = ctx.builders["pyext"]
