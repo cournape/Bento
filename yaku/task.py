@@ -4,6 +4,10 @@ try:
 except ImportError:
     from md5 import md5
 import subprocess
+import __builtin__
+if not hasattr(__builtin__, "WindowsError"):
+    class WindowsError(Exception):
+        pass
 
 from cPickle \
     import \
