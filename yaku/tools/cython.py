@@ -1,4 +1,5 @@
 import os
+import sys
 
 from yaku.task_manager \
     import \
@@ -11,7 +12,8 @@ from yaku.compiled_fun \
         compile_fun
 from yaku.utils \
     import \
-        ensure_dir
+        ensure_dir, find_program
+import yaku.errors
 
 @extension(".pyx")
 def cython_task(self, node):
@@ -26,3 +28,17 @@ def cython_task(self, node):
     compile_task = get_extension_hook(".c")
     ctask = compile_task(self, target)
     return [task] + ctask
+
+def configure(ctx):
+    sys.stderr.write("Looking for cython... ")
+    if detect(ctx):
+        sys.stderr.write("yes\n")
+    else:
+        sys.stderr.write("no!\n")
+        raise yaku.errors.ToolNotFound()
+
+def detect(ctx):
+    if find_program("cython") is None:
+        return False
+    else:
+        return True

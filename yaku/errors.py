@@ -1,5 +1,8 @@
-class Yaku(Exception):
+class YakuError(Exception):
     pass
 
-class TaskRunFailure(Exception):
+class TaskRunFailure(YakuError):
+    pass
+
+class ToolNotFound(YakuError):
     pass
