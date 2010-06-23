@@ -1,6 +1,0 @@
-2010-05-24 David Cournapeau <cournape@gmail.com>
-
-    * Remove the ability to use custom filename for the bento script
-    (hardcoded to bento.info). Supporting custom filenames becomes too
-    difficult Since we now support hooks, we need to know the hook file early
-    on, which is incompatible with custom file
