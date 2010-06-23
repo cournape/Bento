@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import tarfile
 
 from bento.compat.api \
     import \
@@ -30,6 +31,10 @@ Usage:   bentomaker distcheck [OPTIONS]."""
     def run(self, ctx):
         pprint('BLUE', "Distcheck...")
         bentomaker_script = os.path.abspath(sys.argv[0])
+        if sys.platform == "win32":
+            bentomaker_script = [sys.executable, bentomaker_script]
+        else:
+            bentomaker_script = [bentomaker_script]
 
         pprint('PINK', "\t-> Running sdist...")
         sdist = get_command("sdist")()
@@ -49,22 +54,28 @@ Usage:   bentomaker distcheck [OPTIONS]."""
         os.chdir(DISTCHECK_DIR)
         try:
             pprint('PINK', "\t-> Extracting sdist...")
-            check_call(["tar", "-xzf", tarname])
+            tarball = tarfile.TarFile.gzopen(tarname)
+            tarball.extractall()
             os.chdir(tardir)
 
             pprint('PINK', "\t-> Configuring from sdist...")
-            check_call([bentomaker_script, "configure", "--prefix=tmp"])
+            check_call(bentomaker_script + ["configure", "--prefix=tmp"])
 
             pprint('PINK', "\t-> Building from sdist...")
-            check_call([bentomaker_script, "build"])
+            check_call(bentomaker_script + ["build"])
 
             pprint('PINK', "\t-> Building egg from sdist...")
-            check_call([bentomaker_script, "build_egg"])
+            check_call(bentomaker_script + ["build_egg"])
+
+            if sys.platform == "win32":
+                pprint('PINK', "\t-> Building wininst from sdist...")
+            check_call(bentomaker_script + ["build_wininst"])
+
 
             if "test" in get_command_names():
                 pprint('PINK', "\t-> Testing from sdist...")
                 try:
-                    check_call([bentomaker_script, "test"])
+                    check_call(bentomaker_script + ["test"])
                 except CalledProcessError, e:
                     raise CommandExecutionFailure(
                             "test command failed")
