@@ -1,29 +1,60 @@
 Version 0.0.3
 =============
 
-Not released yet:
+Not released yet. Main features:
 
-    - Renamed from toydist to bento
     - Add hooks to customize arbitrary stages in bento
-    - Better command line organization/help
-    - Use custom framework for building C extensions, with the
-      following features:
-        - parallel build support
-        - files are automatically rebuilt if they are out of date
-          (checksum of the content)
-        - designed to be easier to customize (hook based instead of
-          subclasses)
-        - simple (core ~ 1000 LOC)
-    - Hook mechanism: preliminary API to add new commands and
-      customize existing ones. A proof of concept of a waf-based build
-      command may be found in the examples/hook directory. The API is
-      likely to change
+    - Parallel and reliable build of C extensions through yaku build
+      library.
     - One file distribution: no need for your users to install any new
       packages, just include one single file into your package to
       build with bento
-    - Proof of concept for a distcheck command (to check your
-      packaging)
     - Improved documentation
+
+Toydist renamed to bento
+------------------------
+
+Bento means lunchbox in Japanese. Bento are often well packaged, and
+this software aims at doing the same for your python package.
+
+Hook mechanism
+--------------
+
+It is now possible to override some bento commands with a hook file
+which is just a python script. Although not well documented yet, it
+should enable complex customization, like interfacing with a build
+system (waf, scons, make), dynamically modify the package content,
+etc... the examples/hooks directory contains a few simple examples.
+
+Yaku, build mini-framework
+--------------------------
+
+In version 0.0.2, bento still depended on distutils internally to
+build extensions. Bento now uses yaku, a mini build framework. Yaku
+main features are:
+
+    - File content-based tracking: if a file content is changed, it is
+      automatically rebuild
+    - Environment changes detection: if the compilation options
+      change, the files are automatically rebuilt
+    - Multiple jobs execution (experimental)
+    - Easily customizable
+
+It should noted that bento was conceived to remain agnostic to the
+build system, and will remain so. In particular, projects with complex
+build issues are advised to use make, scons or waf. Future versions of
+bento will contain helpers for some of those tools.
+
+One file distribution
+---------------------
+
+Bento now includes a one file distribution of itself, so that you only
+need to include that one file in your project to use bento. The file
+weights ~350 kb, and can be reduced to ~80 kb if you don't need to
+include windows binary installer support.
+
+Improved command line interface
+-------------------------------
 
 Internal changes:
 
