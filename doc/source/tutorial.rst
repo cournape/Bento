@@ -71,7 +71,58 @@ You simply write::
 Adding data files
 =================
 
-TODO
+Besides packages and modules, you may want to add extra files, like
+configuration, manpages, documentation, etc... Those are called data files.
+Bento has a simple but powerful way to install arbitrary data in arbitrary
+locations.
+
+Say our fubar software has one manpage fubar.1::
+
+    fubar/fubar.1
+
+We need to add the following to bento.info::
+
+    DataFiles: manpage
+        TargetDir: /usr/man/man1
+        Files: fubar.1
+
+This will install the file fubar.1 into /usr/man/man1.
+
+Flexible install scheme
+-----------------------
+
+Hardcoding the target directory as above is not flexibe. The user may want to
+install the package somewhere else. Bento defines a set of variable paths which
+are customizable, with platform-specific defaults (TODO: list). For manpages,
+the variable is mandir::
+
+    DataFiles: manpage
+        TargetDir: $mandir/man1
+        Files: fubar.1
+
+Now, the installation path is customizable, e.g.::
+
+    bentomaker configure --mandir=/opt/man
+
+will cause the target directory to translate to /opt/man/man1. Note that if
+directories are included in the values in Field, those are used to determine
+the install directory, e.g.::
+
+    DataFiles: manpage
+        TargetDir: $mandir
+        Files: man1/fubar.1, man3/barfu.3
+
+will install man1/fubar1 as $mandir/man1/fubar.1 and man3/barfu.3 as
+$mandir/man3/barfu.3. To avoid this behavior, you need to use the SourceDir
+option::
+
+    DataFiles: manpage
+        TargetDir: $mandir
+        SourceDir: man1
+        Files: fubar.1
+
+will install man1/fubar.1 as $mandir/fubar.1. Last, you can define your own new
+path variables (TODO: path variable section).
 
 Adding extensions
 =================
