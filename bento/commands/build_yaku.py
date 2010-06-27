@@ -20,10 +20,11 @@ def build_extension(bld, pkg, inplace, verbose):
     ret = {}
     all_outputs = {}
     for ext in pkg.extensions.values():
+        builder = bld.builders["pyext"]
         try:
             if verbose:
-                bld.builders["pyext"].env["VERBOSE"] = True
-            outputs = bld.builders["pyext"].extension(ext.name, ext.sources)
+                builder.env["VERBOSE"] = True
+            outputs = builder.extension(ext.name, ext.sources)
             all_outputs[ext.name] = outputs
         except RuntimeError, e:
             msg = "Building extension %s failed: %s" % (ext.name, str(e))
