@@ -41,11 +41,18 @@ class ConfigureContext(object):
     def use_tools(self, tools, tooldir=None):
         ret = {}
         for t in tools:
-            _t = self.load_tool(t, tooldir)
+            if t in self._tool_modules:
+                _t = self._tool_modules[t]
+            else:
+                _t = self.load_tool(t, tooldir)
             ret[t] = _t
         for mod in self._tool_modules.values():
             mod.configure(self)
         return ret
+
+    def setup_tools(self):
+        for mod in self._tool_modules.values():
+            mod.configure(self)
 
     def store(self):
         self.env.store(DEFAULT_ENV)
