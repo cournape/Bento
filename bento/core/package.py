@@ -9,7 +9,7 @@ from bento.core.pkg_objects import \
 from bento.core.meta import \
         _set_metadata, _METADATA_FIELDS
 from bento.core.utils import \
-        find_package, expand_glob
+        find_package, expand_glob, unnormalize_path
 from bento.core.parser.api \
     import \
         parse_to_dict
@@ -95,6 +95,10 @@ class PackageDescription:
         if not extensions:
             self.extensions = {}
         else:
+            if os.sep != "/":
+                for ext in extensions.values():
+                    sources = [unnormalize_path(s) for s in ext.sources]
+                    ext.sources = sources
             self.extensions = extensions
 
         if not extra_source_files:
