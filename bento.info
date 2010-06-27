@@ -56,8 +56,10 @@ Library:
         bento.core.platforms,
         bento.private,
         bento.private.ply,
+        bento.private.simplejson,
         bento.private._yaku.yaku,
         bento.private._yaku.yaku.tools,
+        bento.private._yaku.yaku.compat,
         bentomakerlib
 
 Executable: bentomaker
