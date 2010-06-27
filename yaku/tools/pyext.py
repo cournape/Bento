@@ -32,7 +32,7 @@ import yaku.tools
 
 pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_LINK_TGT_F}${TGT[0]} ${PYEXT_LINK_SRC_F}${SRC}", False)
 
-pycc, pycc_vars = compile_fun("pycc", "${PYEXT_SHCC} ${PYEXT_CCSHARED} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0]} ${PYEXT_CC_SRC_F}${SRC}", False)
+pycc, pycc_vars = compile_fun("pycc", "${PYEXT_CC} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0]} ${PYEXT_CC_SRC_F}${SRC}", False)
 
 # pyext env <-> sysconfig env conversion
 _SYS_TO_PYENV = {
@@ -72,21 +72,16 @@ _SYS_TO_CCENV = {
         "CC_SRC_F": "CC_SRC_F",
 }
 
-def get_pyenv(ctx):
+def setup_pyext_env(ctx, cc_type="default"):
     pyenv = {}
-    sysenv = get_configuration()
-    for i, j in _SYS_TO_PYENV.items():
-        pyenv[i] = sysenv[j]
-    pyenv["PYEXT_FMT"] = "%%s%s" % sysenv["SO"]
-    pyenv["PYEXT_OBJ_FMT"] = "%%s%s" % sysenv["OBJ_SUFFIX"]
-
-    for k in _PYENV_REQUIRED:
-        pyenv["PYEXT_%s" % k] = ctx.env[k]
-    ## FIXME: how to deal with CC* namespace ?
-    #for i, j in _SYS_TO_CCENV.items():
-    #    pyenv[i] = sysenv[j]
-    pyenv["PYEXT_CPPPATH"] = [distutils.sysconfig.get_python_inc()]
-    pyenv["PYEXT_SHLINKFLAGS"] = []
+    dist_env = get_configuration()
+    for name, value in dist_env.items():
+        pyenv["PYEXT_%s" % name] = value
+    pyenv["PYEXT_FMT"] = "%%s%s" % dist_env["SO"]
+    pyenv["PYEXT_CFLAGS"] = pyenv["PYEXT_BASE_CFLAGS"] + \
+            pyenv["PYEXT_OPT"] + \
+            pyenv["PYEXT_SHARED"]
+    pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
     return pyenv
 
 def pycc_hook(self, node):
@@ -100,9 +95,9 @@ def pycc_task(self, node):
     # generated. Dealing with this most likely requires a node concept
     if not os.path.commonprefix([self.env["BLDDIR"], base]):
         target = os.path.join(self.env["BLDDIR"],
-                self.env["PYEXT_OBJ_FMT"] % base)
+                self.env["PYEXT_CC_OBJECT_FMT"] % base)
     else:
-        target = self.env["PYEXT_OBJ_FMT"] % base
+        target = self.env["PYEXT_CC_OBJECT_FMT"] % base
 
     ensure_dir(target)
     task = Task("pycc", inputs=node, outputs=target)
@@ -176,16 +171,35 @@ def configure(ctx):
     # - check that it is found
     # - check that it works
 
+    dist_env = setup_pyext_env(ctx)
+    ctx.env.update(dist_env)
     cc = detect_distutils_cc(ctx)
     cc_type = detect_cc_type(ctx, cc)
+
+    _setup_compiler(ctx, cc_type)
+
+def _setup_compiler(ctx, cc_type):
+    old_env = ctx.env
+    ctx.env = {}
     sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
     try:
-        mod = __import__(cc_type)
-        mod.setup(ctx)
+        try:
+            mod = __import__(cc_type)
+            mod.setup(ctx)
+        except ImportError:
+            raise RuntimeError("No tool %s is available (import failed)" \
+                            % cc_type)
+
+        # XXX: this is ugly - find a way to have tool-specific env...
+        cc_env = ctx.env
+        ctx.env = old_env
+        copied_values = ["CPPPATH_FMT", "LIBDIR_FMT", "LIB_FMT",
+                "CC_OBJECT_FMT", "CC_TGT_F", "CC_SRC_F", "LINK_TGT_F",
+                "LINK_SRC_F"]
+        for k in copied_values:
+            ctx.env["PYEXT_%s" % k] = cc_env[k]
     finally:
         sys.path.pop(0)
-
-    ctx.env.update(get_pyenv(ctx))
 
 def create_pyext(bld, env, name, sources):
     base = name.replace(".", os.sep)
@@ -217,22 +231,21 @@ def create_pyext(bld, env, name, sources):
 
 # FIXME: find a way to reuse this kind of code between tools
 def apply_libs(task_gen):
-    libs = task_gen.env["LIBS"]
+    libs = task_gen.env["PYEXT_LIBS"]
     task_gen.env["PYEXT_APP_LIBS"] = [
-            task_gen.env["LIBS_FMT"] % lib for lib in libs]
+            task_gen.env["PYEXT_LIB_FMT"] % lib for lib in libs]
 
 def apply_libpath(task_gen):
-    libdir = task_gen.env["PYEXT_LIBDIR"] + task_gen.env["LIBDIR"]
+    libdir = task_gen.env["PYEXT_LIBDIR"]
     implicit_paths = set([
         os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
         for s in task_gen.sources])
     libdir = list(implicit_paths) + libdir
     task_gen.env["PYEXT_APP_LIBDIR"] = [
-            task_gen.env["LIBDIR_FMT"] % d for d in libdir]
+            task_gen.env["PYEXT_LIBDIR_FMT"] % d for d in libdir]
 
 def apply_cpppath(task_gen):
-    cpppaths = task_gen.env["CPPPATH"]
-    cpppaths.extend(task_gen.env["PYEXT_CPPPATH"])
+    cpppaths = task_gen.env["PYEXT_CPPPATH"]
     implicit_paths = set([
         os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
         for s in task_gen.sources])
