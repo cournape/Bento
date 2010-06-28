@@ -90,6 +90,8 @@ def get_configuration(compiler_type=None):
 
     elif compiler_type == "msvc":
         setup_msvc(env)
+    elif compiler_type == "mingw32":
+        setup_mingw32(env)
     else:
         raise ValueError("Gne ?")
 
@@ -113,3 +115,16 @@ def setup_msvc(env):
     env["SO"] = ".pyd"
     env["LDFLAGS"] = compiler.ldflags_shared
     env["LIBDIR"].extend( _get_ext_library_dirs())
+
+def setup_mingw32(env):
+    compiler = distutils.ccompiler.new_compiler(
+            compiler="mingw32")
+
+    env["CC"] = ["gcc"]
+    env["BASE_CFLAGS"].extend(["-mno-cygwin"])
+
+    env["SHLINK"] = ["gcc"]
+    env["SO"] = ".pyd"
+    #env["LDFLAGS"] = compiler.ldflags_shared
+    env["LIBDIR"].extend( _get_ext_library_dirs())
+    env["LIBS"].extend(compiler.dll_libraries)
