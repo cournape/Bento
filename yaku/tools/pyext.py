@@ -158,7 +158,7 @@ def detect_cc_type(ctx, cc_cmd):
 
     sys.stderr.write("Detecting CC type... ")
     if sys.platform == "win32":
-        for v in [""]:
+        for v in ["", "-v"]:
             cc_type = detect_type(v)
     else:
         for v in ["-v", "-V", "-###"]:
@@ -170,18 +170,47 @@ def detect_cc_type(ctx, cc_cmd):
     sys.stderr.write("%s\n" % cc_type)
     return cc_type
 
+def get_distutils_cc_exec(ctx, compiler_type="default"):
+    from distutils import ccompiler
+
+    sys.stderr.write("Detecting distutils CC exec ... ")
+    if compiler_type == "default":
+        compiler_type = \
+                distutils.ccompiler.get_default_compiler()
+
+    compiler = ccompiler.new_compiler(compiler=compiler_type)
+    if compiler_type == "msvc":
+        compiler.initialize()
+        cc = [compiler.cc]
+    else:
+        cc = compiler.compiler_so
+    sys.stderr.write("%s\n" % " ".join(cc))
+    return cc
+
 def configure(ctx):
-    # What to do here:
-    # - get default compiler for host
-    # - check that it is found
-    # - check that it works
+    # How we do it
+    # 1: for distutils-based configuration
+    #   - get compile/flags flags from sysconfig
+    #   - detect yaku tool name from CC used by distutils:
+    #       - get the compiler executable used by distutils ($CC
+    #       variable)
+    #       - try to determine yaku tool name from $CC
+    #   - apply necessary variables from yaku tool to $PYEXT_
+    #   "namespace"
+    compiler_type = ctx.builders["pyext"].compiler_type
 
-    dist_env = setup_pyext_env(ctx)
-    ctx.env.update(dist_env)
-    cc = detect_distutils_cc(ctx)
-    cc_type = detect_cc_type(ctx, cc)
+    USE_DISTUTILS = True
+    if USE_DISTUTILS:
+        dist_env = setup_pyext_env(ctx, compiler_type)
+        ctx.env.update(dist_env)
 
-    _setup_compiler(ctx, cc_type)
+        cc_exec = get_distutils_cc_exec(ctx, compiler_type)
+        yaku_cc_type = detect_cc_type(ctx, cc_exec)
+
+        _setup_compiler(ctx, yaku_cc_type)
+    else:
+        raise NotImplementedError(
+                "Only distutils mode implemented for now")
 
 def _setup_compiler(ctx, cc_type):
     old_env = ctx.env
