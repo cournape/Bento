@@ -189,11 +189,15 @@ def _main(popts):
         else:
             run_cmd(cmd_name, cmd_opts)
 
+import yaku.context
+
+# XXX: The yaku configure stuff is ugly, and introduces a lot of global state.
 class Context(object):
     def __init__(self, cmd, cmd_opts):
         self.cmd = cmd
         self.cmd_opts = cmd_opts
         self.help = False
+        self.yaku_configure_ctx = yaku.context.get_cfg()
 
     def get_package(self):
         state = get_configured_state()
@@ -203,21 +207,27 @@ class Context(object):
         state = get_configured_state()
         return state.user_data
 
+    def store(self):
+        self.yaku_configure_ctx.store()
+
 def run_cmd(cmd_name, cmd_opts):
     cmd = get_command(cmd_name)()
-    ctx = Context(cmd, cmd_opts)
     if get_command_override(cmd_name):
         cmd_func = get_command_override(cmd_name)[0]
     else:
         cmd_func = cmd.run
 
-    if get_pre_hooks(cmd_name) is not None:
-        for f in get_pre_hooks(cmd_name):
-            f[0](ctx)
-    cmd_func(ctx)
-    if get_post_hooks(cmd_name) is not None:
-        for f in get_post_hooks(cmd_name):
-            f[0](ctx)
+    ctx = Context(cmd, cmd_opts)
+    try:
+        if get_pre_hooks(cmd_name) is not None:
+            for f in get_pre_hooks(cmd_name):
+                f[0](ctx)
+        cmd_func(ctx)
+        if get_post_hooks(cmd_name) is not None:
+            for f in get_post_hooks(cmd_name):
+                f[0](ctx)
+    finally:
+        ctx.store()
 
 def noexc_main(argv=None):
     try:

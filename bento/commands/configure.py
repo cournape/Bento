@@ -176,10 +176,9 @@ Usage: bentomaker configure [OPTIONS]"""
         # subsequent commands
         pkg = PackageDescription.from_file(filename, flag_vals)
         if not self.user_data["use_distutils"]:
-            yaku_ctx = yaku.context.get_cfg()
+            yaku_ctx = ctx.yaku_configure_ctx
             if pkg.extensions:
                 yaku_ctx.use_tools(["pyext"])
-            yaku_ctx.store()
 
         s = ConfigureState(filename, pkg, scheme, flag_vals,
                            self.user_data)
