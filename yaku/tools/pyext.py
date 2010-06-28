@@ -181,6 +181,7 @@ def configure(ctx):
 def _setup_compiler(ctx, cc_type):
     old_env = ctx.env
     ctx.env = {}
+    cc_env = None
     sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
     try:
         try:
@@ -192,14 +193,15 @@ def _setup_compiler(ctx, cc_type):
 
         # XXX: this is ugly - find a way to have tool-specific env...
         cc_env = ctx.env
-        ctx.env = old_env
-        copied_values = ["CPPPATH_FMT", "LIBDIR_FMT", "LIB_FMT",
-                "CC_OBJECT_FMT", "CC_TGT_F", "CC_SRC_F", "LINK_TGT_F",
-                "LINK_SRC_F"]
-        for k in copied_values:
-            ctx.env["PYEXT_%s" % k] = cc_env[k]
     finally:
         sys.path.pop(0)
+        ctx.env = old_env
+
+    copied_values = ["CPPPATH_FMT", "LIBDIR_FMT", "LIB_FMT",
+            "CC_OBJECT_FMT", "CC_TGT_F", "CC_SRC_F", "LINK_TGT_F",
+            "LINK_SRC_F"]
+    for k in copied_values:
+        ctx.env["PYEXT_%s" % k] = cc_env[k]
 
 def create_pyext(bld, env, name, sources):
     base = name.replace(".", os.sep)
