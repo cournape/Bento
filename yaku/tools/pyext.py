@@ -74,7 +74,11 @@ _SYS_TO_CCENV = {
 
 def setup_pyext_env(ctx, cc_type="default"):
     pyenv = {}
-    dist_env = get_configuration()
+    if cc_type == "default":
+        dist_env = get_configuration()
+    else:
+        dist_env = get_configuration(cc_type)
+
     for name, value in dist_env.items():
         pyenv["PYEXT_%s" % name] = value
     pyenv["PYEXT_FMT"] = "%%s%s" % dist_env["SO"]
@@ -120,6 +124,7 @@ class PythonBuilder(object):
     def __init__(self, ctx):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
+        self.compiler_type = "default"
 
     def extension(self, name, sources, env=None):
         _env = copy.deepcopy(self.env)
