@@ -31,7 +31,7 @@ from yaku.conftests \
 
 import yaku.tools
 
-pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_LINK_TGT_F}${TGT[0]} ${PYEXT_LINK_SRC_F}${SRC}", False)
+pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0]} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS}", False)
 
 pycc, pycc_vars = compile_fun("pycc", "${PYEXT_CC} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0]} ${PYEXT_CC_SRC_F}${SRC}", False)
 
