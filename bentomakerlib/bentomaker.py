@@ -260,6 +260,9 @@ def noexc_main(argv=None):
     except bento.core.errors.BuildError, e:
         pprint('RED', e)
         sys.exit(8)
+    except bento.core.errors.InvalidPackage, e:
+        pprint('RED', e)
+        sys.exit(16)
     except Exception, e:
         if BENTOMAKER_DEBUG:
             tb = sys.exc_info()[2]

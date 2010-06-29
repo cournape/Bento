@@ -77,7 +77,7 @@ def expand_glob(pattern, ref_dir=None):
         glob_pattern = pattern
     matched = glob.glob(glob_pattern)
     if len(matched) < 1:
-        raise ValueError("no files following pattern %s found" % pattern)
+        raise IOError("no files following pattern %s found" % pattern)
 
     if ref_dir:
         return [relpath(i, ref_dir) for i in matched]

@@ -13,6 +13,9 @@ from bento.core.utils import \
 from bento.core.parser.api \
     import \
         parse_to_dict
+from bento.core.errors \
+    import \
+        InvalidPackage
 
 class PackageDescription:
     @classmethod
@@ -138,7 +141,10 @@ def file_list(pkg, root_src=""):
     # FIXME: root_src
     files = []
     for entry in pkg.extra_source_files:
-        files.extend(expand_glob(entry, root_src))
+        try:
+            files.extend(expand_glob(entry, root_src))
+        except IOError, e:
+            raise InvalidPackage("Error in ExtraSourceFiles entry: %s" % e)
 
     for p in pkg.packages:
         files.extend(find_package(p, root_src))
