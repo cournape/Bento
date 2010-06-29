@@ -103,6 +103,16 @@ def _get_ext_library_dirs():
     binst.finalize_options()
     return binst.library_dirs
 
+def _get_ext_libraries(compiler):
+    binst = build_ext.build_ext(dist.Distribution())
+    binst.compiler = compiler
+    binst.initialize_options()
+    binst.finalize_options()
+    class _FakeExt(object):
+        def __init__(self):
+            self.libraries = []
+    return binst.get_libraries(_FakeExt())
+
 def setup_msvc(env):
     compiler = distutils.ccompiler.new_compiler(
             compiler="msvc")
@@ -123,8 +133,11 @@ def setup_mingw32(env):
     env["CC"] = ["gcc"]
     env["BASE_CFLAGS"].extend(["-mno-cygwin"])
 
-    env["SHLINK"] = ["gcc"]
+    env["SHLINK"] = ["gcc", "-mno-cygwin", "-shared"]
     env["SO"] = ".pyd"
     #env["LDFLAGS"] = compiler.ldflags_shared
     env["LIBDIR"].extend( _get_ext_library_dirs())
-    env["LIBS"].extend(compiler.dll_libraries)
+
+    libs = _get_ext_libraries(compiler)
+    libs += compiler.dll_libraries 
+    env["LIBS"].extend(libs)
