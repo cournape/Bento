@@ -159,7 +159,7 @@ class InstalledPkgDescription(object):
                 for i in value.values():
                     i.srcdir = "$_srcrootdir"
                     file_sections.append(section_to_json(i))
-            elif tp in ["datafiles", "extension", "executables"]:
+            elif tp in ["datafiles", "extensions", "executables"]:
                 for i in value.values():
                     file_sections.append(section_to_json(i))
             else:

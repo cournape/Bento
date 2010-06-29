@@ -63,7 +63,7 @@ Usage:   bentomaker build [OPTIONS]."""
         pkg = s.pkg
 
         section_writer = SectionWriter()
-        section_writer.sections_callbacks["extension"] = \
+        section_writer.sections_callbacks["extensions"] = \
                 build_extensions
         section_writer.update_sections(pkg)
         section_writer.store(IPKG_PATH)
@@ -73,7 +73,7 @@ class SectionWriter(object):
         self.sections_callbacks = {
             "pythonfiles": build_python_files,
             "datafiles": build_data_files,
-            "extension": build_distutils.build_extensions,
+            "extensions": build_distutils.build_extensions,
             "executables": build_executables
         }
         self.sections = {}
