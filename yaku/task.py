@@ -100,6 +100,6 @@ class Task(object):
                                  stderr=subprocess.STDOUT)
             stdout = p.communicate()[0]
             if p.returncode:
-                raise TaskRunFailure("cmd %s failed: %s" % (" ".join(cmd), stdout))
+                raise TaskRunFailure(cmd, stdout)
         except WindowsError, e:
-            raise TaskRunFailure("cmd %s failed: %s" % (" ".join(cmd), str(e)))
+            raise TaskRunFailure(cmd, str(e))
