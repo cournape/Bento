@@ -52,6 +52,7 @@ from bento.commands.errors import \
 from bento.commands.hooks \
     import \
         get_pre_hooks, get_post_hooks, get_command_override
+import bento.core.errors
 
 if os.environ.get("BENTOMAKER_DEBUG", None) is not None:
     BENTOMAKER_DEBUG = True
@@ -256,6 +257,9 @@ def noexc_main(argv=None):
     except CommandExecutionFailure, e:
         pprint('RED', "".join(e.args))
         sys.exit(4)
+    except bento.core.errors.BuildError, e:
+        pprint('RED', e)
+        sys.exit(8)
     except Exception, e:
         if BENTOMAKER_DEBUG:
             tb = sys.exc_info()[2]

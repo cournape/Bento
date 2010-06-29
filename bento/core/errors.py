@@ -3,3 +3,6 @@ class BentoError(Exception):
 
 class InvalidPackage(BentoError):
     pass
+
+class BuildError(BentoError):
+    pass

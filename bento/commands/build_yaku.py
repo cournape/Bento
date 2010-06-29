@@ -15,6 +15,7 @@ from bento.core.utils \
 import yaku.task_manager
 import yaku.context
 import yaku.scheduler
+import yaku.errors
 
 def build_extension(bld, pkg, inplace, verbose):
     ret = {}
@@ -58,10 +59,20 @@ def build_extension(bld, pkg, inplace, verbose):
                 shutil.copy(o, target)
     return ret
 
+import bento.core.errors
+
 def build_extensions(pkg, inplace=False, verbose=False):
     bld = yaku.context.get_bld()
 
     try:
-        return build_extension(bld, pkg, inplace, verbose)
+        try:
+            return build_extension(bld, pkg, inplace, verbose)
+        except yaku.errors.TaskRunFailure, e:
+            if e.explain:
+                msg = e.explain
+            else:
+                msg = ""
+            msg += "command '%s' failed (see above)" % " ".join(e.cmd)
+            raise bento.core.errors.BuildError(msg)
     finally:
         bld.store()
