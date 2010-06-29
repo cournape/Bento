@@ -37,7 +37,6 @@ DataFiles: ply_data
     Files: parsetab
 
 ExtraSourceFiles:
-    NEWS,
     setup.py,
     bootstrap.py,
     tests/parsing/functionals/*.py,
