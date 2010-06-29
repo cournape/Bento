@@ -1,4 +1,5 @@
 import os
+import sys
 try:
     from hashlib import md5
 except ImportError:
@@ -101,5 +102,6 @@ class Task(object):
             stdout = p.communicate()[0]
             if p.returncode:
                 raise TaskRunFailure(cmd, stdout)
+            sys.stderr.write(stdout)
         except WindowsError, e:
             raise TaskRunFailure(cmd, str(e))
