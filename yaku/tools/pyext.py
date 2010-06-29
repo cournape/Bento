@@ -125,6 +125,7 @@ class PythonBuilder(object):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
         self.compiler_type = "default"
+        self.use_distutils = True
 
     def extension(self, name, sources, env=None):
         _env = copy.deepcopy(self.env)
@@ -199,8 +200,7 @@ def configure(ctx):
     #   "namespace"
     compiler_type = ctx.builders["pyext"].compiler_type
 
-    USE_DISTUTILS = True
-    if USE_DISTUTILS:
+    if ctx.builders["pyext"].use_distutils:
         dist_env = setup_pyext_env(ctx, compiler_type)
         ctx.env.update(dist_env)
 
