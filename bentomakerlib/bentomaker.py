@@ -197,7 +197,6 @@ class Context(object):
         self.cmd = cmd
         self.cmd_opts = cmd_opts
         self.help = False
-        self.yaku_configure_ctx = yaku.context.get_cfg()
 
     def get_package(self):
         state = get_configured_state()
@@ -208,6 +207,15 @@ class Context(object):
         return state.user_data
 
     def store(self):
+        pass
+
+class ConfigureContext(Context):
+    def __init__(self, cmd, cmd_opts):
+        Context.__init__(self, cmd, cmd_opts)
+        self.yaku_configure_ctx = yaku.context.get_cfg()
+
+    def store(self):
+        Context.store(self)
         self.yaku_configure_ctx.store()
 
 def run_cmd(cmd_name, cmd_opts):
@@ -217,7 +225,11 @@ def run_cmd(cmd_name, cmd_opts):
     else:
         cmd_func = cmd.run
 
-    ctx = Context(cmd, cmd_opts)
+    if cmd_name == "configure":
+        ctx = ConfigureContext(cmd, cmd_opts)
+    else:
+        ctx = Context(cmd, cmd_opts)
+
     try:
         if get_pre_hooks(cmd_name) is not None:
             for f in get_pre_hooks(cmd_name):
