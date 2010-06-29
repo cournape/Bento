@@ -4,6 +4,7 @@ import threading
 from yaku.task_manager \
     import \
         run_task, order_tasks, TaskManager
+import yaku.errors
 
 def run_tasks(ctx, tasks=None):
     if tasks is None:
@@ -34,13 +35,25 @@ class ParallelRunner(object):
         self.ctx = ctx
 
         self.worker_queue = Queue.Queue()
+        self.error_out = Queue.Queue()
+        self.failure_lock = threading.Lock()
+        self.stop = False
 
     def start(self):
         def _worker():
-            while True:
+            # XXX: this whole thing is an hack - find a better way to
+            # notify task execution failure to all worker threads
+            while not self.stop:
                 task = self.worker_queue.get()
-                run_task(self.ctx, task)
-                #task.run()
+                try:
+                    run_task(self.ctx, task)
+                except Exception, e:
+                    self.failure_lock.acquire()
+                    self.stop = True
+                    self.failure_lock.release()
+                    task.error_msg = e.explain
+                    task.error_cmd = e.cmd
+                    self.error_out.put(task)
                 self.worker_queue.task_done()
 
         for i in range(self.njobs):
@@ -56,8 +69,14 @@ class ParallelRunner(object):
             # XXX: we only join once we detect the worker queue to be empty, to
             # avoid blocking for a long time. This is naive, and will break if
             # the worker_queue is filled after this point
-            while True:
+            while not self.stop:
                 if self.worker_queue.empty():
                     self.worker_queue.join()
                     break
+            if not self.error_out.empty():
+                task = self.error_out.get()
+                msg = task.error_msg
+                cmd = task.error_cmd
+                raise yaku.errors.TaskRunFailure(cmd, msg)
+
             grp = self.task_manager.next_set()
