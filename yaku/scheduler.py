@@ -1,3 +1,5 @@
+import traceback
+import sys
 import Queue
 import threading
 
@@ -47,12 +49,21 @@ class ParallelRunner(object):
                 task = self.worker_queue.get()
                 try:
                     run_task(self.ctx, task)
-                except Exception, e:
+                except yaku.errors.TaskRunFailure, e:
                     self.failure_lock.acquire()
                     self.stop = True
                     self.failure_lock.release()
                     task.error_msg = e.explain
                     task.error_cmd = e.cmd
+                    self.error_out.put(task)
+                except Exception, e:
+                    exc_type, exc_value, tb = sys.exc_info()
+                    lines = traceback.format_exception(exc_type, exc_value, tb)
+                    self.failure_lock.acquire()
+                    self.stop = True
+                    self.failure_lock.release()
+                    task.error_msg = "".join(lines)
+                    task.error_cmd = []
                     self.error_out.put(task)
                 self.worker_queue.task_done()
 
