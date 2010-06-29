@@ -2,6 +2,7 @@ import sys
 import os
 import copy
 import distutils
+import distutils.sysconfig
 import re
 
 from subprocess \
@@ -72,12 +73,26 @@ _SYS_TO_CCENV = {
         "CC_SRC_F": "CC_SRC_F",
 }
 
-def setup_pyext_env(ctx, cc_type="default"):
+def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
     pyenv = {}
-    if cc_type == "default":
-        dist_env = get_configuration()
+    if use_distutils:
+        if cc_type == "default":
+            dist_env = get_configuration()
+        else:
+            dist_env = get_configuration(cc_type)
     else:
-        dist_env = get_configuration(cc_type)
+        dist_env = {
+                "CC": ["clang"],
+                "CPPPATH": [],
+                "BASE_CFLAGS": ["-fno-strict-aliasing"],
+                "OPT": [],
+                "SHARED": ["-fPIC"],
+                "SHLINK": ["clang", "-shared"],
+                "LDFLAGS": [],
+                "LIBDIR": [],
+                "LIBS": [],
+                "SO": ".so"}
+        dist_env["CPPPATH"].append(distutils.sysconfig.get_python_inc())
 
     for name, value in dist_env.items():
         pyenv["PYEXT_%s" % name] = value
@@ -209,8 +224,9 @@ def configure(ctx):
 
         _setup_compiler(ctx, yaku_cc_type)
     else:
-        raise NotImplementedError(
-                "Only distutils mode implemented for now")
+        dist_env = setup_pyext_env(ctx, compiler_type, False)
+        ctx.env.update(dist_env)
+        _setup_compiler(ctx, compiler_type)
 
 def _setup_compiler(ctx, cc_type):
     old_env = ctx.env
