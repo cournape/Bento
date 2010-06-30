@@ -10,6 +10,7 @@ Not released yet. Main features:
       packages, just include one single file into your package to
       build with bento
     - Improved documentation
+    - 2.4 -> 2.7 support
 
 Toydist renamed to bento
 ------------------------
@@ -40,7 +41,7 @@ main features are:
     - Multiple jobs execution (experimental)
     - Easily customizable
 
-It should noted that bento was conceived to remain agnostic to the
+It should noted that bento was conceived to be agnostic to the
 build system, and will remain so. In particular, projects with complex
 build issues are advised to use make, scons or waf. Future versions of
 bento will contain helpers for some of those tools.
