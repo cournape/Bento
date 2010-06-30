@@ -69,8 +69,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
 
             if sys.platform == "win32":
                 pprint('PINK', "\t-> Building wininst from sdist...")
-            check_call(bentomaker_script + ["build_wininst"])
-
+                check_call(bentomaker_script + ["build_wininst"])
 
             if "test" in get_command_names():
                 pprint('PINK', "\t-> Testing from sdist...")
