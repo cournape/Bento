@@ -1,3 +1,20 @@
+"""
+Bento, a pythonic packaging solution for python software.
+
+Bento is a packaging solution which aims at being simple and extensible, using
+as little magic as possible. Packages are described in a bento.info file which
+has a straightforward syntax, and the packaging is driven through bentomaker,
+the command line interfance to bento. Sane API are provided so that people can
+build their own deployment facilities on top of it.
+
+The code is currently organized as follows:
+    - bento.core.parser: ply-based lexer/parser for the format
+    - bento.core: core facilities to build package representation
+    - bento.commands: commands as provided by bentomaker
+    - bento.private: bundled packages
+    - bento.compat: compatibility code to provide consistent API to all
+      supported python versions (2.4 -> 2.7 ATM)
+"""
 import sys
 import os
 

@@ -19,7 +19,7 @@ from bento.commands.errors \
         UsageException, OptionError
 
 USAGE = """\
-Toymaker %(version)s -- an alternative to distutils-based systems
+bentomaker %(version)s -- an alternative to distutils-based systems
 Usage: %(name)s [command [options]]
 """
 
