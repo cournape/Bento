@@ -1,6 +1,5 @@
 import os
 import StringIO
-import zipfile
 
 import simplejson
 
@@ -8,6 +7,8 @@ from bento.core.utils import \
     subst_vars, normalize_path, unnormalize_path
 from bento.core.pkg_objects import \
     Executable
+
+import bento.compat.api as compat
 
 def ipkg_meta_from_pkg(pkg):
     """Return meta dict for Installed pkg from a PackageDescription
@@ -66,7 +67,7 @@ def iter_files(file_sections):
 class InstalledPkgDescription(object):
     @classmethod
     def from_egg(cls, egg_path):
-        zid = zipfile.ZipFile(egg_path)
+        zid = compat.ZipFile(egg_path)
         try:
             data = simplejson.loads(zid.read("EGG-INFO/ipkg.info"))
             return cls.from_json_dict(data)

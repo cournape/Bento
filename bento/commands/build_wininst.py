@@ -33,6 +33,8 @@ from bento.commands.egg_utils import \
 from bento.commands.wininst_utils import \
         wininst_filename, create_exe
 
+import bento.compat.api as compat
+
 class BuildWininstCommand(Command):
     long_descr = """\
 Purpose: build wininst
@@ -67,7 +69,7 @@ def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
     egg_info_dir = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
 
     fid, arcname = tempfile.mkstemp(prefix="zip")
-    zid = zipfile.ZipFile(arcname, "w", zipfile.ZIP_DEFLATED)
+    zid = compat.ZipFile(arcname, "w", compat.ZIP_DEFLATED)
     try:
         for filename, cnt in egg_info.iter_meta():
             zid.writestr(os.path.join(egg_info_dir, filename), cnt)
