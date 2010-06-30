@@ -13,7 +13,7 @@ Packaging a python module
 First, let's assume you have a simple software fubar consisting of a
 single python module hello.py::
 
-	hello.py
+    hello.py
 
 A simple bento.info file would look as follows::
 
