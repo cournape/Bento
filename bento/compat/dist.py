@@ -4,6 +4,7 @@ from distutils.util \
         check_environ, strtobool, rfc822_escape
 
 # Taken from python 2.6.5
+PKG_INFO_ENCODING = 'utf-8'
 class _DistributionMetadata:
     """Dummy class to hold the distribution meta-data: name, version,
     author, and so forth.

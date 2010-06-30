@@ -1,4 +1,5 @@
 import os
+import sys
 
 if os.name == "posix":
     from posix_path \
@@ -22,3 +23,12 @@ except ImportError:
     from bento.compat._subprocess \
         import \
             check_call, CalledProcessError
+
+if sys.version_info < (2, 5, 0):
+    from bento.compat._zipfile \
+        import \
+            ZipFile, ZIP_DEFLATED
+else:
+    from zipfile \
+        import \
+            ZipFile, ZIP_DEFLATED

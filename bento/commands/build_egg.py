@@ -1,5 +1,4 @@
 import os
-import zipfile
 
 from bento.private.bytecode import \
         bcompile
@@ -20,6 +19,8 @@ from bento.commands.core import \
         Command, SCRIPT_NAME
 from bento.commands.egg_utils import \
         EggInfo, egg_filename
+
+import bento.compat.api as compat
 
 class BuildEggCommand(Command):
     long_descr = """\
@@ -55,7 +56,7 @@ def build_egg(ipkg, source_root=".", path=None):
 
     egg_info = EggInfo.from_ipkg(ipkg)
 
-    zid = zipfile.ZipFile(egg, "w", zipfile.ZIP_DEFLATED)
+    zid = compat.ZipFile(egg, "w", compat.ZIP_DEFLATED)
     try:
         for filename, cnt in egg_info.iter_meta():
             zid.writestr(os.path.join("EGG-INFO", filename), cnt)
