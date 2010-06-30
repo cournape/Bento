@@ -1,3 +1,4 @@
+import sys
 import re
 import os
 
@@ -89,8 +90,14 @@ def find_program(program, path_list=None):
 
     for p in path_list:
         ppath = os.path.join(p, program)
-        if os.path.exists(ppath):
-            return ppath
+        if sys.platform == "win32":
+            for ext in [".exe"]:
+                epath = ppath + ext
+                if os.path.exists(epath):
+                    return epath
+        else:
+            if os.path.exists(ppath):
+                return ppath
 
     return None
 

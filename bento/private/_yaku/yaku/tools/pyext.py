@@ -2,6 +2,7 @@ import sys
 import os
 import copy
 import distutils
+import distutils.sysconfig
 import re
 
 from subprocess \
@@ -30,9 +31,9 @@ from yaku.conftests \
 
 import yaku.tools
 
-pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_LINK_TGT_F}${TGT[0]} ${PYEXT_LINK_SRC_F}${SRC}", False)
+pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0]} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS}", False)
 
-pycc, pycc_vars = compile_fun("pycc", "${PYEXT_SHCC} ${PYEXT_CCSHARED} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0]} ${PYEXT_CC_SRC_F}${SRC}", False)
+pycc, pycc_vars = compile_fun("pycc", "${PYEXT_CC} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0]} ${PYEXT_CC_SRC_F}${SRC}", False)
 
 # pyext env <-> sysconfig env conversion
 _SYS_TO_PYENV = {
@@ -72,21 +73,34 @@ _SYS_TO_CCENV = {
         "CC_SRC_F": "CC_SRC_F",
 }
 
-def get_pyenv(ctx):
+def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
     pyenv = {}
-    sysenv = get_configuration()
-    for i, j in _SYS_TO_PYENV.items():
-        pyenv[i] = sysenv[j]
-    pyenv["PYEXT_FMT"] = "%%s%s" % sysenv["SO"]
-    pyenv["PYEXT_OBJ_FMT"] = "%%s%s" % sysenv["OBJ_SUFFIX"]
+    if use_distutils:
+        if cc_type == "default":
+            dist_env = get_configuration()
+        else:
+            dist_env = get_configuration(cc_type)
+    else:
+        dist_env = {
+                "CC": ["clang"],
+                "CPPPATH": [],
+                "BASE_CFLAGS": ["-fno-strict-aliasing"],
+                "OPT": [],
+                "SHARED": ["-fPIC"],
+                "SHLINK": ["clang", "-shared"],
+                "LDFLAGS": [],
+                "LIBDIR": [],
+                "LIBS": [],
+                "SO": ".so"}
+        dist_env["CPPPATH"].append(distutils.sysconfig.get_python_inc())
 
-    for k in _PYENV_REQUIRED:
-        pyenv["PYEXT_%s" % k] = ctx.env[k]
-    ## FIXME: how to deal with CC* namespace ?
-    #for i, j in _SYS_TO_CCENV.items():
-    #    pyenv[i] = sysenv[j]
-    pyenv["PYEXT_CPPPATH"] = [distutils.sysconfig.get_python_inc()]
-    pyenv["PYEXT_SHLINKFLAGS"] = []
+    for name, value in dist_env.items():
+        pyenv["PYEXT_%s" % name] = value
+    pyenv["PYEXT_FMT"] = "%%s%s" % dist_env["SO"]
+    pyenv["PYEXT_CFLAGS"] = pyenv["PYEXT_BASE_CFLAGS"] + \
+            pyenv["PYEXT_OPT"] + \
+            pyenv["PYEXT_SHARED"]
+    pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
     return pyenv
 
 def pycc_hook(self, node):
@@ -100,9 +114,9 @@ def pycc_task(self, node):
     # generated. Dealing with this most likely requires a node concept
     if not os.path.commonprefix([self.env["BLDDIR"], base]):
         target = os.path.join(self.env["BLDDIR"],
-                self.env["PYEXT_OBJ_FMT"] % base)
+                self.env["PYEXT_CC_OBJECT_FMT"] % base)
     else:
-        target = self.env["PYEXT_OBJ_FMT"] % base
+        target = self.env["PYEXT_CC_OBJECT_FMT"] % base
 
     ensure_dir(target)
     task = Task("pycc", inputs=node, outputs=target)
@@ -125,6 +139,8 @@ class PythonBuilder(object):
     def __init__(self, ctx):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
+        self.compiler_type = "default"
+        self.use_distutils = True
 
     def extension(self, name, sources, env=None):
         _env = copy.deepcopy(self.env)
@@ -158,7 +174,7 @@ def detect_cc_type(ctx, cc_cmd):
 
     sys.stderr.write("Detecting CC type... ")
     if sys.platform == "win32":
-        for v in [""]:
+        for v in ["", "-v"]:
             cc_type = detect_type(v)
     else:
         for v in ["-v", "-V", "-###"]:
@@ -170,22 +186,72 @@ def detect_cc_type(ctx, cc_cmd):
     sys.stderr.write("%s\n" % cc_type)
     return cc_type
 
-def configure(ctx):
-    # What to do here:
-    # - get default compiler for host
-    # - check that it is found
-    # - check that it works
+def get_distutils_cc_exec(ctx, compiler_type="default"):
+    from distutils import ccompiler
 
-    cc = detect_distutils_cc(ctx)
-    cc_type = detect_cc_type(ctx, cc)
+    sys.stderr.write("Detecting distutils CC exec ... ")
+    if compiler_type == "default":
+        compiler_type = \
+                distutils.ccompiler.get_default_compiler()
+
+    compiler = ccompiler.new_compiler(compiler=compiler_type)
+    if compiler_type == "msvc":
+        compiler.initialize()
+        cc = [compiler.cc]
+    else:
+        cc = compiler.compiler_so
+    sys.stderr.write("%s\n" % " ".join(cc))
+    return cc
+
+def configure(ctx):
+    # How we do it
+    # 1: for distutils-based configuration
+    #   - get compile/flags flags from sysconfig
+    #   - detect yaku tool name from CC used by distutils:
+    #       - get the compiler executable used by distutils ($CC
+    #       variable)
+    #       - try to determine yaku tool name from $CC
+    #   - apply necessary variables from yaku tool to $PYEXT_
+    #   "namespace"
+    compiler_type = ctx.builders["pyext"].compiler_type
+
+    if ctx.builders["pyext"].use_distutils:
+        dist_env = setup_pyext_env(ctx, compiler_type)
+        ctx.env.update(dist_env)
+
+        cc_exec = get_distutils_cc_exec(ctx, compiler_type)
+        yaku_cc_type = detect_cc_type(ctx, cc_exec)
+
+        _setup_compiler(ctx, yaku_cc_type)
+    else:
+        dist_env = setup_pyext_env(ctx, compiler_type, False)
+        ctx.env.update(dist_env)
+        _setup_compiler(ctx, compiler_type)
+
+def _setup_compiler(ctx, cc_type):
+    old_env = ctx.env
+    ctx.env = {}
+    cc_env = None
     sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
     try:
-        mod = __import__(cc_type)
-        mod.setup(ctx)
+        try:
+            mod = __import__(cc_type)
+            mod.setup(ctx)
+        except ImportError:
+            raise RuntimeError("No tool %s is available (import failed)" \
+                            % cc_type)
+
+        # XXX: this is ugly - find a way to have tool-specific env...
+        cc_env = ctx.env
     finally:
         sys.path.pop(0)
+        ctx.env = old_env
 
-    ctx.env.update(get_pyenv(ctx))
+    copied_values = ["CPPPATH_FMT", "LIBDIR_FMT", "LIB_FMT",
+            "CC_OBJECT_FMT", "CC_TGT_F", "CC_SRC_F", "LINK_TGT_F",
+            "LINK_SRC_F"]
+    for k in copied_values:
+        ctx.env["PYEXT_%s" % k] = cc_env[k]
 
 def create_pyext(bld, env, name, sources):
     base = name.replace(".", os.sep)
@@ -217,22 +283,21 @@ def create_pyext(bld, env, name, sources):
 
 # FIXME: find a way to reuse this kind of code between tools
 def apply_libs(task_gen):
-    libs = task_gen.env["LIBS"]
+    libs = task_gen.env["PYEXT_LIBS"]
     task_gen.env["PYEXT_APP_LIBS"] = [
-            task_gen.env["LIBS_FMT"] % lib for lib in libs]
+            task_gen.env["PYEXT_LIB_FMT"] % lib for lib in libs]
 
 def apply_libpath(task_gen):
-    libdir = task_gen.env["PYEXT_LIBDIR"] + task_gen.env["LIBDIR"]
+    libdir = task_gen.env["PYEXT_LIBDIR"]
     implicit_paths = set([
         os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
         for s in task_gen.sources])
     libdir = list(implicit_paths) + libdir
     task_gen.env["PYEXT_APP_LIBDIR"] = [
-            task_gen.env["LIBDIR_FMT"] % d for d in libdir]
+            task_gen.env["PYEXT_LIBDIR_FMT"] % d for d in libdir]
 
 def apply_cpppath(task_gen):
-    cpppaths = task_gen.env["CPPPATH"]
-    cpppaths.extend(task_gen.env["PYEXT_CPPPATH"])
+    cpppaths = task_gen.env["PYEXT_CPPPATH"]
     implicit_paths = set([
         os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
         for s in task_gen.sources])

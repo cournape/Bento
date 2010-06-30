@@ -9,22 +9,9 @@ import distutils.dist as dist
 from distutils \
     import \
         errors
-
-UNIX_ENV_ATTR = {
-        "CC": "compiler",
-        "CXX": "compiler_cxx",
-        "CCSHARED": "compiler_so",
-        "LDSHARED": "linker_so",
-        "LINKCC": "linker_exe",
-}
-
-MSVC_ENV_ATTR = {
-        "CC": "cc",
-        "CXX": "cc",
-        "CFLAGS": "compile_options",
-        "LDSHARED": "linker",
-        "LINKCC": "linker",
-}
+from distutils \
+    import \
+        sysconfig
 
 DEFAULT_COMPILERS = {
         "win32": [None, "mingw32"],
@@ -73,43 +60,40 @@ def get_configuration(compiler_type=None):
     if compiler_type is None:
         compiler_type = distutils.ccompiler.get_default_compiler(plat)
 
-    # Unix-like default (basically works everwhere but windows)
-    env = {"PYCC_NAME": compiler_type}
-    env["LIBDIR"] = []
-    env["OBJ_SUFFIX"] = ".o"
-    if compiler_type == "unix":
-        for k in ["CC", "CXX", "OPT", "CFLAGS", "CCSHARED",
-                  "LDSHARED", "LINKCC"]:
-            var = distutils.sysconfig.get_config_var(k)
-            # FIXME: Splitting most likely needs to be smarter to take
-            # quote into account - OTOH, many compilers don't handle
-            # quote in directories/CPP variables (Does C89 say
-            # something about it ?)
-            env[k] = var.split(" ")
-        env["SO"] = distutils.sysconfig.get_config_var("SO")
-    elif compiler_type == "msvc":
-        env["SO"] = ".pyd"
-        try:
-            setup_msvc(env)
-        except errors.DistutilsPlatformError, e:
-            setup_mingw(env)
-    else:
-        compiler = distutils.ccompiler.new_compiler(
-                compiler=compiler_type)
-        # If not a UnixCCompiler instance, we have no clue how to deal
-        # with it
-        if not isinstance(compiler,
-                distutils.unixccompiler.UnixCCompiler):
-            raise ValueError("We don't know how to deal with %s instances" % compiler.__class__)
-        # XXX: in this case, CC and co contains both the compiler and
-        # the options. Distutils is so fucked up...
-        for k, v in UNIX_ENV_ATTR.items():
-            env[k] = getattr(compiler, v)
-        env["CFLAGS"] = []
-        env["CXXFLAGS"] = []
+    if not compiler_type in distutils.ccompiler.compiler_class:
+        raise ValueError("compiler type %s is not recognized" %
+                         compiler_type)
 
-        if compiler_type == "mingw32":
-            env["LIBS"] = compiler.dll_libraries or []
+    env = {"CC": [],
+        "CPPPATH": [],
+        "BASE_CFLAGS": [],
+        "OPT": [],
+        "SHARED": [],
+        "SHLINK": [],
+        "LDFLAGS": [],
+        "LIBDIR": [],
+        "LIBS": [],
+        "SO": ""}
+
+    env["CPPPATH"].append(sysconfig.get_python_inc())
+    if compiler_type == "unix":
+        env["CC"].extend(sysconfig.get_config_var("CC").split(" "))
+        env["BASE_CFLAGS"].extend(sysconfig.get_config_var("BASECFLAGS").split(" "))
+        env["OPT"].extend(sysconfig.get_config_var("OPT").split(" "))
+        env["SHARED"].extend(sysconfig.get_config_var("CCSHARED").split(" "))
+
+        env["SHLINK"] = sysconfig.get_config_var("LDSHARED").split(" ")
+        env["SO"] = sysconfig.get_config_var("SO")
+        env["LDFLAGS"] = sysconfig.get_config_var("LDFLAGS")
+        if "-pthread" in sysconfig.get_config_var("LDFLAGS"):
+            env["LDFLAGS"].insert(0, "-pthread")
+
+    elif compiler_type == "msvc":
+        setup_msvc(env)
+    elif compiler_type == "mingw32":
+        setup_mingw32(env)
+    else:
+        raise ValueError("Gne ?")
 
     return env
 
@@ -119,15 +103,41 @@ def _get_ext_library_dirs():
     binst.finalize_options()
     return binst.library_dirs
 
+def _get_ext_libraries(compiler):
+    binst = build_ext.build_ext(dist.Distribution())
+    binst.compiler = compiler
+    binst.initialize_options()
+    binst.finalize_options()
+    class _FakeExt(object):
+        def __init__(self):
+            self.libraries = []
+    return binst.get_libraries(_FakeExt())
+
 def setup_msvc(env):
     compiler = distutils.ccompiler.new_compiler(
             compiler="msvc")
     compiler.initialize()
 
-    for k, v in MSVC_ENV_ATTR.items():
-        env[k] = getattr(compiler, v)
-    env["LDSHARED"] = [env["LDSHARED"]] + compiler.ldflags_shared
-    env["CCSHARED"] = []
-    env["OPT"] = compiler.compile_options
-    env["LIBDIR"] = _get_ext_library_dirs()
-    env["OBJ_SUFFIX"] = ".obj"
+    env["CC"] = compiler.cc
+    env["BASE_CFLAGS"].extend(compiler.compile_options)
+
+    env["SHLINK"] = compiler.linker
+    env["SO"] = ".pyd"
+    env["LDFLAGS"] = compiler.ldflags_shared
+    env["LIBDIR"].extend( _get_ext_library_dirs())
+
+def setup_mingw32(env):
+    compiler = distutils.ccompiler.new_compiler(
+            compiler="mingw32")
+
+    env["CC"] = ["gcc"]
+    env["BASE_CFLAGS"].extend(["-mno-cygwin"])
+
+    env["SHLINK"] = ["gcc", "-mno-cygwin", "-shared"]
+    env["SO"] = ".pyd"
+    #env["LDFLAGS"] = compiler.ldflags_shared
+    env["LIBDIR"].extend( _get_ext_library_dirs())
+
+    libs = _get_ext_libraries(compiler)
+    libs += compiler.dll_libraries 
+    env["LIBS"].extend(libs)
