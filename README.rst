@@ -29,12 +29,18 @@ The main features of bento are:
     * Simple and flexible data files installation description
     * Basic support for console scripts ala setuptools
     * Preliminary support for building eggs and windows installers
+    * Dependency-based extension builders (source content change is
+      automatically rebuilt)
+    * Parallel build support for C extensions
+    * Easily bundable, one-file distribution to avoid extra-dependencies
 
 Planned features:
 
     * Support for msi and Mac OS X .mpkg
-    * Enable Linux distributors to write simple extensions for packaging
-      bento-packages as they see fit
+    * Reliable conversion between packaging formats (egg <-> wininst, mpkg <->
+      egg, etc...)
+    * Provide API to enable Linux distributors to write simple extensions for
+      packaging bento-packages as they see fit
     * Pre/Post stages hooks
     * Distutils compatibility mode, driven by the bento.info file
     * Protocol to integrate with real build tools like scons, waf or
