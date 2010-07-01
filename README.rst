@@ -128,6 +128,19 @@ to configure, build, install, etc... the distribution::
     bentomaker build_egg
     bentomaker build_wininst # on windows only
 
+Regenerating the one-file distribution file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you modify any source file, you need to regenerate the one-file
+distribution::
+
+    python tools/singledist.py
+
+If you don't want to include windows executables (e.g. you don't support
+windows)::
+
+    python tools/singledist --noinclude-exe
+
 Rationale
 ---------
 
