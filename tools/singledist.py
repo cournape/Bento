@@ -1,7 +1,12 @@
+"""
+Script to build a single-file distribution of bento. This code is
+mostly taken from waf
+"""
 import os
 import re
 import sys
 import StringIO
+import optparse
 from hashlib import md5
 
 VERSION = "1"
@@ -53,14 +58,12 @@ def create_script_light(tpl, variables):
     finally:
         f.close()
 
-def create_script():
+def create_script(config):
     import tarfile, re
 
-    config = read_config()
     script_name = config["script_name"]
     include_exe = config["include_exe"]
-
-    print "Created self-contained script %r in %s" % (script_name, os.getcwd())
+    print "Creating self-contained script %r in %s" % (script_name, os.getcwd())
     mw = "tmp-foo-" + VERSION
 
     zip_type = "bz2"
@@ -132,6 +135,21 @@ def create_script():
         os.chmod(script_name, 0755)
     os.unlink('%s.tar.%s' % (mw, zip_type))
 
-create_script()
-#s = create_script_light("foo-light.in")
-#print open(s).read()
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+
+    parser = optparse.OptionParser()
+    parser.add_option("--noinclude-exe", action="store_true",
+            dest="include_exe", default=False,
+            help="Include windows binaries to build bdist installers")
+    config = read_config()
+
+    opts, args = parser.parse_args(argv)
+    if opts.include_exe is not None:
+        config["include_exe"] = not opts.include_exe
+
+    create_script(config)
+
+if __name__ == "__main__":
+    main()
