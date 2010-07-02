@@ -74,6 +74,11 @@ def set_scheme_options(scheme, options):
         if hasattr(options, k):
             val = getattr(options, k)
             if val:
+                if not os.path.isabs(val):
+                    msg = "value given for path option '%s' " \
+                          "should be an absolute path (value " \
+                          "given was '%s')" % (k, val)
+                    raise UsageException(msg)
                 scheme[k] = val
     # XXX: define default somewhere and stick with it
     if options.prefix is not None and options.exec_prefix is None:
