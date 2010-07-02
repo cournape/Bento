@@ -72,7 +72,7 @@ def ccprogram_task(self, name):
 def apply_cpppath(task_gen):
     paths = task_gen.env["CPPPATH"]
     task_gen.env["INCPATH"] = [
-            task_gen.env["CPPPAT_FMT"] % p for p in paths]
+            task_gen.env["CPPPATH_FMT"] % p for p in paths]
 
 def apply_libs(task_gen):
     libs = task_gen.env["LIBS"]
