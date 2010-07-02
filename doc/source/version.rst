@@ -1,7 +1,7 @@
 Version 0.0.3
 =============
 
-Not released yet. Main features:
+Released on 2th July 2010. Main features:
 
     - Add hooks to customize arbitrary stages in bento
     - Parallel and reliable build of C extensions through yaku build
