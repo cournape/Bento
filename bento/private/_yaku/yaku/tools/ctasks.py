@@ -72,7 +72,7 @@ def ccprogram_task(self, name):
 def apply_cpppath(task_gen):
     paths = task_gen.env["CPPPATH"]
     task_gen.env["INCPATH"] = [
-            task_gen.env["CPPPAT_FMT"] % p for p in paths]
+            task_gen.env["CPPPATH_FMT"] % p for p in paths]
 
 def apply_libs(task_gen):
     libs = task_gen.env["LIBS"]
@@ -92,6 +92,25 @@ class CCBuilder(object):
     def __init__(self, ctx):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
+
+    def ccompile(self, name, sources, env=None):
+        _env = copy.deepcopy(self.env)
+        if env is not None:
+            _env.update(env)
+
+        task_gen = CompiledTaskGen("cccompile", sources, name)
+        task_gen.env = _env
+        apply_cpppath(task_gen)
+
+        tasks = create_tasks(task_gen, sources)
+        for t in tasks:
+            t.env = task_gen.env
+        self.ctx.tasks.extend(tasks)
+
+        outputs = []
+        for t in tasks:
+            outputs.extend(t.outputs)
+        return outputs
 
     def program(self, name, sources, env=None):
         _env = copy.deepcopy(self.env)

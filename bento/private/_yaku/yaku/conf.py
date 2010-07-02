@@ -41,16 +41,6 @@ class ConfigureContext(object):
         self.env = {}
         self.conf_results = []
 
-def apply_cpppath(task_gen):
-    cpppaths = task_gen.env["CPPPATH"]
-    implicit_paths = set([
-        os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
-        for s in task_gen.sources])
-    cpppaths = list(implicit_paths) + cpppaths
-    task_gen.env["INCPATH"] = [
-            task_gen.env["INCPATH_FMT"] % p
-            for p in cpppaths]
-
 def create_file(conf, code, prefix="", suffix=""):
     filename = "%s%s%s" % (prefix, md5(code).hexdigest(), suffix)
     filename = join(conf.env["BLDDIR"], filename)
@@ -67,26 +57,27 @@ def create_compile_conf_taskgen(conf, name, body, headers,
     code = "\n".join([c for c in [head, body]])
     sources = [create_file(conf, code, name, extension)]
 
-    task_gen = CompiledTaskGen("conf", sources, name)
-    task_gen.env.update(copy.deepcopy(conf.env))
-    task_gen.env["INCPATH"] = ""
-
-    tasks = create_tasks(task_gen, sources)
-    for t in tasks:
+    conf.tasks = [] # XXX: hack
+    builder = conf.builders["ctasks"]
+    builder.ccompile("yomama", sources, conf.env)
+    # XXX: accessing tasks like this is ugly - the whole logging thing
+    # needs more thinking
+    for t in builder.ctx.tasks:
         t.disable_output = True
+        t.log = conf.log
     sys.stderr.write(msg + "... ")
 
     succeed = False
     explanation = None
     try:
-        run_tasks(conf, tasks)
+        run_tasks(conf, builder.ctx.tasks)
         succeed = True
         sys.stderr.write("yes\n")
     except TaskRunFailure, e:
         sys.stderr.write("no\n")
         explanation = str(e)
 
-    write_log(conf.log, tasks, code, msg, succeed, explanation)
+    write_log(conf.log, builder.ctx.tasks, code, msg, succeed, explanation)
     return succeed
 
 def write_log(log, tasks, code, msg, succeed, explanation):
@@ -139,6 +130,7 @@ def create_link_conf_taskgen(conf, name, body, headers,
 
     for t in tasks:
         t.disable_output = True
+        t.log = conf.log
     sys.stderr.write(msg + "... ")
 
     succeed = False
@@ -169,10 +161,32 @@ def generate_config_h(conf_res, name):
     fid = open(name, "w")
     try:
         for entry in conf_res:
-            var = var_name(entry)
-            if entry["result"]:
-                fid.write("#define %s 1\n\n" % var)
+            if entry["type"] == "define":
+                fid.write(entry["value"])
             else:
-                fid.write("/*#undef %s*/\n\n" % var)
+                var = var_name(entry)
+                if entry["result"]:
+                    fid.write("#define %s 1\n\n" % var)
+                else:
+                    fid.write("/*#undef %s*/\n\n" % var)
     finally:
         fid.close()
+
+def ccompile(conf, sources):
+    conf.tasks = [] # XXX: hack
+    builder = conf.builders["ctasks"]
+    builder.ccompile("yomama", sources, conf.env)
+    # XXX: accessing tasks like this is ugly - the whole logging thing
+    # needs more thinking
+    for t in builder.ctx.tasks:
+        t.disable_output = True
+        t.log = conf.log
+
+    succeed = False
+    explanation = None
+    try:
+        run_tasks(conf, builder.ctx.tasks)
+        return True
+    except TaskRunFailure, e:
+        return False
+

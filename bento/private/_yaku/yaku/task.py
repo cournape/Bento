@@ -46,6 +46,7 @@ class Task(object):
         self.env_vars = None
         self.scan = None
         self.disable_output = False
+        self.log = None
 
     # UID and signature functionalities
     #----------------------------------
@@ -102,6 +103,9 @@ class Task(object):
             stdout = p.communicate()[0]
             if p.returncode:
                 raise TaskRunFailure(cmd, stdout)
-            sys.stderr.write(stdout)
+            if self.disable_output:
+                self.log.write(stdout)
+            else:
+                sys.stderr.write(stdout)
         except WindowsError, e:
             raise TaskRunFailure(cmd, str(e))
