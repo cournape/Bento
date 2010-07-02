@@ -62,7 +62,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
             check_call(bentomaker_script + ["configure", "--prefix=tmp"])
 
             pprint('PINK', "\t-> Building from sdist...")
-            check_call(bentomaker_script + ["build"])
+            check_call(bentomaker_script + ["build", "-i"])
 
             pprint('PINK', "\t-> Building egg from sdist...")
             check_call(bentomaker_script + ["build_egg"])
