@@ -127,11 +127,16 @@ class InstalledPkgDescription(object):
         self.executables = executables
 
     def write(self, filename):
-        fid = open(filename, "w")
-        try:
-            return self._write(fid)
-        finally:
-            fid.close()
+        if isinstance(filename, basestring):
+            fid = open(filename, "w")
+            try:
+                return self._write(fid)
+            finally:
+                fid.close()
+        else:
+            if not hasattr(filename, "write"):
+                raise ValueError("file should be a string or a file-like object")
+            self._write(filename)
 
     def _write(self, fid):
         def executable_to_json(executable):

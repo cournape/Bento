@@ -73,6 +73,10 @@ def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
     try:
         for filename, cnt in egg_info.iter_meta():
             zid.writestr(os.path.join(egg_info_dir, filename), cnt)
+        ipkg_cnt = StringIO()
+        ipkg.write(ipkg_cnt)
+        zid.writestr(os.path.join("METADATA", "ipkg.info"),
+                     ipkg_cnt.getvalue())
 
         ipkg.path_variables["bindir"] = "SCRIPTS"
         ipkg.path_variables["sitedir"] = "PURELIB"

@@ -86,12 +86,12 @@ if __name__ == "__main__":
     else:
         WININST = sys.argv[1]
 
-    ipkg = read_ipkg(WININST)
     tmpdir = tempfile.mkdtemp()
 
     z = zipfile.ZipFile(WININST)
     try:
         z.extractall(path=tmpdir)
+        ipkg = InstalledPkgDescription.from_file(os.path.join(tmpdir, "METADATA", "ipkg.info"))
         build_egg(ipkg, source_root=os.path.join(tmpdir, "PURELIB"), path=".")
     finally:
         z.close()
