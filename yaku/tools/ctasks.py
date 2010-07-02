@@ -93,6 +93,25 @@ class CCBuilder(object):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
 
+    def ccompile(self, name, sources, env=None):
+        _env = copy.deepcopy(self.env)
+        if env is not None:
+            _env.update(env)
+
+        task_gen = CompiledTaskGen("cccompile", sources, name)
+        task_gen.env = _env
+        apply_cpppath(task_gen)
+
+        tasks = create_tasks(task_gen, sources)
+        for t in tasks:
+            t.env = task_gen.env
+        self.ctx.tasks.extend(tasks)
+
+        outputs = []
+        for t in tasks:
+            outputs.extend(t.outputs)
+        return outputs
+
     def program(self, name, sources, env=None):
         _env = copy.deepcopy(self.env)
         if env is not None:
