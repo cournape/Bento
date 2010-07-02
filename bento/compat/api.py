@@ -24,7 +24,9 @@ except ImportError:
         import \
             check_call, CalledProcessError
 
-if sys.version_info < (2, 5, 0):
+if sys.version_info < (2, 6, 0):
+    # zipfile for python < 2.6 has some issues with filename encoding, use or
+    # own copy
     from bento.compat._zipfile \
         import \
             ZipFile, ZIP_DEFLATED
