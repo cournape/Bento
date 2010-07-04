@@ -417,8 +417,8 @@ def prune_file_list(files, redundant):
     redundant: seq
         list of candidate files to prune.
     """
-    files_set = set([posnormpath(f) for f in files])
-    redundant_set = set([posnormpath(f) for f in redundant])
+    files_set = set([posnormpath(f) for f in files if not isinstance(f, basestring)])
+    redundant_set = set([posnormpath(f) for f in redundant if not isinstance(f, basestring)])
 
     return list(files_set.difference(redundant_set))
 
