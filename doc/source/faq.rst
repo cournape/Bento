@@ -16,6 +16,19 @@ on distutils suffer a lot of NIH, and ignore lessons learned in packaging in
 most other systems.  Bento aims at shamelessly copy what works in other systems
 (CPAN, CRAN, JSPAN, HackageDB).
 
+What are the goals of bento ?
+=============================
+
+The main goal of bento is to separate the concerns on building, packaging and
+package description, so that it can be easily reused within custom build
+frameworks (make, waf, scons, etc...). A simple build system is also provided
+so that simple packages do not need to deal with anything besides bento.
+
+Bento aims at being part of a grander vision for Scientific computing, to
+make something like CRAN available to python users.  By being simpler, more
+explicit, it is hoped that bento will make the development of a
+scientific-specific Pypi easier.
+
 Why not extending existing tools (distutils, etc...) ?
 ======================================================
 
@@ -55,55 +68,44 @@ much more likely to be an actual improvement.
 What about distutils2 ?
 =======================
 
-We believe that most efforts in distutils2 are peripherical to the core issues
-as described above, and won't improve the situation for the scipy community.
-There are also irreconciliable differences on some key points. In particular,
-we think the following features are essential:
+Bento precedes distutils2 for a couple of months. We believe that most efforts
+in distutils2 are peripherical to the core issues as described above, and won't
+improve the situation for the scipy community.
 
-    - specified and versioned metadata formats, instead of implementation
-      specific data
-    - enforced policies (version, required metadata, etc...)
-    - separate index of packages (so that you don't need to download a lot
-      of software to know the dependencies of a package)
-    - easy mirroring (ideally file based)
-    - simple implementations
+Starting from the distutils codebase is not very appealing, as most of it would
+need to be scrapped (at least the whole command and compiler business needs to
+be completely rewritten). There are also irreconciliable differences on some
+key points. In particular, we think the following features are essential:
 
-However, we will implement the distutils-related PEP pushed by the distutils2
-team on a case per case basis.
+    1. specified and versioned metadata formats, instead of implementation
+       specific data
+    2. enforced packaging policies (version, required metadata, etc...)
+    3. separate index of packages (so that you don't need to download a lot
+       of software to know the dependencies of a package)
+    4. easy mirroring (ideally file based)
+    5. simple implementations
 
-Moreoever, as bento is designed from the ground up to be split into mostly
+Some of them have been rejected by various distutils2 members (2, 3 and 4 in
+particular). Distutils-related PEP pushed by the distutils2 team will be
+implemented on a case per case basis (some of them are obsolete as far as bento
+is concerned).
+
+Moreover, as bento is designed from the ground up to be split into mostly
 independent parts, it is possible to reuse its code in other projects. No
-effort will be made to tie some features to bento to force people to use bento.
+effort will be made to tie some features to bento to force people to use it.
 If bento ends up being an experiment into useful new APIs integrated into
-distutils2, this would be considered as a success.
+distutils2, bento would be considered successful.
 
-What are the goals of bento ?
-=============================
+Isn't it too difficult to support building extensions on every platform ?
+==========================================================================
 
-The main goal of bento is to separate the concerns on building, packaging and
-package description, so that it can be easily reused within custom build
-frameworks (make, waf, scons, etc...). A simple build system is also provided
-so that simple packages do not need to deal with anything besides bento.
+People often assume that distutils has a lot of platform-specific knowledge, in
+particular to build C extensions. Except for a few exceptions (mostly on
+non-Unix platforms), most of this knowledge actually comes from autoconf
+through the sysconfig module.
 
-Bento aims at being part of a grander vision for Scientific computing, to
-make something like CRAN available to python users.  By being simpler, more
-explicit, it is hoped that bento will make the development of a
-scientific-specific Pypi easier.
-
-Surely, supporting building extensions on every platform is a huge task ?
-=========================================================================
-
-Not really. People often (wrongly) assume that distutils has a lot of
-platform-specific knowledge, in particular to build C extensions. Except for a
-few exceptions (mostly on non-Unix platforms), most of this knowledge actually
-comes from autoconf through the sysconfig module.
-
-When I started working on Numscons, a new build system for NumPy and SciPy
-based on `SCons`_, supporting C extensions was not very difficult compared to
-interactions with distutils.  Numscons is around 2000 LOC (compared to
-distutils 10 0000 LOC), and supports most major platforms, including Mac OS X,
-Windows 32 and 64 bits, Linux, Free BSD, Solaris, etc... To be fair, numscons
-depends on scons itself for some platform peculiarities, but so does distutils.
+Any non-superficial modification of the C compilation part of distutils will
+also require to rework the platform-specific knowledge anyway.
 
 What about existing projects using distutils ?
 ==============================================
