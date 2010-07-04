@@ -44,6 +44,8 @@ Release 0.0.4
 0.0.4 goals:
 
     - generate module for data access ($prefix, etc...)
+    - recursive bento.info
+    - dynamic version (e.g. svn version appended to the build, etc...)
     - egg <-> wininst lossless conversion (on windows)
     - add basic distutils support
     - specify hook mechanism: document contexts + command flow in bento
