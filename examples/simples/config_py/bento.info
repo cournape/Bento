@@ -1,0 +1,11 @@
+Name: config_py
+Version: 1.0
+
+DataFiles: foo
+    SourceDir: data
+    TargetDir: $pkgdatadir
+    Files: foo.stat
+
+Library:
+    Packages:
+        config_py

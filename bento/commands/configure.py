@@ -10,14 +10,14 @@ from bento.compat.api \
     import \
         rename
 from bento.core.utils import \
-        pprint
+        pprint, subst_vars
 from bento.core.platforms import \
         get_scheme
 from bento.core import \
         PackageOptions, PackageDescription
 from bento._config \
     import \
-        CONFIGURED_STATE_DUMP, BENTO_SCRIPT
+        CONFIGURED_STATE_DUMP, BENTO_SCRIPT, BUILD_DIR
 
 from bento.commands.core import \
         Command, SCRIPT_NAME, Option, OptionGroup
@@ -184,6 +184,16 @@ Usage: bentomaker configure [OPTIONS]"""
             yaku_ctx = ctx.yaku_configure_ctx
             if pkg.extensions:
                 yaku_ctx.use_tools(["pyext"])
+
+
+        tmp_config = os.path.join(BUILD_DIR, "__tmp_config.py")
+        fid = open(tmp_config, "w")
+        try:
+            for name, value in scheme.items():
+                fid.write('%s = "%s"\n' % (name.upper(), subst_vars(value, scheme)))
+        finally:
+            fid.close()
+        rename(tmp_config, os.path.join(BUILD_DIR, "__config.py"))
 
         s = ConfigureState(filename, pkg, scheme, flag_vals,
                            self.user_data)

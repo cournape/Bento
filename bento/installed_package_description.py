@@ -156,7 +156,7 @@ class InstalledPkgDescription(object):
 
         file_sections = []
         for tp, value in self.files.items():
-            if tp in ["pythonfiles"]:
+            if tp in ["pythonfiles", "bentofiles"]:
                 for i in value.values():
                     i.srcdir = "$_srcrootdir"
                     file_sections.append(section_to_json(i))

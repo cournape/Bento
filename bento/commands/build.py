@@ -7,7 +7,7 @@ from bento.installed_package_description import \
         InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
 from bento._config \
     import \
-        IPKG_PATH
+        IPKG_PATH, BUILD_DIR
 
 from bento.commands.core \
     import \
@@ -72,6 +72,7 @@ class SectionWriter(object):
     def __init__(self):
         self.sections_callbacks = {
             "pythonfiles": build_python_files,
+            "bentofiles": build_bento_files,
             "datafiles": build_data_files,
             "extensions": build_distutils.build_extensions,
             "executables": build_executables
@@ -106,6 +107,12 @@ def build_python_files(pkg):
             "$_srcrootdir", "$sitedir", python_files)
 
     return {"library": py_section}
+
+def build_bento_files(pkg):
+    section = InstalledSection("bentofiles", "config",
+            os.path.join("$_srcrootdir", BUILD_DIR),
+            "$sitedir/$pkgname", ["__config.py"])
+    return {"bentofiles": section}
 
 def build_data_files(pkg):
     ret = {}
