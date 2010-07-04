@@ -43,13 +43,15 @@ Release 0.0.4
 
 0.0.4 goals:
 
+    - generate module for data access ($prefix, etc...)
+    - egg <-> wininst lossless conversion (on windows)
     - add basic distutils support
     - specify hook mechanism: document contexts + command flow in bento
     - add tool specification to yaku
-    - test and distcheck support
-    - rewrite installed-pkg-info mechanism (using json ?)
+    - test and distcheck support: in particular, add virtualenv-like (or
+      virtual proper) to bootstrap environment to install and test packages
+      which cannot be tested without being installed)
     - add options to "unbundle" private modules for distribution packagers
-    - generate module for data access ($prefix, etc...)
 
 Post 0.0.4
 ----------
