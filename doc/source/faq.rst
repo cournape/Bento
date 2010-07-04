@@ -5,22 +5,16 @@ FAQ
 Why to create a new tool ?
 ==========================
 
-Bento is mainly born out of my frustration with distutils while dealing with
-complex build issues in NumPy and SciPy. I found distutils poorly documented,
-being tightly coupled internally, and inflexible. Other tools built on top only
-made it worse by making putting more cruft over distutils instead of fixing it.
+Because scientific code depends so much on compiled languages (C and Fortran),
+the scipy community had to significantly extend the distutils extensions. It
+was found to be more and more difficult to maintain, and the source of numerous
+user complaints. In the last decade, several attemps of refactoring distutils
+have been made, but none succeeded.
 
-I also believe the current solutions suffer a lot of NIH, and ignore all
-lessons learned in packaging. Most other language-specific distribution
-frameworks (CPAN, CRAN, JSPAN, HackageDB) have some significant features in
-common not shared by distutils and setuptools:
-
-    - specified and versioned metadata formats
-    - enforced policies
-    - separate index of packages (so that you don't need to download a lot
-      of software to know the dependencies of a package)
-    - simple implementations
-    - easy mirroring
+Bento is born out of this experience. We believe that current solutions based
+on distutils suffer a lot of NIH, and ignore lessons learned in packaging in
+most other systems.  Bento aims at shamelessly copy what works in other systems
+(CPAN, CRAN, JSPAN, HackageDB).
 
 Why not extending existing tools (distutils, etc...) ?
 ======================================================
@@ -62,9 +56,26 @@ What about distutils2 ?
 =======================
 
 We believe that most efforts in distutils2 are peripherical to the core issues
-as described above, and won't improve the situation for the scipy community. We
-will implement the distutils-related PEP pushed by the distutils2 team on a
-case per case basis.
+as described above, and won't improve the situation for the scipy community.
+There are also irreconciliable differences on some key points. In particular,
+we think the following features are essential:
+
+    - specified and versioned metadata formats, instead of implementation
+      specific data
+    - enforced policies (version, required metadata, etc...)
+    - separate index of packages (so that you don't need to download a lot
+      of software to know the dependencies of a package)
+    - easy mirroring (ideally file based)
+    - simple implementations
+
+However, we will implement the distutils-related PEP pushed by the distutils2
+team on a case per case basis.
+
+Moreoever, as bento is designed from the ground up to be split into mostly
+independent parts, it is possible to reuse its code in other projects. No
+effort will be made to tie some features to bento to force people to use bento.
+If bento ends up being an experiment into useful new APIs integrated into
+distutils2, this would be considered as a success.
 
 What are the goals of bento ?
 =============================
@@ -82,13 +93,17 @@ scientific-specific Pypi easier.
 Surely, supporting building extensions on every platform is a huge task ?
 =========================================================================
 
-Not really. When I started working on Numscons, a new build system for NumPy
-and SciPy based on `SCons`_, supporting C extensions was not very difficult
-compared to interactions with distutils.  Numscons is around 2000 LOC (compared
-to distutils 10 0000 LOC), and supports most major platforms, including Mac OS
-X, Windows 32 and 64 bits, Linux, Free BSD, Solaris, etc... To be fair,
-numscons depends on scons itself for some platform peculiarities, but so does
-distutils (which relies on autoconf on many platforms through syconfig).
+Not really. People often (wrongly) assume that distutils has a lot of
+platform-specific knowledge, in particular to build C extensions. Except for a
+few exceptions (mostly on non-Unix platforms), most of this knowledge actually
+comes from autoconf through the sysconfig module.
+
+When I started working on Numscons, a new build system for NumPy and SciPy
+based on `SCons`_, supporting C extensions was not very difficult compared to
+interactions with distutils.  Numscons is around 2000 LOC (compared to
+distutils 10 0000 LOC), and supports most major platforms, including Mac OS X,
+Windows 32 and 64 bits, Linux, Free BSD, Solaris, etc... To be fair, numscons
+depends on scons itself for some platform peculiarities, but so does distutils.
 
 What about existing projects using distutils ?
 ==============================================
