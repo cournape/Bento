@@ -1,6 +1,7 @@
 import os
 import sys
 import traceback
+import warnings
 
 from optparse \
     import \
@@ -265,6 +266,14 @@ def analyse_setup_py(filename, setup_args):
 
 def build_pkg(dist, live_objects):
     pkg = distutils_to_package_description(dist)
+    modules = []
+    for m in pkg.py_modules:
+        if isinstance(m, basestring):
+            modules.append(m)
+        else:
+            warnings.warn("The module %s it not understood" % str(m))
+    pkg.py_modules = modules
+
     path_options = []
     pkg.data_files = {}
     if live_objects["package_data"]:
