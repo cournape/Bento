@@ -19,9 +19,8 @@ common not shared by distutils and setuptools:
     - enforced policies
     - separate index of packages (so that you don't need to download a lot
       of software to know the dependencies of a package)
-    - simple implementations (even though I consider myself knowledgable about
-      distutils code, the Haskell system hackage is easier to understand - and
-      I barely know any haskell !)
+    - simple implementations
+    - easy mirroring
 
 Why not extending existing tools (distutils, etc...) ?
 ======================================================
@@ -36,38 +35,36 @@ distutils is deeply flawed:
       but knowing the install prefix at build time is often useful.
     - There is no developer documentation, and what consitutes public API is
       not documented either. Consequently, every non trivial distutils
-      extension relies on internal details, and as such are inherently fragile.
+      extension relies on internal details, and as such are fragile.
     - Extending by inheritence does not work well: when two modules A and B
       extend distutils, it becomes difficult for B to reuse A (for example,
       dealing with setuptools in numpy.distutils extensions has been a constant
       source of bugs).
     - Customizing compilation flags, and more generally some tools involved in
-      compilation is way too complicated. For example, adding a new tool in the
-      build chain requires rewriting the build command - this is insane.
+      compilation is too complicated. For example, adding a new tool in the
+      build chain requires rewriting the build command, which is aggravated by
+      the previous issue. We believe fixing this would end up to rewriting the
+      whole thing.
     - Improving distutils to handle dependencies automatically (rebuild only
       the necessary .c files) is difficult because of the way distutils is
       designed (build split across different commands, which may be
-      re-executed)
-    - The codebase quality is horrible
+      re-executed).
+    - The codebase quality is horrible. Subclasses don't share the same
+      interface, numerous attributes are added on the fly, etc...
 
-Given the relatively small size of distutils code, the only asset is its "API",
-but fixing what's wrong with distutils precisely means breaking the API. As
-such, a new tool written from scratch, but taking inspiration of existing tools
-elsewhere is much more likely to be an actual improvement.
-
-We also believe that transition and backward compatibility can actually be
-better achieved through conversions tools.
-
-Finally, the current development happening on distutils-sig is mainly the work
-of web-developers, who have a different vision of what packaging means.  Most
-of their goals are specific to web-development needs, often against known good
-practices for packaging elsewhere.
+Overall, there is little to save in the current codebase.  Given the relatively
+small size of distutils code, the only asset is its "API", but fixing what's
+wrong with distutils precisely means breaking the API. As such, a new tool
+written from scratch, but taking inspiration of existing tools elsewhere is
+much more likely to be an actual improvement.
 
 What about distutils2 ?
 =======================
 
-We believe that most efforts in distutils2 are peripherical to the core issues,
-and won't improve the situation.
+We believe that most efforts in distutils2 are peripherical to the core issues
+as described above, and won't improve the situation for the scipy community. We
+will implement the distutils-related PEP pushed by the distutils2 team on a
+case per case basis.
 
 What are the goals of bento ?
 =============================
