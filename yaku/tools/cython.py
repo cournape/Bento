@@ -23,7 +23,10 @@ def cython_task(self, node):
     task = Task("cython", inputs=node, outputs=target)
     task.env_vars = []
     task.env = self.env
-    task.func = compile_fun("cython", "cython ${SRC} -o ${TGT}",
+
+    self.env["CYTHON_INCPATH"] = ["-I%s" % p for p in
+                self.env["CYTHON_CPPPATH"]]
+    task.func = compile_fun("cython", "cython ${SRC} -o ${TGT} ${CYTHON_INCPATH}",
                             False)[0]
     compile_task = get_extension_hook(".c")
     ctask = compile_task(self, target)
@@ -36,6 +39,7 @@ def configure(ctx):
     else:
         sys.stderr.write("no!\n")
         raise yaku.errors.ToolNotFound()
+    ctx.env["CYTHON_CPPPATH"] = []
 
 def detect(ctx):
     if find_program("cython") is None:
