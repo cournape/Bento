@@ -6,15 +6,15 @@ Why to create a new tool ?
 ==========================
 
 Because scientific code depends so much on compiled languages (C and Fortran),
-the scipy community had to significantly extend the distutils extensions. It
-was found to be more and more difficult to maintain, and the source of numerous
-user complaints. In the last decade, several attemps of refactoring distutils
-have been made, but none succeeded.
+the scipy community had to significantly extend distutils. It was found to be
+more and more difficult to maintain, and the source of numerous user
+complaints. In the last decade, several attemps of refactoring distutils and
+our extensions have been made, but none succeeded.
 
-Bento is born out of this experience. We believe that current solutions based
-on distutils suffer a lot of NIH, and ignore lessons learned in packaging in
-most other systems.  Bento aims at shamelessly copy what works in other systems
-(CPAN, CRAN, JSAN, HackageDB).
+Bento is born out of this experience. We also believe that current solutions
+based on distutils suffer a lot of NIH, and ignore lessons learned in packaging
+in most other systems.  Bento aims at shamelessly copy what works in other
+systems (CPAN, CRAN, JSAN, HackageDB).
 
 What are the goals of bento ?
 =============================
@@ -59,18 +59,26 @@ distutils is deeply flawed:
     - The codebase quality is horrible. Subclasses don't share the same
       interface, numerous attributes are added on the fly, etc...
 
-Overall, there is little to save in the current codebase.  Given the relatively
-small size of distutils code, the only asset is its "API", but fixing what's
-wrong with distutils precisely means breaking the API. As such, a new tool
-written from scratch, but taking inspiration of existing tools elsewhere is
-much more likely to be an actual improvement.
+Overall, there is little to save in the current codebase. At least all of the
+command and ccompiler code must go away, and that's already 2/3 of distutils
+code.  Given the relatively small size of distutils code, the only asset is its
+"API", but fixing what's wrong with distutils precisely means breaking the API.
+As such, a new tool written from scratch, but taking inspiration of existing
+tools elsewhere is much more likely to be an actual improvement.
+
+One should note that numpy's extensions to distutils are pretty big:
+numpy.distutils itself is as big as distutils in term of code size, and is the
+biggest user of distutils API as far as I know.  Hence, we are well aware of
+the cost of a total break from distutils.
 
 What about distutils2 ?
 =======================
 
-Bento precedes distutils2 for a couple of months. We believe that most efforts
-in distutils2 are peripherical to the core issues as described above, and won't
-improve the situation for the scipy community.
+We believe that most efforts in distutils2 are peripherical to our core issues
+as described above, and won't improve the situation for the scipy community.
+History-wise, it should also be noted that Bento precedes distutils2 by a
+couple of months (the first prototype was announced during my talk at scipy
+India in december 2009).
 
 Starting from the distutils codebase is not very appealing, as most of it would
 need to be scrapped (at least the whole command and compiler business needs to
@@ -85,16 +93,20 @@ key points. In particular, we think the following features are essential:
     4. easy mirroring (ideally file based)
     5. simple implementations
 
-Some of them have been rejected by various distutils2 members (2, 3 and 4 in
-particular). Distutils-related PEP pushed by the distutils2 team will be
+Although controversial in the python community, there is a large consensus
+within the scipy community on those points.  Some of them have been rejected by
+various distutils2 members (2, 3 and 4 in particular), and we are unwilling to
+compromize on them. Distutils-related PEP pushed by the distutils2 team will be
 implemented on a case per case basis (some of them are obsolete as far as bento
-is concerned).
+is concerned, in the sense that they are already implemented, if only in
+intent).
 
 Moreover, as bento is designed from the ground up to be split into mostly
 independent parts, it is possible to reuse its code in other projects. No
 effort will be made to tie some features to bento to force people to use it.
 If bento ends up being an experiment into useful new APIs integrated into
-distutils2, bento would be considered successful.
+distutils2, bento would be considered successful. If our vision ends up being
+wrong or unreachable, some of the code should be useful nonetheless.
 
 Isn't it too difficult to support building extensions on every platform ?
 ==========================================================================
