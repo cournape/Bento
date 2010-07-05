@@ -27,6 +27,10 @@ Classifiers:
 ConfigPy: bento/__config_py.py
 HookFile: hscript
 
+Flag: bundling
+    Description: whether to install bundled modules or not
+    Default: true
+
 DataFiles: windows_arch_data
     SourceDir: bento/commands
     TargetDir: $sitedir/bento/commands/
@@ -55,12 +59,14 @@ Library:
         bento.core.parser,
         bento.core.platforms,
         bento.private,
-        bento.private.ply,
-        bento.private.simplejson,
-        bento.private._yaku.yaku,
-        bento.private._yaku.yaku.tools,
-        bento.private._yaku.yaku.compat,
         bentomakerlib
+    if flag(bundling):
+        Packages:
+            bento.private._ply.ply,
+            bento.private._simplejson.simplejson,
+            bento.private._yaku.yaku,
+            bento.private._yaku.yaku.tools,
+            bento.private._yaku.yaku.compat
 
 Executable: bentomaker
     Module: bentomakerlib.bentomaker

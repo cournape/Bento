@@ -4,6 +4,9 @@ packaging it for linux and other OS for the time being.
 Nevertheless, this document contains a few packaging details to help for the
 packaging. Those details are unlikely to change once bento stabilitized.
 
+Disabling bundline of upstream packages
+---------------------------------------
+
 To ease its distribution, bento bundles all its dependencies besides the python
 standard library:
 
@@ -13,6 +16,8 @@ standard library:
 
 Of those three, only yaku will be updated frequently. Although bundled, those
 correspond to upstream versions, and no modification is allowed. This is so
-that using unbundled version is possible. It is not fully implemented yet, but
-bento will have a configuration option to install it without any bundled
-package.
+that using integration with vendor for distribution is possible at minimal
+cost.
+
+You can disable bundling altogether when installing through the --with-bundling
+option (see configure help).
