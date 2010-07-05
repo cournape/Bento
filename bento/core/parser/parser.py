@@ -365,8 +365,16 @@ def p_cond_expr_true(p):
     """bool : TRUE"""
     p[0] = Node("bool", value=True)
 
+def p_cond_expr_true_not(p):
+    """bool : NOT_OP FALSE"""
+    p[0] = Node("bool", value=True)
+
 def p_cond_expr_false(p):
     """bool : FALSE"""
+    p[0] = Node("bool", value=False)
+
+def p_cond_expr_false_not(p):
+    """bool : NOT_OP TRUE"""
     p[0] = Node("bool", value=False)
 
 #---------------------

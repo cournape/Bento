@@ -24,7 +24,7 @@ tokens = ('COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'FUNCTION_ID', 'MODULE_ID', 'FLAG_ID', 'INCLUDE_DIRS_ID',
           'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP',
           'BUILD_REQUIRES_ID', 'INSTALL_REQUIRES_ID',
-          'DOWNLOAD_URL_ID', 'HOOK_FILE_ID', 'CONFIG_PY_ID')
+          'DOWNLOAD_URL_ID', 'HOOK_FILE_ID', 'CONFIG_PY_ID', 'NOT_OP')
 
 ESCAPING_CHAR = dict([(t, False) for t in tokens])
 ESCAPING_CHAR["BACKSLASH"] = True
@@ -75,6 +75,7 @@ CONDITIONAL_ID = {
     "and": "AND",
     "os": "OS_OP",
     "flag": "FLAG_OP",
+    "not": "NOT_OP",
 }
 
 # ID -> field type dict
