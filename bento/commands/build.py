@@ -109,10 +109,13 @@ def build_python_files(pkg):
     return {"library": py_section}
 
 def build_bento_files(pkg):
-    section = InstalledSection("bentofiles", "config",
-            os.path.join("$_srcrootdir", BUILD_DIR),
-            "$sitedir/$pkgname", ["__config.py"])
-    return {"bentofiles": section}
+    if pkg.config_py is not None:
+        section = InstalledSection("bentofiles", "config",
+                os.path.join("$_srcrootdir", BUILD_DIR),
+                "$sitedir", [pkg.config_py])
+        return {"bentofiles": section}
+    else:
+        return {}
 
 def build_data_files(pkg):
     ret = {}

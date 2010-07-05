@@ -10,7 +10,7 @@ from bento.compat.api \
     import \
         rename
 from bento.core.utils import \
-        pprint, subst_vars
+        pprint, subst_vars, ensure_dir
 from bento.core.platforms import \
         get_scheme
 from bento.core import \
@@ -186,14 +186,17 @@ Usage: bentomaker configure [OPTIONS]"""
                 yaku_ctx.use_tools(["pyext"])
 
 
-        tmp_config = os.path.join(BUILD_DIR, "__tmp_config.py")
-        fid = open(tmp_config, "w")
-        try:
-            for name, value in scheme.items():
-                fid.write('%s = "%s"\n' % (name.upper(), subst_vars(value, scheme)))
-        finally:
-            fid.close()
-        rename(tmp_config, os.path.join(BUILD_DIR, "__config.py"))
+        if pkg.config_py is not None:
+            tmp_config = os.path.join(BUILD_DIR, "__tmp_config.py")
+            fid = open(tmp_config, "w")
+            try:
+                for name, value in scheme.items():
+                    fid.write('%s = "%s"\n' % (name.upper(), subst_vars(value, scheme)))
+            finally:
+                fid.close()
+            target = os.path.join(BUILD_DIR, pkg.config_py)
+            ensure_dir(target)
+            rename(tmp_config, target)
 
         s = ConfigureState(filename, pkg, scheme, flag_vals,
                            self.user_data)
