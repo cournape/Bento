@@ -7,19 +7,25 @@ import sys
 
 import bento
 
-# Arch-independent path
-DATA_PATH = os.path.dirname(__file__)
-# Arch-dependent path
-ARCH_DATA = os.path.dirname(__file__)
-WININST_DIR = os.path.join(os.path.dirname(__file__), "commands", "wininst")
+try:
+    from bento.__config_py \
+        import \
+           DATADIR as DATA_DIR
+except ImportError:
+    # Arch-independent path
+    DATA_DIR = os.path.dirname(__file__)
 
-# Parser parameters
-_PICKLED_PARSETAB = os.path.join(DATA_PATH, "parsetab")
-_OPTIMIZE_LEX = 0
-_DEBUG_YACC = 0
+# Arch-dependent path
+ARCH_DATA_DIR = DATA_DIR
 
 # Windows binaries
-_CLI = os.path.join(ARCH_DATA, "commands", "cli.exe")
+_CLI = os.path.join(ARCH_DATA_DIR, "commands", "cli.exe")
+WININST_DIR = os.path.join(ARCH_DATA_DIR, "commands", "wininst")
+
+# Parser parameters
+_PICKLED_PARSETAB = os.path.join(DATA_DIR, "parsetab")
+_OPTIMIZE_LEX = 0
+_DEBUG_YACC = 0
 
 # Use subdist bento to avoid clashing with distutils ATM
 BUILD_DIR = "build/bento"
