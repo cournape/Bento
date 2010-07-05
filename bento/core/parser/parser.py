@@ -361,6 +361,10 @@ def p_flag_var(p):
     """flag_var : FLAG_OP LPAR word RPAR"""
     p[0] = Node("flagvar", value=p[3])
 
+def p_not_flag_var(p):
+    """flag_var : NOT_OP FLAG_OP LPAR word RPAR"""
+    p[0] = Node("not_flagvar", value=p[4])
+
 def p_cond_expr_true(p):
     """bool : TRUE"""
     p[0] = Node("bool", value=True)

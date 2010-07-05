@@ -62,6 +62,7 @@ class Dispatcher(object):
             "conditional": self.conditional,
             "osvar": self.osvar,
             "flagvar": self.flagvar,
+            "not_flagvar": self.not_flagvar,
             "bool": self.bool_var,
             # Extra source files
             "extra_sources": self.extra_sources,
@@ -294,7 +295,16 @@ class Dispatcher(object):
     def bool_var(self, node):
         return node.value
 
+    def not_flagvar(self, node):
+        #print "NFLAG NODE", node, node.value, node.value.value
+        name = node.value.value
+        try:
+            return not _LIT_BOOL[self._vars[name]]
+        except KeyError:
+            raise ValueError("Unknown flag variable %s" % name)
+
     def flagvar(self, node):
+        #print "NODE", node, node.value, node.value.value
         name = node.value.value
         try:
             return _LIT_BOOL[self._vars[name]]
