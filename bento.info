@@ -24,6 +24,7 @@ Classifiers:
     Operating System :: POSIX,
     Operating System :: Unix,
     Operating System :: MacOS
+ConfigPy: bento/__config_py.py
 HookFile: hscript
 
 DataFiles: windows_arch_data
