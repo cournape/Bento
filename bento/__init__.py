@@ -18,6 +18,17 @@ The code is currently organized as follows:
 import sys
 import os
 
+from bento._config \
+    import \
+        USE_PRIVATE_MODULES
+
+# FIXME: there has to be a better way to do this ?
+for bundled_pkg in ["_ply", "_simplejson", "_yaku"]:
+    v = "BENTO_UNBUNDLE_%s" % bundled_pkg.upper()
+    if USE_PRIVATE_MODULES and not os.environ.get(v, False):
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__),
+                                        "private", bundled_pkg))
+
 from bento.core.package import \
         PackageDescription, static_representation
 from bento.conv import \
@@ -29,12 +40,3 @@ try:
 except ImportError:
     from bento.__version import version as __version__
     from bento.__version import git_revision as __git_revision__
-
-from bento._config \
-    import \
-        USE_PRIVATE_MODULES
-
-# FIXME: there has to be a better way to do this ?
-if USE_PRIVATE_MODULES:
-    for bundled_pkg in ["ply", "simplejson", "ply"]:
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), "private", bundled_pkg))
