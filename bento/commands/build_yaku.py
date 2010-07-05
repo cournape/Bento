@@ -19,6 +19,9 @@ import yaku.errors
 
 def build_extension(bld, pkg, inplace, verbose):
     ret = {}
+    if len(pkg.extensions) < 1:
+        return  ret
+
     all_outputs = {}
     for ext in pkg.extensions.values():
         builder = bld.builders["pyext"]
@@ -63,7 +66,6 @@ import bento.core.errors
 
 def build_extensions(pkg, inplace=False, verbose=False):
     bld = yaku.context.get_bld()
-
     try:
         try:
             return build_extension(bld, pkg, inplace, verbose)
