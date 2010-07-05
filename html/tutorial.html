@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial &mdash; Bento v0.0.3 documentation</title>
+    <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.3',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="Bento v0.0.3 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Tutorial</a><ul>
+<li><a class="reference external" href="#packaging-a-python-module">Packaging a python module</a><ul>
+<li><a class="reference external" href="#bentomaker">Bentomaker</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#adding-packages">Adding packages</a></li>
+<li><a class="reference external" href="#adding-data-files">Adding data files</a><ul>
+<li><a class="reference external" href="#flexible-install-scheme">Flexible install scheme</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#adding-extensions">Adding extensions</a></li>
+</ul>
+</li>
+</ul>
+
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/tutorial.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial will guide you through the basics to package your python
+code with bento. Note that for an existing project using
+setup.py-based packaging, you should look at the convert command so
+that you don&#8217;t have to start from scratch.</p>
+<div class="section" id="packaging-a-python-module">
+<h2>Packaging a python module<a class="headerlink" href="#packaging-a-python-module" title="Permalink to this headline">¶</a></h2>
+<p>First, let&#8217;s assume you have a simple software fubar consisting of a
+single python module hello.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">hello</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>A simple bento.info file would look as follows:</p>
+<div class="highlight-python"><pre>Name: fubar
+Author: John Doe
+Summary: a simple module
+
+Library:
+    Modules: hello.py</pre>
+</div>
+<p>The indentation must be done through spaces (tabs are considered
+syntax errors). The bento.info is located just next to your hello.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">hello</span><span class="o">.</span><span class="n">py</span>
+<span class="n">bento</span><span class="o">.</span><span class="n">info</span>
+</pre></div>
+</div>
+<div class="section" id="bentomaker">
+<h3>Bentomaker<a class="headerlink" href="#bentomaker" title="Permalink to this headline">¶</a></h3>
+<p>Currently, bentomaker is the main interface to the bento.info file,
+and is used to build, install and test packages from the command
+line:</p>
+<div class="highlight-python"><pre>bentomaker configure
+bentomaker build
+bentomaker install</pre>
+</div>
+<p>You can also build eggs, source tarballs and windows installers
+(windows only for now):</p>
+<div class="highlight-python"><pre>bentomaker sdist
+bentomaker build_egg
+bentomaker build_wininst</pre>
+</div>
+<p>If you don&#8217;t want to force your users to install bento to install your
+software, you can include a single-file distribution of bento in your
+own package, at the cost of adding a few hundred kiloytes to your
+package.</p>
+</div>
+</div>
+<div class="section" id="adding-packages">
+<h2>Adding packages<a class="headerlink" href="#adding-packages" title="Permalink to this headline">¶</a></h2>
+<p>Adding a package (a directory with a __init__.py file) is as simple.
+Assuming the following source tree:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">fubar</span><span class="o">/</span><span class="n">hello</span><span class="o">.</span><span class="n">py</span>
+<span class="n">fubar</span><span class="o">/</span><span class="n">foo</span><span class="o">/</span><span class="n">__init__</span><span class="o">.</span><span class="n">py</span>
+<span class="n">fubar</span><span class="o">/</span><span class="n">foo</span><span class="o">/</span><span class="n">bar</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>You simply write:</p>
+<div class="highlight-python"><pre>Library:
+    Packages: foo</pre>
+</div>
+</div>
+<div class="section" id="adding-data-files">
+<h2>Adding data files<a class="headerlink" href="#adding-data-files" title="Permalink to this headline">¶</a></h2>
+<p>Besides packages and modules, you may want to add extra files, like
+configuration, manpages, documentation, etc... Those are called data files.
+Bento has a simple but powerful way to install arbitrary data in arbitrary
+locations.</p>
+<p>Say our fubar software has one manpage fubar.1:</p>
+<div class="highlight-python"><pre>fubar/fubar.1</pre>
+</div>
+<p>We need to add the following to bento.info:</p>
+<div class="highlight-python"><pre>DataFiles: manpage
+    TargetDir: /usr/man/man1
+    Files: fubar.1</pre>
+</div>
+<p>This will install the file fubar.1 into /usr/man/man1.</p>
+<div class="section" id="flexible-install-scheme">
+<h3>Flexible install scheme<a class="headerlink" href="#flexible-install-scheme" title="Permalink to this headline">¶</a></h3>
+<p>Hardcoding the target directory as above is not flexibe. The user may want to
+install the package somewhere else. Bento defines a set of variable paths which
+are customizable, with platform-specific defaults (TODO: list). For manpages,
+the variable is mandir:</p>
+<div class="highlight-python"><pre>DataFiles: manpage
+    TargetDir: $mandir/man1
+    Files: fubar.1</pre>
+</div>
+<p>Now, the installation path is customizable, e.g.:</p>
+<div class="highlight-python"><pre>bentomaker configure --mandir=/opt/man</pre>
+</div>
+<p>will cause the target directory to translate to /opt/man/man1. Note that if
+directories are included in the values in Field, those are used to determine
+the install directory, e.g.:</p>
+<div class="highlight-python"><pre>DataFiles: manpage
+    TargetDir: $mandir
+    Files: man1/fubar.1, man3/barfu.3</pre>
+</div>
+<p>will install man1/fubar1 as $mandir/man1/fubar.1 and man3/barfu.3 as
+$mandir/man3/barfu.3. To avoid this behavior, you need to use the SourceDir
+option:</p>
+<div class="highlight-python"><pre>DataFiles: manpage
+    TargetDir: $mandir
+    SourceDir: man1
+    Files: fubar.1</pre>
+</div>
+<p>will install man1/fubar.1 as $mandir/fubar.1. Last, you can define your own new
+path variables (TODO: path variable section).</p>
+</div>
+</div>
+<div class="section" id="adding-extensions">
+<h2>Adding extensions<a class="headerlink" href="#adding-extensions" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

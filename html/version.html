@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Version 0.0.4 &mdash; Bento v0.0.3 documentation</title>
+    <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.3',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="Bento v0.0.3 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Version 0.0.4</a></li>
+<li><a class="reference external" href="#version-0-0-3">Version 0.0.3</a><ul>
+<li><a class="reference external" href="#toydist-renamed-to-bento">Toydist renamed to bento</a></li>
+<li><a class="reference external" href="#hook-mechanism">Hook mechanism</a></li>
+<li><a class="reference external" href="#yaku-build-mini-framework">Yaku, build mini-framework</a></li>
+<li><a class="reference external" href="#one-file-distribution">One file distribution</a></li>
+<li><a class="reference external" href="#improved-command-line-interface">Improved command line interface</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#version-0-0-2">Version 0.0.2</a></li>
+<li><a class="reference external" href="#version-0-0-1">Version 0.0.1</a></li>
+</ul>
+
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/version.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="version-0-0-4">
+<h1>Version 0.0.4<a class="headerlink" href="#version-0-0-4" title="Permalink to this headline">¶</a></h1>
+<p>Released on . Main features:</p>
+<blockquote>
+<ul class="simple">
+<li>Add ConfigPy option to produce a simple config_py module. At the
+moment, this module may be used to access installed data at
+runtime without __file__ hack.</li>
+<li>Add &#8216;not flag(flag_name)&#8217; and &#8216;not true|false&#8217; to the bento.info
+grammar</li>
+<li>Add &#8211;with-bundling option to disable bundling of
+ply/yaku/simplekson to ease packaging for OS vendors</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="version-0-0-3">
+<h1>Version 0.0.3<a class="headerlink" href="#version-0-0-3" title="Permalink to this headline">¶</a></h1>
+<p>Released on 2th July 2010. Main features:</p>
+<blockquote>
+<ul class="simple">
+<li>Add hooks to customize arbitrary stages in bento</li>
+<li>Parallel and reliable build of C extensions through yaku build
+library.</li>
+<li>One file distribution: no need for your users to install any new
+packages, just include one single file into your package to
+build with bento</li>
+<li>Improved documentation</li>
+<li>2.4 -&gt; 2.7 support</li>
+</ul>
+</blockquote>
+<div class="section" id="toydist-renamed-to-bento">
+<h2>Toydist renamed to bento<a class="headerlink" href="#toydist-renamed-to-bento" title="Permalink to this headline">¶</a></h2>
+<p>Bento means lunchbox in Japanese. Bento are often well packaged, and
+this software aims at doing the same for your python package.</p>
+</div>
+<div class="section" id="hook-mechanism">
+<h2>Hook mechanism<a class="headerlink" href="#hook-mechanism" title="Permalink to this headline">¶</a></h2>
+<p>It is now possible to override some bento commands with a hook file
+which is just a python script. Although not well documented yet, it
+should enable complex customization, like interfacing with a build
+system (waf, scons, make), dynamically modify the package content,
+etc... the examples/hooks directory contains a few simple examples.</p>
+</div>
+<div class="section" id="yaku-build-mini-framework">
+<h2>Yaku, build mini-framework<a class="headerlink" href="#yaku-build-mini-framework" title="Permalink to this headline">¶</a></h2>
+<p>In version 0.0.2, bento still depended on distutils internally to
+build extensions. Bento now uses yaku, a mini build framework. Yaku
+main features are:</p>
+<blockquote>
+<ul class="simple">
+<li>File content-based tracking: if a file content is changed, it is
+automatically rebuild</li>
+<li>Environment changes detection: if the compilation options
+change, the files are automatically rebuilt</li>
+<li>Multiple jobs execution (experimental)</li>
+<li>Easily customizable</li>
+</ul>
+</blockquote>
+<p>It should noted that bento was conceived to be agnostic to the
+build system, and will remain so. In particular, projects with complex
+build issues are advised to use make, scons or waf. Future versions of
+bento will contain helpers for some of those tools.</p>
+</div>
+<div class="section" id="one-file-distribution">
+<h2>One file distribution<a class="headerlink" href="#one-file-distribution" title="Permalink to this headline">¶</a></h2>
+<p>Bento now includes a one file distribution of itself, so that you only
+need to include that one file in your project to use bento. The file
+weights ~350 kb, and can be reduced to ~80 kb if you don&#8217;t need to
+include windows binary installer support.</p>
+</div>
+<div class="section" id="improved-command-line-interface">
+<h2>Improved command line interface<a class="headerlink" href="#improved-command-line-interface" title="Permalink to this headline">¶</a></h2>
+<p>Internal changes:</p>
+<blockquote>
+<ul class="simple">
+<li>Lots of internal cleaning</li>
+<li>Replace hackish custom format by json for build manifest</li>
+<li>Heavily refactor installed package description API</li>
+<li>All the installers (install, egg and wininst buidlers) now share
+most of their implementation</li>
+</ul>
+</blockquote>
+</div>
+</div>
+<div class="section" id="version-0-0-2">
+<h1>Version 0.0.2<a class="headerlink" href="#version-0-0-2" title="Permalink to this headline">¶</a></h1>
+<p>Released on the 22th April 2010:</p>
+<blockquote>
+<ul class="simple">
+<li>Ply-based parser with (relatively) sane grammar</li>
+<li>Windows installers and eggs building support</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="version-0-0-1">
+<h1>Version 0.0.1<a class="headerlink" href="#version-0-0-1" title="Permalink to this headline">¶</a></h1>
+<p>Unreleased, presented at Scipy India in December 2009.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>FAQ &mdash; Bento v0.0.3dev14c37859a0 documentation</title>
+    <title>FAQ &mdash; Bento v0.0.3 documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.3dev14c37859a0',
+        VERSION:     '0.0.3',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.3dev14c37859a0 documentation" href="index.html" />
+    <link rel="top" title="Bento v0.0.3 documentation" href="index.html" />
     <link rel="next" title="Milestone" href="TODO.html" />
     <link rel="prev" title="User guide" href="reference.html" /> 
   </head>
@@ -36,7 +36,7 @@
         <li class="right" >
           <a href="reference.html" title="User guide"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Bento v0.0.3dev14c37859a0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -45,11 +45,13 @@
             <ul>
 <li><a class="reference external" href="">FAQ</a><ul>
 <li><a class="reference external" href="#why-to-create-a-new-tool">Why to create a new tool ?</a></li>
-<li><a class="reference external" href="#why-not-extending-existing-tools-distutils-etc">Why not extending existing tools (distutils, etc...) ?</a></li>
 <li><a class="reference external" href="#what-are-the-goals-of-bento">What are the goals of bento ?</a></li>
-<li><a class="reference external" href="#surely-supporting-building-extensions-on-every-platform-is-a-huge-task">Surely, supporting building extensions on every platform is a huge task ?</a></li>
+<li><a class="reference external" href="#why-not-extending-existing-tools-distutils-etc">Why not extending existing tools (distutils, etc...) ?</a></li>
+<li><a class="reference external" href="#what-about-distutils2">What about distutils2 ?</a></li>
+<li><a class="reference external" href="#isn-t-it-too-difficult-to-support-building-extensions-on-every-platform">Isn&#8217;t it too difficult to support building extensions on every platform ?</a></li>
 <li><a class="reference external" href="#what-about-existing-projects-using-distutils">What about existing projects using distutils ?</a></li>
 <li><a class="reference external" href="#is-bento-based-on-existing-tools">Is bento based on existing tools ?</a></li>
+<li><a class="reference external" href="#who-are-the-authors-of-bento">Who are the authors of bento ?</a></li>
 </ul>
 </li>
 </ul>
@@ -90,47 +92,15 @@
 <h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="why-to-create-a-new-tool">
 <h2>Why to create a new tool ?<a class="headerlink" href="#why-to-create-a-new-tool" title="Permalink to this headline">¶</a></h2>
-<p>Bento is mainly born out of my frustration with distutils while dealing with
-complex build issues in NumPy and SciPy. I found distutils poorly documented,
-being tightly coupled internally, and inflexible. Other tools built on top only
-made it worse by making putting more cruft over distutils instead of fixing it.</p>
-</div>
-<div class="section" id="why-not-extending-existing-tools-distutils-etc">
-<h2>Why not extending existing tools (distutils, etc...) ?<a class="headerlink" href="#why-not-extending-existing-tools-distutils-etc" title="Permalink to this headline">¶</a></h2>
-<p>There is a general consensus at least in the scientific python community that
-distutils is deeply flawed:</p>
-<blockquote>
-<ul class="simple">
-<li>The design by commands does not make much sense. Each command has its own
-set of options, and getting the options from other commands is difficult,
-if not impossible. For example, the install paths are only known once the
-install command finalize_options has been run, but knowing the
-install prefix at build time is often useful.</li>
-<li>There is no documentation, and what consitutes public API is not
-documented either. Consequently, every non trivial distutils extension
-relies on internal details, and as such are inherently fragile.</li>
-<li>Extending by inheritence does not work well: when two modules A and B
-extend distutils, it becomes difficult for B to reuse A (for example,
-dealing with setuptools in numpy.distutils extensions has been a constant
-source of bugs).</li>
-<li>Customizing compilation flags, and more generally some tools involved in
-compilation is way too complicated. Again, using classes for compilers
-and linkers does not make much sense, as inheritence as an extending
-mechanism does not work well in this situation either. It also makes
-adding new tools in the chain quite difficult.</li>
-<li>Improving distutils to handle dependencies automatically (rebuild only
-the necessary .c files) is difficult because of the way distutils is
-designed.</li>
-</ul>
-</blockquote>
-<p>Given the relatively small size of distutils code, the only asset is its &#8220;API&#8221;,
-but fixing what&#8217;s wrong with distutils precisely means breaking the API. As
-such, a new tool written from scratch, but taking inspiration of existing tools
-elsewhere is much more likely to be successfull.</p>
-<p>Finally, the current development happening on distutils-sig is mainly the work
-of web-developers, who have a different vision of what packaging means.  Most
-of their goals are specific to web-development needs, often against known good
-practices for packaging.</p>
+<p>Because scientific code depends so much on compiled languages (C and Fortran),
+the scipy community had to significantly extend distutils. It was found to be
+more and more difficult to maintain, and the source of numerous user
+complaints. In the last decade, several attemps of refactoring distutils and
+our extensions have been made, but none succeeded.</p>
+<p>Bento is born out of this experience. We also believe that current solutions
+based on distutils suffer a lot of NIH, and ignore lessons learned in packaging
+in most other systems.  Bento aims at shamelessly copy what works in other
+systems (CPAN, CRAN, JSAN, HackageDB).</p>
 </div>
 <div class="section" id="what-are-the-goals-of-bento">
 <h2>What are the goals of bento ?<a class="headerlink" href="#what-are-the-goals-of-bento" title="Permalink to this headline">¶</a></h2>
@@ -143,26 +113,103 @@ make something like CRAN available to python users.  By being simpler, more
 explicit, it is hoped that bento will make the development of a
 scientific-specific Pypi easier.</p>
 </div>
-<div class="section" id="surely-supporting-building-extensions-on-every-platform-is-a-huge-task">
-<h2>Surely, supporting building extensions on every platform is a huge task ?<a class="headerlink" href="#surely-supporting-building-extensions-on-every-platform-is-a-huge-task" title="Permalink to this headline">¶</a></h2>
-<p>Not really. When I started working on Numscons, a new build system for NumPy
-and SciPy based on <a class="reference external" href="http://www.scons.org">SCons</a>, supporting C extensions was not very difficult
-compared to interactions with distutils.  Numscons is around 2000 LOC (compared
-to distutils 10 0000 LOC), and supports most major platforms, including Mac OS
-X, Windows 32 and 64 bits, Linux, Free BSD, Solaris, etc... To be fair,
-numscons depends on scons itself for some platform peculiarities, but so does
-distutils (which relies on autoconf on many platforms).</p>
+<div class="section" id="why-not-extending-existing-tools-distutils-etc">
+<h2>Why not extending existing tools (distutils, etc...) ?<a class="headerlink" href="#why-not-extending-existing-tools-distutils-etc" title="Permalink to this headline">¶</a></h2>
+<p>There is a general consensus at least in the scientific python community that
+distutils is deeply flawed:</p>
+<blockquote>
+<ul class="simple">
+<li>The design by commands does not make much sense. In distutils, each
+command has its own set of options, and getting the options from other
+commands is difficult, if not impossible. For example, the install paths
+are only known once the install command finalize_options has been run,
+but knowing the install prefix at build time is often useful.</li>
+<li>There is no developer documentation, and what consitutes public API is
+not documented either. Consequently, every non trivial distutils
+extension relies on internal details, and as such are fragile.</li>
+<li>Extending by inheritence does not work well: when two modules A and B
+extend distutils, it becomes difficult for B to reuse A (for example,
+dealing with setuptools in numpy.distutils extensions has been a constant
+source of bugs).</li>
+<li>Customizing compilation flags, and more generally some tools involved in
+compilation is too complicated. For example, adding a new tool in the
+build chain requires rewriting the build command, which is aggravated by
+the previous issue. We believe fixing this would end up to rewriting the
+whole thing.</li>
+<li>Improving distutils to handle dependencies automatically (rebuild only
+the necessary .c files) is difficult because of the way distutils is
+designed (build split across different commands, which may be
+re-executed).</li>
+<li>The codebase quality is horrible. Subclasses don&#8217;t share the same
+interface, numerous attributes are added on the fly, etc...</li>
+</ul>
+</blockquote>
+<p>Overall, there is little to save in the current codebase. At least all of the
+command and ccompiler code must go away, and that&#8217;s already 2/3 of distutils
+code.  Given the relatively small size of distutils code, the only asset is its
+&#8220;API&#8221;, but fixing what&#8217;s wrong with distutils precisely means breaking the API.
+As such, a new tool written from scratch, but taking inspiration of existing
+tools elsewhere is much more likely to be an actual improvement.</p>
+<p>One should note that numpy&#8217;s extensions to distutils are pretty big:
+numpy.distutils itself is as big as distutils in term of code size, and is the
+biggest user of distutils API as far as I know.  Hence, we are well aware of
+the cost of a total break from distutils.</p>
+</div>
+<div class="section" id="what-about-distutils2">
+<h2>What about distutils2 ?<a class="headerlink" href="#what-about-distutils2" title="Permalink to this headline">¶</a></h2>
+<p>We believe that most efforts in distutils2 are peripherical to our core issues
+as described above, and won&#8217;t improve the situation for the scipy community.
+History-wise, it should also be noted that Bento precedes distutils2 by a
+couple of months (the first prototype was announced during my talk at scipy
+India in december 2009).</p>
+<p>Starting from the distutils codebase is not very appealing, as most of it would
+need to be scrapped (at least the whole command and compiler business needs to
+be completely rewritten). There are also irreconciliable differences on some
+key points. In particular, we think the following features are essential:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>specified and versioned metadata formats, instead of implementation
+specific data</li>
+<li>enforced packaging policies (version, required metadata, etc...)</li>
+<li>separate index of packages (so that you don&#8217;t need to download a lot
+of software to know the dependencies of a package)</li>
+<li>easy mirroring (ideally file based)</li>
+<li>simple implementations</li>
+</ol>
+</blockquote>
+<p>Although controversial in the python community, there is a large consensus
+within the scipy community on those points.  Some of them have been rejected by
+various distutils2 members (2, 3 and 4 in particular), and we are unwilling to
+compromize on them. Distutils-related PEP pushed by the distutils2 team will be
+implemented on a case per case basis (some of them are obsolete as far as bento
+is concerned, in the sense that they are already implemented, if only in
+intent).</p>
+<p>Moreover, as bento is designed from the ground up to be split into mostly
+independent parts, it is possible to reuse its code in other projects. No
+effort will be made to tie some features to bento to force people to use it.
+If bento ends up being an experiment into useful new APIs integrated into
+distutils2, bento would be considered successful. If our vision ends up being
+wrong or unreachable, some of the code should be useful nonetheless.</p>
+</div>
+<div class="section" id="isn-t-it-too-difficult-to-support-building-extensions-on-every-platform">
+<h2>Isn&#8217;t it too difficult to support building extensions on every platform ?<a class="headerlink" href="#isn-t-it-too-difficult-to-support-building-extensions-on-every-platform" title="Permalink to this headline">¶</a></h2>
+<p>People often assume that distutils has a lot of platform-specific knowledge, in
+particular to build C extensions. Except for a few exceptions (mostly on
+non-Unix platforms), most of this knowledge actually comes from autoconf
+through the sysconfig module.</p>
+<p>Any non-superficial modification of the C compilation part of distutils will
+also require to rework the platform-specific knowledge anyway.</p>
 </div>
 <div class="section" id="what-about-existing-projects-using-distutils">
 <h2>What about existing projects using distutils ?<a class="headerlink" href="#what-about-existing-projects-using-distutils" title="Permalink to this headline">¶</a></h2>
 <p>Bentomaker, the command line interface to bento, contains an experimental
 command to convert existing setup.py to bento format.</p>
 <p>I also believe it is possible to support most distutils/setuptools features in
-bento file format, and convert a package description to a
-distutils/setuptools Distribution instance. As conversion from bento to
-distutils would be much easier to do reliably than the contrary, it could be
-used as a transition, so that packages who have heavily invested in distutils
-can still use distutils extensions.</p>
+bento file format, and convert a package description to a distutils/setuptools
+Distribution instance. It could be used as a transition, so that packages who
+have heavily invested in distutils can still use distutils extensions: the
+metadata would be described in a bento.file, but distutils would still drive
+the build and installation.</p>
 </div>
 <div class="section" id="is-bento-based-on-existing-tools">
 <h2>Is bento based on existing tools ?<a class="headerlink" href="#is-bento-based-on-existing-tools" title="Permalink to this headline">¶</a></h2>
@@ -177,6 +224,22 @@ extra distribution files (data files).</li>
 <li>Setuptools: exe-based script generation on windows, egg format</li>
 </ul>
 </blockquote>
+</div>
+<div class="section" id="who-are-the-authors-of-bento">
+<h2>Who are the authors of bento ?<a class="headerlink" href="#who-are-the-authors-of-bento" title="Permalink to this headline">¶</a></h2>
+<p>Currently, I (David Cournapeau) am the main author of bento. I am a core
+contributor to Numpy and Scipy, and have been the main maintainer of Numpy
+distutils extensions for more than two years. I am also an occasional
+contributor to scons (a make replacement in python), and debian packager.</p>
+<dl class="docutils">
+<dt>Other contributors:</dt>
+<dd><ul class="first last simple">
+<li>Stefan Van der Walt: initial implementation of the bento.info parser</li>
+<li>Philip J. Eby: for answering most of my questions about
+setuptools/eggs design</li>
+</ul>
+</dd>
+</dl>
 </div>
 </div>
 
@@ -198,7 +261,7 @@ extra distribution files (data files).</li>
         <li class="right" >
           <a href="reference.html" title="User guide"
              >previous</a> |</li>
-        <li><a href="index.html">Bento v0.0.3dev14c37859a0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
