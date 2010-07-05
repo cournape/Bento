@@ -1,6 +1,6 @@
 import os
 
-from bento.private.ply.lex \
+from ply.lex \
     import \
         LexToken, lex
 

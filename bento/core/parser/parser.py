@@ -1,4 +1,4 @@
-from bento.private.ply \
+from ply \
     import lex, yacc
 
 from bento.core.parser.lexer \

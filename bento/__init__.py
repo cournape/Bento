@@ -36,5 +36,5 @@ from bento._config \
 
 # FIXME: there has to be a better way to do this ?
 if USE_PRIVATE_MODULES:
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "private", "_yaku"))
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "private"))
+    for bundled_pkg in ["ply", "simplejson", "ply"]:
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), "private", bundled_pkg))
