@@ -93,9 +93,9 @@ def set_flag_options(flag_opts, options):
         if hasattr(options, opt_name):
             val = getattr(options, opt_name)
             if val:
-                if val == "true":
+                if val.lower() in ["true", "yes"]:
                     flag_vals[k] = True
-                elif val == "false":
+                elif val.lower() in ["false", "no"]:
                     flag_vals[k] = False
                 else:
                     msg = """Error: %s: option %s expects a true or false argument"""
