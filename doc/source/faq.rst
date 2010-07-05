@@ -14,7 +14,7 @@ have been made, but none succeeded.
 Bento is born out of this experience. We believe that current solutions based
 on distutils suffer a lot of NIH, and ignore lessons learned in packaging in
 most other systems.  Bento aims at shamelessly copy what works in other systems
-(CPAN, CRAN, JSPAN, HackageDB).
+(CPAN, CRAN, JSAN, HackageDB).
 
 What are the goals of bento ?
 =============================
