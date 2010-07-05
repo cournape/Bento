@@ -59,7 +59,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
             os.chdir(tardir)
 
             pprint('PINK', "\t-> Configuring from sdist...")
-            check_call(bentomaker_script + ["configure", "--prefix=tmp"])
+            check_call(bentomaker_script + ["configure", "--prefix=%s" % os.path.abspath("tmp")])
 
             pprint('PINK', "\t-> Building from sdist...")
             check_call(bentomaker_script + ["build", "-i"])
