@@ -236,6 +236,50 @@ Node(type='stmt_list'):
 
         self._test(data, expected)
 
+class TestConditional(_TestGrammar):
+    def test_not_bool(self):
+        data = """\
+Library:
+    if not true:
+        Modules: foo.py
+"""
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='library'):
+        Node(type='library_name', value='default')
+        Node(type='library_stmts'):
+            Node(type='conditional'):
+                Node(type='library_stmts'):
+                    Node(type='modules', value=['foo.py'])"""
+
+        self._test(data, expected)
+
+    def test_not_flag(self):
+        data = """\
+Flag: foo
+    Default: true
+    Description: yo mama
+
+Library:
+    if not flag(foo):
+        Modules: foo.py
+"""
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='flag'):
+        Node(type='flag_declaration', value='foo')
+        Node(type='flag_stmts'):
+            Node(type='flag_default', value='true')
+            Node(type='flag_description', value=[Node('literal'), Node('literal'), Node('literal')])
+    Node(type='library'):
+        Node(type='library_name', value='default')
+        Node(type='library_stmts'):
+            Node(type='conditional'):
+                Node(type='library_stmts'):
+                    Node(type='modules', value=['foo.py'])"""
+
+        self._test(data, expected)
+
 class TestLibrary(_TestGrammar):
     def test_modules(self):
         data = """\

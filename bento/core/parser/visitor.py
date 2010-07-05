@@ -22,7 +22,8 @@ def split_newlines(s):
     _split_newlines(s)
     return t
 
-_LIT_BOOL = {"true": True, "false": False}
+# XXX: fix the str vs bool issue with flag variables
+_LIT_BOOL = {"true": True, "false": False, True: True, False: False}
 
 class Dispatcher(object):
     def __init__(self):
@@ -62,6 +63,7 @@ class Dispatcher(object):
             "conditional": self.conditional,
             "osvar": self.osvar,
             "flagvar": self.flagvar,
+            "not_flagvar": self.not_flagvar,
             "bool": self.bool_var,
             # Extra source files
             "extra_sources": self.extra_sources,
@@ -294,12 +296,23 @@ class Dispatcher(object):
     def bool_var(self, node):
         return node.value
 
+    def not_flagvar(self, node):
+        name = node.value.value
+        try:
+            value = self._vars[name]
+        except KeyError:
+            raise ValueError("Unknown flag variable %s" % name)
+        else:
+            return not _LIT_BOOL[value]
+
     def flagvar(self, node):
         name = node.value.value
         try:
-            return _LIT_BOOL[self._vars[name]]
+            value = self._vars[name]
         except KeyError:
             raise ValueError("Unknown flag variable %s" % name)
+        else:
+            return _LIT_BOOL[value]
 
     def extra_sources(self, node):
         self._d["extra_sources"].extend(node.value)
