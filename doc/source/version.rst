@@ -1,3 +1,16 @@
+Version 0.0.4
+=============
+
+Released on . Main features:
+
+    - Add ConfigPy option to produce a simple config_py module. At the
+      moment, this module may be used to access installed data at
+      runtime without __file__ hack.
+    - Add 'not flag(flag_name)' and 'not true|false' to the bento.info
+      grammar
+    - Add --with-bundling option to disable bundling of
+      ply/yaku/simplekson to ease packaging for OS vendors
+
 Version 0.0.3
 =============
 

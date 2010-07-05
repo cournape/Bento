@@ -26,24 +26,11 @@ Not well thought out yet:
 Milestone
 =========
 
-Release 0.0.3
--------------
-
-0.0.3 goals:
-
-    - integrate yaku (without exposing yaku API), yaku should have the
-      following features:
-        - naive // build (extension-based ala waf)
-        - ensure it works on windows for simple extensions
-    - make sure everything works on python 2.4 -> 2.7
-    - make sure everything works on windows
-
 Release 0.0.4
 -------------
 
 0.0.4 goals:
 
-    - generate module for data access ($prefix, etc...)
     - recursive bento.info
     - dynamic version (e.g. svn version appended to the build, etc...)
     - egg <-> wininst lossless conversion (on windows)
@@ -53,7 +40,6 @@ Release 0.0.4
     - test and distcheck support: in particular, add virtualenv-like (or
       virtual proper) to bootstrap environment to install and test packages
       which cannot be tested without being installed)
-    - add options to "unbundle" private modules for distribution packagers
 
 Post 0.0.4
 ----------
