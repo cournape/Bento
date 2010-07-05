@@ -80,7 +80,7 @@ class PackageDescription:
             platforms=None, packages=None, py_modules=None, extensions=None,
             install_requires=None, build_requires=None,
             download_url=None, extra_source_files=None, data_files=None,
-            classifiers=None, provides=None, obsoletes=None, executables=None, hook_file=None):
+            classifiers=None, provides=None, obsoletes=None, executables=None, hook_file=None, config_py=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -136,6 +136,11 @@ class PackageDescription:
         self.hook_file = hook_file
         if self.hook_file is not None:
             self.extra_source_files.append(self.hook_file)
+
+        if config_py is not None and os.sep != "/":
+            self.config_py = unnormalize_path(config_py)
+        else:
+            self.config_py = config_py
 
 def file_list(pkg, root_src=""):
     # FIXME: root_src

@@ -24,7 +24,7 @@ tokens = ('COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'FUNCTION_ID', 'MODULE_ID', 'FLAG_ID', 'INCLUDE_DIRS_ID',
           'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP',
           'BUILD_REQUIRES_ID', 'INSTALL_REQUIRES_ID',
-          'DOWNLOAD_URL_ID', 'HOOK_FILE_ID')
+          'DOWNLOAD_URL_ID', 'HOOK_FILE_ID', 'CONFIG_PY_ID')
 
 ESCAPING_CHAR = dict([(t, False) for t in tokens])
 ESCAPING_CHAR["BACKSLASH"] = True
@@ -64,6 +64,7 @@ META_FIELDS_ID = {
     "BuildRequires": "BUILD_REQUIRES_ID",
     "InstallRequires": "INSTALL_REQUIRES_ID",
     "HookFile": "HOOK_FILE_ID",
+    "ConfigPy": "CONFIG_PY_ID",
 }
 
 CONDITIONAL_ID = {
@@ -111,6 +112,7 @@ FIELD_TYPE = {
     "BUILD_REQUIRES_ID": "WORDS",
     "INSTALL_REQUIRES_ID": "WORDS",
     "HOOK_FILE_ID": "WORDS",
+    "CONFIG_PY_ID": "WORDS",
 }
 
 # Special characters: everytime one is added/changed, update t_WORD
