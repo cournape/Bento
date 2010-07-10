@@ -59,6 +59,10 @@ class Dispatcher(object):
             "extension": self.extension,
             "extension_declaration": self.extension_declaration,
             "extension_field_stmts": self.extension_field_stmts,
+            # Pure C library
+            "compiled_library": self.compiled_library,
+            "compiled_library_declaration": self.compiled_library_declaration,
+            "compiled_library_field_stmts": self.compiled_library_field_stmts,
             # Conditional
             "conditional": self.conditional,
             "osvar": self.osvar,
@@ -160,7 +164,8 @@ class Dispatcher(object):
             "packages": [],
             "build_requires": [],
             "install_requires": [],
-            "extensions": {}
+            "extensions": {},
+            "compiled_libraries": {}
         }
 
         def update(library_dict, c):
@@ -180,6 +185,9 @@ class Dispatcher(object):
             elif c.type == "extension":
                 name = c.value["name"]
                 library_dict["extensions"][name] = c.value
+            elif c.type == "compiled_library":
+                name = c.value["name"]
+                library_dict["compiled_libraries"][name] = c.value
             else:
                 raise ValueError("Unhandled node type: %s" % c)
 
@@ -215,6 +223,30 @@ class Dispatcher(object):
         return node.children
 
     def extension_declaration(self, node):
+        return Node("name", value=node.value)
+
+    def compiled_library(self, node):
+        ret = {"sources": [], "include_dirs": []}
+        def update(compiled_library_dict, c):
+            if type(c) == list:
+                for i in c:
+                    update(compiled_library_dict, i)
+            elif c.type == "name":
+                ret["name"] = c.value
+            elif c.type == "sources":
+                ret["sources"].extend(c.value)
+            elif c.type == "include_dirs":
+                ret["include_dirs"].extend(c.value)
+            else:
+                raise ValueError("Unknown node %s" % c)
+        for c in [node.children[0]] + node.children[1]:
+            update(ret, c)
+        return Node("compiled_library", value=ret)
+
+    def compiled_library_field_stmts(self, node):
+        return node.children
+
+    def compiled_library_declaration(self, node):
         return Node("name", value=node.value)
 
     #-----------------
