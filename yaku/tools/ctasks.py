@@ -48,11 +48,11 @@ def ccompile_task(self, node):
     task.func = ccompile
     return [task]
 
-def link_task(self, name):
+def shlink_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
     target = os.path.join(self.env["BLDDIR"], name + ".so")
     ensure_dir(target)
-    task = Task("cc_link", inputs=objects, outputs=target)
+    task = Task("cc_shlink", inputs=objects, outputs=target)
     task.env = self.env
     task.func = cshlink
     task.env_vars = cshlink_vars

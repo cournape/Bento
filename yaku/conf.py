@@ -33,7 +33,7 @@ from yaku.utils \
 
 from yaku.tools.ctasks \
     import \
-        link_task, apply_libs, apply_libdir
+        shlink_task, apply_libs, apply_libdir
 
 class ConfigureContext(object):
     def __init__(self):
@@ -126,7 +126,7 @@ def create_link_conf_taskgen(conf, name, body, headers,
     apply_libdir(task_gen)
 
     tasks = create_tasks(task_gen, sources)
-    tasks.extend(link_task(task_gen, name))
+    tasks.extend(shlink_task(task_gen, name))
 
     for t in tasks:
         t.disable_output = True
