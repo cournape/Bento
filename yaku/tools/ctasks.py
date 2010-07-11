@@ -23,6 +23,8 @@ ccprogram, ccprogram_vars = compile_fun("ccprogram", "${LINK} ${LINKFLAGS} ${LIN
 
 cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${SHLINKFLAGS} ${APP_LIBDIR} ${APP_LIBS} ${SHLINK_TGT_F}${TGT[0]} ${SHLINK_SRC_F}${SRC}", False)
 
+clink, clink_vars = compile_fun("clib", "${STLINK} ${STLINKFLAGS} ${STLINK_TGT_F}${TGT[0]} ${STLINK_SRC_F}${SRC}", False)
+
 @extension('.c')
 def c_hook(self, node):
     tasks = ccompile_task(self, node)
@@ -56,6 +58,16 @@ def shlink_task(self, name):
     task.env = self.env
     task.func = cshlink
     task.env_vars = cshlink_vars
+    return [task]
+
+def static_link_task(self, name):
+    objects = [tsk.outputs[0] for tsk in self.object_tasks]
+    target = os.path.join(self.env["BLDDIR"], self.env["STATICLIB_FMT"] % name)
+    ensure_dir(target)
+    task = Task("cc_link", inputs=objects, outputs=target)
+    task.env = self.env
+    task.func = clink
+    task.env_vars = clink_vars
     return [task]
 
 def ccprogram_task(self, name):
@@ -112,6 +124,30 @@ class CCBuilder(object):
             outputs.extend(t.outputs)
         return outputs
 
+    def static_library(self, name, sources, env=None):
+        _env = copy.deepcopy(self.env)
+        if env is not None:
+            _env.update(env)
+
+        task_gen = CompiledTaskGen("ccstaticlib", sources, name)
+        task_gen.env = _env
+        apply_cpppath(task_gen)
+        apply_libdir(task_gen)
+        apply_libs(task_gen)
+
+        tasks = create_tasks(task_gen, sources)
+        ltask = static_link_task(task_gen, name)
+        tasks.extend(ltask)
+        for t in tasks:
+            t.env = task_gen.env
+        self.ctx.tasks.extend(tasks)
+
+        outputs = []
+        for t in ltask:
+            outputs.extend(t.outputs)
+        return outputs
+
+
     def program(self, name, sources, env=None):
         _env = copy.deepcopy(self.env)
         if env is not None:
@@ -165,6 +201,12 @@ def configure(ctx):
         raise ValueError("No C compiler found!")
     cc = ctx.load_tool(cc_type)
     cc.setup(ctx)
+
+    if sys.platform == "win32":
+        raise NotImplementedError("cstatic lib not supported yet")
+    else:
+        ar = ctx.load_tool("ar")
+        ar.setup(ctx)
 
 def get_builder(ctx):
     return CCBuilder(ctx)
