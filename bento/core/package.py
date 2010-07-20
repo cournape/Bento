@@ -104,19 +104,25 @@ class PackageDescription:
         if not extensions:
             self.extensions = {}
         else:
-            if os.sep != "/":
-                for ext in extensions.values():
+            for ext in extensions.values():
+                sources = []
+                for s in ext.sources:
+                    sources.extend(expand_glob(s))
+                if os.sep != "/":
                     sources = [unnormalize_path(s) for s in ext.sources]
-                    ext.sources = sources
+                ext.sources = sources
             self.extensions = extensions
 
         if not compiled_libraries:
             self.compiled_libraries = {}
         else:
-            if os.sep != "/":
-                for lib in compiled_libraries.values():
-                    sources = [unnormalize_path(s) for s in ext.sources]
-                    lib.sources = sources
+            for lib in compiled_libraries.values():
+                sources = []
+                for s in lib.sources:
+                    sources.extend(expand_glob(s))
+                if os.sep != "/":
+                    sources = [unnormalize_path(s) for s in sources]
+                lib.sources = sources
             self.compiled_libraries = compiled_libraries
 
         if not extra_source_files:
@@ -172,7 +178,7 @@ def file_list(pkg, root_src=""):
     for m in pkg.py_modules:
         files.append(os.path.join(root_src, '%s.py' % m))
 
-    for e in pkg.extensions.values():
+    for e in pkg.extensions.values() + pkg.compiled_libraries.values():
         for source in e.sources:
             files.append(os.path.join(root_src, source))
     for section in pkg.data_files.values():
