@@ -116,3 +116,20 @@ class Extension(object):
     def __repr__(self):
         return "Extension(%s, sources=%s, include_dirs=%r)" % \
                     (self.name, self.sources, self.include_dirs)
+
+class CompiledLibrary(object):
+    @classmethod
+    def from_parse_dict(cls, d):
+        return cls(**d)
+
+    def __init__(self, name, sources, include_dirs=None):
+        self.name = name
+        self.sources = sources
+        if include_dirs is None:
+            self.include_dirs = []
+        else:
+            self.include_dirs = include_dirs
+
+    def __repr__(self):
+        return "CompiledLibrary(%s, sources=%s, include_dirs=%r)" % \
+                    (self.name, self.sources, self.include_dirs)

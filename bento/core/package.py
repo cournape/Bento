@@ -42,7 +42,7 @@ class PackageDescription:
             kw["compiled_libraries"] = {}
             if default["compiled_libraries"]:
                 for k, v in default["compiled_libraries"].items():
-                    kw["compiled_libraries"][k] = Extension.from_parse_dict(v)
+                    kw["compiled_libraries"][k] = CompiledLibrary.from_parse_dict(v)
         del kw["libraries"]
 
         del kw["path_options"]
