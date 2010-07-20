@@ -5,7 +5,7 @@ from copy \
         deepcopy
 
 from bento.core.pkg_objects import \
-        Extension, DataFiles, Executable
+        Extension, DataFiles, Executable, CompiledLibrary
 from bento.core.meta import \
         _set_metadata, _METADATA_FIELDS
 from bento.core.utils import \
@@ -38,6 +38,11 @@ class PackageDescription:
             if default["extensions"]:
                 for k, v in default["extensions"].items():
                     kw["extensions"][k] = Extension.from_parse_dict(v)
+
+            kw["compiled_libraries"] = {}
+            if default["compiled_libraries"]:
+                for k, v in default["compiled_libraries"].items():
+                    kw["compiled_libraries"][k] = CompiledLibrary.from_parse_dict(v)
         del kw["libraries"]
 
         del kw["path_options"]
@@ -80,7 +85,8 @@ class PackageDescription:
             platforms=None, packages=None, py_modules=None, extensions=None,
             install_requires=None, build_requires=None,
             download_url=None, extra_source_files=None, data_files=None,
-            classifiers=None, provides=None, obsoletes=None, executables=None, hook_file=None, config_py=None):
+            classifiers=None, provides=None, obsoletes=None, executables=None,
+            hook_file=None, config_py=None, compiled_libraries=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -98,11 +104,26 @@ class PackageDescription:
         if not extensions:
             self.extensions = {}
         else:
-            if os.sep != "/":
-                for ext in extensions.values():
+            for ext in extensions.values():
+                sources = []
+                for s in ext.sources:
+                    sources.extend(expand_glob(s))
+                if os.sep != "/":
                     sources = [unnormalize_path(s) for s in ext.sources]
-                    ext.sources = sources
+                ext.sources = sources
             self.extensions = extensions
+
+        if not compiled_libraries:
+            self.compiled_libraries = {}
+        else:
+            for lib in compiled_libraries.values():
+                sources = []
+                for s in lib.sources:
+                    sources.extend(expand_glob(s))
+                if os.sep != "/":
+                    sources = [unnormalize_path(s) for s in sources]
+                lib.sources = sources
+            self.compiled_libraries = compiled_libraries
 
         if not extra_source_files:
             self.extra_source_files = []
@@ -157,7 +178,7 @@ def file_list(pkg, root_src=""):
     for m in pkg.py_modules:
         files.append(os.path.join(root_src, '%s.py' % m))
 
-    for e in pkg.extensions.values():
+    for e in pkg.extensions.values() + pkg.compiled_libraries.values():
         for source in e.sources:
             files.append(os.path.join(root_src, source))
     for section in pkg.data_files.values():

@@ -281,6 +281,7 @@ def p_library_stmt(p):
     """library_stmt : modules_stmt
                     | packages_stmt
                     | extension_stmt
+                    | compiled_library_stmt
                     | build_requires_stmt
                     | install_requires_stmt
                     | conditional_stmt
@@ -328,6 +329,33 @@ def p_extension_sources(p):
 
 def p_extension_include_dirs(p):
     """extension_field_stmt : INCLUDE_DIRS_ID COLON comma_list"""
+    p[0] = Node("include_dirs", value=p[3].value)
+
+def p_compiled_library_stmt_content(p):
+    """compiled_library_stmt : compiled_library_decl INDENT compiled_library_field_stmts DEDENT"""
+    p[0] = Node("compiled_library", children=[p[1]])
+    p[0].children.append(p[3])
+
+def p_compiled_library_field_stmts(p):
+    """compiled_library_field_stmts : compiled_library_field_stmts compiled_library_field_stmt"""
+    children = p[1].children
+    children.append(p[2])
+    p[0] = Node("compiled_library_field_stmts", children=children)
+
+def p_compiled_library_field_stmts_term(p):
+    """compiled_library_field_stmts : compiled_library_field_stmt"""
+    p[0] = Node("compiled_library_field_stmts", children=[p[1]])
+
+def p_compiled_library_decl(p):
+    """compiled_library_decl : COMPILED_LIBRARY_ID COLON anyword"""
+    p[0] = Node("compiled_library_declaration", value=p[3].value)
+
+def p_compiled_library_sources(p):
+    """compiled_library_field_stmt : SOURCES_ID COLON comma_list"""
+    p[0] = Node("sources", value=p[3].value)
+
+def p_compiled_library_include_dirs(p):
+    """compiled_library_field_stmt : INCLUDE_DIRS_ID COLON comma_list"""
     p[0] = Node("include_dirs", value=p[3].value)
 
 #---------------------

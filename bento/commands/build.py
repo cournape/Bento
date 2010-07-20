@@ -2,7 +2,7 @@ import os
 import sys
 
 from bento.core.utils import \
-        find_package
+        find_package, OrderedDict
 from bento.installed_package_description import \
         InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
 from bento._config \
@@ -59,10 +59,16 @@ Usage:   bentomaker build [OPTIONS]."""
                 return build_yaku.build_extensions(pkg, inplace, verbose)
             build_extensions = builder
 
+            def builder(pkg):
+                return build_yaku.build_compiled_libraries(pkg, inplace, verbose)
+            build_compiled_libraries = builder
+
         s = get_configured_state()
         pkg = s.pkg
 
         section_writer = SectionWriter()
+        section_writer.sections_callbacks["compiled_libraries"] = \
+                build_compiled_libraries
         section_writer.sections_callbacks["extensions"] = \
                 build_extensions
         section_writer.update_sections(pkg)
@@ -70,13 +76,14 @@ Usage:   bentomaker build [OPTIONS]."""
 
 class SectionWriter(object):
     def __init__(self):
-        self.sections_callbacks = {
-            "pythonfiles": build_python_files,
-            "bentofiles": build_bento_files,
-            "datafiles": build_data_files,
-            "extensions": build_distutils.build_extensions,
-            "executables": build_executables
-        }
+        callbacks = [
+            ("pythonfiles", build_python_files),
+            ("bentofiles", build_bento_files),
+            ("datafiles", build_data_files),
+            ("compiled_libraries", build_distutils.build_compiled_libraries),
+            ("extensions", build_distutils.build_extensions),
+            ("executables", build_executables)]
+        self.sections_callbacks = OrderedDict(callbacks)
         self.sections = {}
         for k in self.sections_callbacks:
             self.sections[k] = {}

@@ -24,7 +24,7 @@ from bento._config \
 
 # FIXME: there has to be a better way to do this ?
 for bundled_pkg in ["_ply", "_simplejson", "_yaku"]:
-    v = "BENTO_UNBUNDLE_%s" % bundled_pkg.upper()
+    v = "BENTO_UNBUNDLE%s" % bundled_pkg.upper()
     if USE_PRIVATE_MODULES and not os.environ.get(v, False):
         sys.path.insert(0, os.path.join(os.path.dirname(__file__),
                                         "private", bundled_pkg))

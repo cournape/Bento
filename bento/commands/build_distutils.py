@@ -90,3 +90,6 @@ def build_extensions(pkg):
     except distutils.errors.DistutilsError, e:
         raise CommandExecutionFailure(str(e))
 
+def build_compiled_libraries(pkg):
+    raise NotImplementedError("distutils mode for compiled " \
+                              "libraries not yet implemented")
