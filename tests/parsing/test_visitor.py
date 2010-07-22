@@ -29,7 +29,7 @@ def _empty_description():
 
 def _empty_library():
     d = {"name": "default", "py_modules": [], "packages": [], "extensions": {},
-         "build_requires": [], "install_requires": []}
+         "build_requires": [], "install_requires": [], "compiled_libraries": {}}
     return d
 
 class TestSimpleMeta(unittest.TestCase):
