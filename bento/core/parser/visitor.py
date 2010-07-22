@@ -32,6 +32,7 @@ class Dispatcher(object):
                    "path_options": {},
                    "flag_options": {},
                    "extra_sources": [],
+                   "subento": [],
                    "data_files": {}}
         self.action_dict = {
             "empty": self.empty,
@@ -42,6 +43,7 @@ class Dispatcher(object):
             "maintainer": self.author,
             "hook_file": self.hook_file,
             "config_py": self.config_py,
+            "subento": self.subento,
             # Library
             "library": self.library,
             "library_name": self.library_name,
@@ -352,6 +354,9 @@ class Dispatcher(object):
 
     def extra_sources(self, node):
         self._d["extra_sources"].extend(node.value)
+
+    def subento(self, node):
+        self._d["subento"].extend(node.value)
 
     # Data handling
     def data_files(self, node):
