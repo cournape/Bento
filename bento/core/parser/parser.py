@@ -33,9 +33,13 @@ class Parser(object):
             res = Node("empty")
         return res
 
+__PARSER = None
 def parse(data):
-    parser = Parser()
-    return parser.parse(data)
+    global __PARSER
+    if __PARSER is None:
+        __PARSER = Parser()
+    return __PARSER.parse(data)
+    #return Parser().parse(data)
 
 #-------------
 #   Grammar
