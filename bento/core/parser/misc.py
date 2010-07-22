@@ -39,7 +39,8 @@ def get_parsed_script(data):
     Note
     ----
     It should be safe to use this instead of parse. The cache is
-    invalidated when the content of data is different (checksum)
+    invalidated when the content of data is different (checksum).
+
     """
     checksum = md5(data).hexdigest()
 
@@ -47,15 +48,28 @@ def get_parsed_script(data):
         # Write to a temp file to avoid writing corrupted file if
         # ctrl+c is caught during write
         p = _parse(data)
-        ensure_dir(PKG_CACHE + ".tmp")
-        tmp = open(PKG_CACHE + ".tmp", "wb")
+
+        # We keep a dict of cached parsed strings indexed by checksums
+        # FIXME: we should use a LRU cache, because as is, the cache keeps growing
+        if os.path.exists(PKG_CACHE):
+            f = open(PKG_CACHE, "rb")
+            try:
+                d = load(f)
+            finally:
+                f.close()
+        else:
+            d = {}
+        d[checksum] = p
+
+        pkg_cache_tmp = PKG_CACHE + ".tmp"
+        ensure_dir(pkg_cache_tmp)
+        tmp = open(pkg_cache_tmp, "wb")
         try:
-            dump(p, tmp)
-            dump(checksum, tmp)
+            dump(d, tmp)
         finally:
             tmp.close()
 
-        rename(PKG_CACHE + ".tmp", PKG_CACHE)
+        rename(pkg_cache_tmp, PKG_CACHE)
         return p
 
     if not os.path.exists(PKG_CACHE):
@@ -63,10 +77,11 @@ def get_parsed_script(data):
     else:
         fid = open(PKG_CACHE, "rb")
         try:
-            p = load(fid)
-            stored_checksum = load(fid)
-            if not stored_checksum == checksum:
+            d = load(fid)
+            if not d.has_key(checksum):
                 p = parse_and_store_pkg()
+            else:
+                p = d[checksum]
         finally:
             fid.close()
 
