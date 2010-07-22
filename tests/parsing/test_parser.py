@@ -175,13 +175,13 @@ Node(type='stmt_list'):
 
     def test_empty(self):
         data = ""
-        expected = "None"
+        expected = "Node(type='empty')"
 
         self._test(data, expected)
 
     def test_newline(self):
         data = "\n"
-        expected = "None"
+        expected = "Node(type='empty')"
 
         self._test(data, expected)
 

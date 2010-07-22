@@ -34,6 +34,7 @@ class Dispatcher(object):
                    "extra_sources": [],
                    "data_files": {}}
         self.action_dict = {
+            "empty": self.empty,
             "stmt_list": self.stmt_list,
             "description": self.description,
             "summary": self.summary,
@@ -82,6 +83,9 @@ class Dispatcher(object):
             "module": self.module,
         }
         self._vars = {}
+
+    def empty(self, node):
+        return {}
 
     def stmt_list(self, node):
         for c in node.children:

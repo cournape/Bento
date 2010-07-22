@@ -27,7 +27,11 @@ class Parser(object):
                                 debug=_DEBUG_YACC)
 
     def parse(self, data):
-        return self.parser.parse(data, lexer=self.lexer)
+        res = self.parser.parse(data, lexer=self.lexer)
+        # FIXME: this is stupid, deal correctly with empty ast in the grammar proper
+        if res is None:
+            res = Node("empty")
+        return res
 
 def parse(data):
     parser = Parser()

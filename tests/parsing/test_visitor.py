@@ -10,7 +10,7 @@ from bento.core.parser.parser \
         parse
 from bento.core.parser.nodes \
     import \
-        ast_walk
+        ast_walk, Node
 from bento.core.parser.visitor \
     import \
         Dispatcher
@@ -33,6 +33,10 @@ def _empty_library():
     return d
 
 class TestSimpleMeta(unittest.TestCase):
+    def test_empty(self):
+        data = ""
+        assert_equal(parse_and_analyse(data), {})
+
     def test_name(self):
         data = """\
 Name: foo
