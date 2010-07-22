@@ -24,12 +24,12 @@ from bento.core.options import \
 from bento \
     import PackageDescription, static_representation
 
-old = sys.path[:]
-try:
-    sys.path.insert(0, join(dirname(__file__), "pkgdescr"))
-    from simple_package import PKG, DESCR
-finally:
-    sys.path = old
+#old = sys.path[:]
+#try:
+#    sys.path.insert(0, join(dirname(__file__), "pkgdescr"))
+#    from simple_package import PKG, DESCR
+#finally:
+#    sys.path = old
 
 class TestDataFiles(unittest.TestCase):
     def test_simple(self):
