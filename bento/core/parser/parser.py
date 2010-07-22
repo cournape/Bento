@@ -97,6 +97,7 @@ def p_meta_stmt(p):
                  | meta_classifiers_stmt
                  | meta_hook_file_stmt
                  | meta_config_py_stmt
+                 | meta_subento_stmt
     """
     p[0] = p[1]
 
@@ -201,6 +202,10 @@ def p_classifier(p):
 def p_dummy(p):
     """dummy : AND BACKSLASH"""
     pass
+
+def p_meta_subento_stmt(p):
+    """meta_subento_stmt : SUBENTO_ID COLON comma_list"""
+    p[0] = Node("subento", value=p[3].value)
 
 #---------------------------------------
 # Data files and extra sources handling
