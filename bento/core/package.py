@@ -17,45 +17,54 @@ from bento.core.errors \
     import \
         InvalidPackage
 
+def _parse_libraries(libraries):
+    ret = {}
+    if not libraries.keys() in [[], ["default"]]:
+        raise NotImplementedError(
+                "Non default library not yet supported")
+
+    if len(libraries) > 0:
+        default = libraries["default"]
+        for k in ["packages", "py_modules", "install_requires"]:
+            ret[k] = default[k]
+        ret["extensions"] = {}
+        if default["extensions"]:
+            for k, v in default["extensions"].items():
+                ret["extensions"][k] = Extension.from_parse_dict(v)
+
+        ret["compiled_libraries"] = {}
+        if default["compiled_libraries"]:
+            for k, v in default["compiled_libraries"].items():
+                ret["compiled_libraries"][k] = \
+                        CompiledLibrary.from_parse_dict(v)
+
+    return ret
+
 class PackageDescription:
     @classmethod
     def __from_data(cls, data, user_flags):
         if not user_flags:
             user_flags = {}
+
         d = parse_to_dict(data, user_flags)
-        kw = deepcopy(d)
+        kw = {}
+        for field, value in d.items():
+            if field == "extra_sources":
+                kw["extra_source_files"] = value
+            elif field in _METADATA_FIELDS:
+                kw[field] = value
+            elif field == "libraries":
+                kw.update(_parse_libraries(d["libraries"]))
+            elif field == "data_files":
+                for name, data in d["data_files"].items():
+                     kw["data_files"][name] = \
+                             DataFiles.from_parse_dict(data)
+            elif field == "executables":
+                for name, executable in d["executables"].items():
+                    kw["executables"][name] = Executable.from_parse_dict(executable)
 
-        # FIXME: fix this mess
-        if not d["libraries"].keys() in [[], ["default"]]:
-            raise NotImplementedError(
-                    "Non default library not yet supported")
-
-        if len(d["libraries"]) > 0:
-            default = d["libraries"]["default"]
-            for k in ["packages", "py_modules", "install_requires"]:
-                kw[k] = default[k]
-            kw["extensions"] = {}
-            if default["extensions"]:
-                for k, v in default["extensions"].items():
-                    kw["extensions"][k] = Extension.from_parse_dict(v)
-
-            kw["compiled_libraries"] = {}
-            if default["compiled_libraries"]:
-                for k, v in default["compiled_libraries"].items():
-                    kw["compiled_libraries"][k] = CompiledLibrary.from_parse_dict(v)
-        del kw["libraries"]
-
-        del kw["path_options"]
-        del kw["flag_options"]
-
-        kw["extra_source_files"] = kw["extra_sources"]
-        del kw["extra_sources"]
-
-        for name, data in d["data_files"].items():
-            kw["data_files"][name] = DataFiles.from_parse_dict(data)
-
-        for name, executable in d["executables"].items():
-            kw["executables"][name] = Executable.from_parse_dict(executable)
+            else:
+                pass
 
         return cls(**kw)
 
