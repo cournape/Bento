@@ -101,29 +101,21 @@ class PackageDescription:
         else:
             self.py_modules = py_modules
 
-        if not extensions:
-            self.extensions = {}
-        else:
-            for ext in extensions.values():
-                sources = []
-                for s in ext.sources:
-                    sources.extend(expand_glob(s))
-                if os.sep != "/":
-                    sources = [unnormalize_path(s) for s in ext.sources]
-                ext.sources = sources
-            self.extensions = extensions
+        def normalize_paths(compiled_modules):
+            if not compiled_modules:
+                return {}
+            else:
+                for ext in compiled_modules.values():
+                    sources = []
+                    for s in ext.sources:
+                        sources.extend(expand_glob(s))
+                    if os.sep != "/":
+                        sources = [unnormalize_path(s) for s in ext.sources]
+                    ext.sources = sources
+                return compiled_modules
 
-        if not compiled_libraries:
-            self.compiled_libraries = {}
-        else:
-            for lib in compiled_libraries.values():
-                sources = []
-                for s in lib.sources:
-                    sources.extend(expand_glob(s))
-                if os.sep != "/":
-                    sources = [unnormalize_path(s) for s in sources]
-                lib.sources = sources
-            self.compiled_libraries = compiled_libraries
+        self.extensions = normalize_paths(extensions)
+        self.compiled_libraries = normalize_paths(compiled_libraries)
 
         if not extra_source_files:
             self.extra_source_files = []
