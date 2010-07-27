@@ -21,6 +21,43 @@ int main(void)
                         None, "Checking whether C compiler works")
     return ret
 
+def check_cpp_symbol(conf, symbol, headers=None):
+    code = []
+    if headers:
+        for h in headers:
+            code.append(r"#include <%s>" % h)
+
+    code.append(r"""
+int main()
+{
+#ifndef %s
+    (void) %s;
+#endif
+    ;
+    return 0;
+}
+""" % (symbol, symbol))
+    src = "\n".join(code)
+
+    ret = create_compile_conf_taskgen(conf, "check_cpp_symbol", src,
+                        headers, "Checking for declaration %s" % \
+                                 symbol)
+    conf.conf_results.append({"type": "decl", "value": symbol,
+                              "result": ret})
+    return ret
+
+def check_compiler(conf):
+    code = """\
+int main(void)
+{
+    return 0;
+}
+"""
+
+    ret = create_link_conf_taskgen(conf, "check_cc", code,
+                        None, "Checking whether C compiler works")
+    return ret
+
 def check_type(conf, type_name, headers=None):
     code = r"""
 int main() {
