@@ -8,7 +8,7 @@ from yaku.compat.rename \
 
 def ensure_dir(path):
     dirname = os.path.dirname(path)
-    if not os.path.exists(dirname):
+    if dirname and not os.path.exists(dirname):
         os.makedirs(dirname)
 
 re_inc = re.compile(\
