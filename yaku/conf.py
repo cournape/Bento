@@ -186,7 +186,14 @@ def ccompile(conf, sources):
     explanation = None
     try:
         run_tasks(conf, builder.ctx.tasks)
-        return True
+        succeed = True
     except TaskRunFailure, e:
-        return False
+        explanation = str(e)
 
+    f = open(sources[0])
+    try:
+        code = f.read()
+        write_log(conf.log, builder.ctx.tasks, code, "", succeed, explanation)
+    finally:
+        f.close()
+    return succeed
