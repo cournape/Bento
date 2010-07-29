@@ -101,6 +101,7 @@ def set_main():
             raise ValueError("Hook file %s not found" % main_file)
 
     module = imp.new_module("toysetup_module")
+    module.__file__ = os.path.abspath(main_file)
     code = open(main_file).read()
 
     sys.path.insert(0, os.path.dirname(main_file))
