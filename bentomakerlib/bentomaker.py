@@ -220,6 +220,15 @@ class ConfigureContext(Context):
         Context.store(self)
         self.yaku_configure_ctx.store()
 
+class BuildContext(Context):
+    def __init__(self, cmd, cmd_opts):
+        Context.__init__(self, cmd, cmd_opts)
+        self.yaku_build_ctx = yaku.context.get_bld()
+
+    def store(self):
+        Context.store(self)
+        self.yaku_build_ctx.store()
+
 def run_cmd(cmd_name, cmd_opts):
     cmd = get_command(cmd_name)()
     if get_command_override(cmd_name):
@@ -229,6 +238,8 @@ def run_cmd(cmd_name, cmd_opts):
 
     if cmd_name == "configure":
         ctx = ConfigureContext(cmd, cmd_opts)
+    elif cmd_name == "build":
+        ctx = BuildContext(cmd, cmd_opts)
     else:
         ctx = Context(cmd, cmd_opts)
 
