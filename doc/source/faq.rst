@@ -161,3 +161,27 @@ Other contributors:
     - Stefan Van der Walt: initial implementation of the bento.info parser
     - Philip J. Eby: for answering most of my questions about
       setuptools/eggs design
+
+What are the main features of bento compared to its competitors
+===============================================================
+
+Bento has the following main features:
+    - Full static metadata description for simple packages
+    - Arbitrary extensibility through python scripts
+    - Reliable build and installation: no more stalled files when installing,
+      out-of-date source files and dependencies automatically detected for C
+      extensions
+
+The following features are being implemented as well:
+    - Optional recursive package description for complex packages
+    - Easy customization of compilation flags and toolchain
+    - Robust command dependencies from dependencies descriptor: no more
+      monkey-patching nonsense to insert a new command between two existing
+      subcommands 
+    - The build process may be replaced by make, waf or scons if desired, while
+      still keeping the installation and packaging features of bento (windows
+      installers, eggs, etc...)
+    - New packaging format which can be translated to any existing one if
+      wanted (egg, wininst, msi, etc...). The format is optimized for
+      installation
+    - Reliable uninstallation
