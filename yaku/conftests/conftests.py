@@ -211,25 +211,6 @@ def check_header(conf, header):
                               "result": ret})
     return ret
 
-def check_lib(conf, lib):
-    code = r"""
-int main()
-{
-    return 0;
-}
-"""
-
-    old_lib = copy.deepcopy(conf.env["LIBS"])
-    try:
-        conf.env["LIBS"].insert(0, lib)
-        ret = create_link_conf_taskgen(conf, "check_lib", code,
-                            None, "Checking for library %s" % lib)
-    finally:
-        conf.env["LIBS"] = old_lib
-    conf.conf_results.append({"type": "lib", "value": lib,
-                              "result": ret})
-    return ret
-
 def check_func(conf, func, libs=None):
     if libs is None:
         libs = []
@@ -254,12 +235,48 @@ int main (void)
     try:
         for lib in libs[::-1]:
             conf.env["LIBS"].insert(0, lib)
+        if libs:
+            msg = "Checking for function %s in %s" % (func, " ".join([conf.env["LIB_FMT"] % lib for lib in libs]))
+        else:
+            msg = "Checking for function %s" % func
         ret = create_link_conf_taskgen(conf, "check_func", code,
-                            None, "Checking for function %s" % func)
+                            None, msg)
     finally:
         conf.env["LIBS"] = old_lib
     conf.conf_results.append({"type": "func", "value": func,
                               "result": ret})
+    return ret
+
+def check_lib(conf, lib, func):
+    # XXX: refactor with check_func
+
+    # Handle MSVC intrinsics: force MS compiler to make a function
+    # call. Useful to test for some functions when built with
+    # optimization on, to avoid build error because the intrinsic and
+    # our 'fake' test declaration do not match.
+    code = r"""
+char %(func)s (void);
+
+#ifdef _MSC_VER
+#pragma function(%(func)s)
+#endif
+
+int main (void)
+{
+    return %(func)s();
+}
+    """ % {"func": func}
+
+    old_lib = copy.deepcopy(conf.env["LIBS"])
+    try:
+        conf.env["LIBS"].insert(0, lib)
+        msg = "Checking for function %s in %s" % (func, conf.env["LIB_FMT"] % lib)
+        ret = create_link_conf_taskgen(conf, "check_lib", code,
+                            None, msg)
+    finally:
+        conf.env["LIBS"] = old_lib
+    conf.conf_results.append({"type": "lib", "value": lib,
+                              "result": ret, "func": func})
     return ret
 
 def check_funcs_at_once(conf, funcs, libs=None):
