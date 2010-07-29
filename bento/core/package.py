@@ -40,32 +40,59 @@ def _parse_libraries(libraries):
 
     return ret
 
+def parse_main_kw(d):
+    kw = {"extra_source_files": [],
+          "packages": [],
+          "py_modules": [],
+          "extensions": {},
+          "compiled_libraries": {},
+          "data_files": {},
+          "executables": {}}
+
+    for field, value in d.items():
+        if field == "extra_sources":
+            d.pop(field)
+            kw["extra_source_files"].extend(value)
+        elif field == "libraries":
+            d.pop(field)
+            kw.update(_parse_libraries(value))
+        elif field == "data_files":
+            d.pop(field)
+            for name, data in value.items():
+                 kw["data_files"][name] = \
+                         DataFiles.from_parse_dict(data)
+        elif field == "executables":
+            d.pop(field)
+            for name, executable in value.items():
+                kw["executables"][name] = Executable.from_parse_dict(executable)
+
+    return kw, d
+
+def parse_to_pkg_kw(data, user_flags):
+    d = parse_to_dict(data, user_flags)
+    kw, remain = parse_main_kw(d)
+
+    for field, value in remain.items():
+        del remain[field]
+        if field in _METADATA_FIELDS:
+            kw[field] = value
+        elif field == "hook_file":
+            kw[field] = value
+    if remain.has_key("subento"):
+        recurse_subentos(remain)
+        del remain["subento"]
+
+    if len(remain) > 0:
+        raise ValueError("Unhandled field(s) %s!" % remain.keys())
+    return kw
+
 class PackageDescription:
     @classmethod
     def __from_data(cls, data, user_flags):
         if not user_flags:
             user_flags = {}
 
-        d = parse_to_dict(data, user_flags)
-        kw = {}
-        for field, value in d.items():
-            if field == "extra_sources":
-                kw["extra_source_files"] = value
-            elif field in _METADATA_FIELDS:
-                kw[field] = value
-            elif field == "libraries":
-                kw.update(_parse_libraries(d["libraries"]))
-            elif field == "data_files":
-                for name, data in d["data_files"].items():
-                     kw["data_files"][name] = \
-                             DataFiles.from_parse_dict(data)
-            elif field == "executables":
-                for name, executable in d["executables"].items():
-                    kw["executables"][name] = Executable.from_parse_dict(executable)
-
-            else:
-                pass
-
+        kw = parse_to_pkg_kw(data, user_flags)
         return cls(**kw)
 
     @classmethod
