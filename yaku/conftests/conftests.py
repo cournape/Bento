@@ -116,7 +116,8 @@ int main ()
 
     if not ccompile(conf, [create_file(conf, body, "yomama", ".c")]):
         sys.stderr.write("Failed !\n")
-        return False
+        size = 0
+        ret = False
 
     if expect is None:
         # this fails to *compile* if size > sizeof(type)
@@ -153,10 +154,15 @@ int main ()
                 high = mid
             else:
                 low = mid + 1
+        ret = low
+        size = low
         sys.stderr.write(" %d\n" % low)
-        return low
     else:
         raise NotImplementedError("Expect arg not yet implemented")
+
+    conf.conf_results.append({"type": "type_size", "value": type_name,
+                              "result": ret})
+    return ret
 
 def define(conf, name, value=None, comment=None):
     """\
