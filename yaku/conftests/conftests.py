@@ -186,8 +186,10 @@ def define(conf, name, value=None, comment=None):
     """
     lines = []
     if comment:
-        comment_str = "/* %s */" % comment
+        comment_str = "\n/* %s */" % comment
         lines.append(comment_str)
+    else:
+        lines.append("\n")
 
     if value is not None:
         define_str = "#define %s %s" % (name, value)
