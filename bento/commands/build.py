@@ -56,11 +56,11 @@ Usage:   bentomaker build [OPTIONS]."""
             build_extensions = build_distutils.build_extensions
         else:
             def builder(pkg):
-                return build_yaku.build_extensions(pkg, inplace, verbose)
+                return build_yaku.build_extensions(ctx, pkg, inplace, verbose)
             build_extensions = builder
 
             def builder(pkg):
-                return build_yaku.build_compiled_libraries(pkg, inplace, verbose)
+                return build_yaku.build_compiled_libraries(ctx, pkg, inplace, verbose)
             build_compiled_libraries = builder
 
         s = get_configured_state()

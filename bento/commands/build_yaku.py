@@ -111,32 +111,26 @@ def build_compiled_library(bld, pkg, inplace, verbose):
 
 import bento.core.errors
 
-def build_extensions(pkg, inplace=False, verbose=False):
-    bld = yaku.context.get_bld()
+def build_extensions(ctx, pkg, inplace=False, verbose=False):
+    bld = ctx.yaku_build_ctx
     try:
-        try:
-            return build_extension(bld, pkg, inplace, verbose)
-        except yaku.errors.TaskRunFailure, e:
-            if e.explain:
-                msg = e.explain
-            else:
-                msg = ""
-            msg += "command '%s' failed (see above)" % " ".join(e.cmd)
-            raise bento.core.errors.BuildError(msg)
-    finally:
-        bld.store()
+        return build_extension(bld, pkg, inplace, verbose)
+    except yaku.errors.TaskRunFailure, e:
+        if e.explain:
+            msg = e.explain
+        else:
+            msg = ""
+        msg += "command '%s' failed (see above)" % " ".join(e.cmd)
+        raise bento.core.errors.BuildError(msg)
 
-def build_compiled_libraries(pkg, inplace=False, verbose=False):
-    bld = yaku.context.get_bld()
+def build_compiled_libraries(ctx, pkg, inplace=False, verbose=False):
+    bld = ctx.yaku_build_ctx
     try:
-        try:
-            return build_compiled_library(bld, pkg, inplace, verbose)
-        except yaku.errors.TaskRunFailure, e:
-            if e.explain:
-                msg = e.explain
-            else:
-                msg = ""
-            msg += "command '%s' failed (see above)" % " ".join(e.cmd)
-            raise bento.core.errors.BuildError(msg)
-    finally:
-        bld.store()
+        return build_compiled_library(bld, pkg, inplace, verbose)
+    except yaku.errors.TaskRunFailure, e:
+        if e.explain:
+            msg = e.explain
+        else:
+            msg = ""
+        msg += "command '%s' failed (see above)" % " ".join(e.cmd)
+        raise bento.core.errors.BuildError(msg)
