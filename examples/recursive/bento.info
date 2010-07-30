@@ -1,0 +1,7 @@
+Name: foo
+Version: 1.0
+
+Subento: foo
+
+Library:
+    Packages: foo

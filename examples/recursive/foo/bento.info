@@ -1,0 +1,5 @@
+Subento:
+    bar1, bar2
+
+Library:
+    Packages: bar1, bar2
