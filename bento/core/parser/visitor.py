@@ -89,6 +89,12 @@ class Dispatcher(object):
     def empty(self, node):
         return {}
 
+    def _prune(self):
+        for k in ["libraries", "executables", "path_options", "flag_options",
+            "extra_sources", "subento", "data_files"]:
+            if len(self._d[k]) < 1:
+                del self._d[k]
+
     def stmt_list(self, node):
         for c in node.children:
             if c.type in ["name", "description", "version", "summary", "url",
@@ -109,6 +115,7 @@ class Dispatcher(object):
                 self._d["data_files"][c.value["name"]] = c.value
             else:
                 raise ValueError("Unhandled top statement (%s)" % c)
+        self._prune()
         return self._d
 
     def summary(self, node):
