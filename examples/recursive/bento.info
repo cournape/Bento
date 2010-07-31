@@ -3,5 +3,7 @@ Version: 1.0
 
 Subento: foo
 
+HookFile: bscript
+
 Library:
     Packages: foo

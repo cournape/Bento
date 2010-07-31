@@ -1,0 +1,7 @@
+from bento.commands.hooks \
+    import \
+        override
+
+@override
+def configure(ctx):
+    print "Configure:", __file__

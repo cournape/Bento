@@ -1,0 +1,8 @@
+from bento.commands.hooks \
+    import \
+        override, recurse
+
+@recurse(["foo/bar2/bscript", "foo/bar1/bscript"])
+@override
+def configure(ctx):
+    print "Configure:", __file__
