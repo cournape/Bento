@@ -93,11 +93,11 @@ def set_main():
     if not os.path.exists(BENTO_SCRIPT):
         return None
     pkg = PackageDescription.from_file(BENTO_SCRIPT)
-    main_file = os.path.abspath(pkg.hook_file)
 
-    if main_file is None:
+    if pkg.hook_file is None:
         return None
     else:
+        main_file = os.path.abspath(pkg.hook_file)
         if not os.path.exists(main_file):
             raise ValueError("Hook file %s not found" % main_file)
 
