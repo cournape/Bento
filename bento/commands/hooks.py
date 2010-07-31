@@ -78,8 +78,9 @@ def post_build(f):
     add_to_post_registry((f,), "build")
 
 def post_configure(f):
-    add_to_registry((f,), "post_configure")
-    add_to_post_registry((f,), "configure")
+    local_dir = os.path.dirname(compat_inspect.stack()[1][1])
+    add_to_registry((f, local_dir), "post_configure")
+    add_to_post_registry((f, local_dir), "configure")
 
 def pre_configure(f):
     add_to_registry((f,), "pre_configure")

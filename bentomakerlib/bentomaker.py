@@ -253,6 +253,7 @@ def run_cmd(cmd_name, cmd_opts):
             cmd_func(ctx)
         if get_post_hooks(cmd_name) is not None:
             for f in get_post_hooks(cmd_name):
+                ctx.local_dir = f[1]
                 f[0](ctx)
     finally:
         ctx.store()
