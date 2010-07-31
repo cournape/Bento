@@ -45,7 +45,8 @@ def _parse_libraries(libraries):
     return ret
 
 class SubPackageDescription:
-    def __init__(self, rdir, packages=None, extensions=None):
+    def __init__(self, rdir, packages=None, extensions=None,
+                 compiled_libraries=None):
         self.rdir = rdir
         if packages is None:
             self.packages = []
@@ -55,13 +56,17 @@ class SubPackageDescription:
             self.extensions = {}
         else:
             self.extensions = extensions
+        if compiled_libraries is None:
+            self.compiled_libraries = {}
+        else:
+            self.compiled_libraries = compiled_libraries
 
     def __repr__(self):
         return repr({"packages": self.packages})
 
     def translate(self):
         # XXX: stupid, not robust against multiple translate calls
-        ret = {"packages": [], "extensions": {}}
+        ret = {"packages": [], "extensions": {}, "compiled_libraries": {}}
         parent_pkg = self.rdir.replace("/", ".")
         for p in self.packages:
             ret["packages"].append(parent_pkg + "." + p)
@@ -71,6 +76,12 @@ class SubPackageDescription:
             name = parent_pkg + "." + name
             ext.name = parent_pkg + "." + ext.name
             ret["extensions"][name] = ext
+        for name, clib in self.compiled_libraries.items():
+            clib.sources = [os.path.join(self.rdir, s) for s \
+                            in clib.sources]
+            name = parent_pkg + "." + name
+            clib.name = os.path.join(self.rdir, clib.name)
+            ret["compiled_libraries"][name] = clib
         return ret
 
 def recurse_subentos(subentos):
@@ -157,6 +168,11 @@ def parse_to_pkg_kw(data, user_flags):
         for k, v in subpackages.items():
             for name, ext in v.extensions.items():
                 kw["extensions"][name] = ext
+            if len(v.compiled_libraries):
+                if not kw.has_key("compiled_libraries"):
+                    kw["compiled_libraries"] = {}
+                for name, clib in v.compiled_libraries.items():
+                    kw["compiled_libraries"][name] = clib
 
     if len(remain) > 0:
         raise ValueError("Unhandled field(s) %s!" % remain.keys())
