@@ -158,16 +158,25 @@ def parse_to_pkg_kw(data, user_flags):
             del remain[field]
             kw[field] = value
 
+    # XXX: once and for all, decide empty (default) field vs missing
+    # field in parsed dictionaries !!
+    # XXX: the translate stuff is stupid as well
     if remain.has_key("subento"):
         subentos = remain.pop("subento")
         subpackages = recurse_subentos(subentos)
-        py_pkgs = []
         for k, v in subpackages.items():
-            py_pkgs.extend([p for p in v.translate()["packages"]])
-        kw["packages"] += py_pkgs
-        for k, v in subpackages.items():
-            for name, ext in v.extensions.items():
-                kw["extensions"][name] = ext
+            translated = v.translate()
+            if len(v.packages):
+                if not kw.has_key("packages"):
+                    kw["packages"] = []
+                for k, v in subpackages.items():
+                    kw["packages"].extend([p for p in \
+                                           translated["packages"]])
+            if len(v.extensions):
+                if not kw.has_key("extensions"):
+                    kw["extensions"] = {}
+                for name, ext in v.extensions.items():
+                    kw["extensions"][name] = ext
             if len(v.compiled_libraries):
                 if not kw.has_key("compiled_libraries"):
                     kw["compiled_libraries"] = {}
