@@ -7,3 +7,5 @@ HookFile: bscript
 
 Library:
     Packages: foo
+    Extension: _hello
+        Sources: src/hellomodule.c

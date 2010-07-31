@@ -1,7 +1,7 @@
 from bento.commands.hooks \
     import \
-        override, recurse
+        post_configure
 
-@override
+@post_configure
 def configure(ctx):
     print "Configure:", __file__
