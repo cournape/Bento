@@ -29,14 +29,15 @@ def _parse_libraries(libraries):
     if len(libraries) > 0:
         default = libraries["default"]
         for k in ["packages", "py_modules", "install_requires"]:
-            ret[k] = default[k]
-        ret["extensions"] = {}
+            if default[k]:
+                ret[k] = default[k]
         if default["extensions"]:
+            ret["extensions"] = {}
             for k, v in default["extensions"].items():
                 ret["extensions"][k] = Extension.from_parse_dict(v)
 
-        ret["compiled_libraries"] = {}
         if default["compiled_libraries"]:
+            ret["compiled_libraries"] = {}
             for k, v in default["compiled_libraries"].items():
                 ret["compiled_libraries"][k] = \
                         CompiledLibrary.from_parse_dict(v)
@@ -72,8 +73,7 @@ class SubPackageDescription:
             ret["extensions"][name] = ext
         return ret
 
-def recurse_subentos(d):
-    subentos = d["subento"]
+def recurse_subentos(subentos):
     filenames = []
     subpackages = {}
 
@@ -98,26 +98,15 @@ def recurse_subentos(d):
 
     for s in subentos:
         _recurse(s, root_dir)
-
-    from pprint import pprint
-    pprint(subpackages)
-
-    for k, v in subpackages.items():
-        print v.translate()
+    return subpackages
 
 def parse_main_kw(d):
-    kw = {"extra_source_files": [],
-          "packages": [],
-          "py_modules": [],
-          "extensions": {},
-          "compiled_libraries": {},
-          "data_files": {},
-          "executables": {}}
+    kw = {}
 
     for field, value in d.items():
         if field == "extra_sources":
             d.pop(field)
-            kw["extra_source_files"].extend(value)
+            kw["extra_source_files"] = value
         elif field == "libraries":
             d.pop(field)
             kw.update(_parse_libraries(value))
@@ -157,9 +146,17 @@ def parse_to_pkg_kw(data, user_flags):
         elif field == "hook_file":
             del remain[field]
             kw[field] = value
+
     if remain.has_key("subento"):
-        recurse_subentos(remain)
-        del remain["subento"]
+        subentos = remain.pop("subento")
+        subpackages = recurse_subentos(subentos)
+        py_pkgs = []
+        for k, v in subpackages.items():
+            py_pkgs.extend([p for p in v.translate()["packages"]])
+        kw["packages"] += py_pkgs
+        for k, v in subpackages.items():
+            for name, ext in v.extensions.items():
+                kw["extensions"][name] = ext
 
     if len(remain) > 0:
         raise ValueError("Unhandled field(s) %s!" % remain.keys())
