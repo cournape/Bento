@@ -74,7 +74,7 @@ def recurse_subentos(d):
             key = relpath(f, root_dir)
             rdir = relpath(os.path.join(cwd, subento), root_dir)
 
-            kw, subentos = parse_to_subpkg_kw(fid.read())
+            kw, subentos = parse_to_subpkg_kw(fid.read(), f)
             subpackages[key] = SubPackageDescription(rdir, kw["packages"])
             for s in subentos:
                 _recurse(s, os.path.join(cwd, subento))
@@ -118,7 +118,7 @@ def parse_main_kw(d):
 
     return kw, d
 
-def parse_to_subpkg_kw(data):
+def parse_to_subpkg_kw(data, f):
     d = parse_to_dict(data)
     kw, remain = parse_main_kw(d)
     if remain.has_key("subento"):
@@ -126,7 +126,9 @@ def parse_to_subpkg_kw(data):
     else:
         subentos = []
     if len(remain) > 0:
-        raise ValueError("Unhandled field(s) %s!" % remain.keys())
+        raise ValueError("Illegal field(s) in subento %s: %s !" \
+                         % (f, ".".join(["`%s'" % k for k
+                                            in remain.keys()])))
     return kw, subentos
 
 def parse_to_pkg_kw(data, user_flags):
