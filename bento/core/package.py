@@ -44,17 +44,32 @@ def _parse_libraries(libraries):
     return ret
 
 class SubPackageDescription:
-    def __init__(self, rdir, packages=[]):
+    def __init__(self, rdir, packages=None, extensions=None):
         self.rdir = rdir
-        self.packages = packages
+        if packages is None:
+            self.packages = []
+        else:
+            self.packages = packages
+        if extensions is None:
+            self.extensions = {}
+        else:
+            self.extensions = extensions
 
     def __repr__(self):
         return repr({"packages": self.packages})
 
     def translate(self):
-        ret = {"packages": []}
+        # XXX: stupid, not robust against multiple translate calls
+        ret = {"packages": [], "extensions": {}}
+        parent_pkg = self.rdir.replace("/", ".")
         for p in self.packages:
-            ret["packages"].append(".".join([self.rdir, p]))
+            ret["packages"].append(parent_pkg + "." + p)
+        for name, ext in self.extensions.items():
+            ext.sources = [os.path.join(self.rdir, s) for s \
+                           in ext.sources]
+            name = parent_pkg + "." + name
+            ext.name = parent_pkg + "." + ext.name
+            ret["extensions"][name] = ext
         return ret
 
 def recurse_subentos(d):
