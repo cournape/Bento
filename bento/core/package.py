@@ -123,11 +123,13 @@ def parse_main_kw(d):
             kw.update(_parse_libraries(value))
         elif field == "data_files":
             d.pop(field)
+            kw["data_files"] = {}
             for name, data in value.items():
                  kw["data_files"][name] = \
                          DataFiles.from_parse_dict(data)
         elif field == "executables":
             d.pop(field)
+            kw["executables"] = {}
             for name, executable in value.items():
                 kw["executables"][name] = Executable.from_parse_dict(executable)
 
@@ -150,6 +152,8 @@ def parse_to_pkg_kw(data, user_flags):
     d = parse_to_dict(data, user_flags)
     kw, remain = parse_main_kw(d)
 
+    # XXX: once and for all, decide empty (default) field vs missing
+    # field in parsed dictionaries !!
     for field, value in remain.items():
         if field in _METADATA_FIELDS:
             del remain[field]
@@ -157,9 +161,12 @@ def parse_to_pkg_kw(data, user_flags):
         elif field == "hook_file":
             del remain[field]
             kw[field] = value
+        elif field == "config_py":
+            del remain[field]
+            kw[field] = value
+        elif field == "flag_options":
+            del remain[field]
 
-    # XXX: once and for all, decide empty (default) field vs missing
-    # field in parsed dictionaries !!
     # XXX: the translate stuff is stupid as well
     if remain.has_key("subento"):
         subentos = remain.pop("subento")
