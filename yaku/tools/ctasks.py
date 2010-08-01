@@ -62,7 +62,14 @@ def shlink_task(self, name):
 
 def static_link_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    target = os.path.join(self.env["BLDDIR"], self.env["STATICLIB_FMT"] % name)
+    # Deal with target such as foo/bar -> foo/libbar.a
+    # XXX: there should be a systematic way of doing this
+    head, tail = os.path.split(name)
+    if head:
+        target = os.path.join(head, self.env["STATICLIB_FMT"] % tail)
+    else:
+	target = os.path.join(self.env["STATICLIB_FMT"] % name)
+    target = os.path.join(self.env["BLDDIR"], target)
     ensure_dir(target)
     task = Task("cc_link", inputs=objects, outputs=target)
     task.env = self.env
