@@ -26,6 +26,7 @@ class ConfigureContext(object):
         self.builders = {}
         self.cache = {}
         self.conf_results = []
+        self._configured = {}
 
     def load_tool(self, tool, tooldir=None):
         _t = import_tools([tool], tooldir)
@@ -47,7 +48,9 @@ class ConfigureContext(object):
                 _t = self.load_tool(t, tooldir)
             ret[t] = _t
         for mod in self._tool_modules.values():
-            mod.configure(self)
+            if not self._configured.has_key(mod):
+                mod.configure(self)
+                self._configured[mod] = True
         return ret
 
     def setup_tools(self):
