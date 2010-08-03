@@ -13,6 +13,8 @@ from yaku.utils \
     import \
         ensure_dir
 
+f77_compile, f77_vars = compile_fun("f77", "${F77} ${F77FLAGS} ${F77_TGT_F}${TGT[0]} ${F77_SRC_F}${SRC}", False)
+
 @extension(".f")
 def fortran_task(self, node):
     base = os.path.splitext(node)[0]
@@ -24,11 +26,13 @@ def fortran_task(self, node):
         target = base + ".o"
     ensure_dir(target)
 
-    func, env_vars = compile_fun("f77",
-            "${F77} ${F77FLAGS} -c ${SRC} -o ${TGT[0]}", False)
     task = Task("f77", inputs=node, outputs=target)
-    task.env_vars = env_vars
+    task.env_vars = f77_vars
     task.env = self.env
-    task.func = func
+    task.func = f77_compile
     self.object_tasks.append(task)
     return [task]
+
+def configure(ctx):
+    cc = ctx.load_tool("gfortran")
+    cc.setup(ctx)
