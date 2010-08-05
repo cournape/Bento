@@ -31,9 +31,9 @@ from yaku.conftests \
 
 import yaku.tools
 
-pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0]} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS}", False)
+pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0].abspath()} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS}", False)
 
-pycc, pycc_vars = compile_fun("pycc", "${PYEXT_CC} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0]} ${PYEXT_CC_SRC_F}${SRC}", False)
+pycc, pycc_vars = compile_fun("pycc", "${PYEXT_CC} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0].abspath()} ${PYEXT_CC_SRC_F}${SRC}", False)
 
 # pyext env <-> sysconfig env conversion
 _SYS_TO_PYENV = {
@@ -109,17 +109,14 @@ def pycc_hook(self, node):
     return tasks
 
 def pycc_task(self, node):
-    base = os.path.splitext(node)[0]
-    # XXX: hack to avoid creating build/build/... when source is
-    # generated. Dealing with this most likely requires a node concept
-    if not os.path.commonprefix([self.env["BLDDIR"], base]):
-        target = os.path.join(self.env["BLDDIR"],
-                self.env["PYEXT_CC_OBJECT_FMT"] % base)
-    else:
-        target = self.env["PYEXT_CC_OBJECT_FMT"] % base
+    #print node, node.abspath()
+    #target = self.bld.src_root.find_or_declare(
+    #        node.change_ext(".o").name)
+    target = node.change_ext(".o")
+    ensure_dir(target.abspath())
 
-    ensure_dir(target)
-    task = Task("pycc", inputs=node, outputs=target)
+    task = Task("pycc", inputs=[node], outputs=[target])
+    task.gen = self
     task.env_vars = pycc_vars
     task.env = self.env
     task.func = pycc
@@ -127,10 +124,15 @@ def pycc_task(self, node):
 
 def pylink_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    target = os.path.join(self.env["BLDDIR"],
-            self.env["PYEXT_FMT"] % name)
-    ensure_dir(target)
-    task = Task("pylink", inputs=objects, outputs=target)
+    def declare_target():
+        folder, base = os.path.split(name)
+        tmp = folder + os.path.sep + self.env["PYEXT_FMT"] % base
+        return self.bld.src_root.find_or_declare(tmp)
+    target = declare_target()
+    ensure_dir(target.abspath())
+
+    task = Task("pylink", inputs=objects, outputs=[target])
+    task.gen = self
     task.func = pylink
     task.env_vars = pylink_vars
     return [task]
@@ -143,6 +145,7 @@ class PythonBuilder(object):
         self.use_distutils = True
 
     def extension(self, name, sources, env=None):
+        sources = [self.ctx.src_root.find_resource(s) for s in sources]
         _env = copy.deepcopy(self.env)
         if env is not None:
             _env.update(env)
@@ -259,6 +262,7 @@ def create_pyext(bld, env, name, sources):
     tasks = []
 
     task_gen = CompiledTaskGen("pyext", sources, name)
+    task_gen.bld = bld
     old_hook = set_extension_hook(".c", pycc_hook)
 
     task_gen.env = env
@@ -289,18 +293,20 @@ def apply_libs(task_gen):
 
 def apply_libpath(task_gen):
     libdir = task_gen.env["PYEXT_LIBDIR"]
-    implicit_paths = set([
-        os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
-        for s in task_gen.sources])
+    #implicit_paths = set([
+    #    os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
+    #    for s in task_gen.sources])
+    implicit_paths = []
     libdir = list(implicit_paths) + libdir
     task_gen.env["PYEXT_APP_LIBDIR"] = [
             task_gen.env["PYEXT_LIBDIR_FMT"] % d for d in libdir]
 
 def apply_cpppath(task_gen):
     cpppaths = task_gen.env["PYEXT_CPPPATH"]
-    implicit_paths = set([
-        os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
-        for s in task_gen.sources])
+    #implicit_paths = set([
+    #    os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
+    #    for s in task_gen.sources])
+    implicit_paths = []
     cpppaths = list(implicit_paths) + cpppaths
     task_gen.env["PYEXT_INCPATH"] = [
             task_gen.env["PYEXT_CPPPATH_FMT"] % p

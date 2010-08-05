@@ -66,12 +66,12 @@ def compile_fun_shell(name, line):
             if meth:
                 app('task.inputs%s' % meth)
             else:
-                app('" ".join(task.inputs)')
+                app('" ".join([i.path_from(bld.bldnode) for i in task.inputs)')
         elif var == 'TGT':
             if meth:
                 app('task.outputs%s' % meth)
             else:
-                app('" ".join(task.outputs)')
+                app('" ".join([i.path_from(bld.bldnode) for i in task.outputs)')
         else:
             if not var in dvars:
                 dvars.append(var)
@@ -108,10 +108,12 @@ def compile_fun_noshell(name, line):
         (var, meth) = extr[x]
         if var == 'SRC':
             if meth: app('lst.append(task.inputs%s)' % meth)
-            else: app("lst.extend(task.inputs)")
+            else:
+                app('lst.extend([i.path_from(bld_root) for i in task.inputs])')
         elif var == 'TGT':
             if meth: app('lst.append(task.outputs%s)' % meth)
-            else: app("lst.extend(task.outputs)")
+            else:
+                app('lst.extend([i.path_from(bld_root) for i in task.outputs])')
         else:
             app('lst.extend(to_list(env[%r]))' % var)
             if not var in dvars: dvars.append(var)

@@ -22,18 +22,21 @@ def get_extension_hook(ext):
 def create_tasks(ctx, sources):
     tasks = []
 
+    def _get_hook(source):
+        for ext in RULES_REGISTRY:
+            if source.name.endswith(ext):
+                return RULES_REGISTRY[ext]
+        raise RuntimeError("No rule defined for extension %r" % ext)
+
     for s in sources:
-        base, ext = os.path.splitext(s)
-        if not RULES_REGISTRY.has_key(ext):
-            raise RuntimeError("No rule defined for extension %r" % ext)
-        else:
-            task_gen = RULES_REGISTRY[ext]
-            tasks.extend(task_gen(ctx, s))
+        task_gen = _get_hook(s)
+        tasks.extend(task_gen(ctx, s))
     return tasks
 
 def hash_task(t):
-    ext_in = [os.path.splitext(s)[1] for s in t.inputs]
-    ext_out = [os.path.splitext(s)[1] for s in t.outputs]
+    # FIXME: ext_in and ext_out should not be computed from the files
+    ext_in = [os.path.splitext(s.name)[1] for s in t.inputs]
+    ext_out = [os.path.splitext(s.name)[1] for s in t.outputs]
     ext_t = tuple(ext_in + ext_out)
     return hash((t.__class__.__name__, ext_t))
 
@@ -112,9 +115,9 @@ class TaskManager(object):
     def compare_exts(self, t1, t2):
         "extension production"
         def _get_in(t):
-            return [os.path.splitext(s)[1] for s in t.inputs]
+            return [os.path.splitext(s.name)[1] for s in t.inputs]
         def _get_out(t):
-            return [os.path.splitext(s)[1] for s in t.outputs]
+            return [os.path.splitext(s.name)[1] for s in t.outputs]
 
         in_ = _get_in(t1)
         out_ = _get_out(t2)
@@ -134,8 +137,11 @@ def run_task(ctx, task):
         ctx.cache[tuid] = t.signature()
 
     tuid = task.get_uid()
+    # XXX: there may be a better way to do this without stating output
+    # (we want to know if the task has already been executed in a
+    # previous run)
     for o in task.outputs:
-        if not os.path.exists(o):
+        if not os.path.exists(o.abspath()):
             _run(task)
             break
     if not tuid in ctx.cache:
