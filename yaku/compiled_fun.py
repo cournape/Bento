@@ -9,6 +9,7 @@ from yaku.environment \
 COMPILE_TEMPLATE_SHELL = '''
 def f(task):
     env = task.env
+    bld = task.bld
     wd = getattr(task, 'cwd', None)
     p = env.get_flat
     cmd = \'\'\' %s \'\'\' % s
@@ -18,6 +19,7 @@ def f(task):
 COMPILE_TEMPLATE_NOSHELL = '''
 def f(task):
 	env = task.env
+	bld_root = task.gen.bld.bld_root
 	wd = getattr(task, 'cwd', None)
 	def to_list(xx):
 		if isinstance(xx, str): return [xx]
