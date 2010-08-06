@@ -44,10 +44,9 @@ class ConfigureContext(object):
 
 def create_file(conf, code, prefix="", suffix=""):
     filename = "%s%s%s" % (prefix, md5(code).hexdigest(), suffix)
-    filename = join(conf.env["BLDDIR"], filename)
-    ensure_dir(filename)
-    open(filename, "w").write(code)
-    return filename
+    node = conf.bld_root.declare(filename)
+    node.write(code)
+    return node
 
 def create_compile_conf_taskgen(conf, name, body, headers,
         msg, extension=".c"):
@@ -121,6 +120,7 @@ def create_link_conf_taskgen(conf, name, body, headers,
     sources = [create_file(conf, code, name, extension)]
 
     task_gen = CompiledTaskGen("conf", sources, name)
+    task_gen.bld = conf
     task_gen.env.update(copy.deepcopy(conf.env))
     task_gen.env["INCPATH"] = ""
     apply_libs(task_gen)
@@ -235,10 +235,6 @@ def ccompile(conf, sources):
     except TaskRunFailure, e:
         explanation = str(e)
 
-    f = open(sources[0])
-    try:
-        code = f.read()
-        write_log(conf.log, builder.ctx.tasks, code, "", succeed, explanation)
-    finally:
-        f.close()
+    code = sources[0].read()
+    write_log(conf.log, builder.ctx.tasks, code, "", succeed, explanation)
     return succeed
