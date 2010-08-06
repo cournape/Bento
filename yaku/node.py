@@ -77,7 +77,11 @@ class Node(object):
 
     def read(self, flags='r'):
         "get the contents, assuming the node is a file"
-        return Utils.readf(self.abspath(), flags)
+        fid = open(self.abspath(), flags)
+        try:
+            return fid.read()
+        finally:
+            fid.close()
 
     def write(self, data, flags='w'):
         "write some text to the physical file, assuming the node is a file"
