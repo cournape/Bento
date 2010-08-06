@@ -28,7 +28,7 @@ def configure(conf):
         check_type(conf, "char")
         #check_type(conf, "complex")
         check_type(conf, "complex", headers=["complex.h"])
-        check_lib(conf, lib="m")
+        check_lib(conf, "m", "exp")
         #check_lib(conf, lib="mm")
         check_func(conf, "floor", libs=["m"])
         check_func(conf, "floor")

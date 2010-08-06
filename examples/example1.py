@@ -18,7 +18,7 @@ from yaku.conftests \
         check_compiler, check_header
 
 def configure(ctx):
-    ctx.use_tools(["pyext"], ["tools"])
+    ctx.use_tools(["pyext", "ctasks"], ["tools"])
 
     gcc_detect(ctx)
     check_compiler(ctx)
