@@ -451,7 +451,8 @@ class Node(object):
     def change_ext(self, ext):
         "node of the same path, but with a different extension - hot zone so do not touch"
         name = self.name
-        k = name.find('.')
+        # XXX: is using name.find(".") as done in waf a bug ?
+        k = name.rfind('.')
         if k >= 0:
             name = name[:k] + ext
         else:
