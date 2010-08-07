@@ -10,6 +10,7 @@ from yaku.scheduler \
 from yaku.context \
     import \
         get_bld, get_cfg
+import yaku.node
 import yaku.errors
 
 def configure(ctx):
@@ -25,7 +26,7 @@ def configure(ctx):
             "SUBST_DICT": {"VERSION": "0.0.2"}})
     import numpy.distutils
     for p in numpy.distutils.misc_util.get_numpy_include_dirs()[::-1]:
-        ctx.env["CPPPATH"].insert(0, p)
+        ctx.env["PYEXT_CPPPATH"].insert(0, p)
 
 def build(ctx):
     pyext = ctx.builders["pyext"]
@@ -36,6 +37,7 @@ def build(ctx):
     #create_pyext(ctx, "_swig_yo", ["src/yo.i"])
 
 def create_sources(ctx, name, sources):
+    sources = [ctx.src_root.find_node(s) for s in sources]
     tasks = create_tasks(ctx, sources)
     run_tasks(ctx, tasks)
 

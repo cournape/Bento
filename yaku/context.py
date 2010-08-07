@@ -17,6 +17,25 @@ from yaku.tools \
 from yaku.utils \
     import \
         ensure_dir, rename
+import yaku.node
+
+def create_top_nodes(start_dir, build_dir):
+    root = yaku.node.Node("", None)
+    if not os.path.exists(build_dir):
+        os.makedirs(build_dir)
+    if not os.path.exists(start_dir):
+        raise ValueError("%s does not exist ???")
+    srcnode = root.find_dir(start_dir)
+    bldnode = root.find_dir(build_dir)
+
+    # FIXME
+    class _FakeContext(object):
+        pass
+    yaku.node.Node.ctx = _FakeContext()
+    yaku.node.Node.ctx.srcnode = srcnode
+    yaku.node.Node.ctx.bldnode = bldnode
+
+    return srcnode, bldnode
 
 class ConfigureContext(object):
     def __init__(self):
@@ -143,6 +162,12 @@ def get_cfg():
     if "-v" in sys.argv:
         env["VERBOSE"] = True
 
+    srcnode, bldnode = create_top_nodes(
+            os.path.abspath(os.getcwd()),
+            os.path.abspath(env["BLDDIR"]))
+    ctx.src_root = srcnode
+    ctx.bld_root = bldnode
+
     ctx.env = env
     ctx.log = myopen(os.path.join(env["BLDDIR"], "config.log"), "w")
     return ctx
@@ -150,4 +175,10 @@ def get_cfg():
 def get_bld():
     ctx = BuildContext()
     ctx.load()
+
+    srcnode, bldnode = create_top_nodes(
+            os.path.abspath(os.getcwd()),
+            os.path.abspath(ctx.env["BLDDIR"]))
+    ctx.src_root = srcnode
+    ctx.bld_root = bldnode
     return ctx
