@@ -303,10 +303,8 @@ def apply_libpath(task_gen):
 
 def apply_cpppath(task_gen):
     cpppaths = task_gen.env["PYEXT_CPPPATH"]
-    #implicit_paths = set([
-    #    os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
-    #    for s in task_gen.sources])
-    implicit_paths = []
+    implicit_paths = set([s.parent.srcpath() \
+                          for s in task_gen.sources])
     cpppaths = list(implicit_paths) + cpppaths
     task_gen.env["PYEXT_INCPATH"] = [
             task_gen.env["PYEXT_CPPPATH_FMT"] % p
