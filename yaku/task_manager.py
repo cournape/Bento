@@ -1,6 +1,7 @@
 import os
 
 RULES_REGISTRY = {}
+FILES_REGISTRY = {}
 
 def extension(ext):
     def _f(f):
