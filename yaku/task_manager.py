@@ -1,6 +1,7 @@
 import os
 
 RULES_REGISTRY = {}
+FILES_REGISTRY = {}
 
 def extension(ext):
     def _f(f):
@@ -19,10 +20,18 @@ def get_extension_hook(ext):
     except KeyError:
         raise ValueError("No hook registered for extension %r" % ext)
 
+def set_file_hook(ctx, source, hook):
+    node = ctx.src_root.find_resource(source)
+    if node is None:
+        raise IOError("file %s not found" % source)
+    FILES_REGISTRY[node] = hook
+
 def create_tasks(ctx, sources):
     tasks = []
 
     def _get_hook(source):
+        if source in FILES_REGISTRY:
+            return FILES_REGISTRY[source]
         for ext in RULES_REGISTRY:
             if source.name.endswith(ext):
                 return RULES_REGISTRY[ext]
