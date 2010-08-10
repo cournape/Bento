@@ -7,7 +7,7 @@ class TaskRunFailure(YakuError):
         self.explain = explain
 
     def __str__(self):
-        return "cmd %s failed: " % " ".join(self.cmd)
+        return "cmd %s failed: \n\n%s" % (" ".join(self.cmd), self.explain)
 
 class ToolNotFound(YakuError):
     pass
