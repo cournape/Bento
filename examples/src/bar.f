@@ -1,2 +1,2 @@
-        subroutine foo
+        program foo
         end
