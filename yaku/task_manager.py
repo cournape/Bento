@@ -35,7 +35,7 @@ def create_tasks(ctx, sources):
         for ext in RULES_REGISTRY:
             if source.name.endswith(ext):
                 return RULES_REGISTRY[ext]
-        raise RuntimeError("No rule defined for extension %r" % ext)
+        raise RuntimeError("No rule defined for extension %r" % source.suffix())
 
     for s in sources:
         task_gen = _get_hook(s)

@@ -10,20 +10,18 @@ def file_hook(self, node):
 
 def configure(ctx):
     ctx.use_tools(["ctasks"])
+    set_file_hook(ctx, "src/fubar.c", file_hook)
 
 def build(ctx):
-    set_file_hook(ctx, "src/fubar.c", file_hook)
     builder = ctx.builders["ctasks"].program
     builder("src/main", sources=["src/main.c", "src/fubar.c"])
 
 if __name__ == "__main__":
-    if False:
-        cfg = get_cfg()
-        configure(cfg)
-        cfg.store()
+    cfg = get_cfg()
+    configure(cfg)
+    cfg.store()
 
-    if True:
-        bld = get_bld()
-        build(bld)
-        run_tasks(bld)
-        bld.store()
+    bld = get_bld()
+    build(bld)
+    run_tasks(bld)
+    bld.store()

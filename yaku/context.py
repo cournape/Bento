@@ -38,6 +38,22 @@ def create_top_nodes(start_dir, build_dir):
 
     return srcnode, bldnode
 
+# XXX: yet another hack. We need to guarantee that a same file is
+# represented by exactly the same node instance (defined as the same
+# id) everywhere. Pickling does not guarantee that, so for the files
+# mapping, we store the nodes as paths and pickle that. We recreate
+# the nodes from there when we need to reload it.
+def _hook_id_to_hook_path(hook_dict):
+    # convert a hook dict indexed by id to a hook dict indexed by
+    # paths (for storage)
+    return dict([(k.srcpath(), v) for k, v in hook_dict.items()])
+
+def _hook_path_to_hook_id(src_root, hook_dict):
+    # convert a hook dict indexed by paths to a hook dict indexed by
+    # id
+    return dict([(src_root.find_resource(k), v) for \
+                 k, v in hook_dict.items()])
+
 class ConfigureContext(object):
     def __init__(self):
         self.env = {}
@@ -96,7 +112,7 @@ class ConfigureContext(object):
         fid = myopen(HOOK_DUMP, "wb")
         try:
             dump({"extensions": yaku.task_manager.RULES_REGISTRY,
-                  "files": yaku.task_manager.FILES_REGISTRY},
+                  "files": _hook_id_to_hook_path(yaku.task_manager.FILES_REGISTRY)},
                  fid)
         finally:
             fid.close()
@@ -139,11 +155,17 @@ class BuildContext(object):
         else:
             self.cache = {}
 
+        srcnode, bldnode = create_top_nodes(
+                os.path.abspath(os.getcwd()),
+                os.path.abspath(self.env["BLDDIR"]))
+        self.src_root = srcnode
+        self.bld_root = bldnode
+
         fid = open(HOOK_DUMP, "rb")
         try:
             data = load(fid)
             yaku.task_manager.RULES_REGISTRY = data["extensions"]
-            yaku.task_manager.FILES_REGISTRY = data["files"]
+            yaku.task_manager.FILES_REGISTRY = _hook_path_to_hook_id(srcnode, data["files"])
         finally:
             fid.close()
 
@@ -193,9 +215,4 @@ def get_bld():
     ctx = BuildContext()
     ctx.load()
 
-    srcnode, bldnode = create_top_nodes(
-            os.path.abspath(os.getcwd()),
-            os.path.abspath(ctx.env["BLDDIR"]))
-    ctx.src_root = srcnode
-    ctx.bld_root = bldnode
     return ctx
