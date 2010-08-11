@@ -171,6 +171,7 @@ def parse_to_pkg_kw(data, user_flags):
     if remain.has_key("subento"):
         subentos = remain.pop("subento")
         subpackages = recurse_subentos(subentos)
+        translated = subpackages.items()
         for k, v in subpackages.items():
             translated = v.translate()
             if len(v.packages):
@@ -180,15 +181,10 @@ def parse_to_pkg_kw(data, user_flags):
                     kw["packages"].extend([p for p in \
                                            translated["packages"]])
             if len(v.extensions):
-                if not kw.has_key("extensions"):
-                    kw["extensions"] = {}
-                for name, ext in v.extensions.items():
-                    kw["extensions"][name] = ext
+                kw["extensions"] = translated.get("extensions", {})
             if len(v.compiled_libraries):
-                if not kw.has_key("compiled_libraries"):
-                    kw["compiled_libraries"] = {}
-                for name, clib in v.compiled_libraries.items():
-                    kw["compiled_libraries"][name] = clib
+                kw["compiled_libraries"] = \
+                        translated.get("compiled_libraries", {})
 
     if len(remain) > 0:
         raise ValueError("Unhandled field(s) %s!" % remain.keys())
