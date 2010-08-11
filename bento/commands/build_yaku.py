@@ -11,6 +11,7 @@ from bento.commands.errors \
 from bento.core.utils \
     import \
         cpu_count
+import bento.core.errors
 
 import yaku.task_manager
 import yaku.context
@@ -100,8 +101,6 @@ def _build_compiled_libraries(bld, pkg, inplace, verbose):
 
     run_tasks(bld, all_outputs, inplace)
     return ret
-
-import bento.core.errors
 
 def build_extensions(ctx, pkg, inplace=False, verbose=False):
     bld = ctx.yaku_build_ctx
