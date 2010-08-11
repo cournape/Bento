@@ -46,7 +46,7 @@ def build_extension(bld, pkg, inplace, verbose):
         ret[fullname] = section
 
     task_manager = yaku.task_manager.TaskManager(bld.tasks)
-    runner = yaku.scheduler.ParallelRunner(bld, task_manager, cpu_count())
+    runner = yaku.scheduler.SerialRunner(bld, task_manager)
     runner.start()
     runner.run()
 
@@ -93,7 +93,7 @@ def build_compiled_library(bld, pkg, inplace, verbose):
         ret[fullname] = section
 
     task_manager = yaku.task_manager.TaskManager(bld.tasks)
-    runner = yaku.scheduler.ParallelRunner(bld, task_manager, cpu_count())
+    runner = yaku.scheduler.SerialRunner(bld, task_manager)
     runner.start()
     runner.run()
 
