@@ -40,9 +40,9 @@ def build_extension(bld, pkg, inplace, verbose):
         fullname = ext.name
         ext_targets = outputs
         # FIXME: assume all outputs of one extension are in one directory
-        srcdir = os.path.dirname(ext_targets[0])
+        srcdir = ext_targets[0].parent.path_from(bld.bld_root)
         section = InstalledSection("extensions", fullname, srcdir,
-                                    target, [os.path.basename(o) for o in outputs])
+                                    target, [o.name for o in outputs])
         ret[fullname] = section
 
     task_manager = yaku.task_manager.TaskManager(bld.tasks)
@@ -58,8 +58,8 @@ def build_extension(bld, pkg, inplace, verbose):
             for o in outputs:
                 target = os.path.join(
                             os.path.dirname(ext.replace(".", os.sep)),
-                            os.path.basename(o))
-                shutil.copy(o, target)
+                            os.path.basename(o.abspath()))
+                shutil.copy(o.abspath(), target)
     return ret
 
 def build_compiled_library(bld, pkg, inplace, verbose):
