@@ -27,7 +27,7 @@ def build_isection(bld, ext_name, files):
     target = os.path.join('$sitedir', pkg_dir)
 
     # FIXME: assume all outputs of one extension are in one directory
-    srcdir = files[0].parent.path_from(bld.bld_root)
+    srcdir = files[0].parent.path_from(bld.src_root)
     section = InstalledSection("extensions", ext_name, srcdir,
                                 target, [o.name for o in files])
     return section
