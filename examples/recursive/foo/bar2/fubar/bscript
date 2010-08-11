@@ -5,3 +5,4 @@ from bento.commands.hooks \
 @post_configure
 def configure(ctx):
     print "Configure:", __file__
+    print "Src dir is", ctx.local_dir
