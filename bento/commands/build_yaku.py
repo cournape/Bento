@@ -51,6 +51,7 @@ def _build_extensions(bld, pkg, inplace, verbose):
     all_outputs = {}
     for ext in pkg.extensions.values():
         outputs = build_extension(bld, ext, verbose)
+        all_outputs[ext.name] = outputs
         ret[ext.name] = build_isection(bld, ext.name, outputs)
 
     task_manager = yaku.task_manager.TaskManager(bld.tasks)
