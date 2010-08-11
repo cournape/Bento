@@ -61,16 +61,20 @@ def build_extension(bld, extension, verbose):
               (extension.name, str(e))
         raise CommandExecutionFailure(msg)
 
-def _build_extensions(bld, pkg, inplace, verbose):
+def _build_extensions(bld, pkg, inplace, verbose, extension_callback):
     ret = {}
     if len(pkg.extensions) < 1:
         return  ret
 
     all_outputs = {}
-    for ext in pkg.extensions.values():
-        outputs = build_extension(bld, ext, verbose)
-        all_outputs[ext.name] = outputs
-        ret[ext.name] = build_isection(bld, ext.name, outputs)
+    for name, ext in pkg.extensions.items():
+        if name in extension_callback:
+            outputs = extension_callback[name](bld, ext, verbose)
+        else:
+            outputs = build_extension(bld, ext, verbose)
+        if len(outputs) > 0:
+            all_outputs[ext.name] = outputs
+            ret[ext.name] = build_isection(bld, ext.name, outputs)
 
     run_tasks(bld, all_outputs, inplace)
     return ret
@@ -105,7 +109,8 @@ def _build_compiled_libraries(bld, pkg, inplace, verbose):
 def build_extensions(ctx, pkg, inplace=False, verbose=False):
     bld = ctx.yaku_build_ctx
     try:
-        return _build_extensions(bld, pkg, inplace, verbose)
+        return _build_extensions(bld, pkg, inplace, verbose,
+                                 ctx._extension_callback)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
             msg = e.explain

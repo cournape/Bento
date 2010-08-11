@@ -225,6 +225,23 @@ class BuildContext(Context):
     def __init__(self, cmd, cmd_opts):
         Context.__init__(self, cmd, cmd_opts)
         self.yaku_build_ctx = yaku.context.get_bld()
+        self._extension_callback = {}
+
+    # Split up the part relative to bentomaker and the part relative
+    # to bento - this has nothing to do here
+    def register_builder(self, extension_name, builder):
+        """Register a builder to override the default builder for a
+        given extension."""
+        if extension_name in self._extension_callback:
+            # Should most likely be a warning
+            raise ValueError("Overriding callback: %s" % \
+                             extension_name)
+        pkg = get_configured_state().pkg
+        if not extension_name in pkg.extensions:
+            raise ValueError(
+                    "Register callback for unknown extension: %s" % \
+                    extension_name)
+        self._extension_callback[extension_name] = builder
 
     def store(self):
         Context.store(self)
