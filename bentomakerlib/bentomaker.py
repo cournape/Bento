@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import sys
 import os
+import re
 import getopt
 import optparse
 import traceback
@@ -92,11 +93,11 @@ def set_main():
     if not os.path.exists(BENTO_SCRIPT):
         return None
     pkg = PackageDescription.from_file(BENTO_SCRIPT)
-    main_file = pkg.hook_file
 
-    if main_file is None:
+    if pkg.hook_file is None:
         return None
     else:
+        main_file = os.path.abspath(pkg.hook_file)
         if not os.path.exists(main_file):
             raise ValueError("Hook file %s not found" % main_file)
 
@@ -232,9 +233,9 @@ class BuildContext(Context):
 def run_cmd(cmd_name, cmd_opts):
     cmd = get_command(cmd_name)()
     if get_command_override(cmd_name):
-        cmd_func = get_command_override(cmd_name)[0]
+        cmd_funcs = get_command_override(cmd_name)
     else:
-        cmd_func = cmd.run
+        cmd_funcs = [cmd.run]
 
     if cmd_name == "configure":
         ctx = ConfigureContext(cmd, cmd_opts)
@@ -247,9 +248,12 @@ def run_cmd(cmd_name, cmd_opts):
         if get_pre_hooks(cmd_name) is not None:
             for f in get_pre_hooks(cmd_name):
                 f[0](ctx)
-        cmd_func(ctx)
+        while cmd_funcs:
+            cmd_func = cmd_funcs.pop(0)
+            cmd_func(ctx)
         if get_post_hooks(cmd_name) is not None:
             for f in get_post_hooks(cmd_name):
+                ctx.local_dir = f[1]
                 f[0](ctx)
     finally:
         ctx.store()

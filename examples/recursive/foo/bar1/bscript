@@ -1,0 +1,7 @@
+from bento.commands.hooks \
+    import \
+        post_configure
+
+@post_configure
+def configure(ctx):
+    print "Configure:", __file__

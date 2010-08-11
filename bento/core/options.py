@@ -16,13 +16,15 @@ class PackageOptions(object):
         kw["name"] = d["name"]
 
         kw["path_options"] = {}
-        for name, path in d["path_options"].items():
+        path_options = d.get("path_options", {})
+        for name, path in path_options.items():
             kw["path_options"][name] = PathOption(path["name"],
                                                   path["default"],
                                                   path["description"])
 
         kw["flag_options"] = {}
-        for name, flag in d["flag_options"].items():
+        flag_options = d.get("flag_options", {})
+        for name, flag in flag_options.items():
             kw["flag_options"][name] = PathOption(flag["name"],
                                                   flag["default"],
                                                   flag["description"])

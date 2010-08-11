@@ -2,7 +2,7 @@ import os
 
 from copy \
     import \
-        deepcopy
+        deepcopy, copy
 
 from bento.core.pkg_objects import \
         Extension, DataFiles, Executable, CompiledLibrary
@@ -13,6 +13,9 @@ from bento.core.utils import \
 from bento.core.parser.api \
     import \
         parse_to_dict
+from bento.compat.api \
+    import \
+        relpath
 from bento.core.errors \
     import \
         InvalidPackage
@@ -26,61 +29,162 @@ def _parse_libraries(libraries):
     if len(libraries) > 0:
         default = libraries["default"]
         for k in ["packages", "py_modules", "install_requires"]:
-            ret[k] = default[k]
-        ret["extensions"] = {}
+            if default[k]:
+                ret[k] = default[k]
         if default["extensions"]:
+            ret["extensions"] = {}
             for k, v in default["extensions"].items():
                 ret["extensions"][k] = Extension.from_parse_dict(v)
 
-        ret["compiled_libraries"] = {}
         if default["compiled_libraries"]:
+            ret["compiled_libraries"] = {}
             for k, v in default["compiled_libraries"].items():
                 ret["compiled_libraries"][k] = \
                         CompiledLibrary.from_parse_dict(v)
 
     return ret
 
+class SubPackageDescription:
+    def __init__(self, rdir, packages=None, extensions=None,
+                 compiled_libraries=None):
+        self.rdir = rdir
+        if packages is None:
+            self.packages = []
+        else:
+            self.packages = packages
+        if extensions is None:
+            self.extensions = {}
+        else:
+            self.extensions = extensions
+        if compiled_libraries is None:
+            self.compiled_libraries = {}
+        else:
+            self.compiled_libraries = compiled_libraries
+
+    def __repr__(self):
+        return repr({"packages": self.packages})
+
+    def translate(self):
+        # XXX: stupid, not robust against multiple translate calls
+        ret = {"packages": [], "extensions": {}, "compiled_libraries": {}}
+        parent_pkg = self.rdir.replace("/", ".")
+        for p in self.packages:
+            ret["packages"].append(parent_pkg + "." + p)
+        for name, ext in self.extensions.items():
+            ext.sources = [os.path.join(self.rdir, s) for s \
+                           in ext.sources]
+            name = parent_pkg + "." + name
+            ext.name = parent_pkg + "." + ext.name
+            ret["extensions"][name] = ext
+        for name, clib in self.compiled_libraries.items():
+            clib.sources = [os.path.join(self.rdir, s) for s \
+                            in clib.sources]
+            name = parent_pkg + "." + name
+            clib.name = os.path.join(self.rdir, clib.name)
+            ret["compiled_libraries"][name] = clib
+        return ret
+
+def recurse_subentos(subentos):
+    filenames = []
+    subpackages = {}
+
+    root_dir = os.getcwd()
+    def _recurse(subento, cwd):
+        f = os.path.join(cwd, subento, "bento.info")
+        if not os.path.exists(f):
+            raise ValueError("%s not found !" % f)
+        filenames.append(f)
+
+        fid = open(f)
+        try:
+            key = relpath(f, root_dir)
+            rdir = relpath(os.path.join(cwd, subento), root_dir)
+
+            kw, subentos = parse_to_subpkg_kw(fid.read(), f)
+            subpackages[key] = SubPackageDescription(rdir, **kw)
+            for s in subentos:
+                _recurse(s, os.path.join(cwd, subento))
+        finally:
+            fid.close()
+
+    for s in subentos:
+        _recurse(s, root_dir)
+    return subpackages
+
 def parse_main_kw(d):
-    kw = {"extra_source_files": [],
-          "packages": [],
-          "py_modules": [],
-          "extensions": {},
-          "compiled_libraries": {},
-          "data_files": {},
-          "executables": {}}
+    kw = {}
 
     for field, value in d.items():
         if field == "extra_sources":
             d.pop(field)
-            kw["extra_source_files"].extend(value)
+            kw["extra_source_files"] = value
         elif field == "libraries":
             d.pop(field)
             kw.update(_parse_libraries(value))
         elif field == "data_files":
             d.pop(field)
+            kw["data_files"] = {}
             for name, data in value.items():
                  kw["data_files"][name] = \
                          DataFiles.from_parse_dict(data)
         elif field == "executables":
             d.pop(field)
+            kw["executables"] = {}
             for name, executable in value.items():
                 kw["executables"][name] = Executable.from_parse_dict(executable)
 
     return kw, d
 
+def parse_to_subpkg_kw(data, f):
+    d = parse_to_dict(data)
+    kw, remain = parse_main_kw(d)
+    if remain.has_key("subento"):
+        subentos = remain.pop("subento")
+    else:
+        subentos = []
+    if len(remain) > 0:
+        raise ValueError("Illegal field(s) in subento %s: %s !" \
+                         % (f, ".".join(["`%s'" % k for k
+                                            in remain.keys()])))
+    return kw, subentos
+
 def parse_to_pkg_kw(data, user_flags):
     d = parse_to_dict(data, user_flags)
     kw, remain = parse_main_kw(d)
 
+    # XXX: once and for all, decide empty (default) field vs missing
+    # field in parsed dictionaries !!
     for field, value in remain.items():
-        del remain[field]
         if field in _METADATA_FIELDS:
+            del remain[field]
             kw[field] = value
         elif field == "hook_file":
+            del remain[field]
             kw[field] = value
+        elif field == "config_py":
+            del remain[field]
+            kw[field] = value
+        elif field == "flag_options":
+            del remain[field]
+
+    # XXX: the translate stuff is stupid as well
     if remain.has_key("subento"):
-        recurse_subentos(remain)
-        del remain["subento"]
+        subentos = remain.pop("subento")
+        subpackages = recurse_subentos(subentos)
+        translated = subpackages.items()
+        for k, v in subpackages.items():
+            translated = v.translate()
+            if len(v.packages):
+                if not kw.has_key("packages"):
+                    kw["packages"] = []
+                for k, v in subpackages.items():
+                    kw["packages"].extend([p for p in \
+                                           translated["packages"]])
+            if len(v.extensions):
+                kw["extensions"] = translated.get("extensions", {})
+            if len(v.compiled_libraries):
+                kw["compiled_libraries"] = \
+                        translated.get("compiled_libraries", {})
 
     if len(remain) > 0:
         raise ValueError("Unhandled field(s) %s!" % remain.keys())
@@ -144,7 +248,10 @@ class PackageDescription:
                 for ext in compiled_modules.values():
                     sources = []
                     for s in ext.sources:
-                        sources.extend(expand_glob(s))
+                        if isinstance(s, basestring):
+                            sources.extend(expand_glob(s))
+                        else:
+                            print s
                     if os.sep != "/":
                         sources = [unnormalize_path(s) for s in ext.sources]
                     ext.sources = sources
