@@ -23,7 +23,7 @@ ccprogram, ccprogram_vars = compile_fun("ccprogram", "${LINK} ${LINKFLAGS} ${LIN
 
 cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${SHLINKFLAGS} ${APP_LIBDIR} ${APP_LIBS} ${SHLINK_TGT_F}${TGT[0]} ${SHLINK_SRC_F}${SRC}", False)
 
-clink, clink_vars = compile_fun("clib", "${STLINK} ${STLINKFLAGS} ${STLINK_TGT_F}${TGT[0]} ${STLINK_SRC_F}${SRC}", False)
+clink, clink_vars = compile_fun("clib", "${STLINK} ${STLINKFLAGS} ${STLINK_TGT_F}${TGT[0].abspath()} ${STLINK_SRC_F}${SRC}", False)
 
 @extension('.c')
 def c_hook(self, node):
@@ -51,7 +51,9 @@ def shlink_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
     target = os.path.join(self.env["BLDDIR"], name + ".so")
     ensure_dir(target)
+
     task = Task("cc_shlink", inputs=objects, outputs=target)
+    task.gen = self
     task.env = self.env
     task.func = cshlink
     task.env_vars = cshlink_vars
@@ -59,16 +61,14 @@ def shlink_task(self, name):
 
 def static_link_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    # Deal with target such as foo/bar -> foo/libbar.a
-    # XXX: there should be a systematic way of doing this
-    head, tail = os.path.split(name)
-    if head:
-        target = os.path.join(head, self.env["STATICLIB_FMT"] % tail)
-    else:
-	target = os.path.join(self.env["STATICLIB_FMT"] % name)
-    target = os.path.join(self.env["BLDDIR"], target)
-    ensure_dir(target)
-    task = Task("cc_link", inputs=objects, outputs=target)
+
+    folder, base = os.path.split(name)
+    tmp = folder + os.path.sep + self.env["STATICLIB_FMT"] % base
+    target = self.bld.bld_root.declare(tmp)
+    ensure_dir(target.abspath())
+
+    task = Task("cc_link", inputs=objects, outputs=[target])
+    task.gen = self
     task.env = self.env
     task.func = clink
     task.env_vars = clink_vars
@@ -101,11 +101,10 @@ def apply_libs(task_gen):
             task_gen.env["LIB_FMT"] % lib for lib in libs]
 
 def apply_libdir(task_gen):
+    #print dir(task_gen)
     libdir = task_gen.env["LIBDIR"]
-    implicit_paths = set([
-        s.parent.path_from(s.ctx.bldnode) \
-                for s in task_gen.sources])
-    libdir = list(implicit_paths) + libdir
+    #print implicit_paths
+    #libdir = list(implicit_paths) + libdir
     task_gen.env["APP_LIBDIR"] = [
             task_gen.env["LIBDIR_FMT"] % d for d in libdir]
 
@@ -139,7 +138,9 @@ class CCBuilder(object):
         if env is not None:
             _env.update(env)
 
+        sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("ccstaticlib", sources, name)
+        task_gen.bld = self.ctx
         task_gen.env = _env
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
