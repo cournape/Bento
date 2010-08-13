@@ -69,9 +69,10 @@ def _build_extensions(bld, pkg, inplace, verbose, extension_callback):
     all_outputs = {}
     for name, ext in pkg.extensions.items():
         if name in extension_callback:
-            outputs = extension_callback[name](bld, ext, verbose)
+            tasks = extension_callback[name](bld, ext, verbose)
         else:
-            outputs = build_extension(bld, ext, verbose)
+            tasks = build_extension(bld, ext, verbose)
+        outputs = tasks[0].gen.outputs
         if len(outputs) > 0:
             all_outputs[ext.name] = outputs
             ret[ext.name] = build_isection(bld, ext.name, outputs)
