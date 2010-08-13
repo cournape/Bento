@@ -95,9 +95,9 @@ class Task(object):
             cwd = self.gen.bld.bld_root.abspath()
         if not self.disable_output:
             if self.env["VERBOSE"]:
-                pprint('GREEN', " ".join(cmd))
+                pprint('GREEN', " ".join([str(c) for c in cmd]))
             else:
-                pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join([o.bldpath() for o in self.outputs])))
+                pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join([i.bldpath() for i in self.inputs])))
 
         try:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
