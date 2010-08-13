@@ -127,7 +127,7 @@ def pylink_task(self, name):
     def declare_target():
         folder, base = os.path.split(name)
         tmp = folder + os.path.sep + self.env["PYEXT_FMT"] % base
-        return self.bld.src_root.find_or_declare(tmp)
+        return self.bld.src_root.declare(tmp)
     target = declare_target()
     ensure_dir(target.abspath())
 
@@ -283,7 +283,8 @@ def create_pyext(bld, env, name, sources):
     outputs = []
     for t in ltask:
         outputs.extend(t.outputs)
-    return outputs
+    task_gen.outputs = outputs
+    return tasks
 
 # FIXME: find a way to reuse this kind of code between tools
 def apply_libs(task_gen):
