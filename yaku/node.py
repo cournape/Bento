@@ -362,6 +362,8 @@ class Node(object):
         """
         if isinstance(lst, str):
             lst = [x for x in split_path(lst) if x and x != '.']
+        elif issubclass(type(lst), type(self)):
+            return lst
 
         node = self.get_bld().search(lst)
         if node:
