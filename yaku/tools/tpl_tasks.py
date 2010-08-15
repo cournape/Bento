@@ -1,5 +1,6 @@
 import re
 import os
+import copy
 
 from yaku.pprint \
     import \
@@ -9,7 +10,7 @@ from yaku.task \
         Task
 from yaku.task_manager \
     import \
-        extension
+        extension, create_tasks
 from yaku.utils \
     import \
         ensure_dir
@@ -40,3 +41,21 @@ def template_task(self, node):
     task.env_vars = VARS["template"]
     task.env = self.env
     return [task]
+
+class TemplateBuilder(object):
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self.env = copy.deepcopy(ctx.env)
+
+    def build(self, name, sources, env=None):
+        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        _env = copy.deepcopy(self.env)
+        if env is not None:
+            _env.update(env)
+
+        tasks = create_tasks(self.ctx, sources)
+        self.ctx.tasks.extend(tasks)
+        return tasks
+
+def get_builder(ctx):
+    return TemplateBuilder(ctx)
