@@ -140,18 +140,3 @@ def compile_fun(name, line, shell=None):
         return compile_fun_shell(name, line)
     else:
         return compile_fun_noshell(name, line)
-
-if __name__ == "__main__":
-    f, e = compile_fun("yo", "${CC} -o ${TGT[0]} -c ${SRC}", False)
-    class Foo(object):
-        def __init__(self):
-            self.inputs = ["foo.c"]
-            self.outputs = ["foo.o"]
-        def exec_command(self, cmd, cwd):
-            print "execute %r in %s" % (cmd, cwd)
-
-    foo = Foo()
-    foo.env = Environment([("CC", "gcc")])
-    foo.cwd = os.getcwd() + "/build"
-
-    f(foo)
