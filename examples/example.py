@@ -14,32 +14,22 @@ import yaku.node
 import yaku.errors
 
 def configure(ctx):
-    ctx.use_tools(["pyext", "ctasks", "tpl_tasks",
-                   "fortran", "swig"], ["tools"])
+    import numpy.distutils
+    ctx.use_tools(["pyext", "ctasks", "tpl_tasks", "fortran"],
+                  ["tools"])
     try:
         ctx.use_tools(["cython"])
     except yaku.errors.ToolNotFound:
         raise RuntimeError("Cython not found - please install Cython!")
-    ctx.env.update({
-            #"SWIG": ["swig"],
-            #"SWIGFLAGS": ["-python"],
-            "SUBST_DICT": {"VERSION": "0.0.2"}})
-    import numpy.distutils
+    ctx.env.update({"SUBST_DICT": {"VERSION": "0.0.2"}})
     for p in numpy.distutils.misc_util.get_numpy_include_dirs()[::-1]:
         ctx.env["PYEXT_CPPPATH"].insert(0, p)
 
 def build(ctx):
     pyext = ctx.builders["pyext"]
-    create_sources(ctx, "template", sources=[os.path.join("src", "foo.h.in")])
     pyext.extension("_bar", [os.path.join("src", f) for f in ["hellomodule.c", "foo.c"]])
     pyext.extension("_von", [os.path.join("src/vonmises_cython.pyx")])
-    #create_pyext(ctx, "_fortran_yo", ["src/bar.f"])
-    #create_pyext(ctx, "_swig_yo", ["src/yo.i"])
-
-def create_sources(ctx, name, sources):
-    sources = [ctx.src_root.find_node(s) for s in sources]
-    tasks = create_tasks(ctx, sources)
-    run_tasks(ctx, tasks)
+    ctx.builders["tpl_tasks"].build("template", sources=[os.path.join("src", "foo.h.in")])
 
 if __name__ == "__main__":
     ctx = get_cfg()
