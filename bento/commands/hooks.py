@@ -70,12 +70,14 @@ def get_command_override(cmd_name):
     return __COMMANDS_OVERRIDE.get(cmd_name, None)
 
 def pre_build(f):
-    add_to_registry((f,), "pre_build")
-    add_to_pre_registry((f,), "build")
+    local_dir = os.path.dirname(compat_inspect.stack()[1][1])
+    add_to_registry((f, local_dir), "pre_build")
+    add_to_pre_registry((f, local_dir), "build")
 
 def post_build(f):
-    add_to_registry((f,), "post_build")
-    add_to_post_registry((f,), "build")
+    local_dir = os.path.dirname(compat_inspect.stack()[1][1])
+    add_to_registry((f, local_dir), "post_build")
+    add_to_post_registry((f, local_dir), "build")
 
 def post_configure(f):
     local_dir = os.path.dirname(compat_inspect.stack()[1][1])
