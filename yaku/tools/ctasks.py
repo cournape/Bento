@@ -105,19 +105,29 @@ def apply_libdir(task_gen):
     task_gen.env["APP_LIBDIR"] = [
             task_gen.env["LIBDIR_FMT"] % d for d in libdir]
 
+def _merge_env(_env, new_env):
+    if new_env is not None:
+        ret = copy.copy(_env)
+        for k, v in new_env.items():
+            if hasattr(_env[k], "extend"):
+                old = copy.copy(_env[k])
+                old.extend(v)
+                ret[k] = old
+            else:
+                ret[k] = v
+        return ret
+    else:
+        return _env
+
 class CCBuilder(object):
     def __init__(self, ctx):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
 
     def ccompile(self, name, sources, env=None):
-        _env = copy.deepcopy(self.env)
-        if env is not None:
-            _env.update(env)
-
         task_gen = CompiledTaskGen("cccompile", sources, name)
         task_gen.bld = self.ctx
-        task_gen.env = _env
+        task_gen.env = _merge_env(self.env, env)
         apply_cpppath(task_gen)
 
         tasks = create_tasks(task_gen, sources)
@@ -131,14 +141,10 @@ class CCBuilder(object):
         return outputs
 
     def static_library(self, name, sources, env=None):
-        _env = copy.deepcopy(self.env)
-        if env is not None:
-            _env.update(env)
-
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("ccstaticlib", sources, name)
         task_gen.bld = self.ctx
-        task_gen.env = _env
+        task_gen.env = _merge_env(self.env, env)
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
         apply_libs(task_gen)
@@ -157,13 +163,9 @@ class CCBuilder(object):
 
 
     def program(self, name, sources, env=None):
-        _env = copy.deepcopy(self.env)
-        if env is not None:
-            _env.update(env)
-
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("ccprogram", sources, name)
-        task_gen.env = _env
+        task_gen.env = _merge_env(self.env, env)
         task_gen.bld = self.ctx
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
