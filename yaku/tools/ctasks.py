@@ -101,10 +101,7 @@ def apply_libs(task_gen):
             task_gen.env["LIB_FMT"] % lib for lib in libs]
 
 def apply_libdir(task_gen):
-    #print dir(task_gen)
     libdir = task_gen.env["LIBDIR"]
-    #print implicit_paths
-    #libdir = list(implicit_paths) + libdir
     task_gen.env["APP_LIBDIR"] = [
             task_gen.env["LIBDIR_FMT"] % d for d in libdir]
 
