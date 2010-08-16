@@ -120,6 +120,9 @@ def _merge_env(_env, new_env):
         return _env
 
 class CCBuilder(object):
+    def clone(self):
+        return CCBuilder(self.ctx)
+
     def __init__(self, ctx):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
