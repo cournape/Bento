@@ -36,6 +36,10 @@ Usage:   bentomaker build [OPTIONS]."""
                                   help="Verbose output (yaku build only)",
                                   action="store_true")]
 
+    def __init__(self, *a, **kw):
+        Command.__init__(self, *a, **kw)
+        self.section_writer = SectionWriter()
+
     def run(self, ctx):
         opts = ctx.cmd_opts
         self.set_option_parser()
@@ -66,13 +70,14 @@ Usage:   bentomaker build [OPTIONS]."""
         s = get_configured_state()
         pkg = s.pkg
 
-        section_writer = SectionWriter()
-        section_writer.sections_callbacks["compiled_libraries"] = \
+        self.section_writer.sections_callbacks["compiled_libraries"] = \
                 build_compiled_libraries
-        section_writer.sections_callbacks["extensions"] = \
+        self.section_writer.sections_callbacks["extensions"] = \
                 build_extensions
-        section_writer.update_sections(pkg)
-        section_writer.store(IPKG_PATH)
+        self.section_writer.update_sections(pkg)
+
+    def shutdown(self, ctx):
+        self.section_writer.store(IPKG_PATH)
 
 class SectionWriter(object):
     def __init__(self):

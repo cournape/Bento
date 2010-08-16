@@ -272,6 +272,7 @@ def run_cmd(cmd_name, cmd_opts):
             for f in get_post_hooks(cmd_name):
                 ctx.local_dir = f[1]
                 f[0](ctx)
+        cmd.shutdown(ctx)
     finally:
         ctx.store()
 
