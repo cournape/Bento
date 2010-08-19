@@ -25,11 +25,12 @@ def add_to_registry(func, category):
 
 def override_command(command, func):
     global __COMMANDS_OVERRIDE
+    local_dir = os.path.dirname(compat_inspect.stack()[2][1])
 
     if __COMMANDS_OVERRIDE.has_key(command):
-        __COMMANDS_OVERRIDE[command].append(func)
+        __COMMANDS_OVERRIDE[command].append((func, local_dir))
     else:
-        __COMMANDS_OVERRIDE[command] = [func]
+        __COMMANDS_OVERRIDE[command] = [(func, local_dir)]
 
 def add_to_pre_registry(func, cmd_name):
     global __PRE_HOOK_REGISTRY
@@ -85,8 +86,9 @@ def post_configure(f):
     add_to_post_registry((f, local_dir), "configure")
 
 def pre_configure(f):
-    add_to_registry((f,), "pre_configure")
-    add_to_pre_registry((f,), "configure")
+    local_dir = os.path.dirname(compat_inspect.stack()[1][1])
+    add_to_registry((f, local_dir), "pre_configure")
+    add_to_pre_registry((f, local_dir), "configure")
 
 def post_sdist(f):
     add_to_registry((f,), "post_sdist")

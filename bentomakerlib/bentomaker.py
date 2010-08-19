@@ -252,7 +252,7 @@ def run_cmd(cmd_name, cmd_opts):
     if get_command_override(cmd_name):
         cmd_funcs = get_command_override(cmd_name)
     else:
-        cmd_funcs = [cmd.run]
+        cmd_funcs = [(cmd.run, os.getcwd())]
 
     if cmd_name == "configure":
         ctx = ConfigureContext(cmd, cmd_opts)
@@ -266,7 +266,7 @@ def run_cmd(cmd_name, cmd_opts):
             for f in get_pre_hooks(cmd_name):
                 f[0](ctx)
         while cmd_funcs:
-            cmd_func = cmd_funcs.pop(0)
+            cmd_func, local_dir = cmd_funcs.pop(0)
             cmd_func(ctx)
         if get_post_hooks(cmd_name) is not None:
             for f in get_post_hooks(cmd_name):
