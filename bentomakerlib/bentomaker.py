@@ -262,16 +262,36 @@ def run_cmd(cmd_name, cmd_opts):
         ctx = Context(cmd, cmd_opts)
 
     try:
+        pkg = PackageDescription.from_file(BENTO_SCRIPT)
+        spkgs = pkg.subpackages
+        def get_subpackage(local_path):
+            rpath = os.path.relpath(local_path, os.getcwd())
+            k = rpath + "/bento.info"
+            if os.path.samefile(os.getcwd(), local_path):
+                return pkg
+            else:
+                if k in spkgs:
+                    return spkgs[k]
+                else:
+                    return None
+        def set_local_ctx(ctx, hook, local_dir):
+            spkg = get_subpackage(local_dir)
+            ctx.local_dir = local_dir
+            ctx.local_pkg = spkg
+            ctx.pkg = pkg
+            return hook(ctx)
+
         if get_pre_hooks(cmd_name) is not None:
-            for f in get_pre_hooks(cmd_name):
-                f[0](ctx)
+            for hook, local_dir in get_pre_hooks(cmd_name):
+                set_local_ctx(ctx, hook, local_dir)
+
         while cmd_funcs:
             cmd_func, local_dir = cmd_funcs.pop(0)
-            cmd_func(ctx)
+            set_local_ctx(ctx, cmd_func, local_dir)
+
         if get_post_hooks(cmd_name) is not None:
-            for f in get_post_hooks(cmd_name):
-                ctx.local_dir = f[1]
-                f[0](ctx)
+            for hook, local_dir in get_post_hooks(cmd_name):
+                set_local_ctx(ctx, hook, local_dir)
         cmd.shutdown(ctx)
     finally:
         ctx.store()

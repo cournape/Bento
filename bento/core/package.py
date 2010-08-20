@@ -64,26 +64,6 @@ class SubPackageDescription:
     def __repr__(self):
         return repr({"packages": self.packages})
 
-    def translate(self):
-        # XXX: stupid, not robust against multiple translate calls
-        ret = {"packages": [], "extensions": {}, "compiled_libraries": {}}
-        parent_pkg = self.rdir.replace("/", ".")
-        for p in self.packages:
-            ret["packages"].append(parent_pkg + "." + p)
-        for name, ext in self.extensions.items():
-            ext.sources = [os.path.join(self.rdir, s) for s \
-                           in ext.sources]
-            name = parent_pkg + "." + name
-            ext.name = parent_pkg + "." + ext.name
-            ret["extensions"][name] = ext
-        for name, clib in self.compiled_libraries.items():
-            clib.sources = [os.path.join(self.rdir, s) for s \
-                            in clib.sources]
-            name = parent_pkg + "." + name
-            clib.name = os.path.join(self.rdir, clib.name)
-            ret["compiled_libraries"][name] = clib
-        return ret
-
 def recurse_subentos(subentos):
     filenames = []
     subpackages = {}
@@ -167,24 +147,10 @@ def parse_to_pkg_kw(data, user_flags):
         elif field == "flag_options":
             del remain[field]
 
-    # XXX: the translate stuff is stupid as well
     if remain.has_key("subento"):
         subentos = remain.pop("subento")
         subpackages = recurse_subentos(subentos)
-        translated = subpackages.items()
-        for k, v in subpackages.items():
-            translated = v.translate()
-            if len(v.packages):
-                if not kw.has_key("packages"):
-                    kw["packages"] = []
-                for k, v in subpackages.items():
-                    kw["packages"].extend([p for p in \
-                                           translated["packages"]])
-            if len(v.extensions):
-                kw["extensions"] = translated.get("extensions", {})
-            if len(v.compiled_libraries):
-                kw["compiled_libraries"] = \
-                        translated.get("compiled_libraries", {})
+        kw["subpackages"] = subpackages
 
     if len(remain) > 0:
         raise ValueError("Unhandled field(s) %s!" % remain.keys())
@@ -226,7 +192,8 @@ class PackageDescription:
             install_requires=None, build_requires=None,
             download_url=None, extra_source_files=None, data_files=None,
             classifiers=None, provides=None, obsoletes=None, executables=None,
-            hook_file=None, config_py=None, compiled_libraries=None):
+            hook_file=None, config_py=None, compiled_libraries=None,
+            subpackages=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -235,6 +202,12 @@ class PackageDescription:
             self.packages = []
         else:
             self.packages = packages
+
+        # Package content
+        if not subpackages:
+            self.subpackages = {}
+        else:
+            self.subpackages = subpackages
 
         if not py_modules:
             self.py_modules = []
