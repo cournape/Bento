@@ -1,0 +1,9 @@
+Name: Foo
+
+Subento: foo, bar
+
+HookFile: bscript
+
+Library:
+    Extension: _top
+        Sources: src/hellomodule.c

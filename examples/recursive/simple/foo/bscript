@@ -1,0 +1,6 @@
+from bento.commands.hooks import pre_configure
+
+@pre_configure
+def configure(ctx):
+    for ext_name, ext in ctx.local_pkg.extensions.items():
+        print ext
