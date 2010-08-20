@@ -62,7 +62,9 @@ class SubPackageDescription:
             self.compiled_libraries = compiled_libraries
 
     def __repr__(self):
-        return repr({"packages": self.packages})
+        return repr({"packages": self.packages,
+                     "clibs": self.compiled_libraries,
+                     "extensions": self.extensions})
 
 def recurse_subentos(subentos):
     filenames = []
