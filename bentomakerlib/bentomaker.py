@@ -8,6 +8,10 @@ import traceback
 
 import bento
 
+from bento.compat.api \
+    import \
+        relpath
+
 from bento.core.utils import \
         subst_vars, pprint
 from bento.core.platforms import \
@@ -248,7 +252,7 @@ def run_cmd(cmd_name, cmd_opts):
         pkg = PackageDescription.from_file(BENTO_SCRIPT)
         spkgs = pkg.subpackages
         def get_subpackage(local_path):
-            rpath = os.path.relpath(local_path, os.getcwd())
+            rpath = relpath(local_path, os.getcwd())
             k = rpath + "/bento.info"
             if os.path.samefile(os.getcwd(), local_path):
                 return pkg
