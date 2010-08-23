@@ -67,6 +67,8 @@ def _build_extensions(bld, pkg, inplace, verbose, extension_callback):
         return  ret
 
     all_outputs = {}
+    subexts = {}
+
     for name, ext in pkg.extensions.items():
         if name in extension_callback:
             tasks = extension_callback[name](bld, ext, verbose)
@@ -107,11 +109,10 @@ def _build_compiled_libraries(bld, pkg, inplace, verbose):
     run_tasks(bld, all_outputs, inplace)
     return ret
 
-def build_extensions(ctx, pkg, inplace=False, verbose=False):
-    bld = ctx.yaku_build_ctx
+def build_extensions(yaku_build_ctx, builder_callbacks, pkg, inplace=False, verbose=False):
     try:
-        return _build_extensions(bld, pkg, inplace, verbose,
-                                 ctx._extension_callback)
+        return _build_extensions(yaku_build_ctx, pkg, inplace, verbose,
+                                 builder_callbacks)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
             msg = e.explain
@@ -120,10 +121,9 @@ def build_extensions(ctx, pkg, inplace=False, verbose=False):
         msg += "command '%s' failed (see above)" % " ".join(e.cmd)
         raise bento.core.errors.BuildError(msg)
 
-def build_compiled_libraries(ctx, pkg, inplace=False, verbose=False):
-    bld = ctx.yaku_build_ctx
+def build_compiled_libraries(yaku_build_ctx, pkg, inplace=False, verbose=False):
     try:
-        return _build_compiled_libraries(bld, pkg, inplace, verbose)
+        return _build_compiled_libraries(yaku_build_ctx, pkg, inplace, verbose)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
             msg = e.explain
