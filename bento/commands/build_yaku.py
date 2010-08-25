@@ -61,23 +61,28 @@ def build_extension(bld, extension, verbose):
               (extension.name, str(e))
         raise CommandExecutionFailure(msg)
 
-def _build_extensions(bld, pkg, inplace, verbose, extension_callback):
+def _build_extensions(extensions, bld, inplace, verbose, extension_callback):
     ret = {}
-    if len(pkg.extensions) < 1:
+    if len(extensions) < 1:
         return  ret
 
     all_outputs = {}
     subexts = {}
 
-    for name, ext in pkg.extensions.items():
+    for name, ext in extensions.items():
         if name in extension_callback:
             tasks = extension_callback[name](bld, ext, verbose)
+            if tasks is None:
+                raise ValueError(
+                    "Registered callback for %s did not return " \
+                    "a list of tasks!" % ext.name)
         else:
             tasks = build_extension(bld, ext, verbose)
-        outputs = tasks[0].gen.outputs
-        if len(outputs) > 0:
-            all_outputs[ext.name] = outputs
-            ret[ext.name] = build_isection(bld, ext.name, outputs)
+        if len(tasks) > 1:
+            outputs = tasks[0].gen.outputs
+            if len(outputs) > 0:
+                all_outputs[ext.name] = outputs
+                ret[ext.name] = build_isection(bld, ext.name, outputs)
 
     run_tasks(bld, all_outputs, inplace)
     return ret
@@ -111,8 +116,8 @@ def _build_compiled_libraries(bld, pkg, inplace, verbose):
 
 def build_extensions(yaku_build_ctx, builder_callbacks, pkg, inplace=False, verbose=False):
     try:
-        return _build_extensions(yaku_build_ctx, pkg, inplace, verbose,
-                                 builder_callbacks)
+        return _build_extensions(extensions, yaku_build_ctx,
+                inplace, verbose, builder_callbacks)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
             msg = e.explain
