@@ -137,6 +137,8 @@ def pylink_task(self, name):
     task.env_vars = pylink_vars
     return [task]
 
+# XXX: fix merge env location+api
+from yaku.tools.ctasks import _merge_env
 class PythonBuilder(object):
     def __init__(self, ctx):
         self.ctx = ctx
@@ -146,10 +148,8 @@ class PythonBuilder(object):
 
     def extension(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
-        _env = copy.deepcopy(self.env)
-        if env is not None:
-            _env.update(env)
-        return create_pyext(self.ctx, _env, name, sources)
+        return create_pyext(self.ctx, name, sources,
+                _merge_env(self.env, env))
 
 def get_builder(ctx):
     return PythonBuilder(ctx)
@@ -256,7 +256,7 @@ def _setup_compiler(ctx, cc_type):
     for k in copied_values:
         ctx.env["PYEXT_%s" % k] = cc_env[k]
 
-def create_pyext(bld, env, name, sources):
+def create_pyext(bld, name, sources, env):
     base = name.replace(".", os.sep)
 
     tasks = []
