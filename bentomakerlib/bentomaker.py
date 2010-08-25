@@ -22,6 +22,7 @@ from bento.core.package import \
         PackageDescription
 from bento._config import \
         BENTO_SCRIPT
+import bento.core.node
 
 from bento.commands.core import \
         Command, HelpCommand, get_usage
@@ -200,10 +201,11 @@ import yaku.context
 
 # XXX: The yaku configure stuff is ugly, and introduces a lot of global state.
 class Context(object):
-    def __init__(self, cmd, cmd_opts):
+    def __init__(self, cmd, cmd_opts, top_node):
         self.cmd = cmd
         self.cmd_opts = cmd_opts
         self.help = False
+        self.top_node = top_node
 
     def get_package(self):
         state = get_configured_state()
@@ -217,8 +219,8 @@ class Context(object):
         pass
 
 class ConfigureContext(Context):
-    def __init__(self, cmd, cmd_opts):
-        Context.__init__(self, cmd, cmd_opts)
+    def __init__(self, cmd, cmd_opts, top_node):
+        Context.__init__(self, cmd, cmd_opts, top_node)
         self.yaku_configure_ctx = yaku.context.get_cfg()
 
     def store(self):
@@ -226,35 +228,49 @@ class ConfigureContext(Context):
         self.yaku_configure_ctx.store()
 
 class BuildContext(Context):
-    def __init__(self, cmd, cmd_opts):
-        Context.__init__(self, cmd, cmd_opts)
+    def __init__(self, cmd, cmd_opts, top_node):
+        Context.__init__(self, cmd, cmd_opts, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
+        self._extensions_callback = {}
 
     def store(self):
         Context.store(self)
         self.yaku_build_ctx.store()
 
+    def register_builder(self, extension_name, builder):
+        relpos = self.local_node.path_from(self.top_node)
+        extension = relpos.replace(os.path.pathsep, ".")
+        if extension:
+            full_name = extension + ".%s" % extension_name
+        else:
+            full_name = extension_name
+        self._extensions_callback[full_name] = builder
+
 def run_cmd(cmd_name, cmd_opts):
+    root = bento.core.node.Node("", None)
+    top = root.find_dir(os.getcwd())
+
     cmd = get_command(cmd_name)()
     if get_command_override(cmd_name):
         cmd_funcs = get_command_override(cmd_name)
     else:
-        cmd_funcs = [(cmd.run, os.getcwd())]
+        cmd_funcs = [(cmd.run, top.abspath())]
 
     if cmd_name == "configure":
-        ctx = ConfigureContext(cmd, cmd_opts)
+        ctx = ConfigureContext(cmd, cmd_opts, top)
     elif cmd_name == "build":
-        ctx = BuildContext(cmd, cmd_opts)
+        ctx = BuildContext(cmd, cmd_opts, top)
     else:
-        ctx = Context(cmd, cmd_opts)
+        ctx = Context(cmd, cmd_opts, top)
 
     try:
         pkg = PackageDescription.from_file(BENTO_SCRIPT)
         spkgs = pkg.subpackages
-        def get_subpackage(local_path):
-            rpath = relpath(local_path, os.getcwd())
-            k = rpath + "/bento.info"
-            if os.path.samefile(os.getcwd(), local_path):
+
+        def get_subpackage(local_node):
+            rpath = local_node.path_from(top)
+            k = os.path.join(rpath, "bento.info")
+            if local_node == top:
                 return pkg
             else:
                 if k in spkgs:
@@ -262,8 +278,12 @@ def run_cmd(cmd_name, cmd_opts):
                 else:
                     return None
         def set_local_ctx(ctx, hook, local_dir):
-            spkg = get_subpackage(local_dir)
+            local_node = top.find_dir(
+                    relpath(local_dir, top.abspath()))
+            spkg = get_subpackage(local_node)
             ctx.local_dir = local_dir
+            ctx.local_node = local_node
+            ctx.top_node = top
             ctx.local_pkg = spkg
             ctx.pkg = pkg
             return hook(ctx)
