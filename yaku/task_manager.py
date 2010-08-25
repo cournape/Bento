@@ -14,6 +14,11 @@ def set_extension_hook(ext, hook):
     RULES_REGISTRY[ext] = hook
     return old
 
+def wrap_extension_hook(ext, hook_factory):
+    old = RULES_REGISTRY.get(ext, None)
+    RULES_REGISTRY[ext] = hook_factory(old)
+    return old
+
 def get_extension_hook(ext):
     try:
         return RULES_REGISTRY[ext]
