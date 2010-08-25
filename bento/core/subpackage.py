@@ -1,6 +1,6 @@
 from bento.core.pkg_objects \
     import \
-        Extension
+        Extension, CompiledLibrary
 
 def flatten_subpackage_extensions(spkg, top_node):
     """Translate the extensions from a subpackage relatively to the
@@ -8,6 +8,22 @@ def flatten_subpackage_extensions(spkg, top_node):
 
     Extension name, source files and include directories paths are all
     translated relatively to the top node.
+
+    Returns
+    -------
+    d : dict
+        {ext_name: ext} dictionary
+
+    Example
+    -------
+    Defining in /foo/bar the extension::
+
+        Extension("_hello", sources=["src/hellomodule.c"])
+
+    and top_node corresponding to /foo, the
+    extension would be translated as::
+
+        Extension("bar._hello", sources=["bar/src/hellomodule.c"])
     """
     local_node = top_node.find_dir(spkg.rdir)
     if local_node is None:
@@ -25,4 +41,45 @@ def flatten_subpackage_extensions(spkg, top_node):
                 local_node.find_node(d).path_from(top_node) \
                 for d in extension.include_dirs]
         ret[full_name] = Extension(full_name, sources, include_dirs)
+    return ret
+
+
+def flatten_subpackage_compiled_libraries(spkg, top_node):
+    """Translate the compiled libraries from a subpackage relatively
+    to the given top node.
+
+    Source files and include directories paths are all
+    translated relatively to the top node.
+
+    Returns
+    -------
+    d : dict
+        {name: clib} dictionary
+
+    Example
+    -------
+    Defining in /foo/bar the compiled library::
+
+        CompiledLibrary("fubar", sources=["src/fubar.c"])
+
+    and top_node corresponding to /foo, the
+    extension would be translated as::
+
+        CompiledLibrary("fubar", sources=["bar/src/fubar.c"])
+    """
+    local_node = top_node.find_dir(spkg.rdir)
+    if local_node is None:
+        raise IOError("Path %s not found" % \
+                      os.path.join(top_node.abspath(), spkg.rdir))
+    elif local_node == top_node:
+        raise ValueError("Subpackage in top directory ??")
+
+    ret = {}
+    for name, clib in spkg.compiled_libraries.items():
+        sources = [local_node.find_node(s).path_from(top_node) \
+                   for s in clib.sources]
+        include_dirs = [
+                local_node.find_node(d).path_from(top_node) \
+                for d in clib.include_dirs]
+        ret[name] = CompiledLibrary(name, sources, include_dirs)
     return ret

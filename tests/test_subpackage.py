@@ -61,3 +61,29 @@ class TestTranslation(unittest.TestCase):
             assert_equal(extension.include_dirs, ["foo"])
         finally:
             shutil.rmtree(top)
+
+    def test_compiled_library(self):
+        tree = [
+            "bar/src/clib.c",
+            "bar/bento.info",
+            "bento.info"]
+        clib = pkg_objects.CompiledLibrary("clib",
+                        sources=["src/clib.c"],
+                        include_dirs=["."])
+        spkg = package.SubPackageDescription(
+                        rdir="bar",
+                        compiled_libraries={"clib": clib})
+
+        top = tempfile.mkdtemp()
+        try:
+            create_fake_tree(top, tree)
+            root = node.Node("", None)
+            top_node = root.find_dir(top)
+            clibs = subpackage.flatten_subpackage_compiled_libraries(
+                    spkg, top_node)
+            self.failUnless("clib" in clibs)
+            clib = clibs["clib"]
+            assert_equal(clib.sources, ["bar/src/clib.c"])
+            assert_equal(clib.include_dirs, ["bar"])
+        finally:
+            shutil.rmtree(top)
