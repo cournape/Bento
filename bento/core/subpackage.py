@@ -43,7 +43,6 @@ def flatten_subpackage_extensions(spkg, top_node):
         ret[full_name] = Extension(full_name, sources, include_dirs)
     return ret
 
-
 def flatten_subpackage_compiled_libraries(spkg, top_node):
     """Translate the compiled libraries from a subpackage relatively
     to the given top node.
@@ -83,3 +82,20 @@ def flatten_subpackage_compiled_libraries(spkg, top_node):
                 for d in clib.include_dirs]
         ret[name] = CompiledLibrary(name, sources, include_dirs)
     return ret
+
+def get_extensions(pkg, top_node):
+    """Return the dictionary {name: extension} of all every extension
+    in pkg, including the one defined in subpackages (if any).
+
+    Note
+    ----
+    Extensions defined in subpackages are translated relatively to
+    top_dir
+    """
+    extensions = {}
+    for name, ext in pkg.extensions.items():
+        extensions[name] = ext
+    for spkg in pkg.subpackages.values():
+        extensions.update(
+                flatten_subpackage_extensions(spkg, top_node))
+    return extensions
