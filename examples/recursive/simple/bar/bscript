@@ -2,5 +2,7 @@ from bento.commands.hooks import pre_configure, override
 
 @pre_configure
 def configure(ctx):
-    for ext_name, ext in ctx.local_pkg.extensions.items():
-        print ext
+    # Example on accessing local extensions
+    local_extensions = [name for name in ctx.local_pkg.extensions]
+    print "Local extensions for %s: %s" % \
+          (ctx.local_node, ", ".join(local_extensions))
