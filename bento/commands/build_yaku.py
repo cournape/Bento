@@ -114,7 +114,7 @@ def _build_compiled_libraries(bld, pkg, inplace, verbose):
     run_tasks(bld, all_outputs, inplace)
     return ret
 
-def build_extensions(yaku_build_ctx, builder_callbacks, pkg, inplace=False, verbose=False):
+def build_extensions(extensions, yaku_build_ctx, builder_callbacks, inplace=False, verbose=False):
     try:
         return _build_extensions(extensions, yaku_build_ctx,
                 inplace, verbose, builder_callbacks)

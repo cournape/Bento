@@ -8,6 +8,9 @@ from bento.installed_package_description import \
 from bento._config \
     import \
         IPKG_PATH, BUILD_DIR
+from bento.core.subpackage \
+    import \
+        get_extensions
 
 from bento.commands.core \
     import \
@@ -40,7 +43,6 @@ Usage:   bentomaker build [OPTIONS]."""
         Command.__init__(self, *a, **kw)
         self.section_writer = SectionWriter()
         self.build_type = None
-        self._extension_callback = {}
 
     def run(self, ctx):
         opts = ctx.cmd_opts
@@ -58,22 +60,24 @@ Usage:   bentomaker build [OPTIONS]."""
         else:
             verbose = True
 
+        s = get_configured_state()
+        self.pkg = s.pkg
+        pkg = s.pkg
+
+        extensions = get_extensions(pkg, ctx.top_node)
+
         if ctx.get_user_data()["use_distutils"]:
             self.build_type = "distutils"
             build_extensions = build_distutils.build_extensions
         else:
             self.build_type = "yaku"
             def builder(pkg):
-                return build_yaku.build_extensions(ctx.yaku_build_ctx, self._extension_callback, pkg, inplace, verbose)
+                return build_yaku.build_extensions(extensions, ctx.yaku_build_ctx, ctx._extensions_callback, inplace, verbose)
             build_extensions = builder
 
             def builder(pkg):
                 return build_yaku.build_compiled_libraries(ctx.yaku_build_ctx, pkg, inplace, verbose)
             build_compiled_libraries = builder
-
-        s = get_configured_state()
-        self.pkg = s.pkg
-        pkg = s.pkg
 
         self.section_writer.sections_callbacks["compiled_libraries"] = \
                 build_compiled_libraries
@@ -93,7 +97,6 @@ Usage:   bentomaker build [OPTIONS]."""
                     "Register callback for unknown extension: %s" % \
                     extension_name)
         self._extension_callback[extension_name] = builder
-
 
     def shutdown(self, ctx):
         self.section_writer.store(IPKG_PATH)
