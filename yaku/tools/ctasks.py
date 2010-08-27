@@ -158,6 +158,7 @@ class CCBuilder(object):
         for t in tasks:
             t.env = task_gen.env
         self.ctx.tasks.extend(tasks)
+        self.link_task = ltask
 
         outputs = []
         for t in ltask:
@@ -180,6 +181,7 @@ class CCBuilder(object):
         for t in tasks:
             t.env = task_gen.env
         self.ctx.tasks.extend(tasks)
+        self.link_task = ltask
 
         outputs = []
         for t in ltask:

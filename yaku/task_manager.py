@@ -218,6 +218,18 @@ class CompiledTaskGen(TaskGen):
     def __init__(self, name, sources, target):
         TaskGen.__init__(self, name, sources, target)
         self.object_tasks = []
+        self.link_task = None
+
+    def add_objects(self, tasks):
+        """Add new object tasks, assuming the link task has already
+        been defined."""
+        if self.link_task is None:
+            raise ValueError("You cannot add object nodes "
+                             "before setting the link task !")
+        else:
+            self.object_tasks += tasks
+            for t in tasks:
+                self.link_task.inputs += t.outputs
 
 def order_tasks(tasks):
     tuid_to_task = dict([(t.get_uid(), t) for t in tasks])
