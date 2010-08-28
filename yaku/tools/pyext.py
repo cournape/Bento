@@ -135,11 +135,16 @@ def pylink_task(self, name):
     task.gen = self
     task.func = pylink
     task.env_vars = pylink_vars
+    self.link_task = task
+
     return [task]
 
 # XXX: fix merge env location+api
 from yaku.tools.ctasks import _merge_env
 class PythonBuilder(object):
+    def clone(self):
+        return PythonBuilder(self.ctx)
+
     def __init__(self, ctx):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
