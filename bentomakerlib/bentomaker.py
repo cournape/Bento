@@ -328,10 +328,13 @@ def noexc_main(argv=None):
         if BENTOMAKER_DEBUG:
             tb = sys.exc_info()[2]
             traceback.print_tb(tb)
-        pprint('RED', "%s: Error: %s crashed (uncaught exception %s: %s).\n"
-                "Please report this on bento issue tracker: \n" \
-                "\thttp://github.com/cournape/bento/issues" %
-               (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e)))
+        msg = """\
+%s: Error: %s crashed (uncaught exception %s: %s).
+Please report this on bento issue tracker:
+    http://github.com/cournape/bento/issues"""
+        if not BENTOMAKER_DEBUG:
+            msg += "\nYou can get a full traceback by setting BENTOMAKER_DEBUG=1"
+        pprint('RED',  msg % (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e)))
         sys.exit(1)
     sys.exit(ret)
 
