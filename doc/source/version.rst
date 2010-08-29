@@ -9,7 +9,7 @@ Released on . Main features:
     - Add 'not flag(flag_name)' and 'not true|false' to the bento.info
       grammar
     - Add --with-bundling option to disable bundling of
-      ply/yaku/simplekson to ease packaging for OS vendors
+      ply/yaku/simplejson to ease packaging for OS vendors
 
 Version 0.0.3
 =============
