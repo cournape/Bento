@@ -10,6 +10,8 @@ Released on . Main features:
       grammar
     - Add --with-bundling option to disable bundling of
       ply/yaku/simplejson to ease packaging for OS vendors
+    - Recursive bento and hook files for complicated, nested packages
+      (scipy, twisted)
 
 Version 0.0.3
 =============
