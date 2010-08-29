@@ -31,7 +31,7 @@ from yaku.conftests \
 
 import yaku.tools
 
-pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0].abspath()} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS}", False)
+pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0].abspath()} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_APP_FRAMEWORKS}", False)
 
 pycc, pycc_vars = compile_fun("pycc", "${PYEXT_CC} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0].abspath()} ${PYEXT_CC_SRC_F}${SRC}", False)
 
@@ -274,6 +274,9 @@ def create_pyext(bld, name, sources, env):
     apply_cpppath(task_gen)
     apply_libpath(task_gen)
     apply_libs(task_gen)
+    # XXX: do this correctly (platform specific tool config)
+    if sys.platform == "darwin":
+        apply_frameworks(task_gen)
 
     tasks = create_tasks(task_gen, sources)
 
@@ -292,6 +295,10 @@ def create_pyext(bld, name, sources, env):
     return tasks
 
 # FIXME: find a way to reuse this kind of code between tools
+def apply_frameworks(task_gen):
+    frameworks = task_gen.env["PYEXT_FRAMEWORKS"]
+    task_gen.env["PYEXT_APP_FRAMEWORKS"] = ["-framework %s" % lib for lib in frameworks]
+
 def apply_libs(task_gen):
     libs = task_gen.env["PYEXT_LIBS"]
     task_gen.env["PYEXT_APP_LIBS"] = [

@@ -87,6 +87,7 @@ def get_configuration(compiler_type=None):
         env["LDFLAGS"] = sysconfig.get_config_var("LDFLAGS")
         if "-pthread" in sysconfig.get_config_var("LDFLAGS"):
             env["LDFLAGS"].insert(0, "-pthread")
+        env["FRAMEWORKS"] = []
 
     elif compiler_type == "msvc":
         setup_msvc(env)
