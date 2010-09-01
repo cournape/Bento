@@ -117,6 +117,12 @@ class ConfigureContext(object):
         finally:
             fid.close()
 
+    def start_message(self, msg):
+        sys.stderr.write(msg + "... ")
+
+    def end_message(self, msg):
+        sys.stderr.write("%s\n" % msg)
+
 def load_tools(self, fid):
     tools = eval(fid.read())
     for t in tools:
