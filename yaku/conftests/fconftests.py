@@ -27,6 +27,10 @@ from yaku.conftests.fconftests_imp \
     import \
         is_output_verbose, parse_flink
 
+FC_VERBOSE_FLAG = "FC_VERBOSE_FLAG"
+FC_RUNTIME_LDFLAGS = "FC_RUNTIME_LDFLAGS"
+FC_DUMMY_MAIN = "FC_DUMMY_MAIN"
+
 def create_flink_conf_taskgen(conf, name, body):
     # FIXME: make tools modules available through config context
     # FIXME: refactor commonalities between configuration taskgens
@@ -84,17 +88,17 @@ def check_fortran_verbose_flag(conf):
             ret = create_flink_conf_taskgen(conf, "check_fc", code)
             if ret and is_output_verbose(conf.stdout):
                 conf.end_message(flag)
-                conf.env["FC_VERBOSE_FLAG"] = flag
+                conf.env[FC_VERBOSE_FLAG] = flag
                 return True
         finally:
             conf.env["LINKFLAGS"] = old
     return False
 
 def check_fortran_runtime_flags(conf):
-    if not conf.env.has_key("FC_VERBOSE_FLAG"):
+    if not conf.env.has_key(FC_VERBOSE_FLAG):
         raise ValueError("""\
 You need to call check_fortran_verbose_flag before getting runtime
-flags (or to define the FC_VERBOSE_FLAG variable)""")
+flags (or to define the %s variable)""" % FC_VERBOSE_FLAG)
     code = """\
        program main
        end
@@ -109,6 +113,7 @@ flags (or to define the FC_VERBOSE_FLAG variable)""")
         if ret:
             flags = parse_flink(conf.stdout)
             conf.end_message(" ".join(flags))
+            conf.env[FC_RUNTIME_LDFLAGS] = flags
             return True
         else:
             conf.end_message("failed !")
@@ -116,3 +121,36 @@ flags (or to define the FC_VERBOSE_FLAG variable)""")
     finally:
         conf.env["LINKFLAGS"] = old
     return False
+
+def check_fortran_dummy_main(conf):
+    code_tpl = """\
+#ifdef __cplusplus
+        extern "C"
+#endif
+int %(main)s()
+{
+    return 1;
+}
+
+int main()
+{
+    return 0;
+}
+"""
+
+    conf.start_message("Checking whether fortran needs dummy main")
+
+    old = copy.deepcopy(conf.env["LINKFLAGS"])
+    try:
+        conf.env["LINKFLAGS"].extend(conf.env[FC_RUNTIME_LDFLAGS])
+        ret = create_link_conf_taskgen(conf, "check_fc_dummy_main",
+                code_tpl % {"main": "FC_DUMMY_MAIN"})
+        if ret:
+            conf.end_message("none")
+            conf.env[FC_DUMMY_MAIN] = None
+            return True
+        else:
+            conf.end_message("failed !")
+            return False
+    finally:
+        conf.env["LINKFLAGS"] = old
