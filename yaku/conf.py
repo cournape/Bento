@@ -106,9 +106,9 @@ def log_command(logger, tasks):
                 t.__class__)
         t.run()
 
-def create_link_conf_taskgen(conf, name, body, headers,
+def create_link_conf_taskgen(conf, name, body, headers=None,
         extension=".c"):
-    if headers:
+    if headers is not None:
         head = "\n".join(["#include <%s>" % h for h in headers])
     else:
         head = ""
