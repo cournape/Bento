@@ -59,7 +59,8 @@ def create_compile_conf_taskgen(conf, name, body, headers,
 
     conf.tasks = [] # XXX: hack
     builder = conf.builders["ctasks"]
-    builder.ccompile("yomama", sources, conf.env)
+    builder.env = conf.env
+    builder.ccompile("yomama", sources)
     # XXX: accessing tasks like this is ugly - the whole logging thing
     # needs more thinking
     for t in builder.ctx.tasks:
