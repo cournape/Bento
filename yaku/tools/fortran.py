@@ -16,7 +16,7 @@ from yaku.utils \
 
 f77_compile, f77_vars = compile_fun("f77", "${F77} ${F77FLAGS} ${F77_TGT_F}${TGT[0].abspath()} ${F77_SRC_F}${SRC}", False)
 
-fprogram, fprogram_vars = compile_fun("fprogram", "${F77_LINK} ${F77_LINK_TGT_F}${TGT[0].abspath()} ${F77_LINK_SRC_F}${SRC}", False)
+fprogram, fprogram_vars = compile_fun("fprogram", "${F77_LINK} ${F77_LINK_TGT_F}${TGT[0].abspath()} ${F77_LINK_SRC_F}${SRC} ${LINKFLAGS}", False)
 
 @extension(".f")
 def fortran_task(self, node):
