@@ -274,9 +274,7 @@ def create_pyext(bld, name, sources, env):
     apply_cpppath(task_gen)
     apply_libpath(task_gen)
     apply_libs(task_gen)
-    # XXX: do this correctly (platform specific tool config)
-    if sys.platform == "darwin":
-        apply_frameworks(task_gen)
+    apply_frameworks(task_gen)
 
     tasks = create_tasks(task_gen, sources)
 
@@ -296,8 +294,12 @@ def create_pyext(bld, name, sources, env):
 
 # FIXME: find a way to reuse this kind of code between tools
 def apply_frameworks(task_gen):
-    frameworks = task_gen.env["PYEXT_FRAMEWORKS"]
-    task_gen.env["PYEXT_APP_FRAMEWORKS"] = ["-framework %s" % lib for lib in frameworks]
+    # XXX: do this correctly (platform specific tool config)
+    if sys.platform == "darwin":
+        frameworks = task_gen.env["PYEXT_FRAMEWORKS"]
+        task_gen.env["PYEXT_APP_FRAMEWORKS"] = ["-framework %s" % lib for lib in frameworks]
+    else:
+        task_gen.env["PYEXT_APP_FRAMEWORKS"] = []
 
 def apply_libs(task_gen):
     libs = task_gen.env["PYEXT_LIBS"]
