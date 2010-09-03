@@ -63,6 +63,7 @@ class ConfigureContext(object):
         self.cache = {}
         self.conf_results = []
         self._configured = {}
+        self.stdout_cache = {}
 
     def load_tool(self, tool, tooldir=None):
         _t = import_tools([tool], tooldir)
@@ -100,6 +101,7 @@ class ConfigureContext(object):
         fid = open(CONFIG_CACHE, "w")
         try:
             dump(self.cache, fid)
+            dump(self.stdout_cache, fid)
         finally:
             fid.close()
 
@@ -116,6 +118,12 @@ class ConfigureContext(object):
                  fid)
         finally:
             fid.close()
+
+    def start_message(self, msg):
+        sys.stderr.write(msg + "... ")
+
+    def end_message(self, msg):
+        sys.stderr.write("%s\n" % msg)
 
 def load_tools(self, fid):
     tools = eval(fid.read())
@@ -189,6 +197,7 @@ def get_cfg():
         fid = open(CONFIG_CACHE)
         try:
             ctx.cache = load(fid)
+            ctx.stdout_cache = load(fid)
         finally:
             fid.close()
 

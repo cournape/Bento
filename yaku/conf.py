@@ -49,7 +49,7 @@ def create_file(conf, code, prefix="", suffix=""):
     return node
 
 def create_compile_conf_taskgen(conf, name, body, headers,
-        msg, extension=".c"):
+        extension=".c"):
     if headers:
         head = "\n".join(["#include <%s>" % h for h in headers])
     else:
@@ -66,24 +66,19 @@ def create_compile_conf_taskgen(conf, name, body, headers,
     for t in builder.ctx.tasks:
         t.disable_output = True
         t.log = conf.log
-    sys.stderr.write(msg + "... ")
 
     succeed = False
     explanation = None
     try:
         run_tasks(conf, builder.ctx.tasks)
         succeed = True
-        sys.stderr.write("yes\n")
     except TaskRunFailure, e:
-        sys.stderr.write("no\n")
         explanation = str(e)
 
-    write_log(conf.log, builder.ctx.tasks, code, msg, succeed, explanation)
+    write_log(conf.log, builder.ctx.tasks, code, succeed, explanation)
     return succeed
 
-def write_log(log, tasks, code, msg, succeed, explanation):
-    log.write("------------------------------------\n")
-    log.write(msg + "\n")
+def write_log(log, tasks, code, succeed, explanation):
     log.write("Tested code is:\n")
     log.write("~~~~~~~~~\n")
     log.write(code)
@@ -111,9 +106,20 @@ def log_command(logger, tasks):
                 t.__class__)
         t.run()
 
-def create_link_conf_taskgen(conf, name, body, headers,
-        msg, extension=".c"):
-    if headers:
+def create_link_conf_taskgen(conf, name, body, headers=None,
+        extension=".c"):
+    old_root, new_root = create_conf_blddir(conf, name, body)
+    try:
+        conf.bld_root = new_root
+        return _create_link_conf_taskgen(conf, name, body,
+                headers, extension)
+    finally:
+        conf.bld_root = old_root
+
+
+def _create_link_conf_taskgen(conf, name, body, headers=None,
+        extension=".c"):
+    if headers is not None:
         head = "\n".join(["#include <%s>" % h for h in headers])
     else:
         head = ""
@@ -133,19 +139,16 @@ def create_link_conf_taskgen(conf, name, body, headers,
     for t in tasks:
         t.disable_output = True
         t.log = conf.log
-    sys.stderr.write(msg + "... ")
 
     succeed = False
     explanation = None
     try:
         run_tasks(conf, tasks)
         succeed = True
-        sys.stderr.write("yes\n")
     except TaskRunFailure, e:
-        sys.stderr.write("no\n")
         explanation = str(e)
 
-    write_log(conf.log, tasks, code, msg, succeed, explanation)
+    write_log(conf.log, tasks, code, succeed, explanation)
     return succeed
 
 VALUE_SUB = re.compile('[^A-Z0-9_]')
@@ -237,5 +240,14 @@ def ccompile(conf, sources):
         explanation = str(e)
 
     code = sources[0].read()
-    write_log(conf.log, builder.ctx.tasks, code, "", succeed, explanation)
+    write_log(conf.log, builder.ctx.tasks, code, succeed, explanation)
     return succeed
+
+def create_conf_blddir(conf, name, body):
+    dirname = ".conf-%s-%s" % (name, hash(body))
+    bld_root = os.path.join(conf.bld_root.abspath(), dirname)
+    if not os.path.exists(bld_root):
+        os.makedirs(bld_root)
+    bld_root = conf.bld_root.make_node(dirname)
+    old_root = conf.bld_root
+    return old_root, bld_root

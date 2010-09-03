@@ -17,8 +17,12 @@ int main(void)
 }
 """
 
-    ret = create_link_conf_taskgen(conf, "check_cc", code,
-                        None, "Checking whether C compiler works")
+    conf.start_message("Checking whether C compiler works")
+    ret = create_link_conf_taskgen(conf, "check_cc", code, None)
+    if ret:
+        conf.end_message("yes")
+    else:
+        conf.end_message("no")
     return ret
 
 def check_cpp_symbol(conf, symbol, headers=None):
@@ -39,11 +43,15 @@ int main()
 """ % (symbol, symbol))
     src = "\n".join(code)
 
+    conf.start_message("Checking for declaration %s" % symbol)
     ret = create_compile_conf_taskgen(conf, "check_cpp_symbol", src,
-                        headers, "Checking for declaration %s" % \
-                                 symbol)
+                        headers, "Checking for declaration %s")
     conf.conf_results.append({"type": "decl", "value": symbol,
                               "result": ret})
+    if ret:
+        conf.end_message("yes")
+    else:
+        conf.end_message("no")
     return ret
 
 def check_compiler(conf):
@@ -54,8 +62,12 @@ int main(void)
 }
 """
 
-    ret = create_link_conf_taskgen(conf, "check_cc", code,
-                        None, "Checking whether C compiler works")
+    conf.start_message("Checking whether C compiler works")
+    ret = create_link_conf_taskgen(conf, "check_cc", code, None)
+    if ret:
+        conf.end_message("yes")
+    else:
+        conf.end_message("no")
     return ret
 
 def check_type(conf, type_name, headers=None):
@@ -68,10 +80,15 @@ int main() {
 }
 """ % {'name': type_name}
 
+    conf.start_message("Checking for type %s" % type_name)
     ret = create_compile_conf_taskgen(conf, "check_type", code,
-                        headers, "Checking for type %s" % type_name)
+                        headers)
     conf.conf_results.append({"type": "type", "value": type_name,
                               "result": ret})
+    if ret:
+        conf.end_message("yes")
+    else:
+        conf.end_message("no")
     return ret
 
 def check_type_size(conf, type_name, headers=None, expect=None):
@@ -207,8 +224,12 @@ def check_header(conf, header):
 #include <%s>
 """ % header
 
-    ret = create_compile_conf_taskgen(conf, "check_header", code,
-                        None, "Checking for header %s" % header)
+    conf.start_message("Checking for header %s" % header)
+    ret = create_compile_conf_taskgen(conf, "check_header", code, None)
+    if ret:
+        conf.end_message("yes")
+    else:
+        conf.end_message("no !")
     conf.conf_results.append({"type": "header", "value": header,
                               "result": ret})
     return ret
@@ -233,16 +254,21 @@ int main (void)
 }
 """ % {"func": func}
 
+    if libs:
+        msg = "Checking for function %s in %s" % (func, " ".join([conf.env["LIB_FMT"] % lib for lib in libs]))
+    else:
+        msg = "Checking for function %s" % func
+    conf.start_message(msg)
+
     old_lib = copy.deepcopy(conf.env["LIBS"])
     try:
         for lib in libs[::-1]:
             conf.env["LIBS"].insert(0, lib)
-        if libs:
-            msg = "Checking for function %s in %s" % (func, " ".join([conf.env["LIB_FMT"] % lib for lib in libs]))
+        ret = create_link_conf_taskgen(conf, "check_func", code, None)
+        if ret:
+            conf.end_message("yes")
         else:
-            msg = "Checking for function %s" % func
-        ret = create_link_conf_taskgen(conf, "check_func", code,
-                            None, msg)
+            conf.end_message("no !")
     finally:
         conf.env["LIBS"] = old_lib
     conf.conf_results.append({"type": "func", "value": func,
@@ -269,12 +295,17 @@ int main (void)
 }
     """ % {"func": func}
 
+    conf.start_message("Checking for function %s in %s" % \
+                       (func, conf.env["LIB_FMT"] % lib))
+
     old_lib = copy.deepcopy(conf.env["LIBS"])
     try:
         conf.env["LIBS"].insert(0, lib)
-        msg = "Checking for function %s in %s" % (func, conf.env["LIB_FMT"] % lib)
-        ret = create_link_conf_taskgen(conf, "check_lib", code,
-                            None, msg)
+        ret = create_link_conf_taskgen(conf, "check_lib", code, None)
+        if ret:
+            conf.end_message("yes")
+        else:
+            conf.end_message("no !")
     finally:
         conf.env["LIBS"] = old_lib
     conf.conf_results.append({"type": "lib", "value": lib,
@@ -319,13 +350,16 @@ int main (void)
 }
 """ % {"tmp": tmp, "include": "", "header": header}
 
+    conf.start_message("Checking for functions %s" % ", ".join(funcs))
     old_lib = copy.deepcopy(conf.env["LIBS"])
     try:
         for lib in libs[::-1]:
             conf.env["LIBS"].insert(0, lib)
-        ret = create_link_conf_taskgen(conf, "check_func", body,
-                            None, "Checking for functions %s" \
-                                  % ", ".join(funcs))
+        ret = create_link_conf_taskgen(conf, "check_func", body, None)
+        if ret:
+            conf.end_message("yes")
+        else:
+            conf.end_message("no !")
     finally:
         conf.env["LIBS"] = old_lib
 
