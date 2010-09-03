@@ -176,3 +176,68 @@ int main()
             return False
     finally:
         conf.env["LINKFLAGS"] = old
+
+def check_fortran_mangling(conf):
+    subr = """
+      subroutine foobar()
+      return
+      end
+      subroutine foo_bar()
+      return
+      end
+"""
+    main_tmpl = """
+      int %s() { return 1; }
+"""
+    prog_tmpl = """
+      void %(foobar)s(void);
+      void %(foo_bar)s(void);
+      int main() {
+      %(foobar)s();
+      %(foo_bar)s();
+      return 0;
+      }
+"""
+
+    conf.start_message("Checking fortran mangling scheme")
+    old = {}
+    for k in ["LINKFLAGS", "LIBS", "LIBDIR"]:
+        old[k] = copy.deepcopy(conf.env[k])
+    try:
+        mangling_lib = "check_fc_mangling_lib"
+        ret = create_fstatic_conf_taskgen(conf, mangling_lib, subr)
+        if ret:
+            if conf.env[FC_DUMMY_MAIN] is not None:
+                main = main_tmpl % conf.env["FC_DUMMY_MAIN"]
+            else:
+                main = ""
+            conf.env["LIBS"].insert(0, mangling_lib)
+            libdir = conf.last_task.outputs[-1].parent.abspath()
+            conf.env["LIBDIR"].insert(0, libdir)
+
+            for u, du, case in mangling_generator():
+                names = {"foobar": mangle_func("foobar", u, du, case),
+                         "foo_bar": mangle_func("foo_bar", u, du, case)}
+                prog = prog_tmpl % names
+                ret = create_link_conf_taskgen(conf,
+                        "check_fc_mangling_main", main + prog)
+                if ret:
+                    conf.env["FC_MANGLING"] = (u, du, case)
+                    conf.end_message("%r %r %r" % (u, du, case))
+                    return
+            conf.end_message("failed !")
+        else:
+            conf.end_message("failed !")
+
+    finally:
+        for k in old:
+            conf.env[k] = old[k]
+
+def mangling_generator():
+    for under in ['_', '']:
+        for double_under in ['', '_']:
+            for case in ["lower", "upper"]:
+                yield under, double_under, case
+
+def mangle_func(name, under, double_under, case):
+    return getattr(name, case)() + under + (name.find("_") != -1 and double_under or '')

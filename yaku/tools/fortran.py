@@ -106,3 +106,6 @@ def fprogram_task(self, name):
 
 def get_builder(ctx):
     return FortranBuilder(ctx)
+
+def mangler(name, under, double_under, case):
+    return getattr(name, case)() + under + (name.replace("_", double_under) and double_under)

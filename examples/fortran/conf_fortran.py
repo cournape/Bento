@@ -11,7 +11,8 @@ from yaku.context \
 from yaku.conftests.fconftests \
     import \
         check_fcompiler, check_fortran_verbose_flag, \
-        check_fortran_runtime_flags, check_fortran_dummy_main
+        check_fortran_runtime_flags, check_fortran_dummy_main, \
+        check_fortran_mangling
 
 def configure(ctx):
     ctx.use_tools(["fortran", "ctasks"])
@@ -19,6 +20,7 @@ def configure(ctx):
     check_fortran_verbose_flag(ctx)
     check_fortran_runtime_flags(ctx)
     check_fortran_dummy_main(ctx)
+    check_fortran_mangling(ctx)
 
 def build(ctx):
     builder = ctx.builders["fortran"]
