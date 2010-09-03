@@ -231,3 +231,12 @@ def ccompile(conf, sources):
     code = sources[0].read()
     write_log(conf.log, builder.ctx.tasks, code, succeed, explanation)
     return succeed
+
+def create_conf_blddir(conf, name, body):
+    dirname = ".conf-%s-%s" % (name, hash(body))
+    bld_root = os.path.join(conf.bld_root.abspath(), dirname)
+    if not os.path.exists(bld_root):
+        os.makedirs(bld_root)
+    bld_root = conf.bld_root.make_node(dirname)
+    old_root = conf.bld_root
+    return old_root, bld_root

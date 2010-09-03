@@ -22,7 +22,7 @@ from yaku.utils \
 from yaku.conf \
     import create_link_conf_taskgen, create_compile_conf_taskgen, \
            generate_config_h, ConfigureContext, ccompile, \
-           write_log, create_file
+           write_log, create_file, create_conf_blddir
 from yaku.conftests.fconftests_imp \
     import \
         is_output_verbose, parse_flink
@@ -31,10 +31,32 @@ FC_VERBOSE_FLAG = "FC_VERBOSE_FLAG"
 FC_RUNTIME_LDFLAGS = "FC_RUNTIME_LDFLAGS"
 FC_DUMMY_MAIN = "FC_DUMMY_MAIN"
 
-def create_flink_conf_taskgen(conf, name, body):
+def create_fprogram_conf_taskgen(conf, name, body):
     # FIXME: make tools modules available through config context
-    # FIXME: refactor commonalities between configuration taskgens
     ftool = __import__("fortran")
+    builder = ftool.fprogram_task
+
+    old_root, new_root = create_conf_blddir(conf, name, body)
+    try:
+        conf.bld_root = new_root
+        return _create_fbinary_conf_taskgen(conf, name, body, builder)
+    finally:
+        conf.bld_root = old_root
+
+def create_fstatic_conf_taskgen(conf, name, body):
+    # FIXME: make tools modules available through config context
+    ctool = __import__("ctasks")
+    builder = ctool.static_link_task
+
+    old_root, new_root = create_conf_blddir(conf, name, body, builder)
+    try:
+        conf.bld_root = new_root
+        return _create_fbinary_conf_taskgen(conf, name, body, builder)
+    finally:
+        conf.bld_root = old_root
+
+def _create_fbinary_conf_taskgen(conf, name, body, builder):
+    # FIXME: refactor commonalities between configuration taskgens
     code = body
     sources = [create_file(conf, code, name, ".f")]
 
@@ -43,7 +65,7 @@ def create_flink_conf_taskgen(conf, name, body):
     task_gen.env.update(copy.deepcopy(conf.env))
 
     tasks = create_tasks(task_gen, sources)
-    tasks.extend(ftool.fprogram_task(task_gen, name))
+    tasks.extend(builder(task_gen, name))
 
     for t in tasks:
         t.disable_output = True
