@@ -108,6 +108,17 @@ def log_command(logger, tasks):
 
 def create_link_conf_taskgen(conf, name, body, headers=None,
         extension=".c"):
+    old_root, new_root = create_conf_blddir(conf, name, body)
+    try:
+        conf.bld_root = new_root
+        return _create_link_conf_taskgen(conf, name, body,
+                headers, extension)
+    finally:
+        conf.bld_root = old_root
+
+
+def _create_link_conf_taskgen(conf, name, body, headers=None,
+        extension=".c"):
     if headers is not None:
         head = "\n".join(["#include <%s>" % h for h in headers])
     else:

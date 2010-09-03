@@ -114,9 +114,8 @@ def check_fcompiler(conf):
        program main
        end
 """
-
     conf.start_message("Checking whether Fortran compiler works")
-    ret = create_flink_conf_taskgen(conf, "check_fc", code)
+    ret = create_fprogram_conf_taskgen(conf, "check_fcompiler", code)
     if ret:
         conf.end_message("yes")
     else:
