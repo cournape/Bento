@@ -4,6 +4,7 @@ Fortran-specific configuration tests
 import sys
 import copy
 import os
+import types
 import re
 import shlex
 
@@ -27,6 +28,12 @@ from yaku.conftests.fconftests_imp \
     import \
         is_output_verbose, parse_flink
 
+import subprocess
+import __builtin__
+if not hasattr(__builtin__, "WindowsError"):
+    class WindowsError(Exception):
+        pass
+
 FC_VERBOSE_FLAG = "FC_VERBOSE_FLAG"
 FC_RUNTIME_LDFLAGS = "FC_RUNTIME_LDFLAGS"
 FC_DUMMY_MAIN = "FC_DUMMY_MAIN"
@@ -48,12 +55,26 @@ def create_fstatic_conf_taskgen(conf, name, body):
     ctool = __import__("ctasks")
     builder = ctool.static_link_task
 
-    old_root, new_root = create_conf_blddir(conf, name, body, builder)
+    old_root, new_root = create_conf_blddir(conf, name, body)
     try:
         conf.bld_root = new_root
         return _create_fbinary_conf_taskgen(conf, name, body, builder)
     finally:
         conf.bld_root = old_root
+
+def logged_exec(self, cmd, cwd):
+    if cwd is None:
+        cwd = self.gen.bld.bld_root.abspath()
+    try:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT, cwd=cwd)
+        stdout = p.communicate()[0]
+        if p.returncode:
+            raise TaskRunFailure(cmd, stdout)
+        self.gen.bld.stdout_cache[self.signature()] = stdout
+    except WindowsError, e:
+        raise TaskRunFailure(cmd, str(e))
+    return
 
 def _create_fbinary_conf_taskgen(conf, name, body, builder):
     # FIXME: refactor commonalities between configuration taskgens
@@ -65,7 +86,13 @@ def _create_fbinary_conf_taskgen(conf, name, body, builder):
     task_gen.env.update(copy.deepcopy(conf.env))
 
     tasks = create_tasks(task_gen, sources)
-    tasks.extend(builder(task_gen, name))
+    link_task = builder(task_gen, name)
+
+    t = link_task[0]
+    exec_command = t.exec_command
+    t.exec_command = types.MethodType(logged_exec, t, t.__class__)
+    tasks.extend(link_task)
+    conf.last_task = tasks[-1]
 
     for t in tasks:
         t.disable_output = True
@@ -101,14 +128,15 @@ def check_fortran_verbose_flag(conf):
        program main
        end
 """
-
     conf.start_message("Checking for verbose flag")
     for flag in ["-v", "--verbose", "-V"]:
         old = copy.deepcopy(conf.env["LINKFLAGS"])
         try:
             conf.env["LINKFLAGS"].append(flag)
-            ret = create_flink_conf_taskgen(conf, "check_fc", code)
-            if ret and is_output_verbose(conf.stdout):
+            ret = create_fprogram_conf_taskgen(conf,
+                    "check_fc_verbose", code)
+            stdout = conf.stdout_cache[conf.last_task.signature()]
+            if ret and is_output_verbose(stdout):
                 conf.end_message(flag)
                 conf.env[FC_VERBOSE_FLAG] = flag
                 return True
@@ -131,9 +159,10 @@ flags (or to define the %s variable)""" % FC_VERBOSE_FLAG)
     old = copy.deepcopy(conf.env["LINKFLAGS"])
     try:
         conf.env["LINKFLAGS"].append(conf.env["FC_VERBOSE_FLAG"])
-        ret = create_flink_conf_taskgen(conf, "check_fc", code)
+        ret = create_fprogram_conf_taskgen(conf, "check_fc", code)
         if ret:
-            flags = parse_flink(conf.stdout)
+            stdout = conf.stdout_cache[conf.last_task.signature()]
+            flags = parse_flink(stdout)
             conf.end_message(" ".join(flags))
             conf.env[FC_RUNTIME_LDFLAGS] = flags
             return True
