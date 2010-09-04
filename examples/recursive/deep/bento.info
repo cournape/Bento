@@ -1,0 +1,11 @@
+Name: foo
+Version: 1.0
+
+Subento: foo
+
+HookFile: bscript
+
+Library:
+    Packages: foo
+    Extension: _hello
+        Sources: src/hellomodule.c

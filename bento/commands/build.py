@@ -8,6 +8,9 @@ from bento.installed_package_description import \
 from bento._config \
     import \
         IPKG_PATH, BUILD_DIR
+from bento.core.subpackage \
+    import \
+        get_extensions
 
 from bento.commands.core \
     import \
@@ -36,6 +39,11 @@ Usage:   bentomaker build [OPTIONS]."""
                                   help="Verbose output (yaku build only)",
                                   action="store_true")]
 
+    def __init__(self, *a, **kw):
+        Command.__init__(self, *a, **kw)
+        self.section_writer = SectionWriter()
+        self.build_type = None
+
     def run(self, ctx):
         opts = ctx.cmd_opts
         self.set_option_parser()
@@ -52,27 +60,46 @@ Usage:   bentomaker build [OPTIONS]."""
         else:
             verbose = True
 
+        s = get_configured_state()
+        self.pkg = s.pkg
+        pkg = s.pkg
+
+        extensions = get_extensions(pkg, ctx.top_node)
+
         if ctx.get_user_data()["use_distutils"]:
+            self.build_type = "distutils"
             build_extensions = build_distutils.build_extensions
         else:
+            self.build_type = "yaku"
             def builder(pkg):
-                return build_yaku.build_extensions(pkg, inplace, verbose)
+                return build_yaku.build_extensions(extensions, ctx.yaku_build_ctx, ctx._extensions_callback, inplace, verbose)
             build_extensions = builder
 
             def builder(pkg):
-                return build_yaku.build_compiled_libraries(pkg, inplace, verbose)
+                return build_yaku.build_compiled_libraries(ctx.yaku_build_ctx, pkg, inplace, verbose)
             build_compiled_libraries = builder
 
-        s = get_configured_state()
-        pkg = s.pkg
-
-        section_writer = SectionWriter()
-        section_writer.sections_callbacks["compiled_libraries"] = \
+        self.section_writer.sections_callbacks["compiled_libraries"] = \
                 build_compiled_libraries
-        section_writer.sections_callbacks["extensions"] = \
+        self.section_writer.sections_callbacks["extensions"] = \
                 build_extensions
-        section_writer.update_sections(pkg)
-        section_writer.store(IPKG_PATH)
+        self.section_writer.update_sections(pkg)
+
+    def register_builder(self, extension_name, builder):
+        """Register a builder to override the default builder for a
+        given extension."""
+        if extension_name in self._extension_callback:
+            # Should most likely be a warning
+            raise ValueError("Overriding callback: %s" % \
+                             extension_name)
+        if not extension_name in self.pkg.extensions:
+            raise ValueError(
+                    "Register callback for unknown extension: %s" % \
+                    extension_name)
+        self._extension_callback[extension_name] = builder
+
+    def shutdown(self, ctx):
+        self.section_writer.store(IPKG_PATH)
 
 class SectionWriter(object):
     def __init__(self):

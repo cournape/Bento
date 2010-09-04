@@ -1,11 +1,16 @@
 #! /usr/bin/env python
 import sys
 import os
+import re
 import getopt
 import optparse
 import traceback
 
 import bento
+
+from bento.compat.api \
+    import \
+        relpath
 
 from bento.core.utils import \
         subst_vars, pprint
@@ -17,6 +22,7 @@ from bento.core.package import \
         PackageDescription
 from bento._config import \
         BENTO_SCRIPT
+import bento.core.node
 
 from bento.commands.core import \
         Command, HelpCommand, get_usage
@@ -92,15 +98,16 @@ def set_main():
     if not os.path.exists(BENTO_SCRIPT):
         return None
     pkg = PackageDescription.from_file(BENTO_SCRIPT)
-    main_file = pkg.hook_file
 
-    if main_file is None:
+    if pkg.hook_file is None:
         return None
     else:
+        main_file = os.path.abspath(pkg.hook_file)
         if not os.path.exists(main_file):
             raise ValueError("Hook file %s not found" % main_file)
 
     module = imp.new_module("toysetup_module")
+    module.__file__ = os.path.abspath(main_file)
     code = open(main_file).read()
 
     sys.path.insert(0, os.path.dirname(main_file))
@@ -194,10 +201,11 @@ import yaku.context
 
 # XXX: The yaku configure stuff is ugly, and introduces a lot of global state.
 class Context(object):
-    def __init__(self, cmd, cmd_opts):
+    def __init__(self, cmd, cmd_opts, top_node):
         self.cmd = cmd
         self.cmd_opts = cmd_opts
         self.help = False
+        self.top_node = top_node
 
     def get_package(self):
         state = get_configured_state()
@@ -211,34 +219,87 @@ class Context(object):
         pass
 
 class ConfigureContext(Context):
-    def __init__(self, cmd, cmd_opts):
-        Context.__init__(self, cmd, cmd_opts)
+    def __init__(self, cmd, cmd_opts, top_node):
+        Context.__init__(self, cmd, cmd_opts, top_node)
         self.yaku_configure_ctx = yaku.context.get_cfg()
 
     def store(self):
         Context.store(self)
         self.yaku_configure_ctx.store()
 
+class BuildContext(Context):
+    def __init__(self, cmd, cmd_opts, top_node):
+        Context.__init__(self, cmd, cmd_opts, top_node)
+        self.yaku_build_ctx = yaku.context.get_bld()
+        self._extensions_callback = {}
+
+    def store(self):
+        Context.store(self)
+        self.yaku_build_ctx.store()
+
+    def register_builder(self, extension_name, builder):
+        relpos = self.local_node.path_from(self.top_node)
+        extension = relpos.replace(os.path.pathsep, ".")
+        if extension:
+            full_name = extension + ".%s" % extension_name
+        else:
+            full_name = extension_name
+        self._extensions_callback[full_name] = builder
+
 def run_cmd(cmd_name, cmd_opts):
+    root = bento.core.node.Node("", None)
+    top = root.find_dir(os.getcwd())
+
     cmd = get_command(cmd_name)()
     if get_command_override(cmd_name):
-        cmd_func = get_command_override(cmd_name)[0]
+        cmd_funcs = get_command_override(cmd_name)
     else:
-        cmd_func = cmd.run
+        cmd_funcs = [(cmd.run, top.abspath())]
 
     if cmd_name == "configure":
-        ctx = ConfigureContext(cmd, cmd_opts)
+        ctx = ConfigureContext(cmd, cmd_opts, top)
+    elif cmd_name == "build":
+        ctx = BuildContext(cmd, cmd_opts, top)
     else:
-        ctx = Context(cmd, cmd_opts)
+        ctx = Context(cmd, cmd_opts, top)
 
     try:
+        pkg = PackageDescription.from_file(BENTO_SCRIPT)
+        spkgs = pkg.subpackages
+
+        def get_subpackage(local_node):
+            rpath = local_node.path_from(top)
+            k = os.path.join(rpath, "bento.info")
+            if local_node == top:
+                return pkg
+            else:
+                if k in spkgs:
+                    return spkgs[k]
+                else:
+                    return None
+        def set_local_ctx(ctx, hook, local_dir):
+            local_node = top.find_dir(
+                    relpath(local_dir, top.abspath()))
+            spkg = get_subpackage(local_node)
+            ctx.local_dir = local_dir
+            ctx.local_node = local_node
+            ctx.top_node = top
+            ctx.local_pkg = spkg
+            ctx.pkg = pkg
+            return hook(ctx)
+
         if get_pre_hooks(cmd_name) is not None:
-            for f in get_pre_hooks(cmd_name):
-                f[0](ctx)
-        cmd_func(ctx)
+            for hook, local_dir in get_pre_hooks(cmd_name):
+                set_local_ctx(ctx, hook, local_dir)
+
+        while cmd_funcs:
+            cmd_func, local_dir = cmd_funcs.pop(0)
+            set_local_ctx(ctx, cmd_func, local_dir)
+
         if get_post_hooks(cmd_name) is not None:
-            for f in get_post_hooks(cmd_name):
-                f[0](ctx)
+            for hook, local_dir in get_post_hooks(cmd_name):
+                set_local_ctx(ctx, hook, local_dir)
+        cmd.shutdown(ctx)
     finally:
         ctx.store()
 
@@ -267,10 +328,13 @@ def noexc_main(argv=None):
         if BENTOMAKER_DEBUG:
             tb = sys.exc_info()[2]
             traceback.print_tb(tb)
-        pprint('RED', "%s: Error: %s crashed (uncaught exception %s: %s).\n"
-                "Please report this on bento issue tracker: \n" \
-                "\thttp://github.com/cournape/bento/issues" %
-               (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e)))
+        msg = """\
+%s: Error: %s crashed (uncaught exception %s: %s).
+Please report this on bento issue tracker:
+    http://github.com/cournape/bento/issues"""
+        if not BENTOMAKER_DEBUG:
+            msg += "\nYou can get a full traceback by setting BENTOMAKER_DEBUG=1"
+        pprint('RED',  msg % (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e)))
         sys.exit(1)
     sys.exit(ret)
 

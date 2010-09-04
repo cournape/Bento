@@ -32,6 +32,7 @@ class Dispatcher(object):
                    "path_options": {},
                    "flag_options": {},
                    "extra_sources": [],
+                   "subento": [],
                    "data_files": {}}
         self.action_dict = {
             "empty": self.empty,
@@ -42,6 +43,7 @@ class Dispatcher(object):
             "maintainer": self.author,
             "hook_file": self.hook_file,
             "config_py": self.config_py,
+            "subento": self.subento,
             # Library
             "library": self.library,
             "library_name": self.library_name,
@@ -87,6 +89,12 @@ class Dispatcher(object):
     def empty(self, node):
         return {}
 
+    def _prune(self):
+        for k in ["libraries", "executables", "path_options", "flag_options",
+            "extra_sources", "subento", "data_files"]:
+            if len(self._d[k]) < 1:
+                del self._d[k]
+
     def stmt_list(self, node):
         for c in node.children:
             if c.type in ["name", "description", "version", "summary", "url",
@@ -107,6 +115,7 @@ class Dispatcher(object):
                 self._d["data_files"][c.value["name"]] = c.value
             else:
                 raise ValueError("Unhandled top statement (%s)" % c)
+        self._prune()
         return self._d
 
     def summary(self, node):
@@ -352,6 +361,9 @@ class Dispatcher(object):
 
     def extra_sources(self, node):
         self._d["extra_sources"].extend(node.value)
+
+    def subento(self, node):
+        self._d["subento"].extend(node.value)
 
     # Data handling
     def data_files(self, node):

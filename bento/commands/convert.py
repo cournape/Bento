@@ -42,7 +42,7 @@ def _process_data_files(seq):
 # XXX: this is where the magic happens. This is highly dependent on the
 # setup.py, whether it uses distutils, numpy.distutils, setuptools and whatnot.
 def monkey_patch(type, filename):
-    supported = ["distutils", "setuptools", "setuptools_numpy"]
+    supported = ["distutils", "numpy_distutils", "setuptools", "setuptools_numpy"]
 
     if type == "distutils":
         from distutils.core import setup as old_setup
@@ -55,6 +55,14 @@ def monkey_patch(type, filename):
         from setuptools.command.build_py import build_py as old_build_py
         from setuptools.command.sdist import sdist as old_sdist
         from distutils.dist import Distribution as _Distribution
+        from distutils.filelist import FileList
+    elif type == "numpy_distutils":
+        import numpy.distutils
+        import distutils.core
+        from numpy.distutils.core import setup as old_setup
+        from numpy.distutils.command.build_py import build_py as old_build_py
+        from numpy.distutils.command.sdist import sdist as old_sdist
+        from numpy.distutils.numpy_distribution import NumpyDistribution as _Distribution
         from distutils.filelist import FileList
     elif type == "setuptools_numpy":
         import setuptools
@@ -129,6 +137,9 @@ def monkey_patch(type, filename):
     elif type == "setuptools_numpy":
         numpy.distutils.core.setup = new_setup
         setuptools.setup = new_setup
+        distutils.core.setup = new_setup
+    elif type == "numpy_distutils":
+        numpy.distutils.core.setup = new_setup
         distutils.core.setup = new_setup
     else:
         raise UsageException("Unknown converter: %s (known converters are %s)" % 

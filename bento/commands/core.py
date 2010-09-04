@@ -81,6 +81,9 @@ class Command(object):
     def run(self, ctx):
         raise NotImplementedError("run method should be implemented by command classes.")
 
+    def shutdown(self, ctx):
+        pass
+
 class HelpCommand(Command):
     long_descr = """\
 Purpose: Show help on a command or other topic.

@@ -2,7 +2,7 @@ import os
 
 from copy \
     import \
-        deepcopy
+        deepcopy, copy
 
 from bento.core.pkg_objects import \
         Extension, DataFiles, Executable, CompiledLibrary
@@ -13,50 +13,158 @@ from bento.core.utils import \
 from bento.core.parser.api \
     import \
         parse_to_dict
+from bento.compat.api \
+    import \
+        relpath
 from bento.core.errors \
     import \
         InvalidPackage
+
+def _parse_libraries(libraries):
+    ret = {}
+    if not libraries.keys() in [[], ["default"]]:
+        raise NotImplementedError(
+                "Non default library not yet supported")
+
+    if len(libraries) > 0:
+        default = libraries["default"]
+        for k in ["packages", "py_modules", "install_requires"]:
+            if default[k]:
+                ret[k] = default[k]
+        if default["extensions"]:
+            ret["extensions"] = {}
+            for k, v in default["extensions"].items():
+                ret["extensions"][k] = Extension.from_parse_dict(v)
+
+        if default["compiled_libraries"]:
+            ret["compiled_libraries"] = {}
+            for k, v in default["compiled_libraries"].items():
+                ret["compiled_libraries"][k] = \
+                        CompiledLibrary.from_parse_dict(v)
+
+    return ret
+
+class SubPackageDescription:
+    def __init__(self, rdir, packages=None, extensions=None,
+                 compiled_libraries=None):
+        self.rdir = rdir
+        if packages is None:
+            self.packages = []
+        else:
+            self.packages = packages
+        if extensions is None:
+            self.extensions = {}
+        else:
+            self.extensions = extensions
+        if compiled_libraries is None:
+            self.compiled_libraries = {}
+        else:
+            self.compiled_libraries = compiled_libraries
+
+    def __repr__(self):
+        return repr({"packages": self.packages,
+                     "clibs": self.compiled_libraries,
+                     "extensions": self.extensions})
+
+def recurse_subentos(subentos):
+    filenames = []
+    subpackages = {}
+
+    root_dir = os.getcwd()
+    def _recurse(subento, cwd):
+        f = os.path.join(cwd, subento, "bento.info")
+        if not os.path.exists(f):
+            raise ValueError("%s not found !" % f)
+        filenames.append(f)
+
+        fid = open(f)
+        try:
+            key = relpath(f, root_dir)
+            rdir = relpath(os.path.join(cwd, subento), root_dir)
+
+            kw, subentos = parse_to_subpkg_kw(fid.read(), f)
+            subpackages[key] = SubPackageDescription(rdir, **kw)
+            for s in subentos:
+                _recurse(s, os.path.join(cwd, subento))
+        finally:
+            fid.close()
+
+    for s in subentos:
+        _recurse(s, root_dir)
+    return subpackages
+
+def parse_main_kw(d):
+    kw = {}
+
+    for field, value in d.items():
+        if field == "extra_sources":
+            d.pop(field)
+            kw["extra_source_files"] = value
+        elif field == "libraries":
+            d.pop(field)
+            kw.update(_parse_libraries(value))
+        elif field == "data_files":
+            d.pop(field)
+            kw["data_files"] = {}
+            for name, data in value.items():
+                 kw["data_files"][name] = \
+                         DataFiles.from_parse_dict(data)
+        elif field == "executables":
+            d.pop(field)
+            kw["executables"] = {}
+            for name, executable in value.items():
+                kw["executables"][name] = Executable.from_parse_dict(executable)
+
+    return kw, d
+
+def parse_to_subpkg_kw(data, f):
+    d = parse_to_dict(data)
+    kw, remain = parse_main_kw(d)
+    if remain.has_key("subento"):
+        subentos = remain.pop("subento")
+    else:
+        subentos = []
+    if len(remain) > 0:
+        raise ValueError("Illegal field(s) in subento %s: %s !" \
+                         % (f, ".".join(["`%s'" % k for k
+                                            in remain.keys()])))
+    return kw, subentos
+
+def parse_to_pkg_kw(data, user_flags):
+    d = parse_to_dict(data, user_flags)
+    kw, remain = parse_main_kw(d)
+
+    # XXX: once and for all, decide empty (default) field vs missing
+    # field in parsed dictionaries !!
+    for field, value in remain.items():
+        if field in _METADATA_FIELDS:
+            del remain[field]
+            kw[field] = value
+        elif field == "hook_file":
+            del remain[field]
+            kw[field] = value
+        elif field == "config_py":
+            del remain[field]
+            kw[field] = value
+        elif field == "flag_options":
+            del remain[field]
+
+    if remain.has_key("subento"):
+        subentos = remain.pop("subento")
+        subpackages = recurse_subentos(subentos)
+        kw["subpackages"] = subpackages
+
+    if len(remain) > 0:
+        raise ValueError("Unhandled field(s) %s!" % remain.keys())
+    return kw
 
 class PackageDescription:
     @classmethod
     def __from_data(cls, data, user_flags):
         if not user_flags:
             user_flags = {}
-        d = parse_to_dict(data, user_flags)
-        kw = deepcopy(d)
 
-        # FIXME: fix this mess
-        if not d["libraries"].keys() in [[], ["default"]]:
-            raise NotImplementedError(
-                    "Non default library not yet supported")
-
-        if len(d["libraries"]) > 0:
-            default = d["libraries"]["default"]
-            for k in ["packages", "py_modules", "install_requires"]:
-                kw[k] = default[k]
-            kw["extensions"] = {}
-            if default["extensions"]:
-                for k, v in default["extensions"].items():
-                    kw["extensions"][k] = Extension.from_parse_dict(v)
-
-            kw["compiled_libraries"] = {}
-            if default["compiled_libraries"]:
-                for k, v in default["compiled_libraries"].items():
-                    kw["compiled_libraries"][k] = CompiledLibrary.from_parse_dict(v)
-        del kw["libraries"]
-
-        del kw["path_options"]
-        del kw["flag_options"]
-
-        kw["extra_source_files"] = kw["extra_sources"]
-        del kw["extra_sources"]
-
-        for name, data in d["data_files"].items():
-            kw["data_files"][name] = DataFiles.from_parse_dict(data)
-
-        for name, executable in d["executables"].items():
-            kw["executables"][name] = Executable.from_parse_dict(executable)
-
+        kw = parse_to_pkg_kw(data, user_flags)
         return cls(**kw)
 
     @classmethod
@@ -86,7 +194,8 @@ class PackageDescription:
             install_requires=None, build_requires=None,
             download_url=None, extra_source_files=None, data_files=None,
             classifiers=None, provides=None, obsoletes=None, executables=None,
-            hook_file=None, config_py=None, compiled_libraries=None):
+            hook_file=None, config_py=None, compiled_libraries=None,
+            subpackages=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -96,34 +205,35 @@ class PackageDescription:
         else:
             self.packages = packages
 
+        # Package content
+        if not subpackages:
+            self.subpackages = {}
+        else:
+            self.subpackages = subpackages
+
         if not py_modules:
             self.py_modules = []
         else:
             self.py_modules = py_modules
 
-        if not extensions:
-            self.extensions = {}
-        else:
-            for ext in extensions.values():
-                sources = []
-                for s in ext.sources:
-                    sources.extend(expand_glob(s))
-                if os.sep != "/":
-                    sources = [unnormalize_path(s) for s in ext.sources]
-                ext.sources = sources
-            self.extensions = extensions
+        def normalize_paths(compiled_modules):
+            if not compiled_modules:
+                return {}
+            else:
+                for ext in compiled_modules.values():
+                    sources = []
+                    for s in ext.sources:
+                        if isinstance(s, basestring):
+                            sources.extend(expand_glob(s))
+                        else:
+                            print s
+                    if os.sep != "/":
+                        sources = [unnormalize_path(s) for s in ext.sources]
+                    ext.sources = sources
+                return compiled_modules
 
-        if not compiled_libraries:
-            self.compiled_libraries = {}
-        else:
-            for lib in compiled_libraries.values():
-                sources = []
-                for s in lib.sources:
-                    sources.extend(expand_glob(s))
-                if os.sep != "/":
-                    sources = [unnormalize_path(s) for s in sources]
-                lib.sources = sources
-            self.compiled_libraries = compiled_libraries
+        self.extensions = normalize_paths(extensions)
+        self.compiled_libraries = normalize_paths(compiled_libraries)
 
         if not extra_source_files:
             self.extra_source_files = []

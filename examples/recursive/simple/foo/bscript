@@ -1,0 +1,11 @@
+from bento.commands.hooks import pre_configure, pre_build
+
+@pre_build
+def build(ctx):
+    # Overriding the builder for one extension
+    # XXX: builder API still in flux
+    def foo(bld, ext, verbose):
+        builder = bld.builders["pyext"].extension
+        return builder(ext.name, ext.sources,
+                       env={"PYEXT_CFLAGS": ["-Wextra"]})
+    ctx.register_builder("_bottom", foo)
