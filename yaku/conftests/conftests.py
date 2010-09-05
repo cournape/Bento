@@ -54,22 +54,6 @@ int main()
         conf.end_message("no")
     return ret
 
-def check_compiler(conf):
-    code = """\
-int main(void)
-{
-    return 0;
-}
-"""
-
-    conf.start_message("Checking whether C compiler works")
-    ret = create_link_conf_taskgen(conf, "check_cc", code, None)
-    if ret:
-        conf.end_message("yes")
-    else:
-        conf.end_message("no")
-    return ret
-
 def check_type(conf, type_name, headers=None):
     code = r"""
 int main() {
