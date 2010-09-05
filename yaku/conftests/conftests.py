@@ -9,7 +9,7 @@ from yaku.conf \
     import create_program_conf_taskgen, create_compile_conf_taskgen, \
            generate_config_h, ConfigureContext, ccompile, create_file
 
-def check_compiler(conf):
+def check_compiler(conf, msg=None):
     code = """\
 int main(void)
 {
@@ -17,7 +17,10 @@ int main(void)
 }
 """
 
-    conf.start_message("Checking whether C compiler works")
+    if msg is None:
+        conf.start_message("Checking whether C compiler works")
+    else:
+        conf.start_message(msg)
     ret = create_program_conf_taskgen(conf, "check_cc", code, None)
     if ret:
         conf.end_message("yes")

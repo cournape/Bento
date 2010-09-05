@@ -109,12 +109,15 @@ def _create_fbinary_conf_taskgen(conf, name, body, builder):
     write_log(conf.log, tasks, code, succeed, explanation)
     return succeed
 
-def check_fcompiler(conf):
+def check_fcompiler(conf, msg=None):
     code = """\
        program main
        end
 """
-    conf.start_message("Checking whether Fortran compiler works")
+    if msg is None:
+        conf.start_message("Checking whether Fortran compiler works")
+    else:
+        conf.start_message(msg)
     ret = create_fprogram_conf_taskgen(conf, "check_fcompiler", code)
     if ret:
         conf.end_message("yes")
