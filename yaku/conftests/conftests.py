@@ -6,7 +6,7 @@ from yaku.utils \
     import \
         ensure_dir
 from yaku.conf \
-    import create_link_conf_taskgen, create_compile_conf_taskgen, \
+    import create_program_conf_taskgen, create_compile_conf_taskgen, \
            generate_config_h, ConfigureContext, ccompile, create_file
 
 def check_compiler(conf):
@@ -18,7 +18,7 @@ int main(void)
 """
 
     conf.start_message("Checking whether C compiler works")
-    ret = create_link_conf_taskgen(conf, "check_cc", code, None)
+    ret = create_program_conf_taskgen(conf, "check_cc", code, None)
     if ret:
         conf.end_message("yes")
     else:
@@ -248,7 +248,7 @@ int main (void)
     try:
         for lib in libs[::-1]:
             conf.env["LIBS"].insert(0, lib)
-        ret = create_link_conf_taskgen(conf, "check_func", code, None)
+        ret = create_program_conf_taskgen(conf, "check_func", code, None)
         if ret:
             conf.end_message("yes")
         else:
@@ -285,7 +285,7 @@ int main (void)
     old_lib = copy.deepcopy(conf.env["LIBS"])
     try:
         conf.env["LIBS"].insert(0, lib)
-        ret = create_link_conf_taskgen(conf, "check_lib", code, None)
+        ret = create_program_conf_taskgen(conf, "check_lib", code, None)
         if ret:
             conf.end_message("yes")
         else:
@@ -339,7 +339,7 @@ int main (void)
     try:
         for lib in libs[::-1]:
             conf.env["LIBS"].insert(0, lib)
-        ret = create_link_conf_taskgen(conf, "check_func", body, None)
+        ret = create_program_conf_taskgen(conf, "check_func", body, None)
         if ret:
             conf.end_message("yes")
         else:

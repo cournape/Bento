@@ -111,13 +111,22 @@ def create_link_conf_taskgen(conf, name, body, headers=None,
     old_root, new_root = create_conf_blddir(conf, name, body)
     try:
         conf.bld_root = new_root
-        return _create_link_conf_taskgen(conf, name, body,
+        return _create_binary_conf_taskgen(conf, name, body, ccprogram_task,
                 headers, extension)
     finally:
         conf.bld_root = old_root
 
+def create_program_conf_taskgen(conf, name, body, headers=None,
+        extension=".c"):
+    old_root, new_root = create_conf_blddir(conf, name, body)
+    try:
+        conf.bld_root = new_root
+        return _create_binary_conf_taskgen(conf, name, body, ccprogram_task,
+                headers, extension)
+    finally:
+        conf.bld_root = old_root
 
-def _create_link_conf_taskgen(conf, name, body, headers=None,
+def _create_binary_conf_taskgen(conf, name, body, builder, headers=None,
         extension=".c"):
     if headers is not None:
         head = "\n".join(["#include <%s>" % h for h in headers])
@@ -134,7 +143,7 @@ def _create_link_conf_taskgen(conf, name, body, headers=None,
     apply_libdir(task_gen)
 
     tasks = create_tasks(task_gen, sources)
-    tasks.extend(ccprogram_task(task_gen, name))
+    tasks.extend(builder(task_gen, name))
 
     for t in tasks:
         t.disable_output = True
