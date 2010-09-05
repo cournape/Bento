@@ -10,7 +10,7 @@ from bento._config \
         IPKG_PATH, BUILD_DIR
 from bento.core.subpackage \
     import \
-        get_extensions
+        get_extensions, get_compiled_libraries
 
 from bento.commands.core \
     import \
@@ -65,6 +65,7 @@ Usage:   bentomaker build [OPTIONS]."""
         pkg = s.pkg
 
         extensions = get_extensions(pkg, ctx.top_node)
+        libraries = get_compiled_libraries(pkg, ctx.top_node)
 
         if ctx.get_user_data()["use_distutils"]:
             self.build_type = "distutils"
@@ -76,7 +77,7 @@ Usage:   bentomaker build [OPTIONS]."""
             build_extensions = builder
 
             def builder(pkg):
-                return build_yaku.build_compiled_libraries(ctx.yaku_build_ctx, pkg, inplace, verbose)
+                return build_yaku.build_compiled_libraries(libraries, ctx.yaku_build_ctx, ctx._clibraries_callback, inplace, verbose)
             build_compiled_libraries = builder
 
         self.section_writer.sections_callbacks["compiled_libraries"] = \

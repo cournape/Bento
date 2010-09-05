@@ -87,27 +87,35 @@ def _build_extensions(extensions, bld, inplace, verbose, extension_callback):
     run_tasks(bld, all_outputs, inplace)
     return ret
 
-def build_compiled_library(bld, extension, verbose):
+def build_compiled_library(bld, extension, verbose, callbacks):
     builder = bld.builders["ctasks"]
     try:
         if verbose:
             builder.env["VERBOSE"] = True
         for p in extension.include_dirs:
             builder.env["CPPPATH"].insert(0, p)
-        return builder.static_library(extension.name,
-                                      extension.sources)
+        if extension.name in callbacks:
+            tasks = callbacks[extension.name](bld, extension, verbose)
+            if tasks is None:
+                raise ValueError(
+                    "Registered callback for %s did not return " \
+                    "a list of tasks!" % extension.name)
+        else:
+            tasks = builder.static_library(extension.name,
+                                          extension.sources)
+        return tasks
     except RuntimeError, e:
         msg = "Building extension %s failed: %s" % (extension.name, str(e))
         raise CommandExecutionFailure(msg)
 
-def _build_compiled_libraries(bld, pkg, inplace, verbose):
+def _build_compiled_libraries(compiled_libraries, bld, inplace, verbose, callbacks):
     ret = {}
-    if len(pkg.compiled_libraries) < 1:
+    if len(compiled_libraries) < 1:
         return  ret
 
     all_outputs = {}
-    for ext in pkg.compiled_libraries.values():
-        outputs = build_compiled_library(bld, ext, verbose)
+    for ext in compiled_libraries.values():
+        outputs = build_compiled_library(bld, ext, verbose, callbacks)
         all_outputs[ext.name] = outputs
         ret[ext.name] = build_isection(bld, ext.name, outputs)
 
@@ -126,9 +134,9 @@ def build_extensions(extensions, yaku_build_ctx, builder_callbacks, inplace=Fals
         msg += "command '%s' failed (see above)" % " ".join(e.cmd)
         raise bento.core.errors.BuildError(msg)
 
-def build_compiled_libraries(yaku_build_ctx, pkg, inplace=False, verbose=False):
+def build_compiled_libraries(libraries, yaku_build_ctx, callbacks, inplace=False, verbose=False):
     try:
-        return _build_compiled_libraries(yaku_build_ctx, pkg, inplace, verbose)
+        return _build_compiled_libraries(libraries, yaku_build_ctx, inplace, verbose, callbacks)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
             msg = e.explain

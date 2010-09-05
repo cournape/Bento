@@ -232,6 +232,7 @@ class BuildContext(Context):
         Context.__init__(self, cmd, cmd_opts, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
         self._extensions_callback = {}
+        self._clibraries_callback = {}
 
     def store(self):
         Context.store(self)
@@ -245,6 +246,11 @@ class BuildContext(Context):
         else:
             full_name = extension_name
         self._extensions_callback[full_name] = builder
+
+    def register_clib_builder(self, clib_name, builder):
+        # XXX: how to deal with multiple libraries with the same name in
+        # different subdirs ? (that bug is also present with numpy.distutils)
+        self._clibraries_callback[clib_name] = builder
 
 def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)
