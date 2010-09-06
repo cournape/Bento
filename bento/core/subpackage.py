@@ -1,3 +1,6 @@
+from bento.core.utils \
+    import \
+        resolve_glob
 from bento.core.pkg_objects \
     import \
         Extension, CompiledLibrary
@@ -75,8 +78,9 @@ def flatten_subpackage_compiled_libraries(spkg, top_node):
 
     ret = {}
     for name, clib in spkg.compiled_libraries.items():
+        sources = resolve_glob(clib.sources, spkg.rdir)
         sources = [local_node.find_node(s).path_from(top_node) \
-                   for s in clib.sources]
+                   for s in sources]
         include_dirs = [
                 local_node.find_node(d).path_from(top_node) \
                 for d in clib.include_dirs]

@@ -220,6 +220,18 @@ def normalize_path(path):
 def unnormalize_path(path):
     return path.replace("/", "\\")
 
+def resolve_glob(files, reference_path=None):
+    """Resolve all glob patterns in the given list
+
+    Parameters
+    ----------
+    files: seq
+    """
+    ret = []
+    for f in files:
+        ret.extend(expand_glob(f, reference_path))
+    return ret
+
 # Code by Armin Ronacher
 missing = object()
 class OrderedDict(dict):
