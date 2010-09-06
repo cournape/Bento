@@ -73,11 +73,15 @@ Usage:   bentomaker build [OPTIONS]."""
         else:
             self.build_type = "yaku"
             def builder(pkg):
-                return build_yaku.build_extensions(extensions, ctx.yaku_build_ctx, ctx._extensions_callback, inplace, verbose)
+                return build_yaku.build_extensions(extensions,
+                        ctx.yaku_build_ctx, ctx._extensions_callback,
+                        ctx._extension_envs, inplace, verbose)
             build_extensions = builder
 
             def builder(pkg):
-                return build_yaku.build_compiled_libraries(libraries, ctx.yaku_build_ctx, ctx._clibraries_callback, inplace, verbose)
+                return build_yaku.build_compiled_libraries(libraries,
+                        ctx.yaku_build_ctx, ctx._clibraries_callback,
+                        ctx._clibrary_envs, inplace, verbose)
             build_compiled_libraries = builder
 
         self.section_writer.sections_callbacks["compiled_libraries"] = \

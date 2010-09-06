@@ -233,24 +233,40 @@ class BuildContext(Context):
         self.yaku_build_ctx = yaku.context.get_bld()
         self._extensions_callback = {}
         self._clibraries_callback = {}
+        self._clibrary_envs = {}
+        self._extension_envs = {}
 
     def store(self):
         Context.store(self)
         self.yaku_build_ctx.store()
 
-    def register_builder(self, extension_name, builder):
+    def _compute_extension_name(self, extension_name):
         relpos = self.local_node.path_from(self.top_node)
         extension = relpos.replace(os.path.pathsep, ".")
         if extension:
             full_name = extension + ".%s" % extension_name
         else:
             full_name = extension_name
+        return full_name
+
+    # XXX: none of those register_* really belong here
+    def register_builder(self, extension_name, builder):
+        full_name = self._compute_extension_name(extension_name)
         self._extensions_callback[full_name] = builder
 
     def register_clib_builder(self, clib_name, builder):
         relpos = self.local_node.path_from(self.top_node)
         full_name = os.path.join(relpos, clib_name)
         self._clibraries_callback[full_name] = builder
+
+    def register_environment(self, extension_name, env):
+        full_name = self._compute_extension_name(extension_name)
+        self._extension_envs[full_name] = env
+
+    def register_clib_environment(self, clib_name, env):
+        relpos = self.local_node.path_from(self.top_node)
+        full_name = os.path.join(relpos, clib_name)
+        self._clibrary_envs[full_name] = env
 
 def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)

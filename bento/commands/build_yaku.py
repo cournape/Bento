@@ -50,18 +50,20 @@ def build_isection(bld, ext_name, files):
                                 target, [o.name for o in files])
     return section
 
-def build_extension(bld, extension, verbose):
+def build_extension(bld, extension, verbose, env=None):
     builder = bld.builders["pyext"]
     try:
         if verbose:
             builder.env["VERBOSE"] = True
-        return builder.extension(extension.name, extension.sources)
+        return builder.extension(extension.name, extension.sources,
+                                 env)
     except RuntimeError, e:
         msg = "Building extension %s failed: %s" % \
               (extension.name, str(e))
         raise CommandExecutionFailure(msg)
 
-def _build_extensions(extensions, bld, inplace, verbose, extension_callback):
+def _build_extensions(extensions, bld, environments, inplace, verbose,
+        extension_callback):
     ret = {}
     if len(extensions) < 1:
         return  ret
@@ -70,6 +72,7 @@ def _build_extensions(extensions, bld, inplace, verbose, extension_callback):
     subexts = {}
 
     for name, ext in extensions.items():
+        env = environments.get(name, None)
         if name in extension_callback:
             tasks = extension_callback[name](bld, ext, verbose)
             if tasks is None:
@@ -77,7 +80,7 @@ def _build_extensions(extensions, bld, inplace, verbose, extension_callback):
                     "Registered callback for %s did not return " \
                     "a list of tasks!" % ext.name)
         else:
-            tasks = build_extension(bld, ext, verbose)
+            tasks = build_extension(bld, ext, verbose, env)
         if len(tasks) > 1:
             outputs = tasks[0].gen.outputs
             if len(outputs) > 0:
@@ -87,7 +90,7 @@ def _build_extensions(extensions, bld, inplace, verbose, extension_callback):
     run_tasks(bld, all_outputs, inplace)
     return ret
 
-def build_compiled_library(bld, clib, verbose, callbacks):
+def build_compiled_library(bld, clib, verbose, callbacks, env=None):
     builder = bld.builders["ctasks"]
     try:
         if verbose:
@@ -101,31 +104,35 @@ def build_compiled_library(bld, clib, verbose, callbacks):
                     "Registered callback for %s did not return " \
                     "a list of tasks!" % clib.name)
         else:
-            tasks = builder.static_library(clib.name, clib.sources)
+            tasks = builder.static_library(clib.name, clib.sources,
+                                           env)
         return tasks
     except RuntimeError, e:
         msg = "Building library %s failed: %s" % (clib.name, str(e))
         raise CommandExecutionFailure(msg)
 
-def _build_compiled_libraries(compiled_libraries, bld, inplace, verbose, callbacks):
+def _build_compiled_libraries(compiled_libraries, bld, environments,
+        inplace, verbose, callbacks):
     ret = {}
     if len(compiled_libraries) < 1:
         return  ret
 
     all_outputs = {}
     for clib in compiled_libraries.values():
+        env = environments.get(clib.name, None)
         outputs = build_compiled_library(bld, clib,
-                                         verbose, callbacks)
+                                         verbose, callbacks, env)
         all_outputs[clib.name] = outputs
         ret[clib.name] = build_isection(bld, clib.name, outputs)
 
     run_tasks(bld, all_outputs, inplace)
     return ret
 
-def build_extensions(extensions, yaku_build_ctx, builder_callbacks, inplace=False, verbose=False):
+def build_extensions(extensions, yaku_build_ctx, builder_callbacks,
+        environments, inplace=False, verbose=False):
     try:
         return _build_extensions(extensions, yaku_build_ctx,
-                inplace, verbose, builder_callbacks)
+                environments, inplace, verbose, builder_callbacks)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
             msg = e.explain
@@ -134,9 +141,11 @@ def build_extensions(extensions, yaku_build_ctx, builder_callbacks, inplace=Fals
         msg += "command '%s' failed (see above)" % " ".join(e.cmd)
         raise bento.core.errors.BuildError(msg)
 
-def build_compiled_libraries(libraries, yaku_build_ctx, callbacks, inplace=False, verbose=False):
+def build_compiled_libraries(libraries, yaku_build_ctx, callbacks,
+        environments, inplace=False, verbose=False):
     try:
-        return _build_compiled_libraries(libraries, yaku_build_ctx, inplace, verbose, callbacks)
+        return _build_compiled_libraries(libraries, yaku_build_ctx,
+                environments, inplace, verbose, callbacks)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
             msg = e.explain
