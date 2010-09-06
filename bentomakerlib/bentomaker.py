@@ -248,9 +248,9 @@ class BuildContext(Context):
         self._extensions_callback[full_name] = builder
 
     def register_clib_builder(self, clib_name, builder):
-        # XXX: how to deal with multiple libraries with the same name in
-        # different subdirs ? (that bug is also present with numpy.distutils)
-        self._clibraries_callback[clib_name] = builder
+        relpos = self.local_node.path_from(self.top_node)
+        full_name = os.path.join(relpos, clib_name)
+        self._clibraries_callback[full_name] = builder
 
 def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)

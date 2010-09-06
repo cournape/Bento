@@ -1,3 +1,5 @@
+import os
+
 from bento.core.utils \
     import \
         resolve_glob
@@ -84,7 +86,8 @@ def flatten_subpackage_compiled_libraries(spkg, top_node):
         include_dirs = [
                 local_node.find_node(d).path_from(top_node) \
                 for d in clib.include_dirs]
-        ret[name] = CompiledLibrary(name, sources, include_dirs)
+        full_name = os.path.join(spkg.rdir, name)
+        ret[full_name] = CompiledLibrary(full_name, sources, include_dirs)
     return ret
 
 def get_extensions(pkg, top_node):
@@ -117,6 +120,7 @@ def get_compiled_libraries(pkg, top_node):
     for name, ext in pkg.compiled_libraries.items():
         libraries[name] = ext
     for spkg in pkg.subpackages.values():
-        libraries.update(
-                flatten_subpackage_compiled_libraries(spkg, top_node))
+        local_libs = flatten_subpackage_compiled_libraries(spkg,
+                                                           top_node)
+        libraries.update(local_libs)
     return libraries
