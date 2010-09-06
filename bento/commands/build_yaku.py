@@ -87,25 +87,24 @@ def _build_extensions(extensions, bld, inplace, verbose, extension_callback):
     run_tasks(bld, all_outputs, inplace)
     return ret
 
-def build_compiled_library(bld, extension, verbose, callbacks):
+def build_compiled_library(bld, clib, verbose, callbacks):
     builder = bld.builders["ctasks"]
     try:
         if verbose:
             builder.env["VERBOSE"] = True
-        for p in extension.include_dirs:
+        for p in clib.include_dirs:
             builder.env["CPPPATH"].insert(0, p)
-        if extension.name in callbacks:
-            tasks = callbacks[extension.name](bld, extension, verbose)
+        if clib.name in callbacks:
+            tasks = callbacks[clib.name](bld, clib, verbose)
             if tasks is None:
                 raise ValueError(
                     "Registered callback for %s did not return " \
-                    "a list of tasks!" % extension.name)
+                    "a list of tasks!" % clib.name)
         else:
-            tasks = builder.static_library(extension.name,
-                                          extension.sources)
+            tasks = builder.static_library(clib.name, clib.sources)
         return tasks
     except RuntimeError, e:
-        msg = "Building extension %s failed: %s" % (extension.name, str(e))
+        msg = "Building library %s failed: %s" % (clib.name, str(e))
         raise CommandExecutionFailure(msg)
 
 def _build_compiled_libraries(compiled_libraries, bld, inplace, verbose, callbacks):
@@ -114,10 +113,11 @@ def _build_compiled_libraries(compiled_libraries, bld, inplace, verbose, callbac
         return  ret
 
     all_outputs = {}
-    for ext in compiled_libraries.values():
-        outputs = build_compiled_library(bld, ext, verbose, callbacks)
-        all_outputs[ext.name] = outputs
-        ret[ext.name] = build_isection(bld, ext.name, outputs)
+    for clib in compiled_libraries.values():
+        outputs = build_compiled_library(bld, clib,
+                                         verbose, callbacks)
+        all_outputs[clib.name] = outputs
+        ret[clib.name] = build_isection(bld, clib.name, outputs)
 
     run_tasks(bld, all_outputs, inplace)
     return ret
