@@ -1,26 +1,52 @@
 .. vim ft=rst
 
+Yaku, the trivial build system. Yaku does *not* aim at replacing scons, waf,
+etc... The goal is to optimize a build system under the following constrainst:
+
+    - simple (API and size)
+    - usable as a library for easy integration into packaging solutions
+    - cover the vast majority of python package needs
+    - significantly better than distutils build system
+
+By significantly better than distutils, we mean:
+
+    - adding new stages in a chain is possible. The traditional chain to build
+      extensions on unix is .c -> .o -> .so, but one may want to prepend .pyx
+      -> .c in that chain
+    - adding support for new compilers is easy
+    - overriding compilation flags, etc... on a per-extension basis should be
+      possible
+    - adding new tools (how to deal with .pyx, .pyf, etc...) should be simple
+    - basic dependency handling (if a source in a chain changes -> rerun the
+      chain)
+    - if possible automatic header dependency detection (which .h a .c depends
+      on), possible using compiler dependent feature (gcc and msvc provide
+      dependency information)
+
 TODO
 ====
 
-Yaku, the trivial build system.
+Main bugs, design issues:
 
-Before inclusion in toydist:
-	- being able to build simple extensions on unix/macosx/windows -> needs testing
-	- basic customization (through env variables) -> internal ready, no API
-	- easy customization for new extension (e.g. .pyx) -> almost done
-	- basic configuration stage ? (at least to check env sanity + setting
-	  env flags) -> first prototype ready, needs API
+    - Add C++ toolchain support
+    - At least minimal regression test suite to check nothing is broken on the
+      big three (windows + MSVC|mingw, mac+gcc, linux+gcc)
+    - Environment sharing: deepcopy is too expensive, and was found to be the
+      bottleneck if used for every task (especially for partial builds). COW
+      dictionaries would be great, as most of the variables are the same in
+      general, but is it possible to implement efficiently and reliably in
+      python ?
+    - Builder vs task generator: rethink this. Using classes (say
+      CompiledTaskGen) with function to build program, shared libs, etc... is
+      simple and very straightforward, but it makes code reuse difficult. For
+      example, how to reuse a python extension builder to add f2py support ?
+    - Lots of shortcuts have been taken to get scipy built, in particular too
+      much internal are exposed in bento - fix this
+    - Set-up and document one workflow for tools (e.g. detection -
+      initialization - setup - application)
 
-This means:
-	- Understand waf execution model - in particular how to deal with
-	  signatures for generated nodes (e.g. find dependencies of generated
-	  files)
-	- Finish task basic design
-	- Add basic task manager
-	- Implement simple sys configuration for linux, mac os x and windows
-
-Main limitations:
+Main limitations
+================
 
     - Speed not a concern (will not scale well to hundred of source files)
     - No thorough tool framework
@@ -29,10 +55,8 @@ Main limitations:
       be detected)
     - No on-the-fly task creation
     - No elaborate task manager (one simple model of task execution)
-    - No node abstraction: no variant dir, not source directory, build directly
-      support is naive
     - Good autoconf-like support unlikely (but we need to be at least as "good"
-      as ditutils)
+      as distutils)
 
 Design
 ======
@@ -40,20 +64,20 @@ Design
 Task
 ----
 
-Yaku is loosely modeled on waf (albeit signifcantly simpler and more
-limited). The core concept is the task: a task instance is more or
-less the equivalent of a make rule. Each task has a list of targets, a
-list of inputs, a list of explicit dependencies and a function run
-when the task is considered out-of-date.
+Yaku is loosely modeled on waf (albeit signifcantly simpler and more limited).
+The core concept is the task: a task instance is more or less the equivalent of
+a make rule. Each task has a list of targets, a list of inputs, a list of
+explicit dependencies and a function run which is executed whenever the task is
+considered out-of-date.
 
 TaskGen
 -------
 
-Task generators are used to generate new tasks instances in a flexible
-way (task factory). For example, a shared library is defined as a set
-of tasks to compile each .c into .o files, and one link task. The
-logic as well as the configuration shared by the compile tasks and the
-link task are handled by a task generator.
+Task generators are used to generate new tasks instances in a flexible way
+(task factory). For example, a shared library is defined as a set of tasks to
+compile each .c into .o files, and one link task. The logic as well as the
+configuration shared by the compile tasks and the link task are handled by a
+task generator.
 
 Task reuse
 ~~~~~~~~~~
