@@ -105,9 +105,6 @@ class Task(object):
             stdout = p.communicate()[0]
             if p.returncode:
                 raise TaskRunFailure(cmd, stdout)
-            # XXX: not thread-safe, obviously, but we only use this for
-            # configuration stage (maybe we should protect it ?)
-            self.gen.bld.stdout = stdout
             if self.disable_output:
                 self.log.write(stdout)
             else:
