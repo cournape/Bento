@@ -118,7 +118,7 @@ def parse_main_kw(d):
     return kw, d
 
 def parse_to_subpkg_kw(data, f):
-    d = parse_to_dict(data)
+    d = parse_to_dict(data, filename=f)
     kw, remain = parse_main_kw(d)
     if remain.has_key("subento"):
         subentos = remain.pop("subento")

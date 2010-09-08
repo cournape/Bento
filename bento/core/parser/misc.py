@@ -28,6 +28,9 @@ from bento.core.parser.nodes \
 from bento.core.parser.visitor \
     import \
         Dispatcher
+from bento.core.parser.errors \
+    import \
+        ParseError
 
 # XXX: Make a decorator to make this reusable in other parts of
 # bento
@@ -87,8 +90,13 @@ def get_parsed_script(data):
 
     return p
 
-def parse_to_dict(data, user_flags=None):
-    p = get_parsed_script(data)
+def parse_to_dict(data, user_flags=None, filename=None):
+    try:
+        p = get_parsed_script(data)
+    except ParseError, e:
+        # XXX: hack to add filename information
+        e.filename = filename
+        raise
 
     dispatcher = Dispatcher()
     if user_flags is None:
