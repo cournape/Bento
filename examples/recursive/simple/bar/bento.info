@@ -1,3 +1,5 @@
 Library:
     Extension: _bottom2
         Sources: src/hellomodule.c
+    Packages:
+        subar1, subar2
