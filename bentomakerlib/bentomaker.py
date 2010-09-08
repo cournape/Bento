@@ -60,7 +60,7 @@ from bento.commands.hooks \
         get_pre_hooks, get_post_hooks, get_command_override
 import bento.core.errors
 
-if os.environ.get("BENTOMAKER_DEBUG", None) is not None:
+if os.environ.get("BENTOMAKER_DEBUG", "0") != "0":
     BENTOMAKER_DEBUG = True
 else:
     BENTOMAKER_DEBUG = False
@@ -326,30 +326,37 @@ def run_cmd(cmd_name, cmd_opts):
         ctx.store()
 
 def noexc_main(argv=None):
-    try:
-        ret = main(argv)
-    except UsageException, e:
-        pprint('RED', e)
-        sys.exit(1)
-    except ParseError, e:
-        pprint('RED', "".join(e.args))
-        sys.exit(2)
-    except ConvertionError, e:
-        pprint('RED', "".join(e.args))
-        sys.exit(3)
-    except CommandExecutionFailure, e:
-        pprint('RED', "".join(e.args))
-        sys.exit(4)
-    except bento.core.errors.BuildError, e:
-        pprint('RED', e)
-        sys.exit(8)
-    except bento.core.errors.InvalidPackage, e:
-        pprint('RED', e)
-        sys.exit(16)
-    except Exception, e:
+    def _print_debug():
         if BENTOMAKER_DEBUG:
             tb = sys.exc_info()[2]
             traceback.print_tb(tb)
+    try:
+        ret = main(argv)
+    except UsageException, e:
+        _print_debug()
+        pprint('RED', e)
+        sys.exit(1)
+    except ParseError, e:
+        _print_debug()
+        pprint('RED', str(e))
+        sys.exit(2)
+    except ConvertionError, e:
+        _print_debug()
+        pprint('RED', "".join(e.args))
+        sys.exit(3)
+    except CommandExecutionFailure, e:
+        _print_debug()
+        pprint('RED', "".join(e.args))
+        sys.exit(4)
+    except bento.core.errors.BuildError, e:
+        _print_debug()
+        pprint('RED', e)
+        sys.exit(8)
+    except bento.core.errors.InvalidPackage, e:
+        _print_debug()
+        pprint('RED', e)
+        sys.exit(16)
+    except Exception, e:
         msg = """\
 %s: Error: %s crashed (uncaught exception %s: %s).
 Please report this on bento issue tracker:
