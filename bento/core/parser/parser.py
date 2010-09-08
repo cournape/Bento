@@ -33,11 +33,22 @@ class Parser(object):
             res = Node("empty")
         return res
 
+    def reset(self):
+        # XXX: implements reset for lexer
+        self.lexer = MyLexer(stage=5, optimize=_OPTIMIZE_LEX)
+        # XXX: ply parser.reset method expects those attributes to
+        # exist
+        self.parser.statestack = []
+        self.parser.symstack = []
+        return self.parser.restart()
+
 __PARSER = None
 def parse(data):
     global __PARSER
     if __PARSER is None:
         __PARSER = Parser()
+    else:
+        __PARSER.reset()
     return __PARSER.parse(data)
     #return Parser().parse(data)
 
