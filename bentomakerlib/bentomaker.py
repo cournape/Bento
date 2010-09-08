@@ -363,6 +363,8 @@ Please report this on bento issue tracker:
     http://github.com/cournape/bento/issues"""
         if not BENTOMAKER_DEBUG:
             msg += "\nYou can get a full traceback by setting BENTOMAKER_DEBUG=1"
+        else:
+            _print_debug()
         pprint('RED',  msg % (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e)))
         sys.exit(1)
     sys.exit(ret)
