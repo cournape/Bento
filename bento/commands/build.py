@@ -10,7 +10,7 @@ from bento._config \
         IPKG_PATH, BUILD_DIR
 from bento.core.subpackage \
     import \
-        get_extensions, get_compiled_libraries
+        get_extensions, get_compiled_libraries, get_packages
 
 from bento.commands.core \
     import \
@@ -88,6 +88,11 @@ Usage:   bentomaker build [OPTIONS]."""
                 build_compiled_libraries
         self.section_writer.sections_callbacks["extensions"] = \
                 build_extensions
+
+        def build_packages(pkg):
+            return _build_python_files(pkg, ctx.top_node)
+        self.section_writer.sections_callbacks["pythonfiles"] = \
+                build_packages
         self.section_writer.update_sections(pkg)
 
     def register_builder(self, extension_name, builder):
@@ -109,7 +114,7 @@ Usage:   bentomaker build [OPTIONS]."""
 class SectionWriter(object):
     def __init__(self):
         callbacks = [
-            ("pythonfiles", build_python_files),
+            ("pythonfiles", None),
             ("bentofiles", build_bento_files),
             ("datafiles", build_data_files),
             ("compiled_libraries", build_distutils.build_compiled_libraries),
@@ -134,11 +139,11 @@ class SectionWriter(object):
                                     pkg.executables)
         p.write(filename)
 
-def build_python_files(pkg):
+def _build_python_files(pkg, top_node):
     # FIXME: root_src
     root_src = ""
     python_files = []
-    for p in pkg.packages:
+    for p in get_packages(pkg, top_node):
         python_files.extend(find_package(p, root_src))
     for m in pkg.py_modules:
         python_files.append(os.path.join(root_src, '%s.py' % m))

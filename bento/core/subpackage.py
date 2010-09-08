@@ -7,6 +7,15 @@ from bento.core.pkg_objects \
     import \
         Extension, CompiledLibrary
 
+def flatten_subpackage_packages(spkg, top_node):
+    """Translate the (python) packages from a subpackage relatively to
+    the given top node.
+    """
+    local_node = top_node.find_dir(spkg.rdir)
+    parent_pkg = local_node.name.replace(os.pathsep, ".")
+    ret = ["%s.%s" % (parent_pkg, p) for p in spkg.packages]
+    return ret
+
 def flatten_subpackage_extensions(spkg, top_node):
     """Translate the extensions from a subpackage relatively to the
     given top node.
@@ -124,3 +133,13 @@ def get_compiled_libraries(pkg, top_node):
                                                            top_node)
         libraries.update(local_libs)
     return libraries
+
+def get_packages(pkg, top_node):
+    """Return the dictionary {name: package} of every (python) package
+    in pkg, including the one defined in subpackages (if any).
+    """
+    packages = [p for p in pkg.packages]
+    for spkg in pkg.subpackages.values():
+        local_pkgs = flatten_subpackage_packages(spkg, top_node)
+        packages.extend(local_pkgs)
+    return packages
