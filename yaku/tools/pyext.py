@@ -35,7 +35,9 @@ pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}
 
 pycc, pycc_vars = compile_fun("pycc", "${PYEXT_CC} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0].abspath()} ${PYEXT_CC_SRC_F}${SRC}", False)
 
+pycxx, pycxx_vars = compile_fun("pycxx", "${PYEXT_CXX} ${PYEXT_CXXFLAGS} ${PYEXT_INCPATH} ${PYEXT_CXX_TGT_F}${TGT[0].abspath()} ${PYEXT_CXX_SRC_F}${SRC}", False)
 # pyext env <-> sysconfig env conversion
+
 _SYS_TO_PYENV = {
         "PYEXT_SHCC": "CC",
         "PYEXT_CCSHARED": "CCSHARED",
@@ -71,6 +73,7 @@ _SYS_TO_CCENV = {
         "CPPPATH_FMT": "CPPPATH_FMT",
         "CC_TGT_F": "CC_TGT_F",
         "CC_SRC_F": "CC_SRC_F",
+        "CXX": "CXX",
 }
 
 def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
@@ -116,6 +119,22 @@ def pycc_task(self, node):
     ensure_dir(target.abspath())
 
     task = Task("pycc", inputs=[node], outputs=[target])
+    task.gen = self
+    task.env_vars = pycc_vars
+    task.env = self.env
+    task.func = pycc
+    return [task]
+
+def pycxx_hook(self, node):
+    tasks = pycxx_task(self, node)
+    self.object_tasks.extend(tasks)
+    return tasks
+
+def pycxx_task(self, node):
+    target = node.change_ext(".o")
+    ensure_dir(target.abspath())
+
+    task = Task("pycxx", inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = pycc_vars
     task.env = self.env
@@ -269,6 +288,7 @@ def create_pyext(bld, name, sources, env):
     task_gen = CompiledTaskGen("pyext", sources, name)
     task_gen.bld = bld
     old_hook = set_extension_hook(".c", pycc_hook)
+    old_hook_cxx = set_extension_hook(".cxx", pycxx_hook)
 
     task_gen.env = env
     apply_cpppath(task_gen)
@@ -284,6 +304,7 @@ def create_pyext(bld, name, sources, env):
         t.env = task_gen.env
 
     set_extension_hook(".c", old_hook)
+    set_extension_hook(".cxx", old_hook_cxx)
     bld.tasks.extend(tasks)
 
     outputs = []
