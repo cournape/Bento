@@ -12,7 +12,7 @@ def flatten_subpackage_packages(spkg, top_node):
     the given top node.
     """
     local_node = top_node.find_dir(spkg.rdir)
-    parent_pkg = local_node.name.replace(os.pathsep, ".")
+    parent_pkg = local_node.path_from(top_node).replace(os.pathsep, ".")
     ret = ["%s.%s" % (parent_pkg, p) for p in spkg.packages]
     return ret
 
