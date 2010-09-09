@@ -136,9 +136,9 @@ def pycxx_task(self, node):
 
     task = Task("pycxx", inputs=[node], outputs=[target])
     task.gen = self
-    task.env_vars = pycc_vars
+    task.env_vars = pycxx_vars
     task.env = self.env
-    task.func = pycc
+    task.func = pycxx
     return [task]
 
 def pylink_task(self, name):
@@ -279,6 +279,22 @@ def _setup_compiler(ctx, cc_type):
             "LINK_SRC_F"]
     for k in copied_values:
         ctx.env["PYEXT_%s" % k] = cc_env[k]
+
+    def setup_cxx():
+        old_env = ctx.env
+        ctx.env = {}
+        sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
+        try:
+            mod = __import__("gxx")
+            mod.setup(ctx)
+            cxx_env = ctx.env
+        finally:
+            sys.path.pop(0)
+            ctx.env = old_env
+
+        for k in ["CXX", "CXXFLAGS", "CXX_TGT_F", "CXX_SRC_F"]:
+            ctx.env["PYEXT_%s" % k] = cxx_env[k]
+    setup_cxx()
 
 def create_pyext(bld, name, sources, env):
     base = name.replace(".", os.sep)
