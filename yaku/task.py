@@ -109,5 +109,7 @@ class Task(object):
                 self.log.write(stdout)
             else:
                 sys.stderr.write(stdout)
+        except OSError, e:
+            raise TaskRunFailure(cmd, str(e))
         except WindowsError, e:
             raise TaskRunFailure(cmd, str(e))
