@@ -15,7 +15,7 @@ import yaku.errors
 
 def configure(ctx):
     import numpy.distutils
-    ctx.use_tools(["pyext", "ctasks", "tpl_tasks", "fortran"],
+    ctx.use_tools(["pyext", "ctasks", "cxxtasks", "tpl_tasks", "fortran"],
                   ["tools"])
     try:
         ctx.use_tools(["cython"])
@@ -26,10 +26,13 @@ def configure(ctx):
         ctx.env["PYEXT_CPPPATH"].insert(0, p)
 
 def build(ctx):
-    pyext = ctx.builders["pyext"]
-    pyext.extension("_bar", [os.path.join("src", f) for f in ["hellomodule.c", "foo.c"]])
-    pyext.extension("_von", [os.path.join("src/vonmises_cython.pyx")])
-    ctx.builders["tpl_tasks"].build("template", sources=[os.path.join("src", "foo.h.in")])
+    #pyext = ctx.builders["pyext"]
+    #pyext.extension("_bar", [os.path.join("src", f) for f in ["hellomodule.c", "foo.c"]])
+    #pyext.extension("_von", [os.path.join("src/vonmises_cython.pyx")])
+    #ctx.builders["tpl_tasks"].build("template", sources=[os.path.join("src", "foo.h.in")])
+
+    builder = ctx.builders["cxxtasks"]
+    builder.program("foo", ["src/main.cxx"])
 
 if __name__ == "__main__":
     ctx = get_cfg()
