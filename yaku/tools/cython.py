@@ -29,9 +29,7 @@ def cython_task(self, node):
                 self.env["CYTHON_CPPPATH"]]
     task.func = compile_fun("cython", "cython ${SRC} -o ${TGT} ${CYTHON_INCPATH}",
                             False)[0]
-    compile_task = get_extension_hook(".c")
-    ctask = compile_task(self, target)
-    return [task] + ctask
+    return [task]
 
 def configure(ctx):
     sys.stderr.write("Looking for cython... ")
