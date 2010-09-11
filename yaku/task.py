@@ -113,3 +113,7 @@ class Task(object):
             raise TaskRunFailure(cmd, str(e))
         except WindowsError, e:
             raise TaskRunFailure(cmd, str(e))
+
+    def __repr__(self):
+        return "'%s: %s -> %s'" % (self.name, self.inputs[0],
+                                   self.outputs[0])

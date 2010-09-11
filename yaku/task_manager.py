@@ -31,20 +31,34 @@ def set_file_hook(ctx, source, hook):
         raise IOError("file %s not found" % source)
     FILES_REGISTRY[node] = hook
 
-def create_tasks(ctx, sources):
-    tasks = []
+class NoHookException(Exception):
+    pass
 
+def create_tasks(ctx, sources):
     def _get_hook(source):
         if source in FILES_REGISTRY:
             return FILES_REGISTRY[source]
         for ext in RULES_REGISTRY:
             if source.name.endswith(ext):
                 return RULES_REGISTRY[ext]
-        raise RuntimeError("No rule defined for extension %r" % source.suffix())
+        raise NoHookException(
+                "No rule defined for extension %r" % source.suffix())
 
-    for s in sources:
-        task_gen = _get_hook(s)
-        tasks.extend(task_gen(ctx, s))
+    def process(nodes):
+        tasks = []
+        for s in nodes:
+            try:
+                f = _get_hook(s)
+                tsks = f(ctx, s)
+                tasks.extend(tsks)
+                for t in tsks:
+                    ptsks = process(t.outputs)
+                    tasks.extend(ptsks)
+            except NoHookException:
+                pass
+        return tasks
+
+    tasks = process(sources)
     return tasks
 
 def hash_task(t):
