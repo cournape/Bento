@@ -241,7 +241,10 @@ class BuildContext(Context):
         self.yaku_build_ctx.store()
 
     def _compute_extension_name(self, extension_name):
-        relpos = self.local_node.path_from(self.top_node)
+        if self.local_node ==  self.top_node:
+            relpos = ""
+        else:
+            relpos = self.local_node.path_from(self.top_node)
         extension = relpos.replace(os.path.pathsep, ".")
         if extension:
             full_name = extension + ".%s" % extension_name
