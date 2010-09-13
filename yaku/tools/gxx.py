@@ -11,6 +11,10 @@ def setup(ctx):
     ctx.env["CXXLINKFLAGS"] = []
     ctx.env["CXXLINK_TGT_F"] = ["-o"]
     ctx.env["CXXLINK_SRC_F"] = []
+    ctx.env["CXXSHLINK"] = ["g++", "-shared"]
+    ctx.env["CXXSHLINKFLAGS"] = []
+    ctx.env["CXXSHLINK_TGT_F"] = ["-o"]
+    ctx.env["CXXSHLINK_SRC_F"] = []
     ctx.env["CPPPATH"] = []
     ctx.env["CPPPATH_FMT"] = "-I%s"
     ctx.env["LIBDIR"] = []

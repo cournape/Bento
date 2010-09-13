@@ -36,6 +36,9 @@ pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}
 pycc, pycc_vars = compile_fun("pycc", "${PYEXT_CC} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0].abspath()} ${PYEXT_CC_SRC_F}${SRC}", False)
 
 pycxx, pycxx_vars = compile_fun("pycxx", "${PYEXT_CXX} ${PYEXT_CXXFLAGS} ${PYEXT_INCPATH} ${PYEXT_CXX_TGT_F}${TGT[0].abspath()} ${PYEXT_CXX_SRC_F}${SRC}", False)
+
+pycxxlink, pycxxlink_vars = compile_fun("pycxxlink", "${PYEXT_CXXSHLINK} ${PYEXT_LINK_TGT_F}${TGT[0].abspath()} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_APP_FRAMEWORKS} ${PYEXT_SHLINKFLAGS}", False)
+
 # pyext env <-> sysconfig env conversion
 
 _SYS_TO_PYENV = {
@@ -74,6 +77,7 @@ _SYS_TO_CCENV = {
         "CC_TGT_F": "CC_TGT_F",
         "CC_SRC_F": "CC_SRC_F",
         "CXX": "CXX",
+        "CXXSHLINK": "CXXSHLINK",
 }
 
 def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
@@ -292,7 +296,8 @@ def _setup_compiler(ctx, cc_type):
             sys.path.pop(0)
             ctx.env = old_env
 
-        for k in ["CXX", "CXXFLAGS", "CXX_TGT_F", "CXX_SRC_F"]:
+        for k in ["CXX", "CXXFLAGS", "CXX_TGT_F", "CXX_SRC_F",
+                  "CXXSHLINK"]:
             ctx.env["PYEXT_%s" % k] = cxx_env[k]
     setup_cxx()
 
@@ -315,6 +320,14 @@ def create_pyext(bld, name, sources, env):
     tasks = create_tasks(task_gen, sources)
 
     ltask = pylink_task(task_gen, base)
+    has_cxx = False
+    for s in sources:
+        if s.suffix() == ".cxx":
+            has_cxx = True
+    if has_cxx:
+        task_gen.link_task.func = pycxxlink
+        task_gen.link_task.env_vars = pycxxlink_vars
+
     tasks.extend(ltask)
     for t in tasks:
         t.env = task_gen.env
