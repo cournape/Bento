@@ -11,7 +11,7 @@ import yaku.node
 import yaku.errors
 
 def configure(ctx):
-    ctx.use_tools(["fortran"])
+    ctx.use_tools(["fortran", "ctasks"])
 
 def build(ctx):
     builder = ctx.builders["fortran"]
