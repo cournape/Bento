@@ -116,10 +116,8 @@ def pycc_hook(self, node):
     return tasks
 
 def pycc_task(self, node):
-    #print node, node.abspath()
-    #target = self.bld.src_root.find_or_declare(
-    #        node.change_ext(".o").name)
-    target = node.change_ext(".o")
+    base = self.env["CC_OBJECT_FMT"] % node.name
+    target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
     task = Task("pycc", inputs=[node], outputs=[target])
@@ -135,7 +133,8 @@ def pycxx_hook(self, node):
     return tasks
 
 def pycxx_task(self, node):
-    target = node.change_ext(".o")
+    base = self.env["CXX_OBJECT_FMT"] % node.name
+    target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
     task = Task("pycxx", inputs=[node], outputs=[target])

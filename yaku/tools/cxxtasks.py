@@ -31,9 +31,8 @@ def cxx_hook(self, node):
     return tasks
 
 def cxxcompile_task(self, node):
-    folder, base = os.path.split(node.bld_base())
-    tmp = folder + os.path.sep + self.env["CXX_OBJECT_FMT"] % base
-    target = node.ctx.bldnode.declare(tmp)
+    base = self.env["CXX_OBJECT_FMT"] % node.name
+    target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
     task = Task("cxx", inputs=[node], outputs=[target])

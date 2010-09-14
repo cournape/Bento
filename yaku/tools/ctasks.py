@@ -32,9 +32,8 @@ def c_hook(self, node):
     return tasks
 
 def ccompile_task(self, node):
-    folder, base = os.path.split(node.bld_base())
-    tmp = folder + os.path.sep + self.env["CC_OBJECT_FMT"] % base
-    target = node.ctx.bldnode.declare(tmp)
+    base = self.env["CC_OBJECT_FMT"] % node.name
+    target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
     task = Task("cc", inputs=[node], outputs=[target])

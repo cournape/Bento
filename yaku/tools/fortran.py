@@ -24,9 +24,8 @@ def fortran_task(self, node):
     return tasks
 
 def fcompile_task(self, node):
-    folder, base = os.path.split(node.bld_base())
-    tmp = folder + os.path.sep + "%s.o" % base
-    target = node.ctx.bldnode.declare(tmp)
+    base = "%s.o" % node.name
+    target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
     task = Task("f77", inputs=[node], outputs=[target])
