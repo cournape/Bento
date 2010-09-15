@@ -1,6 +1,3 @@
-from yaku.task_manager \
-    import \
-        create_tasks
 from yaku.scheduler \
     import \
         run_tasks

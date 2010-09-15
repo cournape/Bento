@@ -3,7 +3,7 @@ tests="examples/chaining/build.py
 examples/conf_example.py
 examples/example4.py
 examples/example5.py
-examples/example.py
+examples/c/example.py
 examples/file_hook.py
 examples/fortran/conf_fortran.py
 examples/fortran/fortran.py

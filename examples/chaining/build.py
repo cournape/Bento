@@ -3,7 +3,7 @@ import os
 
 from yaku.task_manager \
     import \
-        create_tasks
+        set_extension_hook, get_extension_hook
 from yaku.scheduler \
     import \
         run_tasks
