@@ -23,6 +23,17 @@ def configure(ctx):
 
 def build(ctx):
     pyext = ctx.builders["pyext"]
+
+    old_hook = get_extension_hook(".in")
+    def foo(self, node):
+        recursive_suffixes = [".c", ".cxx", ".pyx"]
+        out = node.change_ext("")
+        # XXX: is it really safe to items to a list one recurses on ?
+        if out.suffix() in recursive_suffixes:
+            self.sources.append(out)
+        return old_hook(self, node)
+    set_extension_hook(".in", foo)
+
     pyext.extension("hello", ["hello.pyx.in"])
 
 if __name__ == "__main__":
