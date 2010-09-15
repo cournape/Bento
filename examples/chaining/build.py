@@ -14,7 +14,7 @@ import yaku.node
 import yaku.errors
 
 def configure(ctx):
-    ctx.use_tools(["pyext", "tpl_tasks"])
+    ctx.use_tools(["ctasks", "pyext", "tpl_tasks"])
     try:
         ctx.use_tools(["cython"])
     except yaku.errors.ToolNotFound:
