@@ -9,7 +9,7 @@ from yaku.task \
         Task
 from yaku.task_manager \
     import \
-        extension, create_tasks, CompiledTaskGen
+        extension, CompiledTaskGen
 from yaku.utils \
     import \
         find_deps, ensure_dir
@@ -127,12 +127,12 @@ class CCBuilder(object):
         self.env = copy.deepcopy(ctx.env)
 
     def ccompile(self, name, sources, env=None):
-        task_gen = CompiledTaskGen("cccompile", sources, name)
-        task_gen.bld = self.ctx
+        task_gen = CompiledTaskGen("cccompile", self.ctx,
+                                   sources, name)
         task_gen.env = _merge_env(self.env, env)
         apply_cpppath(task_gen)
 
-        tasks = create_tasks(task_gen, sources)
+        tasks = task_gen.process()
         for t in tasks:
             t.env = task_gen.env
         self.ctx.tasks.extend(tasks)
@@ -144,14 +144,13 @@ class CCBuilder(object):
 
     def static_library(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
-        task_gen = CompiledTaskGen("ccstaticlib", sources, name)
-        task_gen.bld = self.ctx
+        task_gen = CompiledTaskGen("ccstaticlib", self.ctx, sources, name)
         task_gen.env = _merge_env(self.env, env)
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
         apply_libs(task_gen)
 
-        tasks = create_tasks(task_gen, sources)
+        tasks = task_gen.process()
         ltask = static_link_task(task_gen, name)
         tasks.extend(ltask)
         for t in tasks:
@@ -167,14 +166,14 @@ class CCBuilder(object):
 
     def program(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
-        task_gen = CompiledTaskGen("ccprogram", sources, name)
+        task_gen = CompiledTaskGen("ccprogram", self.ctx,
+                                   sources, name)
         task_gen.env = _merge_env(self.env, env)
-        task_gen.bld = self.ctx
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
         apply_libs(task_gen)
 
-        tasks = create_tasks(task_gen, sources)
+        tasks = task_gen.process()
         ltask = ccprogram_task(task_gen, name)
         tasks.extend(ltask)
         for t in tasks:

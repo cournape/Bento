@@ -11,7 +11,7 @@ from subprocess \
 
 from yaku.task_manager \
     import \
-        create_tasks, topo_sort, build_dag, \
+        topo_sort, build_dag, \
         CompiledTaskGen, set_extension_hook
 from yaku.sysconfig \
     import \
@@ -305,7 +305,7 @@ def create_pyext(bld, name, sources, env):
 
     tasks = []
 
-    task_gen = CompiledTaskGen("pyext", sources, name)
+    task_gen = CompiledTaskGen("pyext", bld, sources, name)
     task_gen.bld = bld
     old_hook = set_extension_hook(".c", pycc_hook)
     old_hook_cxx = set_extension_hook(".cxx", pycxx_hook)
@@ -316,7 +316,7 @@ def create_pyext(bld, name, sources, env):
     apply_libs(task_gen)
     apply_frameworks(task_gen)
 
-    tasks = create_tasks(task_gen, sources)
+    tasks = task_gen.process()
 
     ltask = pylink_task(task_gen, base)
     has_cxx = False

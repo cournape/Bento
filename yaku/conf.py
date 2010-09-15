@@ -21,7 +21,7 @@ from yaku.errors \
         TaskRunFailure
 from yaku.task_manager \
     import \
-        CompiledTaskGen, create_tasks
+        CompiledTaskGen
 from yaku.scheduler \
     import \
         run_tasks
@@ -135,14 +135,13 @@ def _create_binary_conf_taskgen(conf, name, body, builder, headers=None,
     code = "\n".join([c for c in [head, body]])
     sources = [create_file(conf, code, name, extension)]
 
-    task_gen = CompiledTaskGen("conf", sources, name)
-    task_gen.bld = conf
+    task_gen = CompiledTaskGen("conf", conf, sources, name)
     task_gen.env.update(copy.deepcopy(conf.env))
     task_gen.env["INCPATH"] = ""
     apply_libs(task_gen)
     apply_libdir(task_gen)
 
-    tasks = create_tasks(task_gen, sources)
+    tasks = task_gen.process()
     tasks.extend(builder(task_gen, name))
 
     for t in tasks:

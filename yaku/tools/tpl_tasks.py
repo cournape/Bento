@@ -10,7 +10,7 @@ from yaku.task \
         Task
 from yaku.task_manager \
     import \
-        extension, create_tasks
+        extension
 from yaku.utils \
     import \
         ensure_dir
@@ -53,9 +53,13 @@ class TemplateBuilder(object):
         if env is not None:
             _env.update(env)
 
-        tasks = create_tasks(self.ctx, sources)
+        task_gen = CompiledTaskGen("template", self.ctx,
+                                   sources, name)
+        tasks = task_gen.process()
         self.ctx.tasks.extend(tasks)
-        return tasks
+
+        outputs = tasks[0].outputs[:]
+        return outputs
 
 def get_builder(ctx):
     return TemplateBuilder(ctx)

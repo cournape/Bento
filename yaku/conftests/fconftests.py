@@ -13,7 +13,7 @@ from yaku.errors \
         TaskRunFailure
 from yaku.task_manager \
     import \
-        CompiledTaskGen, create_tasks
+        CompiledTaskGen
 from yaku.scheduler \
     import \
         run_tasks
@@ -81,11 +81,11 @@ def _create_fbinary_conf_taskgen(conf, name, body, builder):
     code = body
     sources = [create_file(conf, code, name, ".f")]
 
-    task_gen = CompiledTaskGen("conf", sources, name)
-    task_gen.bld = conf
+    task_gen = CompiledTaskGen("conf", conf,
+                               sources, name)
     task_gen.env.update(copy.deepcopy(conf.env))
 
-    tasks = create_tasks(task_gen, sources)
+    tasks = task_gen.process()
     link_task = builder(task_gen, name)
 
     t = link_task[0]

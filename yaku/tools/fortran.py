@@ -3,7 +3,7 @@ import copy
 
 from yaku.task_manager \
     import \
-        extension, CompiledTaskGen, create_tasks
+        extension, CompiledTaskGen
 from yaku.task \
     import \
         Task
@@ -50,12 +50,12 @@ class FortranBuilder(object):
         if env is not None:
             _env.update(env)
 
-        task_gen = CompiledTaskGen("cccompile", sources, name)
-        task_gen.bld = self.ctx
+        task_gen = CompiledTaskGen("cccompile", self.ctx,
+                                   sources, name)
         task_gen.env = _env
         apply_cpppath(task_gen)
 
-        tasks = create_tasks(task_gen, sources)
+        tasks = task_gen.process()
         for t in tasks:
             t.env = task_gen.env
         self.ctx.tasks.extend(tasks)
@@ -71,11 +71,11 @@ class FortranBuilder(object):
             _env.update(env)
 
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
-        task_gen = CompiledTaskGen("fprogram", sources, name)
+        task_gen = CompiledTaskGen("fprogram", self.ctx,
+                                   sources, name)
         task_gen.env = _env
-        task_gen.bld = self.ctx
 
-        tasks = create_tasks(task_gen, sources)
+        tasks = task_gen.process()
         ltask = fprogram_task(task_gen, name)
         tasks.extend(ltask)
         for t in tasks:

@@ -34,33 +34,6 @@ def set_file_hook(ctx, source, hook):
 class NoHookException(Exception):
     pass
 
-def create_tasks(ctx, sources):
-    def _get_hook(source):
-        if source in FILES_REGISTRY:
-            return FILES_REGISTRY[source]
-        for ext in RULES_REGISTRY:
-            if source.name.endswith(ext):
-                return RULES_REGISTRY[ext]
-        raise NoHookException(
-                "No rule defined for extension %r" % source.suffix())
-
-    def process(nodes):
-        tasks = []
-        for s in nodes:
-            try:
-                f = _get_hook(s)
-                tsks = f(ctx, s)
-                tasks.extend(tsks)
-                for t in tsks:
-                    ptsks = process(t.outputs)
-                    tasks.extend(ptsks)
-            except NoHookException:
-                pass
-        return tasks
-
-    tasks = process(sources)
-    return tasks
-
 def hash_task(t):
     # FIXME: ext_in and ext_out should not be computed from the files
     ext_in = [os.path.splitext(s.name)[1] for s in t.inputs]
@@ -220,17 +193,35 @@ def topo_sort(task_deps):
 
     return tmp
 
+def _get_hook(source):
+    if source in FILES_REGISTRY:
+        return FILES_REGISTRY[source]
+    for ext in RULES_REGISTRY:
+        if source.name.endswith(ext):
+            return RULES_REGISTRY[ext]
+    raise NoHookException(
+            "No rule defined for extension %r" % source.suffix())
+
 class TaskGen(object):
-    def __init__(self, name, sources, target):
+    def __init__(self, name, bld, sources, target):
+        self.bld = bld
         self.name = name
         self.sources = sources
         self.target = target
 
         self.env = {}
 
+    def process(self):
+        tasks = []
+        for s in self.sources:
+            f = _get_hook(s)
+            tsks = f(self, s)
+            tasks.extend(tsks)
+        return tasks
+
 class CompiledTaskGen(TaskGen):
-    def __init__(self, name, sources, target):
-        TaskGen.__init__(self, name, sources, target)
+    def __init__(self, name, bld, sources, target):
+        TaskGen.__init__(self, name, bld, sources, target)
         self.object_tasks = []
         self.link_task = None
 
