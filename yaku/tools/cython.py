@@ -16,10 +16,15 @@ from yaku.utils \
 import yaku.errors
 
 @extension(".pyx")
+def cython_hook(self, node):
+    self.sources.append(node.change_ext(".c"))
+    return cython_task(self, node)
+
 def cython_task(self, node):
     out = node.change_ext(".c")
     target = node.parent.declare(out.name)
     ensure_dir(target.name)
+
     task = Task("cython", inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = []
