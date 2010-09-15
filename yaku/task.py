@@ -115,5 +115,6 @@ class Task(object):
             raise TaskRunFailure(cmd, str(e))
 
     def __repr__(self):
-        return "'%s: %s -> %s'" % (self.name, self.inputs[0],
-                                   self.outputs[0])
+        ins = ",".join([i.name for i in self.inputs])
+        outs = ",".join([i.name for i in self.outputs])
+        return "'%s: %s -> %s'" % (self.name, ins, outs)
