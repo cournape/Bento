@@ -23,7 +23,7 @@ if __name__ == "__main__":
     Node.ctx.bldnode = bldnode
 
     ctx = get_cfg()
-    for t in ["cython", "pyext"]:
+    for t in ["cython", "pyext", "ctasks"]:
         ctx.load_tool(t)
     ctx.setup_tools()
     ctx.store()
