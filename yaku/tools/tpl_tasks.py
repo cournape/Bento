@@ -10,10 +10,13 @@ from yaku.task \
         Task
 from yaku.task_manager \
     import \
-        extension
+        extension, TaskGen
 from yaku.utils \
     import \
         ensure_dir
+from yaku.tools.ctasks \
+    import \
+        _merge_env
 
 VARS = {"template": ["SUBST_DICT"]}
 
@@ -49,13 +52,11 @@ class TemplateBuilder(object):
 
     def build(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
-        _env = copy.deepcopy(self.env)
-        if env is not None:
-            _env.update(env)
-
-        task_gen = CompiledTaskGen("template", self.ctx,
-                                   sources, name)
+        task_gen = TaskGen("template", self.ctx, sources, name)
+        task_gen.env = _merge_env(self.env, env)
         tasks = task_gen.process()
+        for t in tasks:
+            t.env = task_gen.env
         self.ctx.tasks.extend(tasks)
 
         outputs = tasks[0].outputs[:]
