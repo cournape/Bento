@@ -369,7 +369,17 @@ def apply_cpppath(task_gen):
     cpppaths = task_gen.env["PYEXT_CPPPATH"]
     implicit_paths = set([s.parent.srcpath() \
                           for s in task_gen.sources])
-    cpppaths = list(implicit_paths) + cpppaths
+    srcnode = task_gen.sources[0].ctx.srcnode
+
+    relcpppaths = []
+    for p in cpppaths:
+        if not os.path.isabs(p):
+            node = srcnode.find_node(p)
+            assert node is not None, "could not find %s" % p
+            relcpppaths.append(node.bldpath())
+        else:
+            relcpppaths.append(p)
+    cpppaths = list(implicit_paths) + relcpppaths
     task_gen.env["PYEXT_INCPATH"] = [
             task_gen.env["PYEXT_CPPPATH_FMT"] % p
             for p in cpppaths]
