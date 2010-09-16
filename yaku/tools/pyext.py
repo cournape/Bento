@@ -4,6 +4,7 @@ import copy
 import distutils
 import distutils.sysconfig
 import re
+import warnings
 
 from subprocess \
     import \
@@ -146,6 +147,8 @@ def pycxx_task(self, node):
 
 def pylink_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
+    if len(objects) < 1:
+        warnings.warn("task %s has no inputs !" % name)
     def declare_target():
         folder, base = os.path.split(name)
         tmp = folder + os.path.sep + self.env["PYEXT_FMT"] % base
