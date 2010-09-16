@@ -131,6 +131,7 @@ def pycc_task(self, node):
 def pycxx_hook(self, node):
     tasks = pycxx_task(self, node)
     self.object_tasks.extend(tasks)
+    self.has_cxx = True
     return tasks
 
 def pycxx_task(self, node):
@@ -322,11 +323,7 @@ def create_pyext(bld, name, sources, env):
     tasks = task_gen.process()
 
     ltask = pylink_task(task_gen, base)
-    has_cxx = False
-    for s in sources:
-        if s.suffix() == ".cxx":
-            has_cxx = True
-    if has_cxx:
+    if task_gen.has_cxx:
         task_gen.link_task.func = pycxxlink
         task_gen.link_task.env_vars = pycxxlink_vars
 

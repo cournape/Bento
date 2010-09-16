@@ -224,6 +224,7 @@ class CompiledTaskGen(TaskGen):
         TaskGen.__init__(self, name, bld, sources, target)
         self.object_tasks = []
         self.link_task = None
+        self.has_cxx = False
 
     def add_objects(self, tasks):
         """Add new object tasks, assuming the link task has already
