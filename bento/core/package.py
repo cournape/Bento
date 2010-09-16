@@ -130,8 +130,8 @@ def parse_to_subpkg_kw(data, f):
                                             in remain.keys()])))
     return kw, subentos
 
-def parse_to_pkg_kw(data, user_flags):
-    d = parse_to_dict(data, user_flags)
+def parse_to_pkg_kw(data, user_flags, filename):
+    d = parse_to_dict(data, user_flags, filename)
     kw, remain = parse_main_kw(d)
 
     # XXX: once and for all, decide empty (default) field vs missing
@@ -160,11 +160,11 @@ def parse_to_pkg_kw(data, user_flags):
 
 class PackageDescription:
     @classmethod
-    def __from_data(cls, data, user_flags):
+    def __from_data(cls, data, user_flags, filename=None):
         if not user_flags:
             user_flags = {}
 
-        kw = parse_to_pkg_kw(data, user_flags)
+        kw = parse_to_pkg_kw(data, user_flags, filename)
         return cls(**kw)
 
     @classmethod
@@ -179,7 +179,7 @@ class PackageDescription:
         info_file = open(filename, 'r')
         try:
             data = info_file.read()
-            ret = cls.__from_data(data, user_flags)
+            ret = cls.__from_data(data, user_flags, filename)
             # FIXME: find a better way to automatically include the
             # bento.info file
             ret.extra_source_files.append(filename)
