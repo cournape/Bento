@@ -55,6 +55,11 @@ def build_extension(bld, extension, verbose, env=None):
     try:
         if verbose:
             builder.env["VERBOSE"] = True
+        if env is None:
+            env = {"PYEXT_CPPPATH": extension.include_dirs}
+        else:
+            val = env.get("PYEXT_CPPPATH", [])
+            val.extend(extension.include_dirs)
         return builder.extension(extension.name, extension.sources,
                                  env)
     except RuntimeError, e:
