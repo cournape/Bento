@@ -16,6 +16,9 @@ from bento.core.parser.api \
 from bento.compat.api \
     import \
         relpath
+from bento.core.subpackage \
+    import \
+        SubPackageDescription
 from bento.core.errors \
     import \
         InvalidPackage
@@ -43,28 +46,6 @@ def _parse_libraries(libraries):
                         CompiledLibrary.from_parse_dict(v)
 
     return ret
-
-class SubPackageDescription:
-    def __init__(self, rdir, packages=None, extensions=None,
-                 compiled_libraries=None):
-        self.rdir = rdir
-        if packages is None:
-            self.packages = []
-        else:
-            self.packages = packages
-        if extensions is None:
-            self.extensions = {}
-        else:
-            self.extensions = extensions
-        if compiled_libraries is None:
-            self.compiled_libraries = {}
-        else:
-            self.compiled_libraries = compiled_libraries
-
-    def __repr__(self):
-        return repr({"packages": self.packages,
-                     "clibs": self.compiled_libraries,
-                     "extensions": self.extensions})
 
 def recurse_subentos(subentos):
     filenames = []
