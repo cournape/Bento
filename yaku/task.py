@@ -5,10 +5,6 @@ try:
 except ImportError:
     from md5 import md5
 import subprocess
-import __builtin__
-if not hasattr(__builtin__, "WindowsError"):
-    class WindowsError(Exception):
-        pass
 
 from cPickle \
     import \
@@ -17,9 +13,9 @@ from cPickle \
 from yaku.pprint \
     import \
         pprint
-from errors \
+from yaku.errors \
     import \
-        TaskRunFailure
+        TaskRunFailure, WindowsError
 
 # TODO:
 #   - factory for tasks, so that tasks can be created from strings

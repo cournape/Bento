@@ -10,7 +10,7 @@ import shlex
 
 from yaku.errors \
     import \
-        TaskRunFailure
+        TaskRunFailure, WindowsError
 from yaku.task_manager \
     import \
         CompiledTaskGen
@@ -29,10 +29,6 @@ from yaku.conftests.fconftests_imp \
         is_output_verbose, parse_flink
 
 import subprocess
-import __builtin__
-if not hasattr(__builtin__, "WindowsError"):
-    class WindowsError(Exception):
-        pass
 
 FC_VERBOSE_FLAG = "FC_VERBOSE_FLAG"
 FC_RUNTIME_LDFLAGS = "FC_RUNTIME_LDFLAGS"
