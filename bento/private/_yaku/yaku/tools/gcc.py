@@ -19,6 +19,7 @@ def setup(ctx):
     ctx.env["CPPPATH_FMT"] = "-I%s"
     ctx.env["LIBDIR"] = []
     ctx.env["LIBS"] = []
+    ctx.env["FRAMEWORKS"] = []
     ctx.env["LIB_FMT"] = "-l%s"
     ctx.env["LIBDIR_FMT"] = "-L%s"
 

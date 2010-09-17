@@ -56,7 +56,7 @@ class Task(object):
             up = m.update
             up(self.__class__.__name__)
             for x in self.inputs + self.outputs:
-                up(x)
+                up(x.abspath().encode())
             self.uid = m.digest()
         return self.uid
 
@@ -82,7 +82,7 @@ class Task(object):
         for s in self.inputs + self.deps:
             #if os.path.exists(s):
             #    m.update(open(s).read())
-            m.update(open(s).read())
+            m.update(open(s.abspath()).read())
         return m.digest()
         
     # execution
@@ -91,15 +91,17 @@ class Task(object):
         self.func(self)
 
     def exec_command(self, cmd, cwd):
+        if cwd is None:
+            cwd = self.gen.bld.bld_root.abspath()
         if not self.disable_output:
             if self.env["VERBOSE"]:
-                pprint('GREEN', " ".join(cmd))
+                pprint('GREEN', " ".join([str(c) for c in cmd]))
             else:
-                pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join([os.path.basename(i) for i in self.outputs])))
+                pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join([i.bldpath() for i in self.inputs])))
 
         try:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT)
+                                 stderr=subprocess.STDOUT, cwd=cwd)
             stdout = p.communicate()[0]
             if p.returncode:
                 raise TaskRunFailure(cmd, stdout)
@@ -107,5 +109,12 @@ class Task(object):
                 self.log.write(stdout)
             else:
                 sys.stderr.write(stdout)
+        except OSError, e:
+            raise TaskRunFailure(cmd, str(e))
         except WindowsError, e:
             raise TaskRunFailure(cmd, str(e))
+
+    def __repr__(self):
+        ins = ",".join([i.name for i in self.inputs])
+        outs = ",".join([i.name for i in self.outputs])
+        return "'%s: %s -> %s'" % (self.name, ins, outs)

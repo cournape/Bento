@@ -81,6 +81,7 @@ def pyext_configure(ctx, compiler_type="default"):
         sys.path.pop(0)
 
 def configure(ctx):
+    ctx.load_tool("ctasks")
     ctx.load_tool("pyext")
     ctx._tool_modules["pyext"].configure = pyext_configure
 

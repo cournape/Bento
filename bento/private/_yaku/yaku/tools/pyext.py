@@ -4,6 +4,7 @@ import copy
 import distutils
 import distutils.sysconfig
 import re
+import warnings
 
 from subprocess \
     import \
@@ -11,7 +12,7 @@ from subprocess \
 
 from yaku.task_manager \
     import \
-        create_tasks, topo_sort, build_dag, \
+        topo_sort, build_dag, \
         CompiledTaskGen, set_extension_hook
 from yaku.sysconfig \
     import \
@@ -31,11 +32,16 @@ from yaku.conftests \
 
 import yaku.tools
 
-pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0]} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_SHLINKFLAGS} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS}", False)
+pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0].abspath()} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_APP_FRAMEWORKS} ${PYEXT_SHLINKFLAGS}", False)
 
-pycc, pycc_vars = compile_fun("pycc", "${PYEXT_CC} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0]} ${PYEXT_CC_SRC_F}${SRC}", False)
+pycc, pycc_vars = compile_fun("pycc", "${PYEXT_CC} ${PYEXT_CFLAGS} ${PYEXT_INCPATH} ${PYEXT_CC_TGT_F}${TGT[0].abspath()} ${PYEXT_CC_SRC_F}${SRC}", False)
+
+pycxx, pycxx_vars = compile_fun("pycxx", "${PYEXT_CXX} ${PYEXT_CXXFLAGS} ${PYEXT_INCPATH} ${PYEXT_CXX_TGT_F}${TGT[0].abspath()} ${PYEXT_CXX_SRC_F}${SRC}", False)
+
+pycxxlink, pycxxlink_vars = compile_fun("pycxxlink", "${PYEXT_CXXSHLINK} ${PYEXT_LINK_TGT_F}${TGT[0].abspath()} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_APP_FRAMEWORKS} ${PYEXT_SHLINKFLAGS}", False)
 
 # pyext env <-> sysconfig env conversion
+
 _SYS_TO_PYENV = {
         "PYEXT_SHCC": "CC",
         "PYEXT_CCSHARED": "CCSHARED",
@@ -71,6 +77,8 @@ _SYS_TO_CCENV = {
         "CPPPATH_FMT": "CPPPATH_FMT",
         "CC_TGT_F": "CC_TGT_F",
         "CC_SRC_F": "CC_SRC_F",
+        "CXX": "CXX",
+        "CXXSHLINK": "CXXSHLINK",
 }
 
 def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
@@ -100,7 +108,7 @@ def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
     pyenv["PYEXT_CFLAGS"] = pyenv["PYEXT_BASE_CFLAGS"] + \
             pyenv["PYEXT_OPT"] + \
             pyenv["PYEXT_SHARED"]
-    pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
+    pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"].split(" ")
     return pyenv
 
 def pycc_hook(self, node):
@@ -109,33 +117,60 @@ def pycc_hook(self, node):
     return tasks
 
 def pycc_task(self, node):
-    base = os.path.splitext(node)[0]
-    # XXX: hack to avoid creating build/build/... when source is
-    # generated. Dealing with this most likely requires a node concept
-    if not os.path.commonprefix([self.env["BLDDIR"], base]):
-        target = os.path.join(self.env["BLDDIR"],
-                self.env["PYEXT_CC_OBJECT_FMT"] % base)
-    else:
-        target = self.env["PYEXT_CC_OBJECT_FMT"] % base
+    base = self.env["CC_OBJECT_FMT"] % node.name
+    target = node.parent.declare(base)
+    ensure_dir(target.abspath())
 
-    ensure_dir(target)
-    task = Task("pycc", inputs=node, outputs=target)
+    task = Task("pycc", inputs=[node], outputs=[target])
+    task.gen = self
     task.env_vars = pycc_vars
     task.env = self.env
     task.func = pycc
     return [task]
 
-def pylink_task(self, name):
-    objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    target = os.path.join(self.env["BLDDIR"],
-            self.env["PYEXT_FMT"] % name)
-    ensure_dir(target)
-    task = Task("pylink", inputs=objects, outputs=target)
-    task.func = pylink
-    task.env_vars = pylink_vars
+def pycxx_hook(self, node):
+    tasks = pycxx_task(self, node)
+    self.object_tasks.extend(tasks)
+    self.has_cxx = True
+    return tasks
+
+def pycxx_task(self, node):
+    base = self.env["CXX_OBJECT_FMT"] % node.name
+    target = node.parent.declare(base)
+    ensure_dir(target.abspath())
+
+    task = Task("pycxx", inputs=[node], outputs=[target])
+    task.gen = self
+    task.env_vars = pycxx_vars
+    task.env = self.env
+    task.func = pycxx
     return [task]
 
+def pylink_task(self, name):
+    objects = [tsk.outputs[0] for tsk in self.object_tasks]
+    if len(objects) < 1:
+        warnings.warn("task %s has no inputs !" % name)
+    def declare_target():
+        folder, base = os.path.split(name)
+        tmp = folder + os.path.sep + self.env["PYEXT_FMT"] % base
+        return self.bld.src_root.declare(tmp)
+    target = declare_target()
+    ensure_dir(target.abspath())
+
+    task = Task("pylink", inputs=objects, outputs=[target])
+    task.gen = self
+    task.func = pylink
+    task.env_vars = pylink_vars
+    self.link_task = task
+
+    return [task]
+
+# XXX: fix merge env location+api
+from yaku.tools.ctasks import _merge_env
 class PythonBuilder(object):
+    def clone(self):
+        return PythonBuilder(self.ctx)
+
     def __init__(self, ctx):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
@@ -143,10 +178,9 @@ class PythonBuilder(object):
         self.use_distutils = True
 
     def extension(self, name, sources, env=None):
-        _env = copy.deepcopy(self.env)
-        if env is not None:
-            _env.update(env)
-        return create_pyext(self.ctx, _env, name, sources)
+        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        return create_pyext(self.ctx, name, sources,
+                _merge_env(self.env, env))
 
 def get_builder(ctx):
     return PythonBuilder(ctx)
@@ -253,35 +287,69 @@ def _setup_compiler(ctx, cc_type):
     for k in copied_values:
         ctx.env["PYEXT_%s" % k] = cc_env[k]
 
-def create_pyext(bld, env, name, sources):
+    def setup_cxx():
+        old_env = ctx.env
+        ctx.env = {}
+        sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
+        try:
+            mod = __import__("gxx")
+            mod.setup(ctx)
+            cxx_env = ctx.env
+        finally:
+            sys.path.pop(0)
+            ctx.env = old_env
+
+        for k in ["CXX", "CXXFLAGS", "CXX_TGT_F", "CXX_SRC_F",
+                  "CXXSHLINK"]:
+            ctx.env["PYEXT_%s" % k] = cxx_env[k]
+    setup_cxx()
+
+def create_pyext(bld, name, sources, env):
     base = name.replace(".", os.sep)
 
     tasks = []
 
-    task_gen = CompiledTaskGen("pyext", sources, name)
+    task_gen = CompiledTaskGen("pyext", bld, sources, name)
+    task_gen.bld = bld
     old_hook = set_extension_hook(".c", pycc_hook)
+    old_hook_cxx = set_extension_hook(".cxx", pycxx_hook)
 
     task_gen.env = env
     apply_cpppath(task_gen)
     apply_libpath(task_gen)
     apply_libs(task_gen)
+    apply_frameworks(task_gen)
 
-    tasks = create_tasks(task_gen, sources)
+    tasks = task_gen.process()
 
     ltask = pylink_task(task_gen, base)
+    if task_gen.has_cxx:
+        task_gen.link_task.func = pycxxlink
+        task_gen.link_task.env_vars = pycxxlink_vars
+
     tasks.extend(ltask)
     for t in tasks:
         t.env = task_gen.env
 
     set_extension_hook(".c", old_hook)
+    set_extension_hook(".cxx", old_hook_cxx)
     bld.tasks.extend(tasks)
 
     outputs = []
     for t in ltask:
         outputs.extend(t.outputs)
-    return outputs
+    task_gen.outputs = outputs
+    return tasks
 
 # FIXME: find a way to reuse this kind of code between tools
+def apply_frameworks(task_gen):
+    # XXX: do this correctly (platform specific tool config)
+    if sys.platform == "darwin":
+        frameworks = task_gen.env["PYEXT_FRAMEWORKS"]
+        task_gen.env["PYEXT_APP_FRAMEWORKS"] = ["-framework %s" % lib for lib in frameworks]
+    else:
+        task_gen.env["PYEXT_APP_FRAMEWORKS"] = []
+
 def apply_libs(task_gen):
     libs = task_gen.env["PYEXT_LIBS"]
     task_gen.env["PYEXT_APP_LIBS"] = [
@@ -289,19 +357,29 @@ def apply_libs(task_gen):
 
 def apply_libpath(task_gen):
     libdir = task_gen.env["PYEXT_LIBDIR"]
-    implicit_paths = set([
-        os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
-        for s in task_gen.sources])
+    #implicit_paths = set([
+    #    os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
+    #    for s in task_gen.sources])
+    implicit_paths = []
     libdir = list(implicit_paths) + libdir
     task_gen.env["PYEXT_APP_LIBDIR"] = [
             task_gen.env["PYEXT_LIBDIR_FMT"] % d for d in libdir]
 
 def apply_cpppath(task_gen):
     cpppaths = task_gen.env["PYEXT_CPPPATH"]
-    implicit_paths = set([
-        os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
-        for s in task_gen.sources])
-    cpppaths = list(implicit_paths) + cpppaths
+    implicit_paths = set([s.parent.srcpath() \
+                          for s in task_gen.sources])
+    srcnode = task_gen.sources[0].ctx.srcnode
+
+    relcpppaths = []
+    for p in cpppaths:
+        if not os.path.isabs(p):
+            node = srcnode.find_node(p)
+            assert node is not None, "could not find %s" % p
+            relcpppaths.append(node.bldpath())
+        else:
+            relcpppaths.append(p)
+    cpppaths = list(implicit_paths) + relcpppaths
     task_gen.env["PYEXT_INCPATH"] = [
             task_gen.env["PYEXT_CPPPATH_FMT"] % p
             for p in cpppaths]
