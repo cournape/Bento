@@ -19,31 +19,33 @@ from bento.compat.api \
 from bento.core.subpackage \
     import \
         SubPackageDescription
+from bento.core.parse_helpers \
+    import \
+        extract_top_dicts, extract_top_dicts_subento
 from bento.core.errors \
     import \
         InvalidPackage
 
 def _parse_libraries(libraries):
     ret = {}
-    if not libraries.keys() in [[], ["default"]]:
-        raise NotImplementedError(
-                "Non default library not yet supported")
-
     if len(libraries) > 0:
+        if not libraries.keys() == ["default"]:
+            raise NotImplementedError(
+                    "Non default library not yet supported")
+
         default = libraries["default"]
         for k in ["packages", "py_modules", "install_requires"]:
             if default[k]:
                 ret[k] = default[k]
-        if default["extensions"]:
-            ret["extensions"] = {}
-            for k, v in default["extensions"].items():
-                ret["extensions"][k] = Extension.from_parse_dict(v)
 
-        if default["compiled_libraries"]:
-            ret["compiled_libraries"] = {}
-            for k, v in default["compiled_libraries"].items():
-                ret["compiled_libraries"][k] = \
-                        CompiledLibrary.from_parse_dict(v)
+        ret["extensions"] = {}
+        for k, v in default.get("extensions", {}).items():
+            ret["extensions"][k] = Extension.from_parse_dict(v)
+
+        ret["compiled_libraries"] = {}
+        for k, v in default.get("compiled_libraries", {}).items():
+            ret["compiled_libraries"][k] = \
+                    CompiledLibrary.from_parse_dict(v)
 
     return ret
 
@@ -74,69 +76,57 @@ def recurse_subentos(subentos):
         _recurse(s, root_dir)
     return subpackages
 
-def parse_main_kw(d):
-    kw = {}
+def build_libs_from_dict(libraries_d):
+    return _parse_libraries(libraries_d)
 
-    for field, value in d.items():
-        if field == "extra_source_files":
-            d.pop(field)
-            kw["extra_source_files"] = value
-        elif field == "libraries":
-            d.pop(field)
-            kw.update(_parse_libraries(value))
-        elif field == "data_files":
-            d.pop(field)
-            kw["data_files"] = {}
-            for name, data in value.items():
-                 kw["data_files"][name] = \
-                         DataFiles.from_parse_dict(data)
-        elif field == "executables":
-            d.pop(field)
-            kw["executables"] = {}
-            for name, executable in value.items():
-                kw["executables"][name] = Executable.from_parse_dict(executable)
+def build_executables_from_dict(executables_d):
+    executables = {}
+    for name, executable in executables_d.items():
+        executable[name] = Executable.from_parse_dict(executable)
+    return executables
 
-    return kw, d
+def build_data_files_from_dict(data_files_d):
+    data_files = {}
+    for name, data_file_d in data_files_d.items():
+        data_files[name] = DataFiles.from_parse_dict(data_file_d)
+    return data_files
 
 def parse_to_subpkg_kw(data, f):
     d = parse_to_dict(data, filename=f)
-    kw, remain = parse_main_kw(d)
-    if remain.has_key("subento"):
-        subentos = remain.pop("subento")
-    else:
-        subentos = []
-    if len(remain) > 0:
-        raise ValueError("Illegal field(s) in subento %s: %s !" \
-                         % (f, ".".join(["`%s'" % k for k
-                                            in remain.keys()])))
-    return kw, subentos
+
+    libraries_d, misc_d = extract_top_dicts_subento(deepcopy(d))
+
+    kw = {}
+    libraries = build_libs_from_dict(libraries_d)
+    kw.update(libraries)
+
+    return kw, misc_d["subento"]
 
 def parse_to_pkg_kw(data, user_flags, filename):
     d = parse_to_dict(data, user_flags, filename)
-    kw, remain = parse_main_kw(d)
 
-    # XXX: once and for all, decide empty (default) field vs missing
-    # field in parsed dictionaries !!
-    for field, value in remain.items():
-        if field in _METADATA_FIELDS:
-            del remain[field]
-            kw[field] = value
-        elif field == "hook_file":
-            del remain[field]
-            kw[field] = value
-        elif field == "config_py":
-            del remain[field]
-            kw[field] = value
-        elif field == "flag_options":
-            del remain[field]
+    meta_d, libraries_d, options_d, misc_d = extract_top_dicts(deepcopy(d))
+    libraries = build_libs_from_dict(libraries_d)
+    executables = build_executables_from_dict(misc_d.pop("executables"))
+    data_files = build_data_files_from_dict(misc_d.pop("data_files"))
 
-    if remain.has_key("subento"):
-        subentos = remain.pop("subento")
+    kw = {}
+    kw.update(meta_d)
+    for k in libraries:
+        kw[k] = libraries[k]
+    kw["executables"] = executables
+    kw["data_files"] = data_files
+
+    path_options = misc_d.pop("path_options")
+    flag_options = misc_d.pop("flag_options")
+
+    if misc_d.has_key("subento"):
+        subentos = misc_d.pop("subento")
         subpackages = recurse_subentos(subentos)
         kw["subpackages"] = subpackages
 
-    if len(remain) > 0:
-        raise ValueError("Unhandled field(s) %s!" % remain.keys())
+    kw.update(misc_d)
+
     return kw
 
 class PackageDescription:
