@@ -27,13 +27,7 @@ _LIT_BOOL = {"true": True, "false": False, True: True, False: False}
 
 class Dispatcher(object):
     def __init__(self):
-        self._d = {"libraries": {},
-                   "executables": {},
-                   "path_options": {},
-                   "flag_options": {},
-                   "extra_source_files": [],
-                   "subento": [],
-                   "data_files": {}}
+        self._d = {}
         self.action_dict = {
             "empty": self.empty,
             "stmt_list": self.stmt_list,
@@ -89,12 +83,6 @@ class Dispatcher(object):
     def empty(self, node):
         return {}
 
-    def _prune(self):
-        for k in ["libraries", "executables", "path_options", "flag_options",
-            "extra_source_files", "subento", "data_files"]:
-            if len(self._d[k]) < 1:
-                del self._d[k]
-
     def stmt_list(self, node):
         for c in node.children:
             if c.type in ["name", "description", "version", "summary", "url",
@@ -104,18 +92,32 @@ class Dispatcher(object):
                           "config_py"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
-                self._d["path_options"][c.value["name"]] = c.value
+                if self._d.has_key("path_options"):
+                    self._d["path_options"].update({c.value["name"]: c.value})
+                else:
+                    self._d["path_options"] = {c.value["name"]: c.value}
             elif c.type == "flag":
-                self._d["flag_options"][c.value["name"]] = c.value
+                if self._d.has_key("flag_options"):
+                    self._d["flag_options"].update({c.value["name"]: c.value})
+                else:
+                    self._d["flag_options"] = {c.value["name"]: c.value}
             elif c.type == "library":
-                self._d["libraries"][c.value["name"]] = c.value
+                if self._d.has_key("libraries"):
+                    self._d["libraries"].update({c.value["name"]: c.value})
+                else:
+                    self._d["libraries"] = {c.value["name"]: c.value}
             elif c.type == "executable":
-                self._d["executables"][c.value["name"]] = c.value
+                if self._d.has_key("executables"):
+                    self._d["executables"].update({c.value["name"]: c.value})
+                else:
+                    self._d["executables"] = {c.value["name"]: c.value}
             elif c.type == "data_files":
-                self._d["data_files"][c.value["name"]] = c.value
+                if self._d.has_key("data_files"):
+                    self._d["data_files"].update({c.value["name"]: c.value})
+                else:
+                    self._d["data_files"] = {c.value["name"]: c.value}
             else:
                 raise ValueError("Unhandled top statement (%s)" % c)
-        self._prune()
         return self._d
 
     def summary(self, node):
@@ -372,10 +374,16 @@ class Dispatcher(object):
             return _LIT_BOOL[value]
 
     def extra_source_files(self, node):
-        self._d["extra_source_files"].extend(node.value)
+        if self._d.has_key("extra_source_files"):
+            self._d["extra_source_files"].extend(node.value)
+        else:
+            self._d["extra_source_files"] = node.value
 
     def subento(self, node):
-        self._d["subento"].extend(node.value)
+        if self._d.has_key("subento"):
+            self._d["subento"].extend(node.value)
+        else:
+            self._d["subento"] = node.value
 
     # Data handling
     def data_files(self, node):
