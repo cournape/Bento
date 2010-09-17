@@ -102,7 +102,7 @@ def log_command(logger, tasks):
         def fake_exec(self, cmd, cwd):
             logger.write(" ".join(cmd))
             logger.write("\n")
-        if sys.version_info > (3,):
+        if sys.version_info >= (3,):
             t.exec_command = types.MethodType(fake_exec, t)
         else:
             t.exec_command = types.MethodType(fake_exec, t, t.__class__)
