@@ -44,11 +44,11 @@ DataFiles: ply_data
 ExtraSourceFiles:
     setup.py,
     bootstrap.py,
-    tests/parsing/functionals/*.py,
-    tests/parsing/functionals/*.info,
-    tests/parsing/*.py,
-    tests/pkgdescr/*.py,
-    tests/*.py
+    bento/tests/parsing/functionals/*.py,
+    bento/tests/parsing/functionals/*.info,
+    bento/tests/parsing/*.py,
+    bento/tests/pkgdescr/*.py,
+    bento/tests/*.py
 
 Library:
     Packages:
