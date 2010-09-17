@@ -102,8 +102,10 @@ def log_command(logger, tasks):
         def fake_exec(self, cmd, cwd):
             logger.write(" ".join(cmd))
             logger.write("\n")
-        t.exec_command = types.MethodType(fake_exec, t,
-                t.__class__)
+        if sys.version_info > (3,):
+            t.exec_command = types.MethodType(fake_exec, t)
+        else:
+            t.exec_command = types.MethodType(fake_exec, t, t.__class__)
         t.run()
 
 def create_link_conf_taskgen(conf, name, body, headers=None,
