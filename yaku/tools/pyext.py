@@ -197,7 +197,7 @@ def detect_cc_type(ctx, cc_cmd):
         cmd = cc_cmd + [vflag]
         try:
             p = Popen(cmd, stdout=PIPE, stderr=STDOUT)
-            out = p.communicate()[0]
+            out = p.communicate()[0].decode()
             for k, v in CC_SIGNATURE.items():
                 m = v.search(out)
                 if m:

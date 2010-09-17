@@ -43,7 +43,7 @@ class ConfigureContext(object):
         self.conf_results = []
 
 def create_file(conf, code, prefix="", suffix=""):
-    filename = "%s%s%s" % (prefix, md5(code).hexdigest(), suffix)
+    filename = "%s%s%s" % (prefix, md5(code.encode()).hexdigest(), suffix)
     node = conf.bld_root.declare(filename)
     node.write(code)
     return node
