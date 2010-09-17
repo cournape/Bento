@@ -78,7 +78,7 @@ def parse_main_kw(d):
     kw = {}
 
     for field, value in d.items():
-        if field == "extra_sources":
+        if field == "extra_source_files":
             d.pop(field)
             kw["extra_source_files"] = value
         elif field == "libraries":

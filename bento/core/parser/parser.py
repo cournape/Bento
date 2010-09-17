@@ -79,7 +79,7 @@ def p_stmt(p):
             | exec
             | path
             | flag
-            | extra_sources
+            | extra_source_files
             | data_files
             | dummy
     """
@@ -221,9 +221,9 @@ def p_meta_subento_stmt(p):
 #---------------------------------------
 # Data files and extra sources handling
 #---------------------------------------
-def p_extra_sources(p):
-    """extra_sources : EXTRA_SOURCES_ID COLON comma_list"""
-    p[0] = Node("extra_sources", value=p[3].value)
+def p_extra_source_files(p):
+    """extra_source_files : EXTRA_SOURCE_FILES_ID COLON comma_list"""
+    p[0] = Node("extra_source_files", value=p[3].value)
  
 def p_data_files(p):
     """data_files : data_files_declaration INDENT data_files_stmts DEDENT

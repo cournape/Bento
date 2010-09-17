@@ -31,7 +31,7 @@ class Dispatcher(object):
                    "executables": {},
                    "path_options": {},
                    "flag_options": {},
-                   "extra_sources": [],
+                   "extra_source_files": [],
                    "subento": [],
                    "data_files": {}}
         self.action_dict = {
@@ -73,7 +73,7 @@ class Dispatcher(object):
             "not_flagvar": self.not_flagvar,
             "bool": self.bool_var,
             # Extra source files
-            "extra_sources": self.extra_sources,
+            "extra_source_files": self.extra_source_files,
             # Data files handling
             "data_files": self.data_files,
             "data_files_stmts": self.data_files_stmts,
@@ -91,7 +91,7 @@ class Dispatcher(object):
 
     def _prune(self):
         for k in ["libraries", "executables", "path_options", "flag_options",
-            "extra_sources", "subento", "data_files"]:
+            "extra_source_files", "subento", "data_files"]:
             if len(self._d[k]) < 1:
                 del self._d[k]
 
@@ -359,8 +359,8 @@ class Dispatcher(object):
         else:
             return _LIT_BOOL[value]
 
-    def extra_sources(self, node):
-        self._d["extra_sources"].extend(node.value)
+    def extra_source_files(self, node):
+        self._d["extra_source_files"].extend(node.value)
 
     def subento(self, node):
         self._d["subento"].extend(node.value)

@@ -91,6 +91,8 @@ def get_parsed_script(data):
     return p
 
 def parse_to_dict(data, user_flags=None, filename=None):
+    """Parse the given data to a dictionary which is easy to exploit
+    at later stages."""
     try:
         p = get_parsed_script(data)
     except ParseError, e:
