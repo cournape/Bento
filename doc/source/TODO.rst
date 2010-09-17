@@ -29,7 +29,16 @@ Milestone
 Release 0.0.4
 -------------
 
-0.0.4 goals:
+    - recursive hook files
+    - being able to build scipy on at least Linux (even if using undocumented
+      features of bento/yaku)
+    - automatically re-configure if bento.info/bscript are changed
+    - specify commands dependencies with after/before
+
+Release 0.0.5
+-------------
+
+0.0.5 goals:
 
     - dynamic version (e.g. svn version appended to the build, etc...)
     - egg <-> wininst lossless conversion (on windows)
@@ -40,7 +49,7 @@ Release 0.0.4
       virtual proper) to bootstrap environment to install and test packages
       which cannot be tested without being installed)
 
-Post 0.0.4
+Post 0.0.5
 ----------
 
 Start working on scipi (nest ?). First proto could be purely static,
