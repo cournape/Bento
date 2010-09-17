@@ -64,7 +64,7 @@ def logged_exec(self, cmd, cwd):
     try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, cwd=cwd)
-        stdout = p.communicate()[0]
+        stdout = p.communicate()[0].decode("utf-8")
         if p.returncode:
             raise TaskRunFailure(cmd, stdout)
         self.gen.bld.stdout_cache[self.signature()] = stdout
@@ -86,7 +86,10 @@ def _create_fbinary_conf_taskgen(conf, name, body, builder):
 
     t = link_task[0]
     exec_command = t.exec_command
-    t.exec_command = types.MethodType(logged_exec, t, t.__class__)
+    if sys.version_info >= (3,):
+        t.exec_command = types.MethodType(logged_exec, t)
+    else:
+        t.exec_command = types.MethodType(logged_exec, t, t.__class__)
     tasks.extend(link_task)
     conf.last_task = tasks[-1]
 
