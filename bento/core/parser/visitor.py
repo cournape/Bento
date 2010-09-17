@@ -172,14 +172,7 @@ class Dispatcher(object):
     # Library section handlers
     #--------------------------
     def library(self, node):
-        library = {
-            "py_modules": [],
-            "packages": [],
-            "build_requires": [],
-            "install_requires": [],
-            "extensions": {},
-            "compiled_libraries": {}
-        }
+        library = {}
 
         def update(library_dict, c):
             if type(c) == list:
@@ -188,19 +181,32 @@ class Dispatcher(object):
             elif c.type == "name":
                 library_dict["name"] = c.value
             elif c.type == "modules":
-                library_dict["py_modules"].extend(c.value)
+                if library_dict.has_key("modules"):
+                    library_dict["py_modules"].extend(c.value)
+                else:
+                    library_dict["py_modules"] = c.value
             elif c.type == "packages":
-                library_dict["packages"].extend(c.value)
-            elif c.type == "build_requires":
-                library_dict["build_requires"].extend(c.value)
-            elif c.type == "install_requires":
-                library_dict["install_requires"].extend(c.value)
+                if library_dict.has_key("packages"):
+                    library_dict["packages"].extend(c.value)
+                else:
+                    library_dict["packages"] = c.value
+            elif c.type in ("build_requires", "install_requires"):
+                if library_dict.has_key(c.type):
+                    library_dict[c.type].extend(c.value)
+                else:
+                    library_dict[c.type] = c.value
             elif c.type == "extension":
                 name = c.value["name"]
-                library_dict["extensions"][name] = c.value
+                if library_dict.has_key("extensions"):
+                    library_dict["extensions"][name] = c.value
+                else:
+                    library_dict["extensions"] = {name: c.value}
             elif c.type == "compiled_library":
                 name = c.value["name"]
-                library_dict["compiled_libraries"][name] = c.value
+                if library_dict.has_key("compiled_libraries"):
+                    library_dict["compiled_libraries"][name] = c.value
+                else:
+                    library_dict["compiled_libraries"] = {name: c.value}
             else:
                 raise ValueError("Unhandled node type: %s" % c)
 
@@ -215,7 +221,7 @@ class Dispatcher(object):
         return node.children
 
     def extension(self, node):
-        ret = {"sources": [], "include_dirs": []}
+        ret = {}
         def update(extension_dict, c):
             if type(c) == list:
                 for i in c:
@@ -223,9 +229,15 @@ class Dispatcher(object):
             elif c.type == "name":
                 ret["name"] = c.value
             elif c.type == "sources":
-                ret["sources"].extend(c.value)
+                if ret.has_key("sources"):
+                    ret["sources"].extend(c.value)
+                else:
+                    ret["sources"] = c.value
             elif c.type == "include_dirs":
-                ret["include_dirs"].extend(c.value)
+                if ret.has_key("include_dirs"):
+                    ret["include_dirs"].extend(c.value)
+                else:
+                    ret["include_dirs"] = c.value
             else:
                 raise ValueError("Gne ?")
         for c in [node.children[0]] + node.children[1]:
