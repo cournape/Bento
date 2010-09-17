@@ -13,8 +13,17 @@ examples/pyext_example.py
 examples/test_env.py"
 for i in $tests; do
 	echo "======== TESTING $i ============="
-	rm -rf examples/build;
 	f=`basename $i`;
 	d=`dirname $i`;
+	rm -rf $d/build;
 	(cd $d && python $f);
+done
+python3.1 setup.py build
+export PYTHONPATH=$PWD/build/py3k
+for i in $tests; do
+	echo "======== TESTING $i ============="
+	f=`basename $i`;
+	d=`dirname $i`;
+	rm -rf $d/build;
+	(cd $d &&  python3.1 $f);
 done
