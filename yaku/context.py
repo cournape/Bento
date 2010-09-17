@@ -98,7 +98,7 @@ class ConfigureContext(object):
         self.env.store(DEFAULT_ENV)
 
         self.log.close()
-        fid = open(CONFIG_CACHE, "w")
+        fid = open(CONFIG_CACHE, "wb")
         try:
             dump(self.cache, fid)
             dump(self.stdout_cache, fid)
@@ -179,7 +179,7 @@ class BuildContext(object):
 
     def store(self):
         # Use rename to avoid corrupting the cache if interrupted
-        tmp_fid = open(BUILD_CACHE + ".tmp", "w")
+        tmp_fid = open(BUILD_CACHE + ".tmp", "wb")
         try:
             dump(self.cache, tmp_fid)
         finally:
@@ -194,7 +194,7 @@ def myopen(filename, mode="r"):
 def get_cfg():
     ctx = ConfigureContext()
     if os.path.exists(CONFIG_CACHE):
-        fid = open(CONFIG_CACHE)
+        fid = open(CONFIG_CACHE, "rb")
         try:
             ctx.cache = load(fid)
             ctx.stdout_cache = load(fid)
