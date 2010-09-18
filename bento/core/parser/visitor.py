@@ -1,4 +1,5 @@
 import sys
+import copy
 
 from bento.core.parser.nodes \
     import \
@@ -26,7 +27,7 @@ def split_newlines(s):
 _LIT_BOOL = {"true": True, "false": False, True: True, False: False}
 
 class Dispatcher(object):
-    def __init__(self):
+    def __init__(self, user_values=None):
         self._d = {}
         self.action_dict = {
             "empty": self.empty,
@@ -78,7 +79,10 @@ class Dispatcher(object):
             "function": self.function,
             "module": self.module,
         }
-        self._vars = {}
+        if user_values is not None:
+            self._vars = copy.deepcopy(user_values)
+        else:
+            self._vars = {}
 
     def empty(self, node):
         return {}

@@ -100,11 +100,6 @@ def parse_to_dict(data, user_flags=None, filename=None):
         e.filename = filename
         raise
 
-    dispatcher = Dispatcher()
-    if user_flags is None:
-        dispatcher._vars = {}
-    else:
-        dispatcher._vars = user_flags
-
+    dispatcher = Dispatcher(user_flags)
     res = ast_walk(p, dispatcher)
     return res
