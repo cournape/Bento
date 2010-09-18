@@ -39,6 +39,10 @@ Usage:   bentomaker build [OPTIONS]."""
                                   help="Verbose output (yaku build only)",
                                   action="store_true")]
 
+    @classmethod
+    def has_run(self):
+        return os.path.exists(IPKG_PATH)
+
     def __init__(self, *a, **kw):
         Command.__init__(self, *a, **kw)
         self.section_writer = SectionWriter()

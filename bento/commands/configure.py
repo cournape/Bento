@@ -112,6 +112,10 @@ Usage: bentomaker configure [OPTIONS]"""
                    help="Show package-specific configuration options",
                    action="store_true")]
 
+    @classmethod
+    def has_run(self):
+        return os.path.exists(CONFIGURED_STATE_DUMP)
+
     def __init__(self):
         Command.__init__(self)
         self._user_opt_groups = {}

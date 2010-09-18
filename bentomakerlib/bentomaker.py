@@ -195,6 +195,7 @@ def _main(popts):
         if not cmd_name in get_command_names():
             raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
         else:
+            check_command_dependencies(cmd_name)
             run_cmd(cmd_name, cmd_opts)
 
 import yaku.context
@@ -270,6 +271,20 @@ class BuildContext(Context):
         relpos = self.local_node.path_from(self.top_node)
         full_name = os.path.join(relpos, clib_name)
         self._clibrary_envs[full_name] = env
+
+def check_command_dependencies(cmd_name):
+    # FIXME: temporary hack to inform the user, handle command dependency
+    # automatically at some point
+    if cmd_name == "build":
+        configure_cmd = get_command("configure")
+        if not configure_cmd.has_run():
+            raise UsageException("""\
+The project was not configured: you need to run 'bentomaker configure' first""")
+    elif cmd_name == "install":
+        configure_cmd = get_command("build")
+        if not configure_cmd.has_run():
+            raise UsageException("""\
+The project was not built: you need to 'bentomaker build' first""")
 
 def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)
