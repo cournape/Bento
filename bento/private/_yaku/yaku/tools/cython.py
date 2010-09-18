@@ -16,11 +16,17 @@ from yaku.utils \
 import yaku.errors
 
 @extension(".pyx")
+def cython_hook(self, node):
+    self.sources.append(node.change_ext(".c"))
+    return cython_task(self, node)
+
 def cython_task(self, node):
-    base = os.path.splitext(node)[0]
-    target = os.path.join(self.env["BLDDIR"], base + ".c")
-    ensure_dir(target)
-    task = Task("cython", inputs=node, outputs=target)
+    out = node.change_ext(".c")
+    target = node.parent.declare(out.name)
+    ensure_dir(target.name)
+
+    task = Task("cython", inputs=[node], outputs=[target])
+    task.gen = self
     task.env_vars = []
     task.env = self.env
 
@@ -28,9 +34,7 @@ def cython_task(self, node):
                 self.env["CYTHON_CPPPATH"]]
     task.func = compile_fun("cython", "cython ${SRC} -o ${TGT} ${CYTHON_INCPATH}",
                             False)[0]
-    compile_task = get_extension_hook(".c")
-    ctask = compile_task(self, target)
-    return [task] + ctask
+    return [task]
 
 def configure(ctx):
     sys.stderr.write("Looking for cython... ")

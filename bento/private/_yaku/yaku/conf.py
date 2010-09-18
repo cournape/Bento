@@ -2,6 +2,7 @@ import copy
 import sys
 import os
 import types
+import re
 
 try:
     from hashlib import md5
@@ -20,7 +21,7 @@ from yaku.errors \
         TaskRunFailure
 from yaku.task_manager \
     import \
-        CompiledTaskGen, create_tasks
+        CompiledTaskGen
 from yaku.scheduler \
     import \
         run_tasks
@@ -33,7 +34,7 @@ from yaku.utils \
 
 from yaku.tools.ctasks \
     import \
-        shlink_task, apply_libs, apply_libdir
+        shlink_task, apply_libs, apply_libdir, ccprogram_task
 
 class ConfigureContext(object):
     def __init__(self):
@@ -43,13 +44,12 @@ class ConfigureContext(object):
 
 def create_file(conf, code, prefix="", suffix=""):
     filename = "%s%s%s" % (prefix, md5(code).hexdigest(), suffix)
-    filename = join(conf.env["BLDDIR"], filename)
-    ensure_dir(filename)
-    open(filename, "w").write(code)
-    return filename
+    node = conf.bld_root.declare(filename)
+    node.write(code)
+    return node
 
 def create_compile_conf_taskgen(conf, name, body, headers,
-        msg, extension=".c"):
+        extension=".c"):
     if headers:
         head = "\n".join(["#include <%s>" % h for h in headers])
     else:
@@ -59,30 +59,26 @@ def create_compile_conf_taskgen(conf, name, body, headers,
 
     conf.tasks = [] # XXX: hack
     builder = conf.builders["ctasks"]
-    builder.ccompile("yomama", sources, conf.env)
+    builder.env = conf.env
+    builder.ccompile("yomama", sources)
     # XXX: accessing tasks like this is ugly - the whole logging thing
     # needs more thinking
     for t in builder.ctx.tasks:
         t.disable_output = True
         t.log = conf.log
-    sys.stderr.write(msg + "... ")
 
     succeed = False
     explanation = None
     try:
         run_tasks(conf, builder.ctx.tasks)
         succeed = True
-        sys.stderr.write("yes\n")
     except TaskRunFailure, e:
-        sys.stderr.write("no\n")
         explanation = str(e)
 
-    write_log(conf.log, builder.ctx.tasks, code, msg, succeed, explanation)
+    write_log(conf.log, builder.ctx.tasks, code, succeed, explanation)
     return succeed
 
-def write_log(log, tasks, code, msg, succeed, explanation):
-    log.write("------------------------------------\n")
-    log.write(msg + "\n")
+def write_log(log, tasks, code, succeed, explanation):
     log.write("Tested code is:\n")
     log.write("~~~~~~~~~\n")
     log.write(code)
@@ -110,65 +106,126 @@ def log_command(logger, tasks):
                 t.__class__)
         t.run()
 
-def create_link_conf_taskgen(conf, name, body, headers,
-        msg, extension=".c"):
-    if headers:
+def create_link_conf_taskgen(conf, name, body, headers=None,
+        extension=".c"):
+    old_root, new_root = create_conf_blddir(conf, name, body)
+    try:
+        conf.bld_root = new_root
+        return _create_binary_conf_taskgen(conf, name, body, ccprogram_task,
+                headers, extension)
+    finally:
+        conf.bld_root = old_root
+
+def create_program_conf_taskgen(conf, name, body, headers=None,
+        extension=".c"):
+    old_root, new_root = create_conf_blddir(conf, name, body)
+    try:
+        conf.bld_root = new_root
+        return _create_binary_conf_taskgen(conf, name, body, ccprogram_task,
+                headers, extension)
+    finally:
+        conf.bld_root = old_root
+
+def _create_binary_conf_taskgen(conf, name, body, builder, headers=None,
+        extension=".c"):
+    if headers is not None:
         head = "\n".join(["#include <%s>" % h for h in headers])
     else:
         head = ""
     code = "\n".join([c for c in [head, body]])
     sources = [create_file(conf, code, name, extension)]
 
-    task_gen = CompiledTaskGen("conf", sources, name)
+    task_gen = CompiledTaskGen("conf", conf, sources, name)
     task_gen.env.update(copy.deepcopy(conf.env))
     task_gen.env["INCPATH"] = ""
     apply_libs(task_gen)
     apply_libdir(task_gen)
 
-    tasks = create_tasks(task_gen, sources)
-    tasks.extend(shlink_task(task_gen, name))
+    tasks = task_gen.process()
+    tasks.extend(builder(task_gen, name))
 
     for t in tasks:
         t.disable_output = True
         t.log = conf.log
-    sys.stderr.write(msg + "... ")
 
     succeed = False
     explanation = None
     try:
         run_tasks(conf, tasks)
         succeed = True
-        sys.stderr.write("yes\n")
     except TaskRunFailure, e:
-        sys.stderr.write("no\n")
         explanation = str(e)
 
-    write_log(conf.log, tasks, code, msg, succeed, explanation)
+    write_log(conf.log, tasks, code, succeed, explanation)
     return succeed
 
+VALUE_SUB = re.compile('[^A-Z0-9_]')
+
 def generate_config_h(conf_res, name):
+    def value_to_string(value):
+        s = value.upper()
+        return VALUE_SUB.sub("_", s)
+
     def var_name(entry):
         if entry["type"] == "header":
-            return "HAVE_%s" % entry["value"].upper().replace(".", "_")
+            return "HAVE_%s 1" % entry["value"].upper().replace(".", "_")
         elif entry["type"] == "type":
-            return "HAVE_%s" % entry["value"].upper().replace(" ", "_")
+            return "HAVE_%s 1" % entry["value"].upper().replace(" ", "_")
+        elif entry["type"] == "type_size":
+            return "SIZEOF_%s %s" % (
+                    value_to_string(entry["value"]),
+                    entry["result"])
         elif entry["type"] == "lib":
-            return "HAVE_LIB%s" % entry["value"].upper()
+            return "HAVE_LIB%s 1" % entry["value"].upper()
         elif entry["type"] == "func":
-            return "HAVE_FUNC_%s" % entry["value"].upper()
+            return "HAVE_%s 1" % entry["value"].upper()
+        elif entry["type"] == "decl":
+            return "HAVE_DECL_%s 1" % entry["value"].upper()
+        else:
+            raise ValueError("Bug: entry %s not handled" % entry)
+
+    def comment(entry):
+        if entry["type"] == "header":
+            return r"""
+/* Define to 1 if you have the <%s> header file. */
+""" % entry["value"]
+        elif entry["type"] == "lib":
+            return r"""
+/* Define to 1 if you have the `%s' library. */
+""" % entry["value"]
+        elif entry["type"] == "func":
+            return r"""
+/* Define to 1 if you have the `%s' function. */
+""" % entry["value"]
+        elif entry["type"] == "decl":
+            return r"""
+/* Set to 1 if %s is defined. */
+""" % entry["value"]
+        elif entry["type"] == "type":
+            return r"""
+/* Define if your compiler provides %s */
+""" % entry["value"]
+        elif entry["type"] == "type_size":
+            return r"""
+/* The size of `%s', as computed by sizeof. */
+""" % entry["value"]
+        else:
+            raise ValueError("Bug: entry %s not handled" % entry)
+
+    buf = StringIO()
+    for entry in conf_res:
+        if entry["type"] == "define":
+            buf.write(entry["value"])
+        else:
+            var = var_name(entry)
+            if entry["result"]:
+                buf.write(comment(entry))
+                buf.write("#define %s\n" % var)
 
     ensure_dir(name)
     fid = open(name, "w")
     try:
-        for entry in conf_res:
-            if entry["type"] == "define":
-                fid.write(entry["value"])
-            else:
-                var = var_name(entry)
-                if entry["result"]:
-                    fid.write("#define %s 1\n\n" % var)
-                else:
-                    fid.write("/*#undef %s*/\n\n" % var)
+        fid.write(buf.getvalue())
     finally:
         fid.close()
 
@@ -186,7 +243,19 @@ def ccompile(conf, sources):
     explanation = None
     try:
         run_tasks(conf, builder.ctx.tasks)
-        return True
+        succeed = True
     except TaskRunFailure, e:
-        return False
+        explanation = str(e)
 
+    code = sources[0].read()
+    write_log(conf.log, builder.ctx.tasks, code, succeed, explanation)
+    return succeed
+
+def create_conf_blddir(conf, name, body):
+    dirname = ".conf-%s-%s" % (name, hash(body))
+    bld_root = os.path.join(conf.bld_root.abspath(), dirname)
+    if not os.path.exists(bld_root):
+        os.makedirs(bld_root)
+    bld_root = conf.bld_root.make_node(dirname)
+    old_root = conf.bld_root
+    return old_root, bld_root

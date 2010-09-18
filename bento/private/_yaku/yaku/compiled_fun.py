@@ -9,6 +9,7 @@ from yaku.environment \
 COMPILE_TEMPLATE_SHELL = '''
 def f(task):
     env = task.env
+    bld = task.bld
     wd = getattr(task, 'cwd', None)
     p = env.get_flat
     cmd = \'\'\' %s \'\'\' % s
@@ -18,6 +19,7 @@ def f(task):
 COMPILE_TEMPLATE_NOSHELL = '''
 def f(task):
 	env = task.env
+	bld_root = task.gen.bld.bld_root
 	wd = getattr(task, 'cwd', None)
 	def to_list(xx):
 		if isinstance(xx, str): return [xx]
@@ -64,12 +66,12 @@ def compile_fun_shell(name, line):
             if meth:
                 app('task.inputs%s' % meth)
             else:
-                app('" ".join(task.inputs)')
+                app('" ".join([i.path_from(bld.bldnode) for i in task.inputs)')
         elif var == 'TGT':
             if meth:
                 app('task.outputs%s' % meth)
             else:
-                app('" ".join(task.outputs)')
+                app('" ".join([i.path_from(bld.bldnode) for i in task.outputs)')
         else:
             if not var in dvars:
                 dvars.append(var)
@@ -106,10 +108,12 @@ def compile_fun_noshell(name, line):
         (var, meth) = extr[x]
         if var == 'SRC':
             if meth: app('lst.append(task.inputs%s)' % meth)
-            else: app("lst.extend(task.inputs)")
+            else:
+                app('lst.extend([i.path_from(bld_root) for i in task.inputs])')
         elif var == 'TGT':
             if meth: app('lst.append(task.outputs%s)' % meth)
-            else: app("lst.extend(task.outputs)")
+            else:
+                app('lst.extend([i.path_from(bld_root) for i in task.outputs])')
         else:
             app('lst.extend(to_list(env[%r]))' % var)
             if not var in dvars: dvars.append(var)
@@ -136,18 +140,3 @@ def compile_fun(name, line, shell=None):
         return compile_fun_shell(name, line)
     else:
         return compile_fun_noshell(name, line)
-
-if __name__ == "__main__":
-    f, e = compile_fun("yo", "${CC} -o ${TGT[0]} -c ${SRC}", False)
-    class Foo(object):
-        def __init__(self):
-            self.inputs = ["foo.c"]
-            self.outputs = ["foo.o"]
-        def exec_command(self, cmd, cwd):
-            print "execute %r in %s" % (cmd, cwd)
-
-    foo = Foo()
-    foo.env = Environment([("CC", "gcc")])
-    foo.cwd = os.getcwd() + "/build"
-
-    f(foo)

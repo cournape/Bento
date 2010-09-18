@@ -8,19 +8,13 @@ from yaku.context \
     import \
         get_bld, get_cfg
 
-# FIXME: should be done dynamically
-from yaku.tools.gcc \
-    import \
-        detect as gcc_detect
-
 from yaku.conftests \
     import \
         check_compiler, check_header
 
 def configure(ctx):
-    ctx.use_tools(["pyext"], ["tools"])
+    ctx.use_tools(["pyext", "ctasks"], ["tools"])
 
-    gcc_detect(ctx)
     check_compiler(ctx)
     check_header(ctx, "stdio.h")
 

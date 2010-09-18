@@ -9,7 +9,7 @@ from yaku.task \
         Task
 from yaku.task_manager \
     import \
-        extension, create_tasks, CompiledTaskGen
+        extension, CompiledTaskGen
 from yaku.utils \
     import \
         find_deps, ensure_dir
@@ -17,13 +17,13 @@ from yaku.compiled_fun \
     import \
         compile_fun
 
-ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${INCPATH} ${CC_TGT_F}${TGT[0]} ${CC_SRC_F}${SRC}", False)
+ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${INCPATH} ${CC_TGT_F}${TGT[0].abspath()} ${CC_SRC_F}${SRC}", False)
 
-ccprogram, ccprogram_vars = compile_fun("ccprogram", "${LINK} ${LINKFLAGS} ${LINK_TGT_F}${TGT[0]} ${LINK_SRC_F}${SRC}", False)
+ccprogram, ccprogram_vars = compile_fun("ccprogram", "${LINK} ${LINK_TGT_F}${TGT[0].abspath()} ${LINK_SRC_F}${SRC} ${APP_LIBDIR} ${APP_LIBS} ${LINKFLAGS}", False)
 
-cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${SHLINKFLAGS} ${APP_LIBDIR} ${APP_LIBS} ${SHLINK_TGT_F}${TGT[0]} ${SHLINK_SRC_F}${SRC}", False)
+cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${APP_LIBDIR} ${APP_LIBS} ${SHLINK_TGT_F}${TGT[0]} ${SHLINK_SRC_F}${SRC} ${SHLINKFLAGS}", False)
 
-clink, clink_vars = compile_fun("clib", "${STLINK} ${STLINKFLAGS} ${STLINK_TGT_F}${TGT[0]} ${STLINK_SRC_F}${SRC}", False)
+clink, clink_vars = compile_fun("clib", "${STLINK} ${STLINKFLAGS} ${STLINK_TGT_F}${TGT[0].abspath()} ${STLINK_SRC_F}${SRC}", False)
 
 @extension('.c')
 def c_hook(self, node):
@@ -32,16 +32,12 @@ def c_hook(self, node):
     return tasks
 
 def ccompile_task(self, node):
-    base = os.path.splitext(node)[0]
-    # XXX: hack to avoid creating build/build/... when source is
-    # generated. Dealing with this most likely requires a node concept
-    if not os.path.commonprefix([self.env["BLDDIR"], base]):
-        target = os.path.join(self.env["BLDDIR"],
-                self.env["CC_OBJECT_FMT"] % base)
-    else:
-        target = self.env["CC_OBJECT_FMT"] % base
-    ensure_dir(target)
-    task = Task("cc", inputs=node, outputs=target)
+    base = self.env["CC_OBJECT_FMT"] % node.name
+    target = node.parent.declare(base)
+    ensure_dir(target.abspath())
+
+    task = Task("cc", inputs=[node], outputs=[target])
+    task.gen = self
     task.env_vars = cc_vars
     #print find_deps("foo.c", ["."])
     #task.scan = lambda : find_deps(node, ["."])
@@ -54,7 +50,9 @@ def shlink_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
     target = os.path.join(self.env["BLDDIR"], name + ".so")
     ensure_dir(target)
+
     task = Task("cc_shlink", inputs=objects, outputs=target)
+    task.gen = self
     task.env = self.env
     task.func = cshlink
     task.env_vars = cshlink_vars
@@ -62,9 +60,14 @@ def shlink_task(self, name):
 
 def static_link_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    target = os.path.join(self.env["BLDDIR"], self.env["STATICLIB_FMT"] % name)
-    ensure_dir(target)
-    task = Task("cc_link", inputs=objects, outputs=target)
+
+    folder, base = os.path.split(name)
+    tmp = folder + os.path.sep + self.env["STATICLIB_FMT"] % base
+    target = self.bld.bld_root.declare(tmp)
+    ensure_dir(target.abspath())
+
+    task = Task("cc_link", inputs=objects, outputs=[target])
+    task.gen = self
     task.env = self.env
     task.func = clink
     task.env_vars = clink_vars
@@ -72,10 +75,15 @@ def static_link_task(self, name):
 
 def ccprogram_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    target = os.path.join(self.env["BLDDIR"],
-                          self.env["PROGRAM_FMT"] % name)
-    ensure_dir(target)
-    task = Task("ccprogram", inputs=objects, outputs=target)
+    def declare_target():
+        folder, base = os.path.split(name)
+        tmp = folder + os.path.sep + self.env["PROGRAM_FMT"] % base
+        return self.bld.bld_root.declare(tmp)
+    target = declare_target()
+    ensure_dir(target.abspath())
+
+    task = Task("ccprogram", inputs=objects, outputs=[target])
+    task.gen = self
     task.env = self.env
     task.func = ccprogram
     task.env_vars = ccprogram_vars
@@ -93,28 +101,38 @@ def apply_libs(task_gen):
 
 def apply_libdir(task_gen):
     libdir = task_gen.env["LIBDIR"]
-    implicit_paths = set([
-        os.path.join(task_gen.env["BLDDIR"], os.path.dirname(s))
-        for s in task_gen.sources])
-    libdir = list(implicit_paths) + libdir
     task_gen.env["APP_LIBDIR"] = [
             task_gen.env["LIBDIR_FMT"] % d for d in libdir]
 
+def _merge_env(_env, new_env):
+    if new_env is not None:
+        ret = copy.copy(_env)
+        for k, v in new_env.items():
+            if hasattr(_env[k], "extend"):
+                old = copy.copy(_env[k])
+                old.extend(v)
+                ret[k] = old
+            else:
+                ret[k] = v
+        return ret
+    else:
+        return _env
+
 class CCBuilder(object):
+    def clone(self):
+        return CCBuilder(self.ctx)
+
     def __init__(self, ctx):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
 
     def ccompile(self, name, sources, env=None):
-        _env = copy.deepcopy(self.env)
-        if env is not None:
-            _env.update(env)
-
-        task_gen = CompiledTaskGen("cccompile", sources, name)
-        task_gen.env = _env
+        task_gen = CompiledTaskGen("cccompile", self.ctx,
+                                   sources, name)
+        task_gen.env = _merge_env(self.env, env)
         apply_cpppath(task_gen)
 
-        tasks = create_tasks(task_gen, sources)
+        tasks = task_gen.process()
         for t in tasks:
             t.env = task_gen.env
         self.ctx.tasks.extend(tasks)
@@ -125,22 +143,20 @@ class CCBuilder(object):
         return outputs
 
     def static_library(self, name, sources, env=None):
-        _env = copy.deepcopy(self.env)
-        if env is not None:
-            _env.update(env)
-
-        task_gen = CompiledTaskGen("ccstaticlib", sources, name)
-        task_gen.env = _env
+        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        task_gen = CompiledTaskGen("ccstaticlib", self.ctx, sources, name)
+        task_gen.env = _merge_env(self.env, env)
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
         apply_libs(task_gen)
 
-        tasks = create_tasks(task_gen, sources)
+        tasks = task_gen.process()
         ltask = static_link_task(task_gen, name)
         tasks.extend(ltask)
         for t in tasks:
             t.env = task_gen.env
         self.ctx.tasks.extend(tasks)
+        self.link_task = ltask
 
         outputs = []
         for t in ltask:
@@ -149,22 +165,21 @@ class CCBuilder(object):
 
 
     def program(self, name, sources, env=None):
-        _env = copy.deepcopy(self.env)
-        if env is not None:
-            _env.update(env)
-
-        task_gen = CompiledTaskGen("ccprogram", sources, name)
-        task_gen.env = _env
+        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        task_gen = CompiledTaskGen("ccprogram", self.ctx,
+                                   sources, name)
+        task_gen.env = _merge_env(self.env, env)
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
         apply_libs(task_gen)
 
-        tasks = create_tasks(task_gen, sources)
+        tasks = task_gen.process()
         ltask = ccprogram_task(task_gen, name)
         tasks.extend(ltask)
         for t in tasks:
             t.env = task_gen.env
         self.ctx.tasks.extend(tasks)
+        self.link_task = ltask
 
         outputs = []
         for t in ltask:

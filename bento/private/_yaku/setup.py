@@ -1,4 +1,4 @@
-from setuptools \
+from distutils.core \
     import \
         setup
 

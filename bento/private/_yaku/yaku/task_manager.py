@@ -1,6 +1,7 @@
 import os
 
 RULES_REGISTRY = {}
+FILES_REGISTRY = {}
 
 def extension(ext):
     def _f(f):
@@ -13,27 +14,30 @@ def set_extension_hook(ext, hook):
     RULES_REGISTRY[ext] = hook
     return old
 
+def wrap_extension_hook(ext, hook_factory):
+    old = RULES_REGISTRY.get(ext, None)
+    RULES_REGISTRY[ext] = hook_factory(old)
+    return old
+
 def get_extension_hook(ext):
     try:
         return RULES_REGISTRY[ext]
     except KeyError:
         raise ValueError("No hook registered for extension %r" % ext)
 
-def create_tasks(ctx, sources):
-    tasks = []
+def set_file_hook(ctx, source, hook):
+    node = ctx.src_root.find_resource(source)
+    if node is None:
+        raise IOError("file %s not found" % source)
+    FILES_REGISTRY[node] = hook
 
-    for s in sources:
-        base, ext = os.path.splitext(s)
-        if not RULES_REGISTRY.has_key(ext):
-            raise RuntimeError("No rule defined for extension %r" % ext)
-        else:
-            task_gen = RULES_REGISTRY[ext]
-            tasks.extend(task_gen(ctx, s))
-    return tasks
+class NoHookException(Exception):
+    pass
 
 def hash_task(t):
-    ext_in = [os.path.splitext(s)[1] for s in t.inputs]
-    ext_out = [os.path.splitext(s)[1] for s in t.outputs]
+    # FIXME: ext_in and ext_out should not be computed from the files
+    ext_in = [os.path.splitext(s.name)[1] for s in t.inputs]
+    ext_out = [os.path.splitext(s.name)[1] for s in t.outputs]
     ext_t = tuple(ext_in + ext_out)
     return hash((t.__class__.__name__, ext_t))
 
@@ -112,9 +116,9 @@ class TaskManager(object):
     def compare_exts(self, t1, t2):
         "extension production"
         def _get_in(t):
-            return [os.path.splitext(s)[1] for s in t.inputs]
+            return [os.path.splitext(s.name)[1] for s in t.inputs]
         def _get_out(t):
-            return [os.path.splitext(s)[1] for s in t.outputs]
+            return [os.path.splitext(s.name)[1] for s in t.outputs]
 
         in_ = _get_in(t1)
         out_ = _get_out(t2)
@@ -134,8 +138,11 @@ def run_task(ctx, task):
         ctx.cache[tuid] = t.signature()
 
     tuid = task.get_uid()
+    # XXX: there may be a better way to do this without stating output
+    # (we want to know if the task has already been executed in a
+    # previous run)
     for o in task.outputs:
-        if not os.path.exists(o):
+        if not os.path.exists(o.abspath()):
             _run(task)
             break
     if not tuid in ctx.cache:
@@ -186,18 +193,49 @@ def topo_sort(task_deps):
 
     return tmp
 
+def _get_hook(source):
+    if source in FILES_REGISTRY:
+        return FILES_REGISTRY[source]
+    for ext in RULES_REGISTRY:
+        if source.name.endswith(ext):
+            return RULES_REGISTRY[ext]
+    raise NoHookException(
+            "No rule defined for extension %r" % source.suffix())
+
 class TaskGen(object):
-    def __init__(self, name, sources, target):
+    def __init__(self, name, bld, sources, target):
+        self.bld = bld
         self.name = name
         self.sources = sources
         self.target = target
 
         self.env = {}
 
+    def process(self):
+        tasks = []
+        for s in self.sources:
+            f = _get_hook(s)
+            tsks = f(self, s)
+            tasks.extend(tsks)
+        return tasks
+
 class CompiledTaskGen(TaskGen):
-    def __init__(self, name, sources, target):
-        TaskGen.__init__(self, name, sources, target)
+    def __init__(self, name, bld, sources, target):
+        TaskGen.__init__(self, name, bld, sources, target)
         self.object_tasks = []
+        self.link_task = None
+        self.has_cxx = False
+
+    def add_objects(self, tasks):
+        """Add new object tasks, assuming the link task has already
+        been defined."""
+        if self.link_task is None:
+            raise ValueError("You cannot add object nodes "
+                             "before setting the link task !")
+        else:
+            self.object_tasks += tasks
+            for t in tasks:
+                self.link_task.inputs += t.outputs
 
 def order_tasks(tasks):
     tuid_to_task = dict([(t.get_uid(), t) for t in tasks])
