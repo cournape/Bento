@@ -35,7 +35,7 @@ def _parse_libraries(libraries):
 
         default = libraries["default"]
         for k in ["packages", "py_modules", "install_requires"]:
-            if default[k]:
+            if default.has_key(k):
                 ret[k] = default[k]
 
         ret["extensions"] = {}
@@ -82,7 +82,7 @@ def build_libs_from_dict(libraries_d):
 def build_executables_from_dict(executables_d):
     executables = {}
     for name, executable in executables_d.items():
-        executable[name] = Executable.from_parse_dict(executable)
+        executables[name] = Executable.from_parse_dict(executable)
     return executables
 
 def build_data_files_from_dict(data_files_d):
