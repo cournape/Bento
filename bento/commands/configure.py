@@ -15,6 +15,9 @@ from bento.core.platforms import \
         get_scheme
 from bento.core import \
         PackageOptions, PackageDescription
+from bento.core.package_cache \
+    import \
+        CachedPackage
 from bento._config \
     import \
         CONFIGURED_STATE_DUMP, BENTO_SCRIPT, BUILD_DIR
@@ -155,15 +158,7 @@ Usage: bentomaker configure [OPTIONS]"""
                      action="store_true")
         self.add_user_option(opt, "build_customization")
 
-        # We need to obtain the package description ASAP, as we need to parse
-        # it to get the options (i.e. we cannot use the option handling mechanism).
-        filename = BENTO_SCRIPT
-        if not os.path.exists(filename):
-            msg = "%s: Error: No %s found" % (SCRIPT_NAME, BENTO_SCRIPT)
-            msg += "\nTry: %s help configure" % SCRIPT_NAME
-            raise UsageException(msg)
-
-        pkg_opts = PackageOptions.from_file(filename)
+        pkg_opts = PackageOptions.from_file(BENTO_SCRIPT)
         scheme, flag_opts = self.add_configuration_options(pkg_opts)
 
         o, a = self.parser.parse_args(opts)
@@ -181,9 +176,13 @@ Usage: bentomaker configure [OPTIONS]"""
         set_scheme_options(scheme, o)
         flag_vals = set_flag_options(flag_opts, o)
 
-        # Cache the built package description to avoid reparsing it for
-        # subsequent commands
-        pkg = PackageDescription.from_file(filename, flag_vals)
+        #pkg = PackageDescription.from_file(filename, flag_vals)
+        #pkg = create_package_description(BENTO_SCRIPT, flag_vals)
+        pkg_cache = CachedPackage()
+        try:
+            pkg = pkg_cache.get_package(BENTO_SCRIPT)
+        finally:
+            pkg_cache.close()
         if not self.user_data["use_distutils"]:
             yaku_ctx = ctx.yaku_configure_ctx
             if pkg.extensions:
@@ -202,7 +201,7 @@ Usage: bentomaker configure [OPTIONS]"""
             ensure_dir(target)
             rename(tmp_config, target)
 
-        s = ConfigureState(filename, pkg, scheme, flag_vals,
+        s = ConfigureState(BENTO_SCRIPT, pkg, scheme, flag_vals,
                            self.user_data)
         s.dump()
 

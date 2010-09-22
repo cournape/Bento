@@ -74,7 +74,7 @@ def recurse_subentos(subentos):
 
     for s in subentos:
         _recurse(s, root_dir)
-    return subpackages
+    return subpackages, filenames
 
 def build_libs_from_dict(libraries_d):
     return _parse_libraries(libraries_d)
@@ -122,12 +122,14 @@ def parse_to_pkg_kw(data, user_flags, filename):
 
     if misc_d.has_key("subento"):
         subentos = misc_d.pop("subento")
-        subpackages = recurse_subentos(subentos)
+        subpackages, files = recurse_subentos(subentos)
         kw["subpackages"] = subpackages
+    else:
+        files = []
 
     kw.update(misc_d)
 
-    return kw
+    return kw, files
 
 class PackageDescription:
     @classmethod
@@ -135,7 +137,7 @@ class PackageDescription:
         if not user_flags:
             user_flags = {}
 
-        kw = parse_to_pkg_kw(data, user_flags, filename)
+        kw, files = parse_to_pkg_kw(data, user_flags, filename)
         return cls(**kw)
 
     @classmethod
