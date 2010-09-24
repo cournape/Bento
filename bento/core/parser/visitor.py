@@ -125,8 +125,9 @@ class Dispatcher(object):
         return self._d
 
     def summary(self, node):
-        node.value = "".join([i.value for i in node.value])
-        return node
+        ret = Node(node.type)
+        ret.value = "".join([i.value for i in node.value])
+        return ret
 
     def author(self, node):
         node.value = "".join([i.value for i in node.value])

@@ -1,6 +1,3 @@
-from bento.core.parser.api \
-    import \
-        parse_to_dict
 from bento.core.meta \
     import \
         _METADATA_FIELDS

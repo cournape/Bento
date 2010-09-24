@@ -1,6 +1,6 @@
 from bento.core.parser.misc \
     import \
-        parse_to_dict
+        raw_parse, build_ast_from_raw_dict, build_ast_from_data
 from bento.core.parser.errors \
     import \
         ParseError

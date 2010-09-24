@@ -10,7 +10,7 @@ from bento.commands.core import \
         Command, SCRIPT_NAME, Option
 from bento.core.parser.api \
     import \
-        parse_to_dict, ParseError
+        build_ast_from_data, ParseError
 
 class ParseCommand(Command):
     long_descr = """\
@@ -45,7 +45,7 @@ Usage:   bentomaker parse [OPTIONS]"""
         try:
             data = f.read()
             try:
-                parsed = parse_to_dict(data)
+                parsed = build_ast_from_data(data)
             except ParseError, e:
                 msg = "Error while parsing file %s\n" % filename
                 e.args = (msg,) +  e.args

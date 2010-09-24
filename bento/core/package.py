@@ -12,7 +12,7 @@ from bento.core.utils import \
         find_package, expand_glob, unnormalize_path
 from bento.core.parser.api \
     import \
-        parse_to_dict
+        build_ast_from_data, build_ast_from_raw_dict, raw_parse
 from bento.compat.api \
     import \
         relpath
@@ -65,7 +65,8 @@ def recurse_subentos(subentos):
             key = relpath(f, root_dir)
             rdir = relpath(os.path.join(cwd, subento), root_dir)
 
-            kw, subentos = parse_to_subpkg_kw(fid.read(), f)
+            d = raw_parse(fid.read(), f)
+            kw, subentos = raw_to_subpkg_kw(d)
             subpackages[key] = SubPackageDescription(rdir, **kw)
             for s in subentos:
                 _recurse(s, os.path.join(cwd, subento))
@@ -74,7 +75,7 @@ def recurse_subentos(subentos):
 
     for s in subentos:
         _recurse(s, root_dir)
-    return subpackages
+    return subpackages, filenames
 
 def build_libs_from_dict(libraries_d):
     return _parse_libraries(libraries_d)
@@ -91,8 +92,8 @@ def build_data_files_from_dict(data_files_d):
         data_files[name] = DataFiles.from_parse_dict(data_file_d)
     return data_files
 
-def parse_to_subpkg_kw(data, f):
-    d = parse_to_dict(data, filename=f)
+def raw_to_subpkg_kw(raw_dict):
+    d = build_ast_from_raw_dict(raw_dict)
 
     libraries_d, misc_d = extract_top_dicts_subento(deepcopy(d))
 
@@ -102,8 +103,8 @@ def parse_to_subpkg_kw(data, f):
 
     return kw, misc_d["subento"]
 
-def parse_to_pkg_kw(data, user_flags, filename):
-    d = parse_to_dict(data, user_flags, filename)
+def raw_to_pkg_kw(raw_dict, user_flags, filename):
+    d = build_ast_from_raw_dict(raw_dict, user_flags)
 
     meta_d, libraries_d, options_d, misc_d = extract_top_dicts(deepcopy(d))
     libraries = build_libs_from_dict(libraries_d)
@@ -122,12 +123,14 @@ def parse_to_pkg_kw(data, user_flags, filename):
 
     if misc_d.has_key("subento"):
         subentos = misc_d.pop("subento")
-        subpackages = recurse_subentos(subentos)
+        subpackages, files = recurse_subentos(subentos)
         kw["subpackages"] = subpackages
+    else:
+        files = []
 
     kw.update(misc_d)
 
-    return kw
+    return kw, files
 
 class PackageDescription:
     @classmethod
@@ -135,7 +138,9 @@ class PackageDescription:
         if not user_flags:
             user_flags = {}
 
-        kw = parse_to_pkg_kw(data, user_flags, filename)
+        start = time.time()
+        d = raw_parse(data, filename)
+        kw, files = raw_to_pkg_kw(d, user_flags, filename)
         return cls(**kw)
 
     @classmethod

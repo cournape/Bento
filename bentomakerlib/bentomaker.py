@@ -18,8 +18,8 @@ from bento.core.platforms import \
         get_scheme
 from bento.core.parser.api import \
         ParseError
-from bento.core.package import \
-        PackageDescription
+from bento.core.package_cache import \
+        CachedPackage
 from bento._config import \
         BENTO_SCRIPT
 import bento.core.node
@@ -97,7 +97,13 @@ def set_main():
     # Some commands work without a bento description file (convert, help)
     if not os.path.exists(BENTO_SCRIPT):
         return None
-    pkg = PackageDescription.from_file(BENTO_SCRIPT)
+
+    pkg_cache = CachedPackage()
+    try:
+        pkg = pkg_cache.get_package(BENTO_SCRIPT)
+    finally:
+        pkg_cache.close()
+    #create_package_description(BENTO_SCRIPT)
 
     if pkg.hook_file is None:
         return None
@@ -129,10 +135,10 @@ def main(argv=None):
         argv = sys.argv[1:]
     popts = parse_global_options(argv)
     cmd_name = popts["cmd_name"]
-    if cmd_name and cmd_name in ["convert"]:
-        _main(popts)
-    else:
+    if cmd_name and cmd_name not in ["convert"]:
         _wrapped_main(popts)
+    else:
+        _main(popts)
 
 def _wrapped_main(popts):
     mod = set_main()
@@ -182,7 +188,7 @@ def _main(popts):
 
     if popts["show_usage"]:
         cmd = get_command('help')()
-        cmd.run(Context(cmd, []))
+        cmd.run(Context(cmd, [], None, None))
         return 0
 
     cmd_name = popts["cmd_name"]
@@ -202,7 +208,8 @@ import yaku.context
 
 # XXX: The yaku configure stuff is ugly, and introduces a lot of global state.
 class Context(object):
-    def __init__(self, cmd, cmd_opts, top_node):
+    def __init__(self, cmd, cmd_opts, pkg, top_node):
+        self.pkg = pkg
         self.cmd = cmd
         self.cmd_opts = cmd_opts
         self.help = False
@@ -220,8 +227,8 @@ class Context(object):
         pass
 
 class ConfigureContext(Context):
-    def __init__(self, cmd, cmd_opts, top_node):
-        Context.__init__(self, cmd, cmd_opts, top_node)
+    def __init__(self, cmd, cmd_opts, pkg, top_node):
+        Context.__init__(self, cmd, cmd_opts, pkg, top_node)
         self.yaku_configure_ctx = yaku.context.get_cfg()
 
     def store(self):
@@ -229,8 +236,8 @@ class ConfigureContext(Context):
         self.yaku_configure_ctx.store()
 
 class BuildContext(Context):
-    def __init__(self, cmd, cmd_opts, top_node):
-        Context.__init__(self, cmd, cmd_opts, top_node)
+    def __init__(self, cmd, cmd_opts, pkg, top_node):
+        Context.__init__(self, cmd, cmd_opts, pkg, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
         self._extensions_callback = {}
         self._clibraries_callback = {}
@@ -296,15 +303,22 @@ def run_cmd(cmd_name, cmd_opts):
     else:
         cmd_funcs = [(cmd.run, top.abspath())]
 
-    if cmd_name == "configure":
-        ctx = ConfigureContext(cmd, cmd_opts, top)
-    elif cmd_name == "build":
-        ctx = BuildContext(cmd, cmd_opts, top)
-    else:
-        ctx = Context(cmd, cmd_opts, top)
-
+    pkg_cache = CachedPackage()
     try:
-        pkg = PackageDescription.from_file(BENTO_SCRIPT)
+        pkg = pkg_cache.get_package(BENTO_SCRIPT)
+        pkg_opts = pkg_cache.get_options(BENTO_SCRIPT)
+    finally:
+        pkg_cache.close()
+
+    if cmd_name == "configure":
+        ctx = ConfigureContext(cmd, cmd_opts, pkg, top)
+    elif cmd_name == "build":
+        ctx = BuildContext(cmd, cmd_opts, pkg, top)
+    else:
+        ctx = Context(cmd, cmd_opts, pkg, top)
+
+    ctx.pkg_opts = pkg_opts
+    try:
         spkgs = pkg.subpackages
 
         def get_subpackage(local_node):
