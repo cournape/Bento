@@ -56,13 +56,18 @@ def ast_walk(root, dispatcher, debug=False):
         defines the action for each node type.
     """
     def _walker(par):
+        # We use a new node walked_tree to avoid modifying par
+        # in-place. Creating new node is much faster than doing a
+        # deepcopy of root
+        walked_tree = Node(par.type, value=par.value)
         children = []
         for c in par.children:
             children.append(_walker(c))
 
-        par.children = [c for c in children if c is not None]
+        walked_tree.children = [c for c in children if c is not None]
         try:
-            return dispatcher.action_dict[par.type](par)
+            func = dispatcher.action_dict[walked_tree.type]
+            return func(walked_tree)
         except KeyError:
             if debug:
                 print "no action for type %s" % par.type
