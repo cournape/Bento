@@ -32,10 +32,7 @@ from bento.core.options \
         raw_to_options_kw, PackageOptions
 from bento.core.utils \
     import \
-        ensure_dir
-from bento.compat.api \
-    import \
-        rename
+        ensure_dir, rename
 
 class CachedPackage(object):
     __version__ = "1"

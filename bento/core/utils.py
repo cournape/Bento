@@ -2,6 +2,8 @@ import os
 import sys
 import re
 import glob
+import shutil
+import errno
 
 from itertools import izip, imap
 from copy import deepcopy
@@ -11,8 +13,7 @@ from os.path import \
 
 from bento.compat.api \
     import \
-        relpath
-
+        relpath, rename as _rename
 from bento.core.errors \
     import \
         InvalidPackage
@@ -360,3 +361,12 @@ class OrderedDict(dict):
 
     def sort(self, *args, **kwargs):
         self._keys.sort(*args, **kwargs)
+
+def rename(source, target):
+    try:
+        _rename(source, target)
+    except OSError, e:
+        if e.errno == errno.EXDEV:
+            shutil.move(source, target)
+        else:
+            raise
