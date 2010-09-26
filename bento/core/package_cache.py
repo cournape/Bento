@@ -7,8 +7,8 @@ db["bento_checkums"] : pickled dictionary {filename: checksum(filename)} for
                        each bento.info (including subentos)
 db["package_description"] : pickled PackageDescription instance
 db["user_flags"] : pickled user_flags dict
-db["parsed_dict"]: raw parsed dictionary (as returned by raw_parse,
-                   before having been seen by the visitor)
+db["parsed_dict"]: pickled raw parsed dictionary (as returned by
+                   raw_parse, before having been seen by the visitor)
 """
 import os
 import tempfile
@@ -78,7 +78,7 @@ class CachedPackage(object):
 
     def _has_invalidated_cache(self):
         if self.db.has_key("bentos_checksums"):
-            r_checksums = self.db["bentos_checksums"]
+            r_checksums = cPickle.loads(self.db["bentos_checksums"])
             for f in r_checksums:
                 checksum = md5(open(f).read()).hexdigest()
                 if checksum != r_checksums[f]:
@@ -173,7 +173,7 @@ def _create_objects_no_cached(filename, user_flags, db):
         options = _raw_to_options(raw)
 
         checksums = [md5(open(f).read()).hexdigest() for f in files]
-        db["bentos_checksums"] = dict(zip(files, checksums))
+        db["bentos_checksums"] = cPickle.dumps(dict(zip(files, checksums)))
         db["package_description"] = cPickle.dumps(pkg)
         db["user_flags"] = cPickle.dumps(user_flags)
         db["parsed_dict"] = cPickle.dumps(raw)
