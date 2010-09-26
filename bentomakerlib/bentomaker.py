@@ -278,6 +278,8 @@ def run_cmd(cmd_name, cmd_opts):
     else:
         cmd_funcs = [(cmd.run, top.abspath())]
 
+    if not os.path.exists(BENTO_SCRIPT):
+        raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
     pkg_cache = CachedPackage()
     try:
         pkg = pkg_cache.get_package(BENTO_SCRIPT)
