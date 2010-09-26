@@ -20,7 +20,7 @@ from bento.core.package_cache \
         CachedPackage
 from bento._config \
     import \
-        CONFIGURED_STATE_DUMP, BENTO_SCRIPT, BUILD_DIR
+        CONFIGURED_STATE_DUMP, BENTO_SCRIPT, BUILD_DIR, CHECKSUM_DB_FILE
 
 from bento.commands.core import \
         Command, SCRIPT_NAME, Option, OptionGroup
@@ -118,6 +118,13 @@ Usage: bentomaker configure [OPTIONS]"""
     @classmethod
     def has_run(self):
         return os.path.exists(CONFIGURED_STATE_DUMP)
+
+    @classmethod
+    def up_to_date(self):
+        if os.path.exists(CHECKSUM_DB_FILE):
+            return not CachedPackage.has_changed(CHECKSUM_DB_FILE)
+        else:
+            return False
 
     def __init__(self):
         Command.__init__(self)

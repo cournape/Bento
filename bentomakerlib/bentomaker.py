@@ -209,6 +209,7 @@ class ConfigureContext(Context):
     def store(self):
         Context.store(self)
         self.yaku_configure_ctx.store()
+        CachedPackage.write_checksums()
 
 class BuildContext(Context):
     def __init__(self, cmd, cmd_opts, pkg, top_node):
@@ -262,6 +263,9 @@ def check_command_dependencies(cmd_name):
         if not configure_cmd.has_run():
             raise UsageException("""\
 The project was not configured: you need to run 'bentomaker configure' first""")
+        if not configure_cmd.up_to_date():
+            raise UsageException("""\
+The project configuration has changed. You need to re-run 'bentomaker configure' first""")
     elif cmd_name == "install":
         configure_cmd = get_command("build")
         if not configure_cmd.has_run():
