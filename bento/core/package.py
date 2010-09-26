@@ -138,7 +138,6 @@ class PackageDescription:
         if not user_flags:
             user_flags = {}
 
-        start = time.time()
         d = raw_parse(data, filename)
         kw, files = raw_to_pkg_kw(d, user_flags, filename)
         return cls(**kw)
