@@ -37,7 +37,7 @@ from bento.core.utils \
 
 class CachedPackage(object):
     __version__ = "1"
-    __magic__ = "BENTOMAGIC"
+    __magic__ = "CACHED_PACKAGE_BENTOMAGIC"
 
     def _has_valid_magic(self, db):
         try:
@@ -76,9 +76,9 @@ class CachedPackage(object):
                 warnings.warn("Resetting invalid version of cached db")
                 self._reset()
 
-    def has_changed(self):
+    def _has_invalidated_cache(self):
         if self.db.has_key("bentos_checksums"):
-            r_checksums = cPickle.loads(self.db["bentos_checksums"])
+            r_checksums = self.db["bentos_checksums"]
             for f in r_checksums:
                 checksum = md5(open(f).read()).hexdigest()
                 if checksum != r_checksums[f]:
@@ -92,7 +92,7 @@ class CachedPackage(object):
             self._first_time = False
             return _create_package_nocached(filename, user_flags, self.db)
         else:
-            if self.has_changed():
+            if self._has_invalidated_cache():
                 return _create_package_nocached(filename, user_flags, self.db)
             else:
                 r_user_flags = cPickle.loads(self.db["user_flags"])
@@ -110,7 +110,7 @@ class CachedPackage(object):
             self._first_time = False
             return _create_options_nocached(filename, {}, self.db)
         else:
-            if self.has_changed():
+            if self._has_invalidated_cache():
                 return _create_options_nocached(filename, {}, self.db)
             else:
                 raw = cPickle.loads(self.db["parsed_dict"])
@@ -151,7 +151,7 @@ def _create_objects_no_cached(filename, user_flags, db):
         options = _raw_to_options(raw)
 
         checksums = [md5(open(f).read()).hexdigest() for f in files]
-        db["bentos_checksums"] = cPickle.dumps(dict(zip(files, checksums)))
+        db["bentos_checksums"] = dict(zip(files, checksums))
         db["package_description"] = cPickle.dumps(pkg)
         db["user_flags"] = cPickle.dumps(user_flags)
         db["parsed_dict"] = cPickle.dumps(raw)
