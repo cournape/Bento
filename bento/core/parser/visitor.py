@@ -36,7 +36,7 @@ class Dispatcher(object):
             "summary": self.summary,
             "author": self.author,
             "maintainer": self.author,
-            "hook_file": self.hook_file,
+            "hook_files": self.hook_files,
             "config_py": self.config_py,
             "subento": self.subento,
             # Library
@@ -92,7 +92,7 @@ class Dispatcher(object):
             if c.type in ["name", "description", "version", "summary", "url",
                           "download_url", "author", "author_email",
                           "maintainer", "maintainer_email", "license",
-                          "platforms", "classifiers", "hook_file",
+                          "platforms", "classifiers", "hook_files",
                           "config_py"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
@@ -137,9 +137,11 @@ class Dispatcher(object):
         node.value = "".join([i.value for i in node.value])
         return node
 
-    def hook_file(self, node):
-        #node.value = "".join([i.value for i in node.value])
-        return node
+    def hook_files(self, node):
+        if self._d.has_key("hook_files"):
+            self._d["hook_files"].extend(node.value)
+        else:
+            self._d["hook_files"] = node.value
 
     def config_py(self, node):
         return node

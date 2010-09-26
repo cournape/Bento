@@ -57,7 +57,7 @@ from bento.commands.errors import \
 
 from bento.commands.hooks \
     import \
-        get_pre_hooks, get_post_hooks, get_command_override
+        get_pre_hooks, get_post_hooks, get_command_override, create_hook_module
 import bento.core.errors
 
 if os.environ.get("BENTOMAKER_DEBUG", "0") != "0":
@@ -85,15 +85,7 @@ def register_commands():
     register_command("parse", ParseCommand, public=False)
     register_command("detect_type", DetectTypeCommand, public=False)
  
-def dummy_startup():
-    pass
-
-def dummy_shutdown():
-    pass
-
 def set_main():
-    import imp
-
     # Some commands work without a bento description file (convert, help)
     if not os.path.exists(BENTO_SCRIPT):
         return None
@@ -105,30 +97,13 @@ def set_main():
         pkg_cache.close()
     #create_package_description(BENTO_SCRIPT)
 
-    if pkg.hook_file is None:
-        return None
-    else:
-        main_file = os.path.abspath(pkg.hook_file)
+    modules = []
+    for f in pkg.hook_files:
+        main_file = os.path.abspath(f)
         if not os.path.exists(main_file):
             raise ValueError("Hook file %s not found" % main_file)
-
-    module = imp.new_module("toysetup_module")
-    module.__file__ = os.path.abspath(main_file)
-    code = open(main_file).read()
-
-    sys.path.insert(0, os.path.dirname(main_file))
-    try:
-        exec(compile(code, main_file, 'exec'), module.__dict__)
-    finally:
-        sys.path.pop(0)
-
-    module.root_path = main_file
-    if not hasattr(module, "startup"):
-        module.startup = dummy_startup
-    if not hasattr(module, "shutdown"):
-        module.shutdown = dummy_shutdown
-
-    return module
+        modules.append(create_hook_module(f))
+    return modules
 
 def main(argv=None):
     if argv is None:
@@ -141,14 +116,14 @@ def main(argv=None):
         _main(popts)
 
 def _wrapped_main(popts):
-    mod = set_main()
-    if mod:
+    mods = set_main()
+    for mod in mods:
         mod.startup()
 
     try:
         return _main(popts)
     finally:
-        if mod:
+        for mod in mods:
             mod.shutdown()
 
 def parse_global_options(argv):

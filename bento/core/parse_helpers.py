@@ -9,7 +9,7 @@ def extract_top_dicts(d):
     misc = {"extra_source_files": [],
             "executables": {},
             "data_files": {},
-            "hook_file": None,
+            "hook_files": [],
             "config_py": None,
             "flag_options": [],
             "path_options": [],

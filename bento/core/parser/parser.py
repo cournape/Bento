@@ -167,11 +167,6 @@ def p_meta_version_stmt(p):
     """
     p[0] = Node("version", value=p[3].value)
 
-def p_meta_hook_file_sstmt(p):
-    """meta_hook_file_stmt : HOOK_FILE_ID COLON anyword
-    """
-    p[0] = Node("hook_file", value=p[3].value)
-
 def p_meta_config_py_stmt(p):
     """meta_config_py_stmt : CONFIG_PY_ID COLON anyword
     """
@@ -217,6 +212,11 @@ def p_dummy(p):
 def p_meta_subento_stmt(p):
     """meta_subento_stmt : SUBENTO_ID COLON comma_list"""
     p[0] = Node("subento", value=p[3].value)
+
+def p_meta_hook_file_stmt(p):
+    """meta_hook_file_stmt : HOOK_FILE_ID COLON comma_list
+    """
+    p[0] = Node("hook_files", value=p[3].value)
 
 #---------------------------------------
 # Data files and extra sources handling

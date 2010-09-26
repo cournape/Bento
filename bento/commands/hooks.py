@@ -1,6 +1,5 @@
 import os
 import sys
-import imp
 
 from bento.compat \
     import \
@@ -106,28 +105,34 @@ def command_register(f, *a, **kw):
     for cmd_name, cmd_class in ret.items():
         register_command(cmd_name, cmd_class)
 
-# XXX: consolidate this with the similar code in bentomakerlib
-def create_hook_module(target):
-    par_bscript = compat_inspect.stack()[2][1]
-    target = os.path.join(os.path.dirname(par_bscript), target)
-    if not os.path.exists(target):
-        raise ValueError("Recurse target file %s not found" % target)
+def dummy_startup():
+    pass
 
+def dummy_shutdown():
+    pass
+
+def create_hook_module(target):
+    import imp
+
+    # FIXME: really make the name safe
     safe_name = target.replace("/", "_")
     module_name = "bento_hook_%s" % safe_name
+    main_file = os.path.abspath(target)
     module = imp.new_module(module_name)
-    module.__file__ = os.path.abspath(target)
-    code = open(target).read()
+    module.__file__ = main_file
+    code = open(main_file).read()
 
-    sys.path.insert(0, os.path.dirname(target))
+    sys.path.insert(0, os.path.dirname(main_file))
     try:
-        exec(compile(code, target, 'exec'), module.__dict__)
+        exec(compile(code, main_file, 'exec'), module.__dict__)
         sys.modules[module_name] = module
     finally:
         sys.path.pop(0)
 
-def recurse(targets):
-    def _f(a):
-        for target in targets:
-            create_hook_module(target)
-    return _f
+    module.root_path = main_file
+    if not hasattr(module, "startup"):
+        module.startup = dummy_startup
+    if not hasattr(module, "shutdown"):
+        module.shutdown = dummy_shutdown
+
+    return module
