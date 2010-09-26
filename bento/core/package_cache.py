@@ -21,7 +21,7 @@ import warnings
 
 from bento._config \
     import \
-        DB_FILE
+        DB_FILE, CHECKSUM_DB_FILE
 from bento.core.parser.api \
     import \
         raw_parse
@@ -123,6 +123,28 @@ class CachedPackage(object):
         finally:
             f.close()
             rename(f.name, self._location)
+
+    @classmethod
+    def write_checksums(cls, target=CHECKSUM_DB_FILE):
+        f = tempfile.NamedTemporaryFile(mode="wb", delete=False)
+        try:
+            cache = cls()
+            cPickle.dump(cache.db["bentos_checksums"], f)
+        finally:
+            f.close()
+            rename(f.name, target)
+
+    @classmethod
+    def has_changed(cls, source=CHECKSUM_DB_FILE):
+        fid = open(CHECKSUM_DB_FILE, "rb")
+        try:
+            checksums = cPickle.load(fid)
+            for f, checksum in checksums.items():
+                if checksum != md5(open(f).read()).hexdigest():
+                    return True
+            return False
+        finally:
+            fid.close()
 
 def _create_package_nocached(filename, user_flags, db):
     pkg, options = _create_objects_no_cached(filename, user_flags, db)
