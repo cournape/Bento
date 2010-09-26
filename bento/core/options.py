@@ -23,7 +23,7 @@ def raw_to_options_kw(raw):
     kw["flag_options"] = {}
     flag_options = d.get("flag_options", {})
     for name, flag in flag_options.items():
-        kw["flag_options"][name] = PathOption(flag["name"],
+        kw["flag_options"][name] = FlagOption(flag["name"],
                                               flag["default"],
                                               flag["description"])
 
