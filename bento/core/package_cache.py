@@ -17,6 +17,7 @@ try:
     from hashlib import md5
 except ImportError:
     import md5
+import warnings
 
 from bento._config \
     import \
@@ -38,27 +39,42 @@ class CachedPackage(object):
     __version__ = "1"
     __magic__ = "BENTOMAGIC"
 
+    def _has_valid_magic(self, db):
+        try:
+            magic = db["magic"]
+            if not magic == self.__magic__:
+                return False
+            else:
+                return True
+        except KeyError:
+            return False
+
+    def _reset(self):
+        self.db = {}
+        self.db["magic"] = CachedPackage.__magic__
+        self.db["version"] = CachedPackage.__version__
+        self._first_time = True
+
     def __init__(self, db_location=DB_FILE):
         self._location = db_location
         self._first_time = False
         if not os.path.exists(db_location):
             ensure_dir(db_location)
-            self.db = {}
-            self.db["magic"] = CachedPackage.__magic__
-            self.db["version"] = CachedPackage.__version__
-            self._first_time = True
+            self._reset()
         else:
-            self.db = cPickle.load(open(db_location))
+            fid = open(db_location)
             try:
-                magic = self.db["magic"]
-                if not magic == self.__magic__:
-                    raise ValueError("Db is not a cached package db !")
-            except KeyError:
-                raise ValueError("Db is not a cached package db !")
+                self.db = cPickle.load(fid)
+                if not self._has_valid_magic(self.db):
+                    warnings.warn("Resetting invalid cached db")
+                    self._reset()
+            finally:
+                fid.close()
 
             version = self.db["version"]
             if version != self.__version__:
-                raise ValueError("Invalid db version")
+                warnings.warn("Resetting invalid version of cached db")
+                self._reset()
 
     def has_changed(self):
         if self.db.has_key("bentos_checksums"):
