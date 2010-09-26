@@ -43,6 +43,7 @@ DataFiles: ply_data
 
 ExtraSourceFiles:
     setup.py,
+    setup_common.py,
     bootstrap.py,
     bento/tests/parsing/functionals/*.py,
     bento/tests/parsing/functionals/*.info,
