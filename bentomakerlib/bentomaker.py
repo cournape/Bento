@@ -88,7 +88,7 @@ def register_commands():
 def set_main():
     # Some commands work without a bento description file (convert, help)
     if not os.path.exists(BENTO_SCRIPT):
-        return None
+        return []
 
     pkg_cache = CachedPackage()
     try:
