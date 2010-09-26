@@ -129,6 +129,9 @@ def raw_to_pkg_kw(raw_dict, user_flags, filename):
         files = []
 
     kw.update(misc_d)
+    if filename is not None:
+        kw["extra_source_files"].append(filename)
+        files.append(filename)
 
     return kw, files
 
@@ -155,9 +158,6 @@ class PackageDescription:
         try:
             data = info_file.read()
             ret = cls.__from_data(data, user_flags, filename)
-            # FIXME: find a better way to automatically include the
-            # bento.info file
-            ret.extra_source_files.append(filename)
             return ret
         finally:
             info_file.close()

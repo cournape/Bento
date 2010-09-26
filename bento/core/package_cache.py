@@ -138,12 +138,7 @@ def _raw_to_options(raw):
 
 def _raw_to_pkg(raw, user_flags, filename):
     kw, files = raw_to_pkg_kw(raw, user_flags, filename)
-    files.append(filename)
-
     pkg = PackageDescription(**kw)
-    # FIXME: find a better way to automatically include the
-    # bento.info file
-    pkg.extra_source_files.append(filename)
     return pkg, files
 
 def _create_objects_no_cached(filename, user_flags, db):
