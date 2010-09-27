@@ -16,7 +16,7 @@ class TestCommand(Command):
         pprint('BLUE', "Running test command....")
         saved = os.getcwd()
 
-        os.chdir("tests")
+        os.chdir("bento/tests")
         try:
             from nose.core import main
             try:
