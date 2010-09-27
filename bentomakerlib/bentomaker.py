@@ -267,8 +267,8 @@ The project was not configured: you need to run 'bentomaker configure' first""")
             raise UsageException("""\
 The project configuration has changed. You need to re-run 'bentomaker configure' first""")
     elif cmd_name == "install":
-        configure_cmd = get_command("build")
-        if not configure_cmd.has_run():
+        build_cmd = get_command("build")
+        if not build_cmd.has_run():
             raise UsageException("""\
 The project was not built: you need to 'bentomaker build' first""")
 
