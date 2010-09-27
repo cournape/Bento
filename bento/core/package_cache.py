@@ -129,7 +129,7 @@ class CachedPackage(object):
         f = tempfile.NamedTemporaryFile(mode="wb", delete=False)
         try:
             cache = cls()
-            cPickle.dump(cache.db["bentos_checksums"], f)
+            cPickle.dump(cPickle.loads(cache.db["bentos_checksums"]), f)
         finally:
             f.close()
             rename(f.name, target)
