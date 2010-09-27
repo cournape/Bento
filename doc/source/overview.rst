@@ -1,29 +1,6 @@
 Overview
 ========
 
-.. Bento is born out of my frustration dealing with distutils/setuptools
-.. idiosyncraties and limitations, especially when working with complex builds
-.. such as numpy, scipy or matplotlib. Distutils is too complex for simple needs,
-.. and too inflexible for complex builds.
-
-.. Philosophy
-.. ----------
-.. 
-.. Bento's main characteristics are:
-.. 
-..     - Pythonic: simple, hackable, explicit and one way to do it.
-..     - Extensibility: avoid tight internal coupling, make it possible to plug-in
-..       real build tools like scons or waf, and enable customization of the
-..       compilation process.
-..     - Take inspiration from existing tools in other communities: autotools,
-..       cabal, etc...
-..     - Internally decouple build, package description and packaging.
-..     - No dependency on any distutils or setuptools code.
-..     - Maintain backward-compatibility through conversion tools instead of
-..       maintaining compatibility with the deeply flawed distutils "API".
-..     - Simpler, and more obvious behavior compared to distutils/setuptools for
-..       simple projects
-
 Bento is based on a declarative package description, which is parsed by the
 different build tools to do the actual work. There are currently two ways to
 create such a package description: by writing it from scratch, or by converting
