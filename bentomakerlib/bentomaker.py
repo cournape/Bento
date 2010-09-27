@@ -180,7 +180,12 @@ def _main(popts):
             run_cmd(cmd_name, cmd_opts)
 
 import yaku.context
-
+# XXX: bentomakerlib.hacks are temporary hacks to signal the user that some
+# commands need reconfigure/build/etc... Once automatic command dependency is
+# implemented, this won't be necessary anymore.
+from bentomakerlib.hacks \
+    import \
+        _read_argv_checksum, _write_argv_checksum, _argv_checksum
 # XXX: The yaku configure stuff is ugly, and introduces a lot of global state.
 class Context(object):
     def __init__(self, cmd, cmd_opts, pkg, top_node):
@@ -210,6 +215,7 @@ class ConfigureContext(Context):
         Context.store(self)
         self.yaku_configure_ctx.store()
         CachedPackage.write_checksums()
+        _write_argv_checksum(_argv_checksum(sys.argv), "configure")
 
 class BuildContext(Context):
     def __init__(self, cmd, cmd_opts, pkg, top_node):
@@ -223,6 +229,9 @@ class BuildContext(Context):
     def store(self):
         Context.store(self)
         self.yaku_build_ctx.store()
+
+        checksum = _read_argv_checksum("configure")
+        _write_argv_checksum(checksum, "build")
 
     def _compute_extension_name(self, extension_name):
         if self.local_node ==  self.top_node:
@@ -271,6 +280,12 @@ The project configuration has changed. You need to re-run 'bentomaker configure'
         if not build_cmd.has_run():
             raise UsageException("""\
 The project was not built: you need to 'bentomaker build' first""")
+        built_config = _read_argv_checksum("build")
+        configured_config = _read_argv_checksum("configure")
+        if built_config != configured_config:
+            raise UsageException("""\
+The project was reconfigured: you need to re-run 'bentomaker build' before \
+installing""")
 
 def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)
