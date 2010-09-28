@@ -25,9 +25,10 @@ The command line interface of bento currently supports 3 stages:
 
 Although those stages are very similar to distutils/setuptools
 mechanism, the implementation is fundamentally different, because each
-stage is as much independent as possible. No python object is directly
-shared between commands - the current bentomaker implementation
-implements each stage as a separate run.
+stage is mostly independent from each other. No python object is
+directly shared between commands - the current bentomaker
+implementation implements each stage as a separate run. Once
+configured, every command has access to all options.
 
 Build manifest and building installers
 --------------------------------------
@@ -53,14 +54,16 @@ particular, the build manifest still refers to installed bits
 relatively to abstract paths, and those paths are resolved when
 building the installers.
 
+WARNING: the build manifest will most likely need to be changed in
+backward incompatible ways, including the API to access it.
+
 Installers conversion
 ~~~~~~~~~~~~~~~~~~~~~
 
 The build manifest is intended to be included in each produced
-installer, for easy convertion between various formats easily. The
-goal is to have idempotent conversion (e.g.  converting an egg to
-wininst and then converting it back to an egg produces the exact same
-egg).
+installer, for convertion between various formats. The goal is to have
+idempotent conversions (e.g.  converting an egg to wininst and then
+converting it back to an egg produces the exact same egg).
 
 We also intend to use build manifest for the upcoming ''nest''
 service, which will contain a database of installed software.

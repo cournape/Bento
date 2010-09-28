@@ -11,16 +11,19 @@ Main features currently implemented
 * Easy integration with native filesystem conventions: every install directory
   is customizable at the configure stage (autoconf-inspired).
 * Building eggs without depending on setuptools.
+* Simple C-extension building framework, with content-based automatic
+  dependency tracking, and parallel build support.
+* Recursive package description support
+* Hooks for customizing arbitrary stages (configure, build, etc...)
+* Windows installer support and basic egg building support.
 
 Future features
 ---------------
 
-* Simple C-extension building framework to cut distutils dependency
-* Scons/waf libraries to interact with Scons_ and Waf_ build tools, so that
-  complex packages can have access to a real build system with dependencies
-  handling.
-* Hooks for customizing arbitrary stages (configure, build, etc...)
-* Conversion to native packages (.deb, .rpm, .exe, .msi, etc...)
+* Scons/waf libraries to interact with Scons_ and Waf_ build tools, so
+  that complex packages can have access to a real build system with
+  dependencies handling.
+* Conversion to native packages (.deb, .rpm, .msi, etc...)
 
 .. _RPM: http://rpm5.org/docs/api/specfile.html
 .. _Cabal: http://www.haskell.org/cabal

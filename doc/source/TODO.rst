@@ -10,18 +10,15 @@ TODO:
     - add mpkg support
     - port stdeb to bento
     - specify hook mechanism
-    - integrate yaku or fbuild
-    - add runtime support to install paths
     - test command support
     - distcheck support
     - think about integration with sphinx for doc
-    - pre/post hooks for every stage of a typical install
     - integration with at least one real build tool (Scons or waf)
     - handle reliable install/uninstall
 
 Not well thought out yet:
-    - supporting everything that pkg_resources does (resource management
-      without __file__ hack, namespace package)
+    - supporting everything that pkg_resources does (namespace
+      package), except multiple-version installs.
 
 Milestone
 =========
@@ -29,17 +26,20 @@ Milestone
 Release 0.0.4
 -------------
 
-    - recursive hook files
-    - being able to build scipy on at least Linux (even if using undocumented
-      features of bento/yaku)
+    - auto-generated config.py file to access ressources without
+      __file__, 
+    - recursive bento description + hook
+    - being able to build scipy on at least Linux (even if using
+      undocumented features of bento/yaku)
     - automatically re-configure if bento.info/bscript are changed
-    - specify commands dependencies with after/before
+    - fixing Parallel runner
 
 Release 0.0.5
 -------------
 
 0.0.5 goals:
 
+    - specify commands dependencies with after/before
     - dynamic version (e.g. svn version appended to the build, etc...)
     - egg <-> wininst lossless conversion (on windows)
     - add basic distutils support
