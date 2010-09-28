@@ -34,7 +34,7 @@ from yaku.utils \
 
 from yaku.tools.ctasks \
     import \
-        shlink_task, apply_libs, apply_libdir, ccprogram_task
+        shlink_task, apply_libs, apply_libdir, ccprogram_task, ccompile_task, apply_cpppath
 
 class ConfigureContext(object):
     def __init__(self):
@@ -69,7 +69,7 @@ def _create_compile_conf_taskgen(conf, name, body, headers,
 
     task_gen = CompiledTaskGen("conf", conf, sources, name)
     task_gen.env.update(copy.deepcopy(conf.env))
-    task_gen.env["INCPATH"] = ""
+    apply_cpppath(task_gen)
 
     tasks = task_gen.process()
 
