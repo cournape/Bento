@@ -1,4 +1,5 @@
 import os
+import distutils.sysconfig
 
 from yaku.utils \
     import \
@@ -20,7 +21,7 @@ def configure(conf):
     conf.log = open(log_filename, "w")
     try:
         check_compiler(conf)
-        conf.env["CPPPATH"].append("/usr/include/python2.6")
+        conf.env["CPPPATH"].append(distutils.sysconfig.get_python_inc())
         if not check_header(conf, "Python.h"):
             raise RuntimeError("Python header not found !")
         check_header(conf, "math.h")
