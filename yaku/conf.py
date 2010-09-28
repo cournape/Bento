@@ -73,7 +73,7 @@ def create_compile_conf_taskgen(conf, name, body, headers,
         run_tasks(conf, builder.ctx.tasks)
         succeed = True
     except TaskRunFailure, e:
-        explanation = str(e)
+        explanation = unicode(e).encode("utf-8")
 
     write_log(conf.log, builder.ctx.tasks, code, succeed, explanation)
     return succeed
@@ -156,7 +156,7 @@ def _create_binary_conf_taskgen(conf, name, body, builder, headers=None,
         run_tasks(conf, tasks)
         succeed = True
     except TaskRunFailure, e:
-        explanation = str(e)
+        explanation = unicode(e).encode("utf-8")
 
     write_log(conf.log, tasks, code, succeed, explanation)
     return succeed
@@ -247,7 +247,7 @@ def ccompile(conf, sources):
         run_tasks(conf, builder.ctx.tasks)
         succeed = True
     except TaskRunFailure, e:
-        explanation = str(e)
+        explanation = unicode(e).encode("utf-8")
 
     code = sources[0].read()
     write_log(conf.log, builder.ctx.tasks, code, succeed, explanation)
