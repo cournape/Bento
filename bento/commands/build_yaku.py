@@ -140,7 +140,7 @@ def build_extensions(extensions, yaku_build_ctx, builder_callbacks,
                 environments, inplace, verbose, builder_callbacks)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
-            msg = e.explain
+            msg = e.explain.encode("utf-8")
         else:
             msg = ""
         msg += "command '%s' failed (see above)" % " ".join(e.cmd)
@@ -153,7 +153,7 @@ def build_compiled_libraries(libraries, yaku_build_ctx, callbacks,
                 environments, inplace, verbose, callbacks)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
-            msg = e.explain
+            msg = e.explain.encode("utf-8")
         else:
             msg = ""
         msg += "command '%s' failed (see above)" % " ".join(e.cmd)
