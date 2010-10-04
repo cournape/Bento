@@ -132,6 +132,8 @@ def raw_to_pkg_kw(raw_dict, user_flags, filename):
     if filename is not None:
         kw["extra_source_files"].append(filename)
         files.append(filename)
+    kw["extra_source_files"].extend(misc_d["hook_files"])
+    files.extend(misc_d["hook_files"])
 
     return kw, files
 
@@ -240,7 +242,6 @@ class PackageDescription:
         _set_metadata(self, **kw)
 
         if hook_files is not None:
-            self.extra_source_files.extend(hook_files)
             self.hook_files = hook_files
         else:
             self.hook_files = []
