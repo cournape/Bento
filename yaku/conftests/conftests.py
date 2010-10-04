@@ -47,8 +47,7 @@ int main()
     src = "\n".join(code)
 
     conf.start_message("Checking for declaration %s" % symbol)
-    ret = create_compile_conf_taskgen(conf, "check_cpp_symbol", src,
-                        headers, "Checking for declaration %s")
+    ret = create_compile_conf_taskgen(conf, "check_cpp_symbol", src, headers)
     conf.conf_results.append({"type": "decl", "value": symbol,
                               "result": ret})
     if ret:
