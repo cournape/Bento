@@ -72,6 +72,7 @@ def _create_compile_conf_taskgen(conf, name, body, headers,
     apply_cpppath(task_gen)
 
     tasks = task_gen.process()
+    conf.last_task = tasks[-1]
 
     for t in tasks:
         t.disable_output = True
