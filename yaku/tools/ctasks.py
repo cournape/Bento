@@ -90,10 +90,23 @@ def ccprogram_task(self, name):
     return [task]
 
 def apply_cpppath(task_gen):
-    paths = task_gen.env["CPPPATH"]
-    task_gen.env["INCPATH"] = [
-            task_gen.env["CPPPATH_FMT"] % p for p in paths]
+    cpppaths = task_gen.env["CPPPATH"]
+    implicit_paths = set([s.parent.srcpath() \
+                          for s in task_gen.sources])
+    srcnode = task_gen.sources[0].ctx.srcnode
 
+    relcpppaths = []
+    for p in cpppaths:
+        if not os.path.isabs(p):
+            node = srcnode.find_node(p)
+            assert node is not None, "could not find %s" % p
+            relcpppaths.append(node.bldpath())
+        else:
+            relcpppaths.append(p)
+    cpppaths = list(implicit_paths) + relcpppaths
+    task_gen.env["INCPATH"] = [
+            task_gen.env["CPPPATH_FMT"] % p
+            for p in cpppaths]
 def apply_libs(task_gen):
     libs = task_gen.env["LIBS"]
     task_gen.env["APP_LIBS"] = [
