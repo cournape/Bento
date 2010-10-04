@@ -110,8 +110,7 @@ int main ()
 }
 """ % {"type": type_name}
 
-    ret = create_compile_conf_taskgen(conf, "check_type_size", body,
-            headers)
+    ret = create_compile_conf_taskgen(conf, "check_type_size", body, headers)
     if not ret:
         conf.end_message("no (cannot compile type)")
         return False
