@@ -107,7 +107,7 @@ class Task(object):
                 else:
                     self.log.write(stdout.encode("utf-8"))
             else:
-                sys.stderr.write(stdout)
+                sys.stderr.write(stdout.encode("utf-8"))
         except OSError, e:
             raise TaskRunFailure(cmd, str(e))
         except WindowsError, e:
