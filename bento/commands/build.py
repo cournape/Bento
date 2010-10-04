@@ -64,12 +64,8 @@ Usage:   bentomaker build [OPTIONS]."""
         else:
             verbose = True
 
-        s = get_configured_state()
-        self.pkg = s.pkg
-        pkg = s.pkg
-
-        extensions = get_extensions(pkg, ctx.top_node)
-        libraries = get_compiled_libraries(pkg, ctx.top_node)
+        extensions = get_extensions(ctx.pkg, ctx.top_node)
+        libraries = get_compiled_libraries(ctx.pkg, ctx.top_node)
 
         if ctx.get_user_data()["use_distutils"]:
             self.build_type = "distutils"
@@ -97,7 +93,7 @@ Usage:   bentomaker build [OPTIONS]."""
             return _build_python_files(pkg, ctx.top_node)
         self.section_writer.sections_callbacks["pythonfiles"] = \
                 build_packages
-        self.section_writer.update_sections(pkg)
+        self.section_writer.update_sections(ctx.pkg)
 
     def register_builder(self, extension_name, builder):
         """Register a builder to override the default builder for a
@@ -113,7 +109,7 @@ Usage:   bentomaker build [OPTIONS]."""
         self._extension_callback[extension_name] = builder
 
     def shutdown(self, ctx):
-        self.section_writer.store(IPKG_PATH)
+        self.section_writer.store(IPKG_PATH, ctx.pkg)
 
 class SectionWriter(object):
     def __init__(self):
@@ -133,9 +129,8 @@ class SectionWriter(object):
         for name, updater in self.sections_callbacks.iteritems():
             self.sections[name].update(updater(pkg))
 
-    def store(self, filename):
+    def store(self, filename, pkg):
         s = get_configured_state()
-        pkg = s.pkg
         scheme = dict([(k, s.paths[k]) for k in s.paths])
 
         meta = ipkg_meta_from_pkg(pkg)
