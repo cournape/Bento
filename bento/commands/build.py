@@ -2,7 +2,7 @@ import os
 import sys
 
 from bento.core.utils import \
-        find_package, OrderedDict
+        find_package, OrderedDict, subst_vars, rename, ensure_dir
 from bento.installed_package_description import \
         InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
 from bento._config \
@@ -152,7 +152,22 @@ def _build_python_files(pkg, top_node):
     return {"library": py_section}
 
 def build_bento_files(pkg):
+    s = get_configured_state()
+    scheme = s.paths
     if pkg.config_py is not None:
+        tmp_config = os.path.join(BUILD_DIR, "__tmp_config.py")
+        fid = open(tmp_config, "w")
+        try:
+            for name, value in scheme.items():
+                fid.write('%s = "%s"\n' % (name.upper(), subst_vars(value, scheme)))
+        finally:
+            fid.close()
+        target = os.path.join(os.path.dirname(tmp_config),
+                              pkg.config_py)
+        ensure_dir(target)
+        rename(tmp_config, target)
+        print target
+
         section = InstalledSection("bentofiles", "config",
                 os.path.join("$_srcrootdir", BUILD_DIR),
                 "$sitedir", [pkg.config_py])

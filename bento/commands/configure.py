@@ -189,19 +189,6 @@ Usage: bentomaker configure [OPTIONS]"""
             if pkg.extensions:
                 yaku_ctx.use_tools(["pyext"])
 
-
-        if pkg.config_py is not None:
-            tmp_config = os.path.join(BUILD_DIR, "__tmp_config.py")
-            fid = open(tmp_config, "w")
-            try:
-                for name, value in scheme.items():
-                    fid.write('%s = "%s"\n' % (name.upper(), subst_vars(value, scheme)))
-            finally:
-                fid.close()
-            target = os.path.join(BUILD_DIR, pkg.config_py)
-            ensure_dir(target)
-            rename(tmp_config, target)
-
         s = ConfigureState(BENTO_SCRIPT, pkg, scheme, flag_vals,
                            self.user_data)
         s.dump()
