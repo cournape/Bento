@@ -31,14 +31,16 @@ Release 0.0.4
     - recursive bento description + hook
     - being able to build scipy on at least Linux (even if using
       undocumented features of bento/yaku)
-    - automatically re-configure if bento.info/bscript are changed
-    - fixing Parallel runner
+    - manual command dependencies (signal when configure or build
+      needs to be rerun).
 
 Release 0.0.5
 -------------
 
 0.0.5 goals:
 
+    - add an option to hooks to avoid running during help
+    - fixing yaku Parallel runner
     - specify commands dependencies with after/before
     - dynamic version (e.g. svn version appended to the build, etc...)
     - egg <-> wininst lossless conversion (on windows)
