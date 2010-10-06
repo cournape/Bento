@@ -81,6 +81,37 @@ TODO
 Retrieving data files at runtime
 ================================
 
+It is often necessary to retrieve data files from your python code. The
+simplest way to do so is to use __file__ and refer to data files relatively to
+python code. This is not very flexible, because it requires to deal with
+platform idiosyncraties w.r.t. files location.  Setuptools and its descendents
+has an alternative mechanism to retrieve resources at runtime, implemented in
+the pkg_resource module.
+
+Bento uses a much simpler system, based on a simple python module generated at
+install time, containing all the relevant information. This is an opt-in
+feature::
+
+    ConfigPy: foo/__bento_config.py
+
+This tells bento to generate a module, and install it into
+foo/__bento_config.py. The path is always relative to site-packages.
+The file looks as follows::
+
+    DOCDIR = "/usr/local/share/doc/config_py"
+    SHAREDSTATEDIR = "/usr/local/com"
+    ...
+
+So you can import every path variable with their expanded value in
+your package::
+
+    try:
+        from foo.__bento_config import DOCDIR, SHAREDSTATEDIR
+    except ImportError:
+        # Default values (so that the package may be imported/used without
+        # being built)
+        DOCDIR = ...
+
 Recursive package description
 =============================
 
