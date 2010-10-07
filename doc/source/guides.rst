@@ -117,8 +117,50 @@ your package::
 Recursive package description
 =============================
 
-.. If you have a complex package with a lot of python subpackages, which require
-.. custom configuration, doing everything in
+
+If you have a package with a lot of python subpackages which require
+custom configurations, doing everything in one bento.info file is
+restrictive. Bento has a simple recursive feature so that one
+bento.info can refer to another bento.info::
+
+    ...
+    Subento: foo, bar
+
+The subento field indicates to bento that it should look for
+bento.info in both foo/ and bar/ directories. Such sub-bento.info
+files support a strict subset of the top bento.info. For example, no
+metadata may be defined in sub-bento.info.
+
+Simple example
+--------------
+
+Let's assume that you have a software with the packages foo, foo.bar
+and foo.foo. The simplest way to define this software would be::
+
+    ...
+    Library:
+        Packages: foo, foo.bar, foo.fubar
+
+Alternatively, an equivalent description, using the recursive feature::
+
+    ...
+    Subento: foo
+
+    Library:
+        Package: foo
+
+and the foo/bento.info::
+
+    ...
+    Library:
+        Packages: bar, fubar
+
+The packages are defined relatively to the directory where the subento
+file is located. Obviously, in this case, it is overkill, but for
+complex, deeply nested packages (like scipy or twisted), this makes
+the bento.info more readable. It is especially useful when you use
+this with the hook file mechanism, where each subento file can drive a
+part of the configure/build through command hooks and overrides.
 
 Hook files
 ==========
