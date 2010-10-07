@@ -146,9 +146,47 @@ write::
 Adding compiled libraries
 =========================
 
-Similarly::
+Similarly, if you have a compiled library (a C library which is not
+importable from python)::
 
     Library:
         CompiledLibrary: foo
             Sources: foo.c
 
+Note that there is only one Library section, i.e. a package with both
+extensions and compiled libraries would look like::
+
+    Library:
+        Extension: _hello
+            Sources: hellomodule.c
+        CompiledLibrary: foo
+            Sources: foo.c
+
+and not like::
+
+    Library:
+        Extension: _hello
+            Sources: hellomodule.c
+    Library:
+        CompiledLibrary: foo
+            Sources: foo.c
+
+Adding executables
+==================
+
+Many python softwares are libraries, and their only use is from a
+python interpreter. Nevertheless, it is relatively common to provide a
+full program, be it GUI or command line tool. Bento uses a feature
+similar to setuptools to help you create "entry points" which work on
+both unix and windows systems::
+
+    Executable: foomaker
+        Module: foomakerlib.foomaker
+        Function: main
+
+This tells bento to create a script called foomaker (foomaker.exe on
+windows), which calls the main function from the foomakerlib.foomaker
+python module. Those scripts are automatically installed in $bindir
+(which translates to /usr/local/bin by default on unix, and
+C:\Python*/Scripts on windows, both values which may be changed by the
+user at the configure stage).
