@@ -166,7 +166,6 @@ def build_bento_files(pkg):
                               pkg.config_py)
         ensure_dir(target)
         rename(tmp_config, target)
-        print target
 
         section = InstalledSection("bentofiles", "config",
                 os.path.join("$_srcrootdir", BUILD_DIR),
