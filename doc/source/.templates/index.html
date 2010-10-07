@@ -20,10 +20,10 @@
 	  installer inluded with bento use sensible
 	  platform-dependent defaults, you can install any file
 	  anywhere.</li>
-	  <li><b>Simple data files handling</b>: installing
-	  configuration files, library files, etc... is now possible.
-	  The install paths do not need to be hardcoded, and may be
-	  customized at will through bento command line interface</li>
+      <li><b>Simple data files handling</b>: installing configuration
+      files, library files, etc... at the right place is now possible.
+      The install paths do not need to be hardcoded, and may be
+      customized at will through bento command line interface</li>
 	  <li><b>Layered internal architecture</b>: packaging, command
 	  line interface, are clearly separated.
 	  </li>
@@ -32,6 +32,13 @@
 	  build tool for C extensions, but it is possible to use
 	  something else like waf, scons or even distutils (for
 	  compatibility reason).
+	  </li>
+      <li><b>Scale down</b>: a core principle of bento is to make
+      simple softwares easier to package, and avoid too many choices.
+      <li><b>Scale up</b>: on the other hand, thanks to extensive
+      extensibility, bento can be used for complex packages. Bento is
+      already able to build numpy and scipy, with much less
+      boilerplate than with the current numpy distutils extensions.
 	  </li>
   </ul>
   <h2>User Sections</h2>
