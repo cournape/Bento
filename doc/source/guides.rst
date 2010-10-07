@@ -244,10 +244,74 @@ which enable the following:
       configure time
     * add/remove/modify extensions, packages dynamically
 
+For example::
+
+    from bento.commands.hooks import post_configure
+
+    @post_configure
+    def pconfigure(ctx):
+        for ext_name in pkg.extensions:
+            # List the sources of every extension
+            print pkg.extensions[ext_name].sources
+
+This may not look like much, but this ability to query extensions
+inside your hook file makes integration with external build tools much
+easier.
+
 *Note: unfortunately, there is still no public API for safe
 PackageDescription instances access. Most read access should be safe,
 but modifying package description members likely to break in the
 future*
+
+Hook and recursive package definitions
+--------------------------------------
+
+TODO
+
+Hook and yaku: customizing extensions compilation
+-------------------------------------------------
+
+*Note: this is almost guaranteed to change, I am still deeply
+unsatisfied with the API. This should illustrate a few core features
+of bento w.r.t. to building extension, though. IOW, the API will
+change, but the features will stay*
+
+Customizing compilation of extensions is a significant pain point in
+distutils. Bento includes by default a simple build tool, yaku. Bento
+has a few API to make interaction with yaku easier, in particular for
+compilation customization::
+
+    @pre_build
+    def pbuild(ctx):
+        env = {"CFLAGS": ["-Os"]}
+        ctx.register_environment("foo", env)
+
+The register_environment will update the compilation environment for
+the foo extension. Each extension can register a different environment
+through this mechanism. Env can contain any key as used by yaku (that
+includes the compiler, compiler flags, etc...), but note that new
+flags are appended to existing values.
+
+You can also register entirely new builder for a given extension. This
+requires dealing with yaku relatively low-level API, but it enables
+basically any kind of transformation, like compiling each source
+differently, associating new tools to existing source suffix, etc....
+This is unfortunately the only way to override environments ATM::
+
+    @pre_build
+    def pbuild(ctx):
+        def builder(bld, extension, verbose):
+            # Environments are attached to builders, and cloning a
+            # builder attach a fresh copied dictionary
+            _blder = bld.builders["pyext"].clone()
+            # Change in the blder.env will not affect any other
+            # extension
+            _blder.env["PYEXT_CC"] = ["clang"]
+            return _blder(extension.name, extension.sources)
+        ctx.register_builder("foo", builder)
+
+You should refer to yaku examples directory to get an idea of what's
+possible.
 
 Conditional packaging
 =====================
