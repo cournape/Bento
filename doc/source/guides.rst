@@ -81,12 +81,14 @@ TODO
 Retrieving data files at runtime
 ================================
 
-It is often necessary to retrieve data files from your python code. The
-simplest way to do so is to use __file__ and refer to data files relatively to
-python code. This is not very flexible, because it requires to deal with
-platform idiosyncraties w.r.t. files location.  Setuptools and its descendents
-has an alternative mechanism to retrieve resources at runtime, implemented in
-the pkg_resource module.
+It is often necessary to retrieve data files from your python code.
+For example, you may have a configuration file which needs to be read
+at startup. The simplest way to do so is to use __file__ and refer to
+data files relatively to python code. This is not very flexible,
+because it requires to deal with platform idiosyncraties w.r.t. files
+location.  Setuptools and its descendents has an alternative mechanism
+to retrieve resources at runtime, implemented in the pkg_resource
+module.
 
 Bento uses a much simpler system, based on a simple python module generated at
 install time, containing all the relevant information. This is an opt-in
