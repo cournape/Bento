@@ -1,7 +1,10 @@
 import os
 import StringIO
 
-import simplejson
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from bento.core.utils import \
     subst_vars, normalize_path, unnormalize_path
@@ -69,7 +72,7 @@ class InstalledPkgDescription(object):
     def from_egg(cls, egg_path):
         zid = compat.ZipFile(egg_path)
         try:
-            data = simplejson.loads(zid.read("EGG-INFO/ipkg.info"))
+            data = json.loads(zid.read("EGG-INFO/ipkg.info"))
             return cls.from_json_dict(data)
         finally:
             zid.close()
@@ -80,13 +83,13 @@ class InstalledPkgDescription(object):
 
     @classmethod
     def from_string(cls, s):
-        return cls.__from_data(simplejson.loads(s))
+        return cls.__from_data(json.loads(s))
 
     @classmethod
     def from_file(cls, filename):
         fid = open(filename)
         try:
-            return cls.__from_data(simplejson.load(fid))
+            return cls.__from_data(json.load(fid))
         finally:
             fid.close()
 
@@ -168,9 +171,9 @@ class InstalledPkgDescription(object):
                 raise ValueError("Unknown section %s" % tp)
         data["file_sections"] = file_sections
         if os.environ.has_key("BENTOMAKER_PRETTY"):
-            simplejson.dump(data, fid, sort_keys=True, indent=4)
+            json.dump(data, fid, sort_keys=True, indent=4)
         else:
-            simplejson.dump(data, fid, separators=(',', ':'))
+            json.dump(data, fid, separators=(',', ':'))
 
     def resolve_paths(self, src_root_dir="."):
         self.path_variables['_srcrootdir'] = src_root_dir
