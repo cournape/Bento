@@ -40,7 +40,7 @@ This will install the file top_dir/fubar/fubar1 into
 /usr/man/man1/fubar/fubar1.
 
 Flexible install scheme
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
 Hardcoding the target directory as above is not flexibe. The user may
 want to install manpages somewhere else. Bento defines a set of
@@ -133,11 +133,11 @@ complex packages may require a more advanced configuration, e.g.:
     * Define new bento commands
     * Customization of the build process (e.g. compiler flags, linked
       libraries, etc...)
-    * Adding new tools in the build process (cython, source code generator,
+    * Add new tools in the build process (cython, source code generator,
       etc...)
-    * Using a different build tool than the one included in bento (waf, scons
+    * Use of a different build tool than the one included in bento (waf, scons
       or even make).
-    * addition new options to an existing command
+    * add new options to an existing command
 
 Instead of craming too many features in the bento.info, bento allows you to add
 one (or more) "hook" files, which are regular python modules, but under the
