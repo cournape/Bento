@@ -2,7 +2,7 @@ import os
 try:
     from hashlib import md5
 except ImportError:
-    import md5
+    from md5 import md5
 import cPickle
 
 def _argv_checksum(argv):

@@ -11,12 +11,13 @@ db["parsed_dict"]: pickled raw parsed dictionary (as returned by
                    raw_parse, before having been seen by the visitor)
 """
 import os
+import sys
 import tempfile
 import cPickle
 try:
     from hashlib import md5
 except ImportError:
-    import md5
+    from md5 import md5
 import warnings
 
 from bento._config \
