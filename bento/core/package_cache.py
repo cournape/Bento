@@ -33,7 +33,7 @@ from bento.core.options \
         raw_to_options_kw, PackageOptions
 from bento.core.utils \
     import \
-        ensure_dir, rename
+        ensure_dir, safe_write
 
 class CachedPackage(object):
     __version__ = "1"
@@ -117,22 +117,15 @@ class CachedPackage(object):
                 return _raw_to_options(raw)
 
     def close(self):
-        f = tempfile.NamedTemporaryFile(mode="wb", delete=False)
-        try:
-            cPickle.dump(self.db, f)
-        finally:
-            f.close()
-            rename(f.name, self._location)
+        safe_write(self._location, lambda fd: cPickle.dump(self.db, fd))
 
     @classmethod
     def write_checksums(cls, target=CHECKSUM_DB_FILE):
-        f = tempfile.NamedTemporaryFile(mode="wb", delete=False)
-        try:
+        def _writer(fd):
             cache = cls()
-            cPickle.dump(cPickle.loads(cache.db["bentos_checksums"]), f)
-        finally:
-            f.close()
-            rename(f.name, target)
+            cPickle.dump(cPickle.loads(cache.db["bentos_checksums"]),
+                         fd)
+        safe_write(target, _writer)
 
     @classmethod
     def has_changed(cls, source=CHECKSUM_DB_FILE):
