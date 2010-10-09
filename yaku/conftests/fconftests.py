@@ -164,7 +164,7 @@ flags (or to define the %s variable)""" % FC_VERBOSE_FLAG)
         if ret:
             stdout = conf.stdout_cache[conf.last_task.signature()]
             flags = parse_flink(stdout)
-            conf.end_message(" ".join(flags))
+            conf.end_message("%r" % " ".join(flags))
             conf.env[FC_RUNTIME_LDFLAGS] = flags
             return True
         else:
