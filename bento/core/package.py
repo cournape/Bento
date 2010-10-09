@@ -131,10 +131,11 @@ def raw_to_pkg_kw(raw_dict, user_flags, filename):
 
     kw.update(misc_d)
     if filename is not None:
-        kw["extra_source_files"].append(filename)
         files.append(filename)
-    kw["extra_source_files"].extend(misc_d["hook_files"])
     files.extend(misc_d["hook_files"])
+    # XXX: Do we want to automatically add the hook and bento files in extra
+    # source files at the PackageDescription level ?
+    kw["extra_source_files"].extend(files)
 
     return kw, files
 
