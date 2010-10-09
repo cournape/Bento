@@ -1,7 +1,7 @@
 Version 0.0.4
 =============
 
-Released on . Main features:
+Released on 9th October 2010. Main features:
 
     - Add ConfigPy option to produce a simple config_py module. At the
       moment, this module may be used to access installed data at
@@ -12,6 +12,9 @@ Released on . Main features:
       ply/yaku/simplejson to ease packaging for OS vendors
     - Recursive bento and hook files for complicated, nested packages
       (scipy, twisted)
+    - Numerous features to build numpy and scipy - experimental bento-based
+      build branches for both are available on http://github.com/cournape
+      (_bento_build branches)
 
 Version 0.0.3
 =============
