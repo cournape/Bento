@@ -1,6 +1,5 @@
-from bento.commands.hooks import recurse, pre_configure, override
+from bento.commands.hooks import pre_configure, override
 
-@recurse(["foo/bscript", "bar/bscript"])
 @pre_configure
 def pconfigure(ctx):
     # Top extensions only

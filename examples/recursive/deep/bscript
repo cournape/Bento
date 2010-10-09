@@ -1,9 +1,8 @@
 from bento.commands.hooks \
     import \
-        post_configure, recurse
+        post_configure
 
-@recurse(["foo/bar2/bscript", "foo/bar1/bscript"])
 @post_configure
 def configure(ctx):
     yctx = ctx.yaku_configure_ctx
-    yctx.use_tools(["ctasks"])
+    yctx.use_tools(["ctasks", "pyext"])

@@ -2,7 +2,7 @@ Name: Foo
 
 Subento: foo, bar
 
-HookFile: bscript
+HookFile: bscript, foo/bscript, bar/bscript
 
 Library:
     Extension: _top

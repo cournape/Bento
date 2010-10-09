@@ -3,7 +3,11 @@ Version: 1.0
 
 Subento: foo
 
-HookFile: bscript
+HookFile:
+    bscript,
+    foo/bar1/bscript,
+    foo/bar2/bscript,
+    foo/bar2/fubar/bscript
 
 Library:
     Packages: foo
