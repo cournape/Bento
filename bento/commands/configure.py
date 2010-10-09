@@ -193,7 +193,7 @@ Usage: bentomaker configure [OPTIONS]"""
         if not self.user_data["use_distutils"]:
             yaku_ctx = ctx.yaku_configure_ctx
             if extensions or libraries:
-                yaku_ctx.use_tools(["pyext"])
+                yaku_ctx.use_tools(["ctasks", "pyext"])
 
         s = ConfigureState(BENTO_SCRIPT, pkg, scheme, flag_vals,
                            self.user_data)
