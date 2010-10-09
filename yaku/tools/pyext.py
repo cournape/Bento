@@ -108,7 +108,7 @@ def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
     pyenv["PYEXT_CFLAGS"] = pyenv["PYEXT_BASE_CFLAGS"] + \
             pyenv["PYEXT_OPT"] + \
             pyenv["PYEXT_SHARED"]
-    pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"].split(" ")
+    pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
     return pyenv
 
 def pycc_hook(self, node):

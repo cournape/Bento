@@ -84,7 +84,7 @@ def get_configuration(compiler_type=None):
 
         env["SHLINK"] = sysconfig.get_config_var("LDSHARED").split(" ")
         env["SO"] = sysconfig.get_config_var("SO")
-        env["LDFLAGS"] = sysconfig.get_config_var("LDFLAGS")
+        env["LDFLAGS"] = sysconfig.get_config_var("LDFLAGS").split()
         if "-pthread" in sysconfig.get_config_var("LDFLAGS"):
             env["LDFLAGS"].insert(0, "-pthread")
         env["FRAMEWORKS"] = []
