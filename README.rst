@@ -33,6 +33,11 @@ The main features of bento are:
       automatically rebuilt)
     * Parallel build support for C extensions
     * Easily bundable, one-file distribution to avoid extra-dependencies
+    * Hooks to complement or override commands
+    * Low-level interface to the included build tool to override/change any
+      compilation parameter (compilation flag, compiler, etc...)
+    * optionally generate a python module with all installation paths to avoid
+      relying on __file__ to retrieve resources.
 
 Planned features:
 
@@ -41,7 +46,6 @@ Planned features:
       egg, etc...)
     * Provide API to enable Linux distributors to write simple extensions for
       packaging bento-packages as they see fit
-    * Pre/Post stages hooks
     * Distutils compatibility mode, driven by the bento.info file
     * Protocol to integrate with real build tools like scons, waf or
       make
@@ -63,6 +67,10 @@ Bento discussion happen on NumPy Mailing list, and development is on
 
 BENTO IS IN (VERY) EARLY STAGES: ANY PRODUCTION USAGE IS STRONGLY DISCOURAGED
 AT THIS POINT.
+
+Nevertheless, bento is already capable of building numpy and scipy on some
+platforms, with less code and more flexibility than the current distutils-based
+extensions.
 
 .. _github: http://github.com/cournape/bento.git
 .. _issue-tracker: http://github.com/cournape/bento/issues
