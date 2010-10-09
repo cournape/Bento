@@ -24,6 +24,9 @@ from bento._config \
 
 from bento.commands.core import \
         Command, SCRIPT_NAME, Option, OptionGroup
+from bento.core.subpackage \
+    import \
+        get_extensions, get_compiled_libraries, get_packages
 from bento.commands.errors \
     import \
         UsageException
@@ -184,9 +187,12 @@ Usage: bentomaker configure [OPTIONS]"""
         flag_vals = set_flag_options(flag_opts, o)
 
         pkg = ctx.pkg
+
+        extensions = get_extensions(ctx.pkg, ctx.top_node)
+        libraries = get_compiled_libraries(ctx.pkg, ctx.top_node)
         if not self.user_data["use_distutils"]:
             yaku_ctx = ctx.yaku_configure_ctx
-            if pkg.extensions:
+            if extensions or libraries:
                 yaku_ctx.use_tools(["pyext"])
 
         s = ConfigureState(BENTO_SCRIPT, pkg, scheme, flag_vals,
