@@ -186,29 +186,33 @@ def cpu_count():
 if __name__ == "__main__":
     print expand_glob("*.py", dirname(__file__))
 
-def validate_package(pkg_name, basedir):
+def validate_package(pkg_name, base_node):
     """Given a python package name, check whether it is indeed an existing
     package.
 
-    Package is looked relatively to the current directory."""
+    Package is looked relatively to base_node."""
     # XXX: this function is wrong - use the code from setuptools
     pkg_dir = pkg_name.replace(".", os.path.sep)
-    basedir = os.path.join(basedir, pkg_dir)
-    init = os.path.join(basedir, '__init__.py')
-    if not os.path.exists(init):
+    pkg_node = base_node.find_node(pkg_dir)
+    if pkg_node is None:
+        raise InvalidPackage("directory %s in %s does not exist" % (pkg_dir, base_node.abspath()))
+    init = pkg_node.find_node('__init__.py')
+    if init is None:
         raise InvalidPackage(
                 "Missing __init__.py in package %s (in directory %s)"
-                % (pkg_name, basedir))
-    return basedir
+                % (pkg_name, base_node.abspath()))
+    return pkg_node
 
-def find_package(pkg_name, basedir=''):
-    """Given a python package name, find all its modules relatively to basedir.
-
-    If basedir is not given, look relatively to the current directory."""
-    basedir = validate_package(pkg_name, basedir)
-    return [os.path.join(basedir, f)
-                for f in
-                    os.listdir(basedir) if f.endswith('.py')]
+def find_package(pkg_name, base_node):
+    """Given a python package name, find all its modules relatively to
+    base_node."""
+    pkg_node = validate_package(pkg_name, base_node)
+    ret = []
+    for f in pkg_node.listdir():
+        if f.endswith(".py"):
+            node = pkg_node.find_node(f)
+            ret.append(node.path_from(base_node))
+    return ret
 
 def ensure_dir(path):
     d = os.path.dirname(path)

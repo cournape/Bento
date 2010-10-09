@@ -47,9 +47,9 @@ Usage:   bentomaker sdist [OPTIONS]."""
         tarname = tarball_basename(pkg.name, pkg.version) + ".tar.gz"
         self.tarname = os.path.abspath(os.path.join("dist", tarname))
         self.topdir = "%s-%s" % (pkg.name, pkg.version)
-        create_tarball(pkg, self.tarname, self.topdir)
+        create_tarball(pkg, ctx.top_node, self.tarname, self.topdir)
 
-def create_tarball(pkg, tarname=None, topdir=None):
+def create_tarball(pkg, top_node, tarname=None, topdir=None):
     if tarname is None:
         basename = tarball_basename(pkg.name, pkg.version)
         tarname = "%s.tar.gz" % basename
@@ -59,9 +59,8 @@ def create_tarball(pkg, tarname=None, topdir=None):
     ensure_dir(tarname)
     tf = tarfile.open(tarname, "w:gz")
     try:
-        for file in file_list(pkg):
+        for file in file_list(pkg, top_node):
             tf.add(file, os.path.join(topdir, file))
     finally:
         tf.close()
-
     return tarname

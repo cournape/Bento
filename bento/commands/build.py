@@ -139,13 +139,12 @@ class SectionWriter(object):
         p.write(filename)
 
 def _build_python_files(pkg, top_node):
-    # FIXME: root_src
-    root_src = ""
     python_files = []
     for p in get_packages(pkg, top_node):
-        python_files.extend(find_package(p, root_src))
+        python_files.extend(find_package(p, top_node))
     for m in pkg.py_modules:
-        python_files.append(os.path.join(root_src, '%s.py' % m))
+        node = top_node.find_node("%s.py" % m)
+        python_files.append(node.path_from(node))
     py_section = InstalledSection("pythonfiles", "library",
             "$_srcrootdir", "$sitedir", python_files)
 

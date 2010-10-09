@@ -4,6 +4,8 @@ from copy \
     import \
         deepcopy, copy
 
+import bento
+
 from bento.core.pkg_objects import \
         Extension, DataFiles, Executable, CompiledLibrary
 from bento.core.meta import \
@@ -18,7 +20,7 @@ from bento.compat.api \
         relpath
 from bento.core.subpackage \
     import \
-        SubPackageDescription
+        SubPackageDescription, get_extensions, get_compiled_libraries, get_packages
 from bento.core.parse_helpers \
     import \
         extract_top_dicts, extract_top_dicts_subento
@@ -253,8 +255,9 @@ class PackageDescription:
         else:
             self.config_py = config_py
 
-def file_list(pkg, root_src=""):
-    # FIXME: root_src
+def file_list(pkg, top_node):
+    root_src = top_node.abspath()
+
     files = []
     for entry in pkg.extra_source_files:
         try:
@@ -262,19 +265,23 @@ def file_list(pkg, root_src=""):
         except IOError, e:
             raise InvalidPackage("Error in ExtraSourceFiles entry: %s" % e)
 
-    for p in pkg.packages:
-        files.extend(find_package(p, root_src))
+    for p in get_packages(pkg, top_node):
+        files.extend(find_package(p, top_node))
 
     for m in pkg.py_modules:
         files.append(os.path.join(root_src, '%s.py' % m))
 
-    for e in pkg.extensions.values() + pkg.compiled_libraries.values():
+    extensions = get_extensions(pkg, top_node)
+    libraries = get_compiled_libraries(pkg, top_node)
+    for e in extensions.values() + libraries.values():
         for source in e.sources:
-            files.append(os.path.join(root_src, source))
+            node = top_node.find_node(source)
+            files.append(node.path_from(top_node))
     for section in pkg.data_files.values():
         for entry in section.files:
-            files.extend([os.path.join(root_src, section.source_dir, f) 
-                          for f in expand_glob(entry, os.path.join(root_src, section.source_dir))])
+            for f in expand_glob(entry, os.path.join(root_src, section.source_dir)):
+                node = top_node.find_node(os.path.join(section.source_dir, f))
+                files.append(node.path_from(top_node))
 
     return files
 
