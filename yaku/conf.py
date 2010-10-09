@@ -90,6 +90,7 @@ def _create_compile_conf_taskgen(conf, name, body, headers,
     return succeed
 
 def write_log(log, tasks, code, succeed, explanation):
+    log.write("=" * 79 + "\n")
     log.write("Tested code is:\n")
     log.write("~~~~~~~~~\n")
     log.write(code)
@@ -98,7 +99,10 @@ def write_log(log, tasks, code, succeed, explanation):
     if succeed:
         log.write("---> Succeeded !\n")
     else:
-        log.write("---> Failed: %s !\n" % explanation)
+        log.write("---> Failure !\n")
+        log.write("~~~~~~~~~~~~~~\n")
+        log.write(explanation)
+        log.write("~~~~~~~~~~~~~~\n")
 
     s = StringIO()
     s.write("Command sequence was:\n")
