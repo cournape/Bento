@@ -71,8 +71,12 @@ def flatten_subpackage_extensions(spkg, top_node):
     ret = {}
     for name, extension in spkg.extensions.items():
         full_name = spkg.rdir + ".%s" % name
-        sources = [local_node.find_node(s).path_from(top_node) \
-                   for s in extension.sources]
+        sources = []
+        for s in extension.sources:
+            node = local_node.find_node(s)
+            if node is None:
+                raise IOError("File %s not found" % s)
+            sources.append(node.path_from(top_node))
         include_dirs = [
                 local_node.find_node(d).path_from(top_node) \
                 for d in extension.include_dirs]
