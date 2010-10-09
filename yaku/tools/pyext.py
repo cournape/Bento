@@ -346,7 +346,9 @@ def apply_frameworks(task_gen):
     # XXX: do this correctly (platform specific tool config)
     if sys.platform == "darwin":
         frameworks = task_gen.env["PYEXT_FRAMEWORKS"]
-        task_gen.env["PYEXT_APP_FRAMEWORKS"] = ["-framework %s" % lib for lib in frameworks]
+        task_gen.env["PYEXT_APP_FRAMEWORKS"] = []
+        for framework in frameworks:
+            task_gen.env["PYEXT_APP_FRAMEWORKS"].extend(["-framework", framework])
     else:
         task_gen.env["PYEXT_APP_FRAMEWORKS"] = []
 
