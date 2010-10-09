@@ -28,7 +28,6 @@ TODO
 
 Main bugs, design issues:
 
-    - Add C++ toolchain support
     - Add API to easily create hook/task generator from a function f(inputs) ->
       outputs
     - At least minimal regression test suite to check nothing is broken on the

@@ -21,8 +21,8 @@ def configure(ctx):
 def custom_c_hooker(c_hook):
     # Dummy hook printing the node name
     def hook(ctx, node):
-        print "Compiling file: %s, with flags %s" % \
-                (node.name, " ".join(ctx.env["CFLAGS"]))
+        print("Compiling file: %s, with flags %s" % \
+                (node.name, " ".join(ctx.env["CFLAGS"])))
         return c_hook(ctx, node)
     return hook
 

@@ -10,7 +10,7 @@ import shlex
 
 from yaku.errors \
     import \
-        TaskRunFailure
+        TaskRunFailure, WindowsError
 from yaku.task_manager \
     import \
         CompiledTaskGen
@@ -29,10 +29,6 @@ from yaku.conftests.fconftests_imp \
         is_output_verbose, parse_flink
 
 import subprocess
-import __builtin__
-if not hasattr(__builtin__, "WindowsError"):
-    class WindowsError(Exception):
-        pass
 
 FC_VERBOSE_FLAG = "FC_VERBOSE_FLAG"
 FC_RUNTIME_LDFLAGS = "FC_RUNTIME_LDFLAGS"
@@ -68,7 +64,7 @@ def logged_exec(self, cmd, cwd):
     try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, cwd=cwd)
-        stdout = p.communicate()[0]
+        stdout = p.communicate()[0].decode("utf-8")
         if p.returncode:
             raise TaskRunFailure(cmd, stdout)
         self.gen.bld.stdout_cache[self.signature()] = stdout
@@ -90,7 +86,10 @@ def _create_fbinary_conf_taskgen(conf, name, body, builder):
 
     t = link_task[0]
     exec_command = t.exec_command
-    t.exec_command = types.MethodType(logged_exec, t, t.__class__)
+    if sys.version_info >= (3,):
+        t.exec_command = types.MethodType(logged_exec, t)
+    else:
+        t.exec_command = types.MethodType(logged_exec, t, t.__class__)
     tasks.extend(link_task)
     conf.last_task = tasks[-1]
 
@@ -165,7 +164,7 @@ flags (or to define the %s variable)""" % FC_VERBOSE_FLAG)
         if ret:
             stdout = conf.stdout_cache[conf.last_task.signature()]
             flags = parse_flink(stdout)
-            conf.end_message(" ".join(flags))
+            conf.end_message("%r" % " ".join(flags))
             conf.env[FC_RUNTIME_LDFLAGS] = flags
             return True
         else:

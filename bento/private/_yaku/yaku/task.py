@@ -5,10 +5,6 @@ try:
 except ImportError:
     from md5 import md5
 import subprocess
-import __builtin__
-if not hasattr(__builtin__, "WindowsError"):
-    class WindowsError(Exception):
-        pass
 
 from cPickle \
     import \
@@ -17,9 +13,9 @@ from cPickle \
 from yaku.pprint \
     import \
         pprint
-from errors \
+from yaku.errors \
     import \
-        TaskRunFailure
+        TaskRunFailure, WindowsError
 
 # TODO:
 #   - factory for tasks, so that tasks can be created from strings
@@ -54,7 +50,7 @@ class Task(object):
         if self.uid is None:
             m = md5()
             up = m.update
-            up(self.__class__.__name__)
+            up(self.__class__.__name__.encode())
             for x in self.inputs + self.outputs:
                 up(x.abspath().encode())
             self.uid = m.digest()
@@ -82,7 +78,7 @@ class Task(object):
         for s in self.inputs + self.deps:
             #if os.path.exists(s):
             #    m.update(open(s).read())
-            m.update(open(s.abspath()).read())
+            m.update(s.read(flags="rb"))
         return m.digest()
         
     # execution
@@ -102,13 +98,16 @@ class Task(object):
         try:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT, cwd=cwd)
-            stdout = p.communicate()[0]
+            stdout = p.communicate()[0].decode("utf-8")
             if p.returncode:
                 raise TaskRunFailure(cmd, stdout)
             if self.disable_output:
-                self.log.write(stdout)
+                if sys.version_info >= (3,):
+                    self.log.write(stdout)
+                else:
+                    self.log.write(stdout.encode("utf-8"))
             else:
-                sys.stderr.write(stdout)
+                sys.stderr.write(stdout.encode("utf-8"))
         except OSError, e:
             raise TaskRunFailure(cmd, str(e))
         except WindowsError, e:

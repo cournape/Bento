@@ -5,7 +5,7 @@ from yaku.context import get_cfg, get_bld
 from yaku.scheduler import run_tasks
 
 def file_hook(self, node):
-    print "Yo mama", node.name
+    print("Yo mama", node.name)
     return get_extension_hook(".c")(self, node)
 
 def configure(ctx):

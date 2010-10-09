@@ -47,8 +47,7 @@ int main()
     src = "\n".join(code)
 
     conf.start_message("Checking for declaration %s" % symbol)
-    ret = create_compile_conf_taskgen(conf, "check_cpp_symbol", src,
-                        headers, "Checking for declaration %s")
+    ret = create_compile_conf_taskgen(conf, "check_cpp_symbol", src, headers)
     conf.conf_results.append({"type": "decl", "value": symbol,
                               "result": ret})
     if ret:
@@ -97,16 +96,8 @@ def check_type_size(conf, type_name, headers=None, expect=None):
             bytes.  If not given, will automatically find the size.
     """
 
-    # First check the type can be compiled
-    if headers:
-        headers_code = "\n".join(["#include <%s>\n" % h \
-                                  for h in headers])
-    else:
-        headers_code = ""
-
-    sys.stderr.write("Checking for sizeof %s ..." % type_name)
+    conf.start_message("Checking for sizeof %s ..." % type_name)
     body = r"""
-%(headers)s
 typedef %(type)s yaku_check_sizeof_type;
 int main ()
 {
@@ -116,17 +107,16 @@ int main ()
     ;
     return 0;
 }
-""" % {"type": type_name, "headers": headers_code}
+""" % {"type": type_name}
 
-    if not ccompile(conf, [create_file(conf, body, "yomama", ".c")]):
-        sys.stderr.write("Failed !\n")
-        size = 0
-        ret = False
+    ret = create_compile_conf_taskgen(conf, "check_type_size", body, headers)
+    if not ret:
+        conf.end_message("no (cannot compile type)")
+        return False
 
     if expect is None:
         # this fails to *compile* if size > sizeof(type)
         body = r"""
-%(headers)s
 typedef %(type)s npy_check_sizeof_type;
 int main ()
 {
@@ -144,7 +134,10 @@ int main ()
         low = 0
         mid = 0
         while True:
-            if ccompile(conf, [create_file(conf, body % {'type': type_name, 'size': mid, "headers": headers_code}, suffix=".c")]):
+            code = body % {'type': type_name, 'size': mid}
+            ret = create_compile_conf_taskgen(conf, "check_type_size",
+                    code, headers)
+            if ret:
                 break
             #log.info("failure to test for bound %d" % mid)
             low = mid + 1
@@ -154,13 +147,15 @@ int main ()
         # Binary search:
         while low != high:
             mid = (high - low) / 2 + low
-            if ccompile(conf, [create_file(conf, body % {'type': type_name, 'size': mid, "headers": headers_code}, suffix=".c")]):
+            code = body % {'type': type_name, 'size': mid}
+            if create_compile_conf_taskgen(conf, "check_type_size",
+                    code, headers):
                 high = mid
             else:
                 low = mid + 1
         ret = low
         size = low
-        sys.stderr.write(" %d\n" % low)
+        conf.end_message("%d" % low)
     else:
         raise NotImplementedError("Expect arg not yet implemented")
 

@@ -84,11 +84,11 @@ def get_configuration(compiler_type=None):
 
         env["SHLINK"] = sysconfig.get_config_var("LDSHARED").split(" ")
         env["SO"] = sysconfig.get_config_var("SO")
-        env["LDFLAGS"] = sysconfig.get_config_var("LDFLAGS")
+        env["LDFLAGS"] = sysconfig.get_config_var("LDFLAGS").split()
         if "-pthread" in sysconfig.get_config_var("LDFLAGS"):
             env["LDFLAGS"].insert(0, "-pthread")
         env["FRAMEWORKS"] = []
-
+        setup_unix(env)
     elif compiler_type == "msvc":
         setup_msvc(env)
     elif compiler_type == "mingw32":
@@ -113,6 +113,20 @@ def _get_ext_libraries(compiler):
         def __init__(self):
             self.libraries = []
     return binst.get_libraries(_FakeExt())
+
+def setup_unix(env):
+    if sys.platform == "darwin":
+        env["LDFLAGS"].extend(["-bundle", "-undefined", "dynamic_lookup"])
+
+        def _strip_arch(flag):
+            value = env[flag]
+            while "-arch" in value:
+                id = value.index("-arch")
+                value.pop(id)
+                value.pop(id)
+            return value
+        for flag in ["BASE_CFLAGS", "LDFLAGS"]:
+            env[flag] = _strip_arch(flag)
 
 def setup_msvc(env):
     compiler = distutils.ccompiler.new_compiler(

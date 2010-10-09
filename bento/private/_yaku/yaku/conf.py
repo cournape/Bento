@@ -34,7 +34,7 @@ from yaku.utils \
 
 from yaku.tools.ctasks \
     import \
-        shlink_task, apply_libs, apply_libdir, ccprogram_task
+        shlink_task, apply_libs, apply_libdir, ccprogram_task, ccompile_task, apply_cpppath
 
 class ConfigureContext(object):
     def __init__(self):
@@ -43,12 +43,22 @@ class ConfigureContext(object):
         self.conf_results = []
 
 def create_file(conf, code, prefix="", suffix=""):
-    filename = "%s%s%s" % (prefix, md5(code).hexdigest(), suffix)
+    filename = "%s%s%s" % (prefix, md5(code.encode()).hexdigest(), suffix)
     node = conf.bld_root.declare(filename)
     node.write(code)
     return node
 
 def create_compile_conf_taskgen(conf, name, body, headers,
+        extension=".c"):
+    old_root, new_root = create_conf_blddir(conf, name, body)
+    try:
+        conf.bld_root = new_root
+        return _create_compile_conf_taskgen(conf, name, body,
+                headers, extension)
+    finally:
+        conf.bld_root = old_root
+
+def _create_compile_conf_taskgen(conf, name, body, headers,
         extension=".c"):
     if headers:
         head = "\n".join(["#include <%s>" % h for h in headers])
@@ -57,28 +67,30 @@ def create_compile_conf_taskgen(conf, name, body, headers,
     code = "\n".join([c for c in [head, body]])
     sources = [create_file(conf, code, name, extension)]
 
-    conf.tasks = [] # XXX: hack
-    builder = conf.builders["ctasks"]
-    builder.env = conf.env
-    builder.ccompile("yomama", sources)
-    # XXX: accessing tasks like this is ugly - the whole logging thing
-    # needs more thinking
-    for t in builder.ctx.tasks:
+    task_gen = CompiledTaskGen("conf", conf, sources, name)
+    task_gen.env.update(copy.deepcopy(conf.env))
+    apply_cpppath(task_gen)
+
+    tasks = task_gen.process()
+    conf.last_task = tasks[-1]
+
+    for t in tasks:
         t.disable_output = True
         t.log = conf.log
 
     succeed = False
     explanation = None
     try:
-        run_tasks(conf, builder.ctx.tasks)
+        run_tasks(conf, tasks)
         succeed = True
     except TaskRunFailure, e:
-        explanation = str(e)
+        explanation = unicode(e).encode("utf-8")
 
-    write_log(conf.log, builder.ctx.tasks, code, succeed, explanation)
+    write_log(conf.log, tasks, code, succeed, explanation)
     return succeed
 
 def write_log(log, tasks, code, succeed, explanation):
+    log.write("=" * 79 + "\n")
     log.write("Tested code is:\n")
     log.write("~~~~~~~~~\n")
     log.write(code)
@@ -87,7 +99,10 @@ def write_log(log, tasks, code, succeed, explanation):
     if succeed:
         log.write("---> Succeeded !\n")
     else:
-        log.write("---> Failed: %s !\n" % explanation)
+        log.write("---> Failure !\n")
+        log.write("~~~~~~~~~~~~~~\n")
+        log.write(explanation)
+        log.write("~~~~~~~~~~~~~~\n")
 
     s = StringIO()
     s.write("Command sequence was:\n")
@@ -102,8 +117,10 @@ def log_command(logger, tasks):
         def fake_exec(self, cmd, cwd):
             logger.write(" ".join(cmd))
             logger.write("\n")
-        t.exec_command = types.MethodType(fake_exec, t,
-                t.__class__)
+        if sys.version_info >= (3,):
+            t.exec_command = types.MethodType(fake_exec, t)
+        else:
+            t.exec_command = types.MethodType(fake_exec, t, t.__class__)
         t.run()
 
 def create_link_conf_taskgen(conf, name, body, headers=None,
@@ -154,7 +171,8 @@ def _create_binary_conf_taskgen(conf, name, body, builder, headers=None,
         run_tasks(conf, tasks)
         succeed = True
     except TaskRunFailure, e:
-        explanation = str(e)
+        msg = str(e)
+        explanation = unicode(msg).encode("utf-8")
 
     write_log(conf.log, tasks, code, succeed, explanation)
     return succeed
@@ -245,7 +263,8 @@ def ccompile(conf, sources):
         run_tasks(conf, builder.ctx.tasks)
         succeed = True
     except TaskRunFailure, e:
-        explanation = str(e)
+        msg = str(e)
+        explanation = unicode(msg).encode("utf-8")
 
     code = sources[0].read()
     write_log(conf.log, builder.ctx.tasks, code, succeed, explanation)

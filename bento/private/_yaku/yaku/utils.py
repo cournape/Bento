@@ -100,6 +100,3 @@ def find_program(program, path_list=None):
                 return ppath
 
     return None
-
-if __name__ == "__main__":
-    print find_deps("tutorial.c", ["."])

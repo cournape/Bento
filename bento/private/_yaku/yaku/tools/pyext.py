@@ -108,7 +108,7 @@ def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
     pyenv["PYEXT_CFLAGS"] = pyenv["PYEXT_BASE_CFLAGS"] + \
             pyenv["PYEXT_OPT"] + \
             pyenv["PYEXT_SHARED"]
-    pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"].split(" ")
+    pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
     return pyenv
 
 def pycc_hook(self, node):
@@ -197,7 +197,7 @@ def detect_cc_type(ctx, cc_cmd):
         cmd = cc_cmd + [vflag]
         try:
             p = Popen(cmd, stdout=PIPE, stderr=STDOUT)
-            out = p.communicate()[0]
+            out = p.communicate()[0].decode()
             for k, v in CC_SIGNATURE.items():
                 m = v.search(out)
                 if m:
@@ -346,7 +346,9 @@ def apply_frameworks(task_gen):
     # XXX: do this correctly (platform specific tool config)
     if sys.platform == "darwin":
         frameworks = task_gen.env["PYEXT_FRAMEWORKS"]
-        task_gen.env["PYEXT_APP_FRAMEWORKS"] = ["-framework %s" % lib for lib in frameworks]
+        task_gen.env["PYEXT_APP_FRAMEWORKS"] = []
+        for framework in frameworks:
+            task_gen.env["PYEXT_APP_FRAMEWORKS"].extend(["-framework", framework])
     else:
         task_gen.env["PYEXT_APP_FRAMEWORKS"] = []
 

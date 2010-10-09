@@ -32,7 +32,7 @@ def cython_task(self, node):
 
     self.env["CYTHON_INCPATH"] = ["-I%s" % p for p in
                 self.env["CYTHON_CPPPATH"]]
-    task.func = compile_fun("cython", "cython ${SRC} -o ${TGT} ${CYTHON_INCPATH}",
+    task.func = compile_fun("cython", "${CYTHON} ${SRC} -o ${TGT} ${CYTHON_INCPATH}",
                             False)[0]
     return [task]
 
@@ -44,6 +44,7 @@ def configure(ctx):
         sys.stderr.write("no!\n")
         raise yaku.errors.ToolNotFound()
     ctx.env["CYTHON_CPPPATH"] = []
+    ctx.env["CYTHON"] = [sys.executable, "-m", "cython"]
 
 def detect(ctx):
     if find_program("cython") is None:
