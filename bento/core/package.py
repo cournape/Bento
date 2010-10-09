@@ -56,6 +56,7 @@ def recurse_subentos(subentos):
     root_dir = os.getcwd()
     def _recurse(subento, cwd):
         f = os.path.join(cwd, subento, "bento.info")
+        f = relpath(f, root_dir)
         if not os.path.exists(f):
             raise ValueError("%s not found !" % f)
         filenames.append(f)
