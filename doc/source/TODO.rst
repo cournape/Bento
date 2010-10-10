@@ -23,22 +23,12 @@ Not well thought out yet:
 Milestone
 =========
 
-Release 0.0.4
--------------
-
-    - auto-generated config.py file to access ressources without
-      __file__, 
-    - recursive bento description + hook
-    - being able to build scipy on at least Linux (even if using
-      undocumented features of bento/yaku)
-    - manual command dependencies (signal when configure or build
-      needs to be rerun).
-
 Release 0.0.5
 -------------
 
 0.0.5 goals:
 
+    - Fix package + parser cache mess
     - add an option to hooks to avoid running during help
     - fixing yaku Parallel runner
     - specify commands dependencies with after/before
