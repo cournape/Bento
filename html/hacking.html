@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,21 +7,22 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Design document &mdash; Bento v0.0.3 documentation</title>
+    <title>Design document &mdash; Bento v0.0.4 documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.3',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     '0.0.4',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.3 documentation" href="index.html" /> 
+    <link rel="top" title="Bento v0.0.4 documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -28,41 +31,41 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">Design document</a><ul>
-<li><a class="reference external" href="#commands-protocol">Commands &#8220;protocol&#8221;</a></li>
-<li><a class="reference external" href="#build-manifest-and-building-installers">Build manifest and building installers</a><ul>
-<li><a class="reference external" href="#installers-conversion">Installers conversion</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Design document</a><ul>
+<li><a class="reference internal" href="#commands-protocol">Commands &#8220;protocol&#8221;</a></li>
+<li><a class="reference internal" href="#build-manifest-and-building-installers">Build manifest and building installers</a><ul>
+<li><a class="reference internal" href="#installers-conversion">Installers conversion</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/hacking.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/hacking.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -94,9 +97,10 @@ as well for reasons explained later.</li>
 </blockquote>
 <p>Although those stages are very similar to distutils/setuptools
 mechanism, the implementation is fundamentally different, because each
-stage is as much independent as possible. No python object is directly
-shared between commands - the current bentomaker implementation
-implements each stage as a separate run.</p>
+stage is mostly independent from each other. No python object is
+directly shared between commands - the current bentomaker
+implementation implements each stage as a separate run. Once
+configured, every command has access to all options.</p>
 </div>
 <div class="section" id="build-manifest-and-building-installers">
 <h2>Build manifest and building installers<a class="headerlink" href="#build-manifest-and-building-installers" title="Permalink to this headline">¶</a></h2>
@@ -118,13 +122,14 @@ simple, and most of the &#8220;magic&#8221; happens in the build manifest. In
 particular, the build manifest still refers to installed bits
 relatively to abstract paths, and those paths are resolved when
 building the installers.</p>
+<p>WARNING: the build manifest will most likely need to be changed in
+backward incompatible ways, including the API to access it.</p>
 <div class="section" id="installers-conversion">
 <h3>Installers conversion<a class="headerlink" href="#installers-conversion" title="Permalink to this headline">¶</a></h3>
 <p>The build manifest is intended to be included in each produced
-installer, for easy convertion between various formats easily. The
-goal is to have idempotent conversion (e.g.  converting an egg to
-wininst and then converting it back to an egg produces the exact same
-egg).</p>
+installer, for convertion between various formats. The goal is to have
+idempotent conversions (e.g.  converting an egg to wininst and then
+converting it back to an egg produces the exact same egg).</p>
 <p>We also intend to use build manifest for the upcoming &#8216;&#8217;nest&#8217;&#8217;
 service, which will contain a database of installed software.</p>
 </div>
@@ -143,12 +148,12 @@ service, which will contain a database of installed software.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+        &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
 </html>

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,21 +7,22 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Milestone &mdash; Bento v0.0.3 documentation</title>
+    <title>Milestone &mdash; Bento v0.0.4 documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.3',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     '0.0.4',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.3 documentation" href="index.html" />
+    <link rel="top" title="Bento v0.0.4 documentation" href="index.html" />
     <link rel="next" title="How to contribute" href="contribute.html" />
     <link rel="prev" title="FAQ" href="faq.html" /> 
   </head>
@@ -36,51 +39,52 @@
         <li class="right" >
           <a href="faq.html" title="FAQ"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">Milestone</a><ul>
-<li><a class="reference external" href="#release-0-0-4">Release 0.0.4</a></li>
-<li><a class="reference external" href="#post-0-0-4">Post 0.0.4</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Milestone</a><ul>
+<li><a class="reference internal" href="#release-0-0-4">Release 0.0.4</a></li>
+<li><a class="reference internal" href="#release-0-0-5">Release 0.0.5</a></li>
+<li><a class="reference internal" href="#post-0-0-5">Post 0.0.5</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#syntax-and-features-of-the-package-description-file">Syntax and features of the package description file</a></li>
-<li><a class="reference external" href="#extending-the-simple-build">Extending the simple build</a></li>
-<li><a class="reference external" href="#install-reinstall-rebuild-clean-problem">Install-Reinstall-Rebuild-Clean problem</a><ul>
-<li><a class="reference external" href="#reliable-install-reinstall">Reliable install/reinstall</a></li>
+<li><a class="reference internal" href="#syntax-and-features-of-the-package-description-file">Syntax and features of the package description file</a></li>
+<li><a class="reference internal" href="#extending-the-simple-build">Extending the simple build</a></li>
+<li><a class="reference internal" href="#install-reinstall-rebuild-clean-problem">Install-Reinstall-Rebuild-Clean problem</a><ul>
+<li><a class="reference internal" href="#reliable-install-reinstall">Reliable install/reinstall</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#scipi">Scipi</a></li>
+<li><a class="reference internal" href="#scipi">Scipi</a></li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="faq.html"
-                                  title="previous chapter">FAQ</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="contribute.html"
-                                  title="next chapter">How to contribute</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/TODO.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="faq.html"
+                        title="previous chapter">FAQ</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="contribute.html"
+                        title="next chapter">How to contribute</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/TODO.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -101,12 +105,9 @@ support) ?</li>
 <li>add mpkg support</li>
 <li>port stdeb to bento</li>
 <li>specify hook mechanism</li>
-<li>integrate yaku or fbuild</li>
-<li>add runtime support to install paths</li>
 <li>test command support</li>
 <li>distcheck support</li>
 <li>think about integration with sphinx for doc</li>
-<li>pre/post hooks for every stage of a typical install</li>
 <li>integration with at least one real build tool (Scons or waf)</li>
 <li>handle reliable install/uninstall</li>
 </ul>
@@ -114,8 +115,8 @@ support) ?</li>
 <dl class="docutils">
 <dt>Not well thought out yet:</dt>
 <dd><ul class="first last simple">
-<li>supporting everything that pkg_resources does (resource management
-without __file__ hack, namespace package)</li>
+<li>supporting everything that pkg_resources does (namespace
+package), except multiple-version installs.</li>
 </ul>
 </dd>
 </dl>
@@ -123,10 +124,26 @@ without __file__ hack, namespace package)</li>
 <h1>Milestone<a class="headerlink" href="#milestone" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="release-0-0-4">
 <h2>Release 0.0.4<a class="headerlink" href="#release-0-0-4" title="Permalink to this headline">¶</a></h2>
-<p>0.0.4 goals:</p>
 <blockquote>
 <ul class="simple">
-<li>recursive bento.info</li>
+<li>auto-generated config.py file to access ressources without
+__file__,</li>
+<li>recursive bento description + hook</li>
+<li>being able to build scipy on at least Linux (even if using
+undocumented features of bento/yaku)</li>
+<li>manual command dependencies (signal when configure or build
+needs to be rerun).</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="release-0-0-5">
+<h2>Release 0.0.5<a class="headerlink" href="#release-0-0-5" title="Permalink to this headline">¶</a></h2>
+<p>0.0.5 goals:</p>
+<blockquote>
+<ul class="simple">
+<li>add an option to hooks to avoid running during help</li>
+<li>fixing yaku Parallel runner</li>
+<li>specify commands dependencies with after/before</li>
 <li>dynamic version (e.g. svn version appended to the build, etc...)</li>
 <li>egg &lt;-&gt; wininst lossless conversion (on windows)</li>
 <li>add basic distutils support</li>
@@ -138,8 +155,8 @@ which cannot be tested without being installed)</li>
 </ul>
 </blockquote>
 </div>
-<div class="section" id="post-0-0-4">
-<h2>Post 0.0.4<a class="headerlink" href="#post-0-0-4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="post-0-0-5">
+<h2>Post 0.0.5<a class="headerlink" href="#post-0-0-5" title="Permalink to this headline">¶</a></h2>
 <p>Start working on scipi (nest ?). First proto could be purely static,
 file-based. An index easy to parse/update is all we need, really.</p>
 </div>
@@ -240,12 +257,12 @@ pure http-based file serving is enough</li>
         <li class="right" >
           <a href="faq.html" title="FAQ"
              >previous</a> |</li>
-        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+        &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
 </html>

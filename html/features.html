@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,21 +7,22 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Features &mdash; Bento v0.0.3 documentation</title>
+    <title>Features &mdash; Bento v0.0.4 documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.3',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     '0.0.4',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.3 documentation" href="index.html" />
+    <link rel="top" title="Bento v0.0.4 documentation" href="index.html" />
     <link rel="next" title="User guide" href="reference.html" />
     <link rel="prev" title="Overview" href="overview.html" /> 
   </head>
@@ -36,44 +39,44 @@
         <li class="right" >
           <a href="overview.html" title="Overview"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">Features</a><ul>
-<li><a class="reference external" href="#main-features-currently-implemented">Main features currently implemented</a></li>
-<li><a class="reference external" href="#future-features">Future features</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Features</a><ul>
+<li><a class="reference internal" href="#main-features-currently-implemented">Main features currently implemented</a></li>
+<li><a class="reference internal" href="#future-features">Future features</a></li>
 </ul>
 </li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="overview.html"
-                                  title="previous chapter">Overview</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="reference.html"
-                                  title="next chapter">User guide</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/features.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="overview.html"
+                        title="previous chapter">Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference.html"
+                        title="next chapter">User guide</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/features.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -94,17 +97,20 @@ without running any python code (besides bento).</li>
 <li>Easy integration with native filesystem conventions: every install directory
 is customizable at the configure stage (autoconf-inspired).</li>
 <li>Building eggs without depending on setuptools.</li>
+<li>Simple C-extension building framework, with content-based automatic
+dependency tracking, and parallel build support.</li>
+<li>Recursive package description support</li>
+<li>Hooks for customizing arbitrary stages (configure, build, etc...)</li>
+<li>Windows installer support and basic egg building support.</li>
 </ul>
 </div>
 <div class="section" id="future-features">
 <h2>Future features<a class="headerlink" href="#future-features" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>Simple C-extension building framework to cut distutils dependency</li>
-<li>Scons/waf libraries to interact with <a class="reference external" href="http://www.scons.org">Scons</a> and <a class="reference external" href="http://code.google.com/p/waf">Waf</a> build tools, so that
-complex packages can have access to a real build system with dependencies
-handling.</li>
-<li>Hooks for customizing arbitrary stages (configure, build, etc...)</li>
-<li>Conversion to native packages (.deb, .rpm, .exe, .msi, etc...)</li>
+<li>Scons/waf libraries to interact with <a class="reference external" href="http://www.scons.org">Scons</a> and <a class="reference external" href="http://code.google.com/p/waf">Waf</a> build tools, so
+that complex packages can have access to a real build system with
+dependencies handling.</li>
+<li>Conversion to native packages (.deb, .rpm, .msi, etc...)</li>
 </ul>
 </div>
 </div>
@@ -127,12 +133,12 @@ handling.</li>
         <li class="right" >
           <a href="overview.html" title="Overview"
              >previous</a> |</li>
-        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+        &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
 </html>

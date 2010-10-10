@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,21 +7,22 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Version 0.0.4 &mdash; Bento v0.0.3 documentation</title>
+    <title>Version 0.0.4 &mdash; Bento v0.0.4 documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.3',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     '0.0.4',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.3 documentation" href="index.html" /> 
+    <link rel="top" title="Bento v0.0.4 documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -28,44 +31,44 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">Version 0.0.4</a></li>
-<li><a class="reference external" href="#version-0-0-3">Version 0.0.3</a><ul>
-<li><a class="reference external" href="#toydist-renamed-to-bento">Toydist renamed to bento</a></li>
-<li><a class="reference external" href="#hook-mechanism">Hook mechanism</a></li>
-<li><a class="reference external" href="#yaku-build-mini-framework">Yaku, build mini-framework</a></li>
-<li><a class="reference external" href="#one-file-distribution">One file distribution</a></li>
-<li><a class="reference external" href="#improved-command-line-interface">Improved command line interface</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Version 0.0.4</a></li>
+<li><a class="reference internal" href="#version-0-0-3">Version 0.0.3</a><ul>
+<li><a class="reference internal" href="#toydist-renamed-to-bento">Toydist renamed to bento</a></li>
+<li><a class="reference internal" href="#hook-mechanism">Hook mechanism</a></li>
+<li><a class="reference internal" href="#yaku-build-mini-framework">Yaku, build mini-framework</a></li>
+<li><a class="reference internal" href="#one-file-distribution">One file distribution</a></li>
+<li><a class="reference internal" href="#improved-command-line-interface">Improved command line interface</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#version-0-0-2">Version 0.0.2</a></li>
-<li><a class="reference external" href="#version-0-0-1">Version 0.0.1</a></li>
+<li><a class="reference internal" href="#version-0-0-2">Version 0.0.2</a></li>
+<li><a class="reference internal" href="#version-0-0-1">Version 0.0.1</a></li>
 </ul>
 
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/version.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/version.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -76,7 +79,7 @@
             
   <div class="section" id="version-0-0-4">
 <h1>Version 0.0.4<a class="headerlink" href="#version-0-0-4" title="Permalink to this headline">¶</a></h1>
-<p>Released on . Main features:</p>
+<p>Released on 9th October 2010. Main features:</p>
 <blockquote>
 <ul class="simple">
 <li>Add ConfigPy option to produce a simple config_py module. At the
@@ -85,7 +88,12 @@ runtime without __file__ hack.</li>
 <li>Add &#8216;not flag(flag_name)&#8217; and &#8216;not true|false&#8217; to the bento.info
 grammar</li>
 <li>Add &#8211;with-bundling option to disable bundling of
-ply/yaku/simplekson to ease packaging for OS vendors</li>
+ply/yaku/simplejson to ease packaging for OS vendors</li>
+<li>Recursive bento and hook files for complicated, nested packages
+(scipy, twisted)</li>
+<li>Numerous features to build numpy and scipy - experimental bento-based
+build branches for both are available on <a class="reference external" href="http://github.com/cournape">http://github.com/cournape</a>
+(_bento_build branches)</li>
 </ul>
 </blockquote>
 </div>
@@ -185,12 +193,12 @@ most of their implementation</li>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="index.html">Bento v0.0.3 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+        &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
 </html>
