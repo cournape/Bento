@@ -35,6 +35,9 @@ Usage:   bentomaker build [OPTIONS]."""
     short_descr = "build the project."
     opts = Command.opts + [Option("-i", "--inplace",
                                   help="Build extensions in place", action="store_true"),
+                           Option("-j", "--jobs",
+                                  help="Parallel builds (yaku build only - EXPERIMENTAL)",
+                                  dest="jobs"),
                            Option("-v", "--verbose",
                                   help="Verbose output (yaku build only)",
                                   action="store_true")]
@@ -63,6 +66,10 @@ Usage:   bentomaker build [OPTIONS]."""
             verbose = False
         else:
             verbose = True
+        if o.jobs:
+            jobs = int(o.jobs)
+        else:
+            jobs = None
 
         extensions = get_extensions(ctx.pkg, ctx.top_node)
         libraries = get_compiled_libraries(ctx.pkg, ctx.top_node)
@@ -75,13 +82,13 @@ Usage:   bentomaker build [OPTIONS]."""
             def builder(pkg):
                 return build_yaku.build_extensions(extensions,
                         ctx.yaku_build_ctx, ctx._extensions_callback,
-                        ctx._extension_envs, inplace, verbose)
+                        ctx._extension_envs, inplace, verbose, jobs)
             build_extensions = builder
 
             def builder(pkg):
                 return build_yaku.build_compiled_libraries(libraries,
                         ctx.yaku_build_ctx, ctx._clibraries_callback,
-                        ctx._clibrary_envs, inplace, verbose)
+                        ctx._clibrary_envs, inplace, verbose, jobs)
             build_compiled_libraries = builder
 
         self.section_writer.sections_callbacks["compiled_libraries"] = \

@@ -18,9 +18,12 @@ import yaku.context
 import yaku.scheduler
 import yaku.errors
 
-def run_tasks(bld, all_outputs, inplace):
+def run_tasks(bld, all_outputs, inplace, jobs):
     task_manager = yaku.task_manager.TaskManager(bld.tasks)
-    runner = yaku.scheduler.SerialRunner(bld, task_manager)
+    if jobs is None:
+        runner = yaku.scheduler.SerialRunner(bld, task_manager)
+    else:
+        runner = yaku.scheduler.ParallelRunner(bld, task_manager, jobs)
     runner.start()
     runner.run()
 
@@ -68,7 +71,7 @@ def build_extension(bld, extension, verbose, env=None):
         raise CommandExecutionFailure(msg)
 
 def _build_extensions(extensions, bld, environments, inplace, verbose,
-        extension_callback):
+        extension_callback, jobs):
     ret = {}
     if len(extensions) < 1:
         return  ret
@@ -92,7 +95,7 @@ def _build_extensions(extensions, bld, environments, inplace, verbose,
                 all_outputs[ext.name] = outputs
                 ret[ext.name] = build_isection(bld, ext.name, outputs)
 
-    run_tasks(bld, all_outputs, inplace)
+    run_tasks(bld, all_outputs, inplace, jobs)
     return ret
 
 def build_compiled_library(bld, clib, verbose, callbacks, env=None):
@@ -117,7 +120,7 @@ def build_compiled_library(bld, clib, verbose, callbacks, env=None):
         raise CommandExecutionFailure(msg)
 
 def _build_compiled_libraries(compiled_libraries, bld, environments,
-        inplace, verbose, callbacks):
+        inplace, verbose, callbacks, jobs):
     ret = {}
     if len(compiled_libraries) < 1:
         return  ret
@@ -130,14 +133,14 @@ def _build_compiled_libraries(compiled_libraries, bld, environments,
         all_outputs[clib.name] = outputs
         ret[clib.name] = build_isection(bld, clib.name, outputs)
 
-    run_tasks(bld, all_outputs, inplace)
+    run_tasks(bld, all_outputs, inplace, jobs)
     return ret
 
 def build_extensions(extensions, yaku_build_ctx, builder_callbacks,
-        environments, inplace=False, verbose=False):
+        environments, inplace=False, verbose=False, jobs=None):
     try:
         return _build_extensions(extensions, yaku_build_ctx,
-                environments, inplace, verbose, builder_callbacks)
+                environments, inplace, verbose, builder_callbacks, jobs)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
             msg = e.explain.encode("utf-8")
@@ -147,10 +150,10 @@ def build_extensions(extensions, yaku_build_ctx, builder_callbacks,
         raise bento.core.errors.BuildError(msg)
 
 def build_compiled_libraries(libraries, yaku_build_ctx, callbacks,
-        environments, inplace=False, verbose=False):
+        environments, inplace=False, verbose=False, jobs=None):
     try:
         return _build_compiled_libraries(libraries, yaku_build_ctx,
-                environments, inplace, verbose, callbacks)
+                environments, inplace, verbose, callbacks, jobs)
     except yaku.errors.TaskRunFailure, e:
         if e.explain:
             msg = e.explain.encode("utf-8")
