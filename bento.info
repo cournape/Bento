@@ -38,7 +38,7 @@ DataFiles: windows_arch_data
 
 DataFiles: ply_data
     SourceDir: bento
-    TargetDir: $sitedir/bento
+    TargetDir: $datadir/bento
     Files: parsetab
 
 ExtraSourceFiles:
