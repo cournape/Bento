@@ -67,7 +67,8 @@ Library:
             bento.private._simplejson.simplejson,
             bento.private._yaku.yaku,
             bento.private._yaku.yaku.tools,
-            bento.private._yaku.yaku.compat
+            bento.private._yaku.yaku.compat,
+            bento.private._yaku.yaku.conftests
 
 Executable: bentomaker
     Module: bentomakerlib.bentomaker
