@@ -4,11 +4,15 @@ if sys.version_info >= (3,):
     if not hasattr(builtins, "WindowsError"):
         class WindowsError(Exception):
             pass
+    else:
+	WindowsError = builtins.WindowsError
 else:
     import __builtin__
     if not hasattr(__builtin__, "WindowsError"):
         class WindowsError(Exception):
             pass
+    else:
+	WindowsError = __builtin__.WindowsError
 
 class YakuError(Exception):
     pass
