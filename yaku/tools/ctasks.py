@@ -231,7 +231,8 @@ def configure(ctx):
     cc.setup(ctx)
 
     if sys.platform == "win32":
-        raise NotImplementedError("cstatic lib not supported yet")
+        lib = ctx.load_tool("mslib")
+        lib.setup(ctx)
     else:
         ar = ctx.load_tool("ar")
         ar.setup(ctx)
