@@ -168,6 +168,10 @@ Other contributors:
     - Philip J. Eby: for answering most of my questions about
       setuptools/eggs design
 
+A lot of inspiration came from waf, a great make replacement in python:
+    - Single file distribution
+    - Yaku, bento's internal build system is a dumbed-down waf clone
+
 What are the main features of bento compared to its competitors
 ===============================================================
 
