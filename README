@@ -24,6 +24,8 @@ The main features of Yaku are:
       of date
     - Although not yet implemented, parallel builds may be added
       relatively simply
+    - Can be used as a library to be controled by an external python process.
+      Yaku raison-d'etre is to be the build tool for bento
 
 What Yaku is not
 ================
@@ -40,6 +42,11 @@ simple, I made a few design choices which significantly impact what it can do:
     - Yaku does not aim at being very fast. It does not uses fancy algorithms,
       and is unlikely to work very well for thousand of source files, although
       it does work ok for packages as large as scipy.
+
+Yaku's design is mostly a dumb-downed rip-off of waf, with a focus on making it
+usable as a library. When I started yaku, using waf as a library was a bit
+difficult, but the new 1.6 version improved things quite a bit, and I may just
+replace yaku by waf at that point.
 
 Why Yaku ?
 ==========
@@ -83,7 +90,9 @@ pyrex, .i for swig, etc...).
       its dependencies) may be added later
 
 Note that by default, yaku currently uses the same compilation options as
-distutils.
+distutils, but that may change in the future given the inconsistencies in
+various bits to get options from (sysconfig, msvc compiler classes/instances,
+etc...).
 
 What's with the name ?
 ======================
