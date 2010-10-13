@@ -16,6 +16,11 @@ based on distutils suffer a lot of NIH, and ignore lessons learned in packaging
 in most other systems.  Bento aims at shamelessly copying what works in other
 systems (CPAN, CRAN, JSAN, HackageDB).
 
+It should be noted that while bento currently first focus on improving the
+situation for scipy community, it is in now way specific to it. Some features
+like flexible installation scheme, simple data files handling are potentially
+useful for anyone.
+
 What are the goals of bento ?
 =============================
 
@@ -24,8 +29,8 @@ package description, so that it can be easily reused within custom build
 frameworks (make, waf, scons, etc...). A simple build system is also provided
 so that simple packages do not need to deal with anything besides bento.
 
-Bento aims at being part of a grander vision for Scientific computing, to
-make something like CRAN available to python users.  By being simpler, more
+Bento aims at being part of a grander vision for Scientific computing, to make
+something like CPAN or CRAN available to python users.  By being simpler, more
 explicit, it is hoped that bento will make the development of a
 scientific-specific Pypi easier.
 
@@ -57,7 +62,8 @@ distutils is deeply flawed:
       designed (build split across different commands, which may be
       re-executed).
     - The codebase quality is horrible. Subclasses don't share the same
-      interface, numerous attributes are added on the fly, etc...
+      interface, numerous attributes are conditionally added on the fly
+      depending on options, etc...
 
 Overall, there is little to save in the current codebase. At least all of the
 command and ccompiler code must go away, and that's already 2/3 of distutils
@@ -171,10 +177,10 @@ Bento has the following main features:
     - Reliable build and installation: no more stalled files when installing,
       out-of-date source files and dependencies automatically detected for C
       extensions
-
-The following features are being implemented as well:
     - Optional recursive package description for complex packages
     - Easy customization of compilation flags and toolchain
+
+The following features are being implemented as well:
     - Robust command dependencies from dependencies descriptor: no more
       monkey-patching nonsense to insert a new command between two existing
       subcommands 
