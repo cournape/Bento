@@ -28,9 +28,16 @@ def configure(conf):
         check_type(conf, "char")
         #check_type(conf, "complex")
         check_type(conf, "complex", headers=["complex.h"])
-        check_lib(conf, "m", "exp")
+        if check_func(conf, "exp"):
+            mlib = []
+        else:
+            if not check_lib(conf, "m", "exp"):
+                raise ValueError("What is mlib ?")
+            else:
+                mlib = ["m"]
+        check_lib(conf, mlib, "exp")
         #check_lib(conf, lib="mm")
-        check_func(conf, "floor", libs=["m"])
+        check_func(conf, "floor", libs=mlib)
         check_func(conf, "floor")
 
         generate_config_h(conf.conf_results, "build/conf/config.h")

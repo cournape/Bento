@@ -257,7 +257,7 @@ int main (void)
                               "result": ret})
     return ret
 
-def check_lib(conf, lib, func):
+def check_lib(conf, libs, func):
     # XXX: refactor with check_func
 
     # Handle MSVC intrinsics: force MS compiler to make a function
@@ -278,11 +278,12 @@ int main (void)
     """ % {"func": func}
 
     conf.start_message("Checking for function %s in %s" % \
-                       (func, conf.env["LIB_FMT"] % lib))
+                       (func, " ".join([conf.env["LIB_FMT"] % lib for lib in libs])))
 
     old_lib = copy.deepcopy(conf.env["LIBS"])
     try:
-        conf.env["LIBS"].insert(0, lib)
+        for i in range(len(libs)):
+            conf.env["LIBS"].insert(i, libs[i])
         ret = create_program_conf_taskgen(conf, "check_lib", code, None)
         if ret:
             conf.end_message("yes")
@@ -290,8 +291,9 @@ int main (void)
             conf.end_message("no !")
     finally:
         conf.env["LIBS"] = old_lib
-    conf.conf_results.append({"type": "lib", "value": lib,
-                              "result": ret, "func": func})
+    for lib in libs:
+        conf.conf_results.append({"type": "lib", "value": lib,
+                                  "result": ret, "func": func})
     return ret
 
 def check_funcs_at_once(conf, funcs, libs=None):
