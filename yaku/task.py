@@ -20,19 +20,28 @@ from yaku.errors \
 # TODO:
 #   - factory for tasks, so that tasks can be created from strings
 #   instead of import (import not extensible)
+
+# Task factory - taken from waf, to avoid metaclasses magic
+class _TaskFakeMetaclass(type):
+    def __init__(cls, name, bases, d):
+        super(_TaskFakeMetaclass, cls).__init__(name, bases, d)
+        name = cls.__name__
+
+_CLASSES = {}
 def task_factory(name):
-    klass = _Task
-    if not klass._overriden:
-        klass._overriden = True
-        init = klass.__init__
-        def __init__(self, outputs, inputs, func=None, deps=None):
-            return init(self, name, outputs, inputs, func, deps)
-        klass.__init__ = __init__
+    global _CLASSES
+    try:
+        klass = _CLASSES[name]
+    except KeyError:
+        klass = _TaskFakeMetaclass('%sTask' % name, (_Task,), {})
+        klass.name = name
+        _CLASSES[name] = klass
     return klass
 
+base = _TaskFakeMetaclass('__task_base', (object,), {})
+
 class _Task(object):
-    _overriden = False
-    def __init__(self, name, outputs, inputs, func=None, deps=None):
+    def __init__(self, outputs, inputs, func=None, deps=None):
         if isinstance(inputs, basestring):
             self.inputs = [inputs]
         else:
@@ -41,7 +50,6 @@ class _Task(object):
             self.outputs = [outputs]
         else:
             self.outputs = outputs
-        self.name = name or ""
         self.uid = None
         self.func = func
         if deps is None:
