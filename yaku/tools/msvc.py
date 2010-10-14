@@ -1,5 +1,19 @@
 import yaku.task
 
+def _exec_command_factory(saved):
+    def msvc_exec_command(self, cmd, cwd):
+        new_cmd = []
+        carry = ""
+        for c in cmd:
+            if c in ["/Fo", "/out:", "/OUT:"]:
+                carry = c
+            else:
+                c = carry + c
+                carry = ""
+                new_cmd.append(c)
+        saved(self, new_cmd, cwd)
+    return msvc_exec_command
+
 def setup(ctx):
     env = ctx.env
 
@@ -22,23 +36,27 @@ def setup(ctx):
     ctx.env["LIBDIR"] = []
     ctx.env["LIBDIR_FMT"] = "/LIBPATH:%s"
 
-    ctx.env["PROGRAM_FMT"] = "%s.exe"
-    ctx.env["CC_OBJECT_FMT"] = "%s.obj"
+    ctx.env["CXX"] = ["cl.exe"]
+    ctx.env["CXX_TGT_F"] = ["/c", "/Fo"]
+    ctx.env["CXX_SRC_F"] = []
+    ctx.env["CXXFLAGS"] = ["/nologo"]
+    ctx.env["CXXLINK"] = ["link.exe"]
+    ctx.env["CXXLINKFLAGS"] = []
+    ctx.env["CXXLINK_TGT_F"] = ["/out:"]
+    ctx.env["CXXLINK_SRC_F"] = []
+    ctx.env["CXXSHLINK"] = ["link.exe"]
+    ctx.env["CXXSHLINKFLAGS"] = []
+    ctx.env["CXXSHLINK_TGT_F"] = ["/out:"]
+    ctx.env["CXXSHLINK_SRC_F"] = []
 
-    # XXX: hack
-    saved = yaku.task.Task.exec_command
-    def msvc_exec_command(self, cmd, cwd):
-        new_cmd = []
-        carry = ""
-        for c in cmd:
-            if c in ["/Fo", "/out:"]:
-                carry = c
-            else:
-                c = carry + c
-                carry = ""
-                new_cmd.append(c)
-        saved(self, new_cmd, cwd)
-    yaku.task.Task.exec_command = msvc_exec_command
+    ctx.env["CC_OBJECT_FMT"] = "%s.obj"
+    ctx.env["CXX_OBJECT_FMT"] = "%s.obj"
+    ctx.env["PROGRAM_FMT"] = "%s.exe"
+
+    for task_class in ["cc", "cxx"]:
+        klass = yaku.task.task_factory(task_class)
+        saved = klass.exec_command
+        klass.exec_command = _exec_command_factory(saved)
 
 def detect(ctx):
     from distutils.ccompiler import new_compiler
