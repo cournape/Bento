@@ -6,7 +6,7 @@ import yaku.tools
 
 from yaku.task \
     import \
-        Task
+        task_factory
 from yaku.task_manager \
     import \
         extension, CompiledTaskGen
@@ -36,7 +36,7 @@ def ccompile_task(self, node):
     target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
-    task = Task("cc", inputs=[node], outputs=[target])
+    task = task_factory("cc")(inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = cc_vars
     #print find_deps("foo.c", ["."])
@@ -51,7 +51,7 @@ def shlink_task(self, name):
     target = os.path.join(self.env["BLDDIR"], name + ".so")
     ensure_dir(target)
 
-    task = Task("cc_shlink", inputs=objects, outputs=target)
+    task = task_factory("cc_shlink")(inputs=objects, outputs=target)
     task.gen = self
     task.env = self.env
     task.func = cshlink
@@ -66,7 +66,7 @@ def static_link_task(self, name):
     target = self.bld.bld_root.declare(tmp)
     ensure_dir(target.abspath())
 
-    task = Task("cc_link", inputs=objects, outputs=[target])
+    task = task_factory("cc_link")(inputs=objects, outputs=[target])
     task.gen = self
     task.env = self.env
     task.func = clink
@@ -82,7 +82,7 @@ def ccprogram_task(self, name):
     target = declare_target()
     ensure_dir(target.abspath())
 
-    task = Task("ccprogram", inputs=objects, outputs=[target])
+    task = task_factory("ccprogram")(inputs=objects, outputs=[target])
     task.gen = self
     task.env = self.env
     task.func = ccprogram

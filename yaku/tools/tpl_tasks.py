@@ -7,7 +7,7 @@ from yaku.pprint \
         pprint
 from yaku.task \
     import \
-        Task
+        task_factory
 from yaku.task_manager \
     import \
         extension, TaskGen
@@ -39,7 +39,7 @@ def template(self):
 def template_task(self, node):
     out = node.change_ext("")
     target = node.parent.declare(out.name)
-    task = Task("template", inputs=[node], outputs=[target])
+    task = task_factory("template")(inputs=[node], outputs=[target])
     task.func = template
     task.env_vars = VARS["template"]
     task.env = self.env

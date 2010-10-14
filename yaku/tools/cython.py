@@ -6,7 +6,7 @@ from yaku.task_manager \
         extension, get_extension_hook
 from yaku.task \
     import \
-        Task
+        task_factory
 from yaku.compiled_fun \
     import \
         compile_fun
@@ -25,7 +25,7 @@ def cython_task(self, node):
     target = node.parent.declare(out.name)
     ensure_dir(target.name)
 
-    task = Task("cython", inputs=[node], outputs=[target])
+    task = task_factory("cython")(inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = []
     task.env = self.env

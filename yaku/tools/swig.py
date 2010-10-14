@@ -5,7 +5,7 @@ from yaku.task_manager \
         extension, get_extension_hook
 from yaku.task \
     import \
-        Task
+        task_factory
 from yaku.compiled_fun \
     import \
         compile_fun
@@ -23,7 +23,7 @@ def swig_hook(self, name):
     targets = [target + "_wrap.c", target + ".py"]
     for t in targets:
         ensure_dir(t)
-    task = Task("swig", inputs=name, outputs=targets)
+    task = task_factory("swig")(inputs=name, outputs=targets)
     task.func = swig_func
     task.env_vars = swig_vars
     task.env = self.env

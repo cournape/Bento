@@ -20,7 +20,18 @@ from yaku.errors \
 # TODO:
 #   - factory for tasks, so that tasks can be created from strings
 #   instead of import (import not extensible)
-class Task(object):
+def task_factory(name):
+    klass = _Task
+    if not klass._overriden:
+        klass._overriden = True
+        init = klass.__init__
+        def __init__(self, outputs, inputs, func=None, deps=None):
+            return init(self, name, outputs, inputs, func, deps)
+        klass.__init__ = __init__
+    return klass
+
+class _Task(object):
+    _overriden = False
     def __init__(self, name, outputs, inputs, func=None, deps=None):
         if isinstance(inputs, basestring):
             self.inputs = [inputs]

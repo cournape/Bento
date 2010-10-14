@@ -22,7 +22,7 @@ from yaku.compiled_fun \
         compile_fun
 from yaku.task \
     import \
-        Task
+        task_factory
 from yaku.utils \
     import \
         ensure_dir
@@ -121,7 +121,7 @@ def pycc_task(self, node):
     target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
-    task = Task("pycc", inputs=[node], outputs=[target])
+    task = task_factory("pycc")(inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = pycc_vars
     task.env = self.env
@@ -139,7 +139,7 @@ def pycxx_task(self, node):
     target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
-    task = Task("pycxx", inputs=[node], outputs=[target])
+    task = task_factory("pycxx")(inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = pycxx_vars
     task.env = self.env
@@ -157,7 +157,7 @@ def pylink_task(self, name):
     target = declare_target()
     ensure_dir(target.abspath())
 
-    task = Task("pylink", inputs=objects, outputs=[target])
+    task = task_factory("pylink")(inputs=objects, outputs=[target])
     task.gen = self
     task.func = pylink
     task.env_vars = pylink_vars

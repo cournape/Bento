@@ -6,7 +6,7 @@ from yaku.task_manager \
         extension, CompiledTaskGen
 from yaku.task \
     import \
-        Task
+        task_factory
 from yaku.compiled_fun \
     import \
         compile_fun
@@ -28,7 +28,7 @@ def fcompile_task(self, node):
     target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
-    task = Task("f77", inputs=[node], outputs=[target])
+    task = task_factory("f77")(inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = f77_vars
     task.env = self.env
@@ -96,7 +96,7 @@ def fprogram_task(self, name):
     target = declare_target()
     ensure_dir(target.abspath())
 
-    task = Task("fprogram", inputs=objects, outputs=[target])
+    task = task_factory("fprogram")(inputs=objects, outputs=[target])
     task.gen = self
     task.env = self.env
     task.func = fprogram

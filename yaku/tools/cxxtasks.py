@@ -6,7 +6,7 @@ import yaku.tools
 
 from yaku.task \
     import \
-        Task
+        task_factory
 from yaku.task_manager \
     import \
         extension, CompiledTaskGen
@@ -35,7 +35,7 @@ def cxxcompile_task(self, node):
     target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
-    task = Task("cxx", inputs=[node], outputs=[target])
+    task = task_factory("cxx")(inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = cxx_vars
     #print find_deps("foo.c", ["."])
@@ -54,7 +54,7 @@ def cxxprogram_task(self, name):
     target = declare_target()
     ensure_dir(target.abspath())
 
-    task = Task("cxxprogram", inputs=objects, outputs=[target])
+    task = task_factory("cxxprogram")(inputs=objects, outputs=[target])
     task.gen = self
     task.env = self.env
     task.func = cxxprogram
