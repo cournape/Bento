@@ -4,8 +4,8 @@ def setup(ctx):
     env = ctx.env
 
     ctx.env.update(
-       {"F77": ["gfortran"],
-        "F77_LINK": ["gfortran"],
+       {"F77": ["g77"],
+        "F77_LINK": ["g77"],
         "F77FLAGS": ["-W", "-g"],
         "F77_TGT_F": ["-o"],
         "F77_SRC_F": ["-c"],
@@ -14,7 +14,7 @@ def setup(ctx):
         "F77_PROGRAM_FMT": "%s"})
 
 def detect(ctx):
-    if yaku.utils.find_program("gfortran") is None:
+    if yaku.utils.find_program("g77") is None:
         return False
     else:
         return True

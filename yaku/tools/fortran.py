@@ -37,8 +37,16 @@ def fcompile_task(self, node):
     return [task]
 
 def configure(ctx):
-    cc = ctx.load_tool("gfortran")
-    cc.setup(ctx)
+    fc_type = None
+    for tool in ["gfortran", "g77"]:
+        fc = ctx.load_tool(tool)
+        if fc.detect(ctx):
+            fc_type = tool
+    if fc_type is None:
+        raise ValueError("No fortran compiler found")
+    else:
+        fc = ctx.load_tool(fc_type)
+        fc.setup(ctx)
 
 class FortranBuilder(object):
     def __init__(self, ctx):
