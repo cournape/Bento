@@ -53,7 +53,7 @@ def setup(ctx):
     ctx.env["CXX_OBJECT_FMT"] = "%s.obj"
     ctx.env["PROGRAM_FMT"] = "%s.exe"
 
-    for task_class in ["cc", "cxx"]:
+    for task_class in ["cc", "cxx", "pycc", "pycxx"]:
         klass = yaku.task.task_factory(task_class)
         saved = klass.exec_command
         klass.exec_command = _exec_command_factory(saved)

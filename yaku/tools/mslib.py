@@ -14,7 +14,7 @@ def setup(ctx):
     ctx.env["STATICLIB_FMT"] = "%s.lib"
 
     # XXX: hack
-    for task_class in ["cc_link", "cxx_link", "ccprogram", "cxxprogram"]:
+    for task_class in ["cc_link", "cxx_link", "ccprogram", "cxxprogram", "pylink"]:
         klass = yaku.task.task_factory(task_class)
         saved = klass.exec_command
         klass.exec_command = _exec_command_factory(saved)
