@@ -133,6 +133,10 @@ def load_tools(self, fid):
         tool_mod = _t[tool_name]
         if hasattr(tool_mod, "get_builder"):
             self.builders[tool_name] = tool_mod.get_builder(self)
+        # XXX: this is ugly - need to rethinkg tool
+        # initialization/configuration
+        if hasattr(tool_mod, "init"):
+            tool_mod.init()
     self.tools = tools
 
 class BuildContext(object):

@@ -1,3 +1,5 @@
+import distutils.ccompiler
+
 import yaku.task
 
 def _exec_command_factory(saved):
@@ -53,6 +55,16 @@ def setup(ctx):
     ctx.env["CXX_OBJECT_FMT"] = "%s.obj"
     ctx.env["PROGRAM_FMT"] = "%s.exe"
 
+    init()
+
+def init():
+    # We temporarily use distutils to initialize
+    # environment so that we can use msvc. This will be
+    # removed as soon as we have a proper msvc tool which
+    # knows how to initialize itself
+    compiler = distutils.ccompiler.new_compiler(
+            compiler="msvc")
+    compiler.initialize()
     for task_class in ["cc", "cxx", "pycc", "pycxx"]:
         klass = yaku.task.task_factory(task_class)
         saved = klass.exec_command
