@@ -4,7 +4,7 @@ Overview
 Bento is based on a declarative package description, which is parsed by the
 different build tools to do the actual work. There are currently two ways to
 create such a package description: by writing it from scratch, or by converting
-existing setup.py.
+an existing setup.py.
 
 Simple example
 --------------
@@ -57,7 +57,7 @@ this is not done automatically (yet).
 From existing setup.py
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Bentomaker has an experimental convert command to convert existing setup.py::
+Bentomaker has an experimental convert command to convert an existing setup.py::
 
     bentomaker convert
 

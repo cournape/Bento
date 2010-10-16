@@ -84,9 +84,9 @@ Retrieving data files at runtime
 It is often necessary to retrieve data files from your python code.
 For example, you may have a configuration file which needs to be read
 at startup. The simplest way to do so is to use __file__ and refer to
-data files relatively to python code. This is not very flexible,
-because it requires to deal with platform idiosyncraties w.r.t. files
-location.  Setuptools and its descendents has an alternative mechanism
+data files relative to python code. This is not very flexible,
+because it requires dealing with platform idiosyncraties w.r.t. file
+location.  Setuptools and its descendents have an alternative mechanism
 to retrieve resources at runtime, implemented in the pkg_resource
 module.
 
@@ -104,8 +104,7 @@ The file looks as follows::
     SHAREDSTATEDIR = "/usr/local/com"
     ...
 
-So you can import every path variable with their expanded value in
-your package::
+So you can import every path variable with its expanded value in your package::
 
     try:
         from foo.__bento_config import DOCDIR, SHAREDSTATEDIR
@@ -183,8 +182,8 @@ complex packages may require a more advanced configuration, e.g.:
       or even make).
     * add new options to an existing command
 
-Instead of craming too many features in the bento.info, bento allows you to add
-one (or more) "hook" files, which are regular python modules, but under the
+Instead of cramming too many features in the bento.info, bento allows you to
+add one (or more) "hook" files, which are regular python modules, but under the
 control of bento.
 
 Simple example: hello world
@@ -202,7 +201,7 @@ the hook file will look like::
         print "Yummy bento"
 
 As its name suggests, the startup method is executed before running any
-command, and before bentomaker itself parse the command line. As such, you do
+command, and before bentomaker itself parses the command line. As such, you do
 not want to do to many things there -- typically register new commands.
 
 Command hook and bento context
@@ -233,10 +232,10 @@ configure -> bento.commands.configure.Configure class). cmd_opts is a simple lis
     def pconfigure(ctx):
         print ctx.cmd_opts
 
-Each ctx variable also have a pkg member, which is a
+Each ctx variable also has a pkg member, which is a
 PackageDescription instance, and contains most package information.
 Metadata, extensions, path options, executables are all available,
-which enable the following:
+which enables the following:
 
     * access package information to generate new "targets" (new types
       of binary installers)
@@ -260,7 +259,7 @@ easier.
 
 *Note: unfortunately, there is still no public API for safe
 PackageDescription instances access. Most read access should be safe,
-but modifying package description members likely to break in the
+but modifying package description members is likely to break in the
 future*
 
 Hook and recursive package definitions
@@ -292,8 +291,8 @@ through this mechanism. Env can contain any key as used by yaku (that
 includes the compiler, compiler flags, etc...), but note that new
 flags are appended to existing values.
 
-You can also register entirely new builder for a given extension. This
-requires dealing with yaku relatively low-level API, but it enables
+You can also register an entirely new builder for a given extension. This
+requires dealing with yaku's relatively low-level API, but it enables
 basically any kind of transformation, like compiling each source
 differently, associating new tools to existing source suffix, etc....
 This is unfortunately the only way to override environments ATM::

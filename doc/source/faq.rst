@@ -13,7 +13,7 @@ our extensions have been made, but none succeeded.
 
 Bento is born out of this experience. We also believe that current solutions
 based on distutils suffer a lot of NIH, and ignore lessons learned in packaging
-in most other systems.  Bento aims at shamelessly copy what works in other
+in most other systems.  Bento aims at shamelessly copying what works in other
 systems (CPAN, CRAN, JSAN, HackageDB).
 
 What are the goals of bento ?
@@ -42,7 +42,7 @@ distutils is deeply flawed:
       but knowing the install prefix at build time is often useful.
     - There is no developer documentation, and what consitutes public API is
       not documented either. Consequently, every non trivial distutils
-      extension relies on internal details, and as such are fragile.
+      extension relies on internal details, and as such is fragile.
     - Extending by inheritence does not work well: when two modules A and B
       extend distutils, it becomes difficult for B to reuse A (for example,
       dealing with setuptools in numpy.distutils extensions has been a constant
@@ -50,7 +50,7 @@ distutils is deeply flawed:
     - Customizing compilation flags, and more generally some tools involved in
       compilation is too complicated. For example, adding a new tool in the
       build chain requires rewriting the build command, which is aggravated by
-      the previous issue. We believe fixing this would end up to rewriting the
+      the previous issue. We believe fixing this would end up in rewriting the
       whole thing.
     - Improving distutils to handle dependencies automatically (rebuild only
       the necessary .c files) is difficult because of the way distutils is
@@ -82,7 +82,7 @@ India in december 2009).
 
 Starting from the distutils codebase is not very appealing, as most of it would
 need to be scrapped (at least the whole command and compiler business needs to
-be completely rewritten). There are also irreconciliable differences on some
+be completely rewritten). There are also irreconcilable differences on some
 key points. In particular, we think the following features are essential:
 
     1. specified and versioned metadata formats, instead of implementation
@@ -96,9 +96,9 @@ key points. In particular, we think the following features are essential:
 Although controversial in the python community, there is a large consensus
 within the scipy community on those points.  Some of them have been rejected by
 various distutils2 members (2, 3 and 4 in particular), and we are unwilling to
-compromize on them. Distutils-related PEP pushed by the distutils2 team will be
-implemented on a case per case basis (some of them are obsolete as far as bento
-is concerned, in the sense that they are already implemented, if only in
+compromise on them. Distutils-related PEPs pushed by the distutils2 team will
+be implemented on a case per case basis (some of them are obsolete as far as
+bento is concerned, in the sense that they are already implemented, if only in
 intent).
 
 Moreover, as bento is designed from the ground up to be split into mostly
@@ -117,7 +117,7 @@ non-Unix platforms), most of this knowledge actually comes from autoconf
 through the sysconfig module.
 
 Any non-superficial modification of the C compilation part of distutils will
-also require to rework the platform-specific knowledge anyway.
+also require reworking the platform-specific knowledge anyway.
 
 What about existing projects using distutils ?
 ==============================================
@@ -135,7 +135,7 @@ the build and installation.
 Is bento based on existing tools ?
 ====================================
 
-The main inspirations for bento current design are taken from:
+The main inspirations for bento's current design are taken from:
 
     - `Cabal`_, the packaging tool for Haskell: the bento file format is
       mainly an adaptation of Cabal to python.
