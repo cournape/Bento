@@ -39,17 +39,17 @@ Building and installing
 Bento includes bentomaker, a command-line interface to configure, build and
 install simple packages. Its interface is similar to autotools::
 
-    bento configure --prefix=somedirectory
-    bento build
-    bento install
+    bentomaker configure --prefix=somedirectory
+    bentomaker build
+    bentomaker install
 
 In addition, the following subcommands are available::
 
-    bento sdist
+    bentomaker sdist
 
 to build a source distribution and::
 
-    bento build_egg
+    bentomaker build_egg
 
 to build an egg. Building an egg requires to run configure and build first -
 this is not done automatically (yet).
