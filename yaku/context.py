@@ -213,6 +213,7 @@ def get_cfg():
     env["VERBOSE"] = False
     if "-v" in sys.argv:
         env["VERBOSE"] = True
+    env["ENV"] = {}
 
     srcnode, bldnode = create_top_nodes(
             os.path.abspath(os.getcwd()),
