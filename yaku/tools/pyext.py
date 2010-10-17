@@ -187,7 +187,7 @@ def get_builder(ctx):
 
 CC_SIGNATURE = {
         "gcc": re.compile("gcc version"),
-        "msvc": re.compile("Microsoft \(R\) 32-bit C/C\+\+ Optimizing Compiler")
+        "msvc": re.compile("Microsoft \(R\) (32-bit |)C/C\+\+ Optimizing Compiler")
 }
 
 def detect_cc_type(ctx, cc_cmd):
@@ -255,6 +255,8 @@ def configure(ctx):
 
         cc_exec = get_distutils_cc_exec(ctx, compiler_type)
         yaku_cc_type = detect_cc_type(ctx, cc_exec)
+        if yaku_cc_type is None:
+            raise ValueError("No adequate C compiler found (distutils mode)")
 
         _setup_compiler(ctx, yaku_cc_type)
     else:
