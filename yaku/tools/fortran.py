@@ -24,7 +24,7 @@ def fortran_task(self, node):
     return tasks
 
 def fcompile_task(self, node):
-    base = "%s.o" % node.name
+    base = self.env["F77_OBJECT_FMT"] % node.name
     target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
