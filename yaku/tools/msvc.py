@@ -7,7 +7,7 @@ def _exec_command_factory(saved):
         new_cmd = []
         carry = ""
         for c in cmd:
-            if c in ["/Fo", "/out:", "/OUT:"]:
+            if c in ["/Fo", "/out:", "/OUT:", "/object:"]:
                 carry = c
             else:
                 c = carry + c
