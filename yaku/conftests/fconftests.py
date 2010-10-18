@@ -131,9 +131,9 @@ def check_fortran_verbose_flag(conf):
 """
     conf.start_message("Checking for verbose flag")
     for flag in ["-v", "--verbose", "-V"]:
-        old = copy.deepcopy(conf.env["LINKFLAGS"])
+        old = copy.deepcopy(conf.env["F77_LINKFLAGS"])
         try:
-            conf.env["LINKFLAGS"].append(flag)
+            conf.env["F77_LINKFLAGS"].append(flag)
             ret = create_fprogram_conf_taskgen(conf,
                     "check_fc_verbose", code)
             stdout = conf.stdout_cache[conf.last_task.signature()]
@@ -142,7 +142,7 @@ def check_fortran_verbose_flag(conf):
                 conf.env[FC_VERBOSE_FLAG] = flag
                 return True
         finally:
-            conf.env["LINKFLAGS"] = old
+            conf.env["F77_LINKFLAGS"] = old
     return False
 
 def check_fortran_runtime_flags(conf):
