@@ -86,15 +86,12 @@ def _create_compile_conf_taskgen(conf, name, body, headers,
     except TaskRunFailure, e:
         explanation = unicode(e).encode("utf-8")
 
-    write_log(conf.log, tasks, code, succeed, explanation)
+    write_log(conf, conf.log, tasks, code, succeed, explanation)
     return succeed
 
-def write_log(log, tasks, code, succeed, explanation):
-    log.write("=" * 79 + "\n")
-    log.write("Tested code is:\n")
-    log.write("~~~~~~~~~\n")
-    log.write(code)
-    log.write("~~~~~~~~~\n")
+def write_log(conf, log, tasks, code, succeed, explanation):
+    for line in code.splitlines():
+        log.write("  |%s\n" % line)
 
     if succeed:
         log.write("---> Succeeded !\n")
@@ -174,7 +171,7 @@ def _create_binary_conf_taskgen(conf, name, body, builder, headers=None,
         msg = str(e)
         explanation = unicode(msg).encode("utf-8")
 
-    write_log(conf.log, tasks, code, succeed, explanation)
+    write_log(conf, conf.log, tasks, code, succeed, explanation)
     return succeed
 
 VALUE_SUB = re.compile('[^A-Z0-9_]')
@@ -267,7 +264,7 @@ def ccompile(conf, sources):
         explanation = unicode(msg).encode("utf-8")
 
     code = sources[0].read()
-    write_log(conf.log, builder.ctx.tasks, code, succeed, explanation)
+    write_log(conf, conf.log, builder.ctx.tasks, code, succeed, explanation)
     return succeed
 
 def create_conf_blddir(conf, name, body):

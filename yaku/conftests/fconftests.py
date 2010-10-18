@@ -105,7 +105,7 @@ def _create_fbinary_conf_taskgen(conf, name, body, builder):
     except TaskRunFailure, e:
         explanation = str(e)
 
-    write_log(conf.log, tasks, code, succeed, explanation)
+    write_log(conf, conf.log, tasks, code, succeed, explanation)
     return succeed
 
 def check_fcompiler(conf, msg=None):

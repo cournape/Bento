@@ -121,6 +121,8 @@ class ConfigureContext(object):
 
     def start_message(self, msg):
         sys.stderr.write(msg + "... ")
+        self.log.write("=" * 79 + "\n")
+        self.log.write("%s\n" % msg)
 
     def end_message(self, msg):
         sys.stderr.write("%s\n" % msg)
