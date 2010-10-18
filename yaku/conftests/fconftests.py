@@ -143,6 +143,7 @@ def check_fortran_verbose_flag(conf):
                 return True
         finally:
             conf.env["F77_LINKFLAGS"] = old
+    conf.end_message("failed !")
     return False
 
 def check_fortran_runtime_flags(conf):
