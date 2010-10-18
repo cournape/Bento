@@ -240,29 +240,6 @@ def generate_config_h(conf_res, name):
     finally:
         fid.close()
 
-def ccompile(conf, sources):
-    conf.tasks = [] # XXX: hack
-    builder = conf.builders["ctasks"]
-    builder.ccompile("yomama", sources, conf.env)
-    # XXX: accessing tasks like this is ugly - the whole logging thing
-    # needs more thinking
-    for t in builder.ctx.tasks:
-        t.disable_output = True
-        t.log = conf.log
-
-    succeed = False
-    explanation = None
-    try:
-        run_tasks(conf, builder.ctx.tasks)
-        succeed = True
-    except TaskRunFailure, e:
-        msg = str(e)
-        explanation = unicode(msg).encode("utf-8")
-
-    code = sources[0].read()
-    write_log(conf, conf.log, builder.ctx.tasks, code, succeed, explanation)
-    return succeed
-
 def create_conf_blddir(conf, name, body):
     dirname = ".conf-%s-%s" % (name, hash(body))
     bld_root = os.path.join(conf.bld_root.abspath(), dirname)

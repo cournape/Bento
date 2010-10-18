@@ -22,7 +22,7 @@ from yaku.utils \
         ensure_dir
 from yaku.conf \
     import create_link_conf_taskgen, create_compile_conf_taskgen, \
-           generate_config_h, ConfigureContext, ccompile, \
+           generate_config_h, ConfigureContext, \
            write_log, create_file, create_conf_blddir
 from yaku.conftests.fconftests_imp \
     import \

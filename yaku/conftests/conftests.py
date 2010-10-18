@@ -7,7 +7,7 @@ from yaku.utils \
         ensure_dir
 from yaku.conf \
     import create_program_conf_taskgen, create_compile_conf_taskgen, \
-           generate_config_h, ConfigureContext, ccompile, create_file
+           generate_config_h, ConfigureContext, create_file
 
 def check_compiler(conf, msg=None):
     code = """\
