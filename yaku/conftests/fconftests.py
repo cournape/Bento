@@ -138,9 +138,9 @@ flags (or to define the %s variable)""" % FC_VERBOSE_FLAG)
 
     conf.start_message("Checking for fortran runtime flags")
 
-    old = copy.deepcopy(conf.env["LINKFLAGS"])
+    old = copy.deepcopy(conf.env["F77_LINKFLAGS"])
     try:
-        conf.env["LINKFLAGS"].append(conf.env["FC_VERBOSE_FLAG"])
+        conf.env["F77_LINKFLAGS"].append(conf.env["FC_VERBOSE_FLAG"])
         ret = create_fprogram_conf_taskgen(conf, "check_fc", code)
         if ret:
             stdout = conf.stdout_cache[conf.last_task.signature()]
@@ -152,7 +152,7 @@ flags (or to define the %s variable)""" % FC_VERBOSE_FLAG)
             conf.end_message("failed !")
             return False
     finally:
-        conf.env["LINKFLAGS"] = old
+        conf.env["F77_LINKFLAGS"] = old
     return False
 
 def check_fortran_dummy_main(conf):
@@ -173,9 +173,9 @@ int main()
 
     conf.start_message("Checking whether fortran needs dummy main")
 
-    old = copy.deepcopy(conf.env["LINKFLAGS"])
+    old = copy.deepcopy(conf.env["F77_LINKFLAGS"])
     try:
-        conf.env["LINKFLAGS"].extend(conf.env[FC_RUNTIME_LDFLAGS])
+        conf.env["F77_LINKFLAGS"].extend(conf.env[FC_RUNTIME_LDFLAGS])
         ret = create_link_conf_taskgen(conf, "check_fc_dummy_main",
                 code_tpl % {"main": "FC_DUMMY_MAIN"})
         if ret:
@@ -186,7 +186,7 @@ int main()
             conf.end_message("failed !")
             return False
     finally:
-        conf.env["LINKFLAGS"] = old
+        conf.env["F77_LINKFLAGS"] = old
 
 def check_fortran_mangling(conf):
     subr = """
@@ -212,7 +212,7 @@ def check_fortran_mangling(conf):
 
     conf.start_message("Checking fortran mangling scheme")
     old = {}
-    for k in ["LINKFLAGS", "LIBS", "LIBDIR"]:
+    for k in ["F77_LINKFLAGS", "LIBS", "LIBDIR"]:
         old[k] = copy.deepcopy(conf.env[k])
     try:
         mangling_lib = "check_fc_mangling_lib"
