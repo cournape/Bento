@@ -58,20 +58,6 @@ def create_fstatic_conf_taskgen(conf, name, body):
     finally:
         conf.bld_root = old_root
 
-def logged_exec(self, cmd, cwd):
-    if cwd is None:
-        cwd = self.gen.bld.bld_root.abspath()
-    try:
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT, cwd=cwd)
-        stdout = p.communicate()[0].decode("utf-8")
-        if p.returncode:
-            raise TaskRunFailure(cmd, stdout)
-        self.gen.bld.stdout_cache[self.signature()] = stdout
-    except WindowsError, e:
-        raise TaskRunFailure(cmd, str(e))
-    return
-
 def _create_fbinary_conf_taskgen(conf, name, body, builder):
     # FIXME: refactor commonalities between configuration taskgens
     code = body
@@ -84,12 +70,6 @@ def _create_fbinary_conf_taskgen(conf, name, body, builder):
     tasks = task_gen.process()
     link_task = builder(task_gen, name)
 
-    t = link_task[0]
-    exec_command = t.exec_command
-    if sys.version_info >= (3,):
-        t.exec_command = types.MethodType(logged_exec, t)
-    else:
-        t.exec_command = types.MethodType(logged_exec, t, t.__class__)
     tasks.extend(link_task)
     conf.last_task = tasks[-1]
 

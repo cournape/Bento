@@ -103,22 +103,18 @@ def write_log(conf, log, tasks, code, succeed, explanation):
 
     s = StringIO()
     s.write("Command sequence was:\n")
-    log_command(s, tasks)
+    for t in tasks:
+        sig = t.signature()
+        s.write("%s\n" % " ".join(conf.cmd_cache[sig]))
+        if conf.stdout_cache.has_key(sig):
+            stdout = conf.stdout_cache[sig]
+            if stdout:
+                s.write("\n")
+                for line in stdout.splitlines():
+                    s.write("%s\n" % line)
+                s.write("\n")
     log.write(s.getvalue())
     log.write("\n")
-
-def log_command(logger, tasks):
-    # XXX: hack to retrieve the command line and put it in the
-    # output...
-    for t in tasks:
-        def fake_exec(self, cmd, cwd):
-            logger.write(" ".join(cmd))
-            logger.write("\n")
-        if sys.version_info >= (3,):
-            t.exec_command = types.MethodType(fake_exec, t)
-        else:
-            t.exec_command = types.MethodType(fake_exec, t, t.__class__)
-        t.run()
 
 def create_link_conf_taskgen(conf, name, body, headers=None,
         extension=".c"):

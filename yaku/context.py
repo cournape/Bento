@@ -64,6 +64,7 @@ class ConfigureContext(object):
         self.conf_results = []
         self._configured = {}
         self.stdout_cache = {}
+        self.cmd_cache = {}
 
     def load_tool(self, tool, tooldir=None):
         _t = import_tools([tool], tooldir)
@@ -102,6 +103,7 @@ class ConfigureContext(object):
         try:
             dump(self.cache, fid)
             dump(self.stdout_cache, fid)
+            dump(self.cmd_cache, fid)
         finally:
             fid.close()
 
@@ -204,6 +206,7 @@ def get_cfg():
         try:
             ctx.cache = load(fid)
             ctx.stdout_cache = load(fid)
+            ctx.cmd_cache = load(fid)
         finally:
             fid.close()
 

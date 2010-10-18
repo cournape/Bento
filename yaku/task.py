@@ -114,19 +114,24 @@ class _Task(object):
             else:
                 pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join([i.bldpath() for i in self.inputs])))
 
+        if hasattr(self.gen.bld, "cmd_cache"):
+            self.gen.bld.cmd_cache[self.signature()] = cmd[:]
         try:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT, cwd=cwd)
             stdout = p.communicate()[0].decode("utf-8")
             if p.returncode:
                 raise TaskRunFailure(cmd, stdout)
-            if self.disable_output:
-                if sys.version_info >= (3,):
-                    self.log.write(stdout)
-                else:
-                    self.log.write(stdout.encode("utf-8"))
+            if sys.version_info >= (3,):
+                stdout = stdout
             else:
-                sys.stderr.write(stdout.encode("utf-8"))
+                stdout = stdout.encode("utf-8")
+            if self.disable_output:
+                self.log.write(stdout)
+            else:
+                sys.stderr.write(stdout)
+            if hasattr(self.gen.bld, "stdout_cache"):
+                self.gen.bld.stdout_cache[self.signature()] = stdout
         except OSError, e:
             raise TaskRunFailure(cmd, str(e))
         except WindowsError, e:
