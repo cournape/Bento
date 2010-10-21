@@ -241,7 +241,7 @@ def generate_config_h(conf_res, name):
         fid.close()
 
 def create_conf_blddir(conf, name, body):
-    dirname = ".conf-%s-%s" % (name, hash(body))
+    dirname = ".conf-%s-%s" % (name, hash(name+body))
     bld_root = os.path.join(conf.bld_root.abspath(), dirname)
     if not os.path.exists(bld_root):
         os.makedirs(bld_root)
