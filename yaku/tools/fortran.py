@@ -102,6 +102,7 @@ class FortranBuilder(yaku.tools.Builder):
             fc_type = compiler_type
         fc = ctx.load_tool(fc_type)
         fc.setup(ctx)
+        self.configured = True
 
 def fprogram_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
