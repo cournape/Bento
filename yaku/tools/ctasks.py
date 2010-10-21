@@ -16,6 +16,7 @@ from yaku.utils \
 from yaku.compiled_fun \
     import \
         compile_fun
+import yaku.tools
 
 ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${INCPATH} ${CC_TGT_F}${TGT[0].abspath()} ${CC_SRC_F}${SRC}", False)
 
@@ -131,13 +132,12 @@ def _merge_env(_env, new_env):
     else:
         return _env
 
-class CCBuilder(object):
+class CCBuilder(yaku.tools.Builder):
     def clone(self):
         return CCBuilder(self.ctx)
 
     def __init__(self, ctx):
-        self.ctx = ctx
-        self.env = copy.deepcopy(ctx.env)
+        yaku.tools.Builder.__init__(self, ctx)
 
     def ccompile(self, name, sources, env=None):
         task_gen = CompiledTaskGen("cccompile", self.ctx,
@@ -199,43 +199,48 @@ class CCBuilder(object):
             outputs.extend(t.outputs)
         return outputs
 
-def configure(ctx):
-    if sys.platform == "win32":
-        candidates = ["msvc", "gcc"]
-    else:
-        candidates = ["gcc", "cc"]
+    def configure(self, candidates=None):
+        ctx = self.ctx
+        if candidates is None:
+            if sys.platform == "win32":
+                candidates = ["msvc", "gcc"]
+            else:
+                candidates = ["gcc", "cc"]
 
-    def _detect_cc():
-        detected = None
-        sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
-        try:
-            for cc_type in candidates:
-                sys.stderr.write("Looking for %s... " % cc_type)
-                try:
-                    mod = __import__(cc_type)
-                    if mod.detect(ctx):
-                        sys.stderr.write("yes\n")
-                        detected = cc_type
-                        break
-                except:
-                    pass
-                sys.stderr.write("no!\n")
-            return detected
-        finally:
-            sys.path.pop(0)
+        def _detect_cc():
+            detected = None
+            sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
+            try:
+                for cc_type in candidates:
+                    sys.stderr.write("Looking for %s (c compiler) ... " % cc_type)
+                    try:
+                        mod = __import__(cc_type)
+                        if mod.detect(ctx):
+                            sys.stderr.write("yes\n")
+                            ctx.env["cc_type"] = cc_type
+                            detected = cc_type
+                            break
+                    except:
+                        pass
+                    sys.stderr.write("no!\n")
+                return detected
+            finally:
+                sys.path.pop(0)
 
-    cc_type = _detect_cc()
-    if cc_type is None:
-        raise ValueError("No C compiler found!")
-    cc = ctx.load_tool(cc_type)
-    cc.setup(ctx)
+        cc_type = _detect_cc()
+        if cc_type is None:
+            raise ValueError("No C compiler found!")
+        cc = ctx.load_tool(cc_type)
+        cc.setup(ctx)
 
-    if sys.platform == "win32":
-        lib = ctx.load_tool("mslib")
-        lib.setup(ctx)
-    else:
-        ar = ctx.load_tool("ar")
-        ar.setup(ctx)
+        if sys.platform == "win32":
+            lib = ctx.load_tool("mslib")
+            lib.setup(ctx)
+        else:
+            ar = ctx.load_tool("ar")
+            ar.setup(ctx)
+
+        self.configured = True
 
 def get_builder(ctx):
     return CCBuilder(ctx)

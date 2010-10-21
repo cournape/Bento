@@ -1,4 +1,5 @@
 import sys
+import copy
 
 from yaku._config \
     import \
@@ -18,3 +19,12 @@ def import_tools(tool_list, tooldirs=None):
         return ret
     finally:
         sys.path = old_sys
+
+class Builder(object):
+    def __init__(self, ctx):
+        self.configured = False
+        self.ctx = ctx
+        self.env = copy.deepcopy(ctx.env)
+
+    def configure(self):
+        pass

@@ -73,8 +73,6 @@ class ConfigureContext(object):
         self._tool_modules[tool] = mod
         if hasattr(mod, "get_builder"):
             self.builders[tool] = mod.get_builder(self)
-        if not hasattr(mod, "configure"):
-            mod.configure = lambda x: None
         return mod
 
     def use_tools(self, tools, tooldir=None):
@@ -85,15 +83,14 @@ class ConfigureContext(object):
             else:
                 _t = self.load_tool(t, tooldir)
             ret[t] = _t
-        for mod in self._tool_modules.values():
-            if not self._configured.has_key(mod):
-                mod.configure(self)
-                self._configured[mod] = True
+        self.setup_tools()
         return ret
 
     def setup_tools(self):
-        for mod in self._tool_modules.values():
-            mod.configure(self)
+        for builder in self.builders.values():
+            if not builder.configured:
+               builder.configure()
+               self._configured[builder] = True
 
     def store(self):
         self.env.store(DEFAULT_ENV)

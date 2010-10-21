@@ -17,6 +17,7 @@ from yaku.utils \
 from yaku.tools.ctasks \
     import \
         _merge_env
+import yaku.tools
 
 VARS = {"template": ["SUBST_DICT"]}
 
@@ -45,10 +46,9 @@ def template_task(self, node):
     task.env = self.env
     return [task]
 
-class TemplateBuilder(object):
+class TemplateBuilder(yaku.tools.Builder):
     def __init__(self, ctx):
-        self.ctx = ctx
-        self.env = copy.deepcopy(ctx.env)
+        yaku.tools.Builder.__init__(self, ctx)
 
     def build(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]

@@ -167,20 +167,49 @@ def pylink_task(self, name):
 
 # XXX: fix merge env location+api
 from yaku.tools.ctasks import _merge_env
-class PythonBuilder(object):
+class PythonBuilder(yaku.tools.Builder):
     def clone(self):
         return PythonBuilder(self.ctx)
 
     def __init__(self, ctx):
-        self.ctx = ctx
-        self.env = copy.deepcopy(ctx.env)
-        self.compiler_type = "default"
-        self.use_distutils = True
+        yaku.tools.Builder.__init__(self, ctx)
 
     def extension(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         return create_pyext(self.ctx, name, sources,
                 _merge_env(self.env, env))
+
+    def configure(self, candidates=None, use_distutils=True):
+        ctx = self.ctx
+        # How we do it
+        # 1: for distutils-based configuration
+        #   - get compile/flags flags from sysconfig
+        #   - detect yaku tool name from CC used by distutils:
+        #       - get the compiler executable used by distutils ($CC
+        #       variable)
+        #       - try to determine yaku tool name from $CC
+        #   - apply necessary variables from yaku tool to $PYEXT_
+        #   "namespace"
+        if candidates is None:
+            compiler_type = "default"
+        else:
+            compiler_type = candidates[0]
+
+        if use_distutils:
+            dist_env = setup_pyext_env(ctx, compiler_type)
+            ctx.env.update(dist_env)
+
+            cc_exec = get_distutils_cc_exec(ctx, compiler_type)
+            yaku_cc_type = detect_cc_type(ctx, cc_exec)
+            if yaku_cc_type is None:
+                raise ValueError("No adequate C compiler found (distutils mode)")
+
+            _setup_compiler(ctx, yaku_cc_type)
+        else:
+            dist_env = setup_pyext_env(ctx, compiler_type, False)
+            ctx.env.update(dist_env)
+            _setup_compiler(ctx, compiler_type)
+        self.configured = True
 
 def get_builder(ctx):
     return PythonBuilder(ctx)
@@ -236,33 +265,6 @@ def get_distutils_cc_exec(ctx, compiler_type="default"):
         cc = compiler.compiler_so
     sys.stderr.write("%s\n" % " ".join(cc))
     return cc
-
-def configure(ctx):
-    # How we do it
-    # 1: for distutils-based configuration
-    #   - get compile/flags flags from sysconfig
-    #   - detect yaku tool name from CC used by distutils:
-    #       - get the compiler executable used by distutils ($CC
-    #       variable)
-    #       - try to determine yaku tool name from $CC
-    #   - apply necessary variables from yaku tool to $PYEXT_
-    #   "namespace"
-    compiler_type = ctx.builders["pyext"].compiler_type
-
-    if ctx.builders["pyext"].use_distutils:
-        dist_env = setup_pyext_env(ctx, compiler_type)
-        ctx.env.update(dist_env)
-
-        cc_exec = get_distutils_cc_exec(ctx, compiler_type)
-        yaku_cc_type = detect_cc_type(ctx, cc_exec)
-        if yaku_cc_type is None:
-            raise ValueError("No adequate C compiler found (distutils mode)")
-
-        _setup_compiler(ctx, yaku_cc_type)
-    else:
-        dist_env = setup_pyext_env(ctx, compiler_type, False)
-        ctx.env.update(dist_env)
-        _setup_compiler(ctx, compiler_type)
 
 def _setup_compiler(ctx, cc_type):
     old_env = ctx.env

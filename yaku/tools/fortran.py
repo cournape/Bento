@@ -13,6 +13,7 @@ from yaku.compiled_fun \
 from yaku.utils \
     import \
         ensure_dir
+import yaku.tools
 
 f77_compile, f77_vars = compile_fun("f77", "${F77} ${F77FLAGS} ${F77_TGT_F}${TGT[0].abspath()} ${F77_SRC_F}${SRC}", False)
 
@@ -36,25 +37,9 @@ def fcompile_task(self, node):
     self.object_tasks.append(task)
     return [task]
 
-def configure(ctx):
-    if ctx.builders["fortran"].compiler_type == "default":
-        fc_type = None
-        for tool in ["gfortran", "g77"]:
-            fc = ctx.load_tool(tool)
-            if fc.detect(ctx):
-                fc_type = tool
-        if fc_type is None:
-            raise ValueError("No fortran compiler found")
-    else:
-        fc_type = ctx.builders["fortran"].compiler_type
-    fc = ctx.load_tool(fc_type)
-    fc.setup(ctx)
-
-class FortranBuilder(object):
+class FortranBuilder(yaku.tools.Builder):
     def __init__(self, ctx):
-        self.ctx = ctx
-        self.compiler_type = "default"
-        self.env = copy.deepcopy(ctx.env)
+        yaku.tools.Builder.__init__(self, ctx)
 
     def ccompile(self, name, sources, env=None):
         _env = copy.deepcopy(self.env)
@@ -97,6 +82,26 @@ class FortranBuilder(object):
         for t in ltask:
             outputs.extend(t.outputs)
         return outputs
+
+    def configure(self, candidates=None):
+        ctx = self.ctx
+        if candidates is None:
+            compiler_type = "default"
+        else:
+            compiler_type = candidates[0]
+
+        if compiler_type == "default":
+            fc_type = None
+            for tool in ["gfortran", "g77"]:
+                fc = ctx.load_tool(tool)
+                if fc.detect(ctx):
+                    fc_type = tool
+            if fc_type is None:
+                raise ValueError("No fortran compiler found")
+        else:
+            fc_type = compiler_type
+        fc = ctx.load_tool(fc_type)
+        fc.setup(ctx)
 
 def fprogram_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
