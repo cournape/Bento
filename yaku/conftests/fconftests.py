@@ -110,7 +110,13 @@ def check_fortran_verbose_flag(conf):
        end
 """
     conf.start_message("Checking for verbose flag")
-    for flag in ["-v", "--verbose", "-V"]:
+    if not conf.builders["ctasks"].configured:
+        raise ValueError("'ctasks'r needs to be configured first!")
+    if sys.platform == "win32":
+        conf.end_message("none needed")
+        conf.env[FC_VERBOSE_FLAG] = []
+        return True
+    for flag in ["-v", "--verbose", "-V", "-verbose"]:
         old = copy.deepcopy(conf.env["F77_LINKFLAGS"])
         try:
             conf.env["F77_LINKFLAGS"].append(flag)
@@ -127,6 +133,22 @@ def check_fortran_verbose_flag(conf):
     return False
 
 def check_fortran_runtime_flags(conf):
+    if not conf.builders["ctasks"].configured:
+        raise ValueError("'ctasks'r needs to be configured first!")
+    if sys.platform == "win32":
+        return _check_fortran_runtime_flags_win32(conf)
+    else:
+        return _check_fortran_runtime_flags(conf)
+
+def _check_fortran_runtime_flags_win32(conf):
+    if conf.env["cc_type"] == "msvc":
+        conf.start_message("Checking for fortran runtime flags")
+        conf.end_message("none needed")
+        conf.env[FC_RUNTIME_LDFLAGS] = []
+    else:
+        raise NotImplementedError("GNU support on win32 not ready")
+
+def _check_fortran_runtime_flags(conf):
     if not conf.env.has_key(FC_VERBOSE_FLAG):
         raise ValueError("""\
 You need to call check_fortran_verbose_flag before getting runtime
