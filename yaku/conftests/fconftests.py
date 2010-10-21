@@ -230,8 +230,14 @@ def check_fortran_mangling(conf):
                 names = {"foobar": mangle_func("foobar", u, du, case),
                          "foo_bar": mangle_func("foo_bar", u, du, case)}
                 prog = prog_tmpl % names
-                ret = create_link_conf_taskgen(conf,
-                        "check_fc_mangling_main", main + prog)
+                name = "check_fc_mangling_main"
+                def _name(u):
+                    if u == "_":
+                        return "u"
+                    else:
+                        return "nu"
+                name += "_%s_%s_%s" % (_name(u), _name(du), case)
+                ret = create_link_conf_taskgen(conf, name, main + prog)
                 if ret:
                     conf.env["FC_MANGLING"] = (u, du, case)
                     conf.end_message("%r %r %r" % (u, du, case))
