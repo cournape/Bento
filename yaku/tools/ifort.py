@@ -7,7 +7,7 @@ import yaku.task
 
 from yaku.tools.mscommon.common \
     import \
-        read_keys, open_key, close_key, get_output, parse_output
+        read_keys, open_key, close_key, get_output
 from yaku.tools.msvc \
     import \
         _exec_command_factory
@@ -81,27 +81,24 @@ def setup(ctx):
         pdir = product_dir_fc(availables[versions[0]])
         batfile = os.path.join(pdir, "bin", "ifortvars.bat")
 
-        out = get_output(batfile, _ABI2BATABI[abi])
-        d = parse_output(out)
-        intel_env = {}
+        d = get_output(ctx, batfile, _ABI2BATABI[abi])
         for k, v in d.items():
-            #old = os.environ.get(k, None)
-            #if old is None:
-            #    old = []
-            #else:
-            #    old = old.split(os.pathsep)
-            #intel_env[k] = os.pathsep.join(list(set(v).difference(old))).encode("mbcs")
-            intel_env[k] = os.pathsep.join(v).encode("mbcs")
-        env["ENV"] = intel_env
+            if k in ["LIB"]:
+                ctx.env.extend("LIBDIR", v, create=True)
+            elif k in ["INCLUDE"]:
+                ctx.env.extend("CPPPATH", v, create=True)
+        for p in d["PATH"]:
+            exe = os.path.join(p, "ifort.exe")
+            if os.path.exists(exe):
+                env["F77"] = [exe]
+                env["F77_LINK"] = [exe]
+                break
 
-    init()
-
-def init():
-    if sys.platform == "win32":
-        for task_class in ["f77", "fprogram"]:
-           klass = yaku.task.task_factory(task_class)
-           saved = klass.exec_command
-           klass.exec_command = _exec_command_factory(saved)
+if sys.platform == "win32":
+    for task_class in ["f77", "fprogram"]:
+       klass = yaku.task.task_factory(task_class)
+       saved = klass.exec_command
+       klass.exec_command = _exec_command_factory(saved)
 
 def detect(ctx):
     if yaku.utils.find_program("ifort") is None:
