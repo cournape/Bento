@@ -13,11 +13,14 @@ from yaku.compiled_fun \
 from yaku.utils \
     import \
         ensure_dir
+from yaku.tools.ctasks \
+    import \
+        apply_libdir
 import yaku.tools
 
 f77_compile, f77_vars = compile_fun("f77", "${F77} ${F77FLAGS} ${F77_TGT_F}${TGT[0].abspath()} ${F77_SRC_F}${SRC}", False)
 
-fprogram, fprogram_vars = compile_fun("fprogram", "${F77_LINK} ${F77_LINK_SRC_F}${SRC} ${F77_LINK_TGT_F}${TGT[0].abspath()} ${F77_LINKFLAGS}", False)
+fprogram, fprogram_vars = compile_fun("fprogram", "${F77_LINK} ${F77_LINK_SRC_F}${SRC} ${F77_LINK_TGT_F}${TGT[0].abspath()} ${APP_LIBDIR} ${F77_LINKFLAGS}", False)
 
 @extension(".f")
 def fortran_task(self, node):
@@ -70,6 +73,7 @@ class FortranBuilder(yaku.tools.Builder):
         task_gen = CompiledTaskGen("fprogram", self.ctx,
                                    sources, name)
         task_gen.env = _env
+        apply_libdir(task_gen)
 
         tasks = task_gen.process()
         ltask = fprogram_task(task_gen, name)
