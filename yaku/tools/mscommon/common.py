@@ -99,6 +99,19 @@ def read_values(base, key):
         i += 1
     return d
 
+def read_value(key, root=_winreg.HKEY_LOCAL_MACHINE):
+    base = os.path.dirname(key)
+    val = os.path.basename(key)
+    try:
+        handle = _winreg.OpenKeyEx(root, base)
+        try:
+            value, type = _winreg.QueryValueEx(handle, val)
+            return value
+        finally:
+            _winreg.CloseKey(handle)
+    except _winreg.error:
+        return None
+
 def convert_mbcs(s):
     dec = getattr(s, "decode", None)
     if dec is not None:
