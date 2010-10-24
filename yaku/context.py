@@ -56,7 +56,7 @@ def _hook_path_to_hook_id(src_root, hook_dict):
 
 class ConfigureContext(object):
     def __init__(self):
-        self.env = {}
+        self.env = Environment()
         self.tools = []
         self._tool_modules = {}
         self.builders = {}
@@ -142,7 +142,7 @@ def load_tools(self, fid):
 
 class BuildContext(object):
     def __init__(self):
-        self.env = {}
+        self.env = Environment()
         self.tools = []
         self.cache = {}
         self.builders = {}
