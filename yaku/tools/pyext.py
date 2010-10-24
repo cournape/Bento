@@ -26,6 +26,9 @@ from yaku.task \
 from yaku.utils \
     import \
         ensure_dir
+from yaku.environment \
+    import \
+        Environment
 from yaku.conftests \
     import \
         check_compiler, check_header
@@ -268,7 +271,7 @@ def get_distutils_cc_exec(ctx, compiler_type="default"):
 
 def _setup_compiler(ctx, cc_type):
     old_env = ctx.env
-    ctx.env = {}
+    ctx.env = Environment()
     cc_env = None
     sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
     try:
@@ -293,7 +296,7 @@ def _setup_compiler(ctx, cc_type):
 
     def setup_cxx():
         old_env = ctx.env
-        ctx.env = {}
+        ctx.env = Environment()
         sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
         try:
             mod = __import__("gxx")
