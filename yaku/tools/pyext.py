@@ -208,6 +208,13 @@ class PythonBuilder(yaku.tools.Builder):
                 raise ValueError("No adequate C compiler found (distutils mode)")
 
             _setup_compiler(ctx, yaku_cc_type)
+
+            cxx_exec = get_distutils_cxx_exec(ctx, compiler_type)
+            yaku_cxx_type = detect_cc_type(ctx, cxx_exec)
+            if yaku_cxx_type is None:
+                raise ValueError("No adequate CXX compiler found (distutils mode)")
+
+            _setup_cxxcompiler(ctx, yaku_cxx_type)
         else:
             dist_env = setup_pyext_env(ctx, compiler_type, False)
             ctx.env.update(dist_env)
@@ -269,6 +276,25 @@ def get_distutils_cc_exec(ctx, compiler_type="default"):
     sys.stderr.write("%s\n" % " ".join(cc))
     return cc
 
+def get_distutils_cxx_exec(ctx, compiler_type="default"):
+    from distutils import ccompiler
+    from distutils.sysconfig import customize_compiler
+
+    sys.stderr.write("Detecting distutils CXX exec ... ")
+    if compiler_type == "default":
+        compiler_type = \
+                distutils.ccompiler.get_default_compiler()
+
+    compiler = ccompiler.new_compiler(compiler=compiler_type)
+    if compiler_type == "msvc":
+        compiler.initialize()
+        cc = [compiler.cc]
+    else:
+        customize_compiler(compiler)
+        cc = compiler.compiler_cxx
+    sys.stderr.write("%s\n" % " ".join(cc))
+    return cc
+
 def _setup_compiler(ctx, cc_type):
     old_env = ctx.env
     ctx.env = Environment()
@@ -294,22 +320,21 @@ def _setup_compiler(ctx, cc_type):
     for k in copied_values:
         ctx.env["PYEXT_%s" % k] = cc_env[k]
 
-    def setup_cxx():
-        old_env = ctx.env
-        ctx.env = Environment()
-        sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
-        try:
-            mod = __import__("gxx")
-            mod.setup(ctx)
-            cxx_env = ctx.env
-        finally:
-            sys.path.pop(0)
-            ctx.env = old_env
+def _setup_cxxcompiler(ctx, cxx_type):
+    old_env = ctx.env
+    ctx.env = Environment()
+    sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
+    try:
+        mod = __import__(cxx_type)
+        mod.setup(ctx)
+        cxx_env = ctx.env
+    finally:
+        sys.path.pop(0)
+        ctx.env = old_env
 
-        for k in ["CXX", "CXXFLAGS", "CXX_TGT_F", "CXX_SRC_F",
-                  "CXXSHLINK"]:
-            ctx.env["PYEXT_%s" % k] = cxx_env[k]
-    setup_cxx()
+    for k in ["CXX", "CXXFLAGS", "CXX_TGT_F", "CXX_SRC_F",
+              "CXXSHLINK"]:
+        ctx.env["PYEXT_%s" % k] = cxx_env[k]
 
 def create_pyext(bld, name, sources, env):
     base = name.replace(".", os.sep)
