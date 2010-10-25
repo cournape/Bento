@@ -210,7 +210,7 @@ class PythonBuilder(yaku.tools.Builder):
             _setup_compiler(ctx, yaku_cc_type)
 
             cxx_exec = get_distutils_cxx_exec(ctx, compiler_type)
-            yaku_cxx_type = detect_cc_type(ctx, cxx_exec)
+            yaku_cxx_type = detect_cxx_type(ctx, cxx_exec)
             if yaku_cxx_type is None:
                 raise ValueError("No adequate CXX compiler found (distutils mode)")
 
@@ -230,6 +230,16 @@ CC_SIGNATURE = {
 }
 
 def detect_cc_type(ctx, cc_cmd):
+    return _detect_cc_type(ctx, cc_cmd)
+
+def detect_cxx_type(ctx, cxx_cmd):
+    cxx_type = _detect_cc_type(ctx, cxx_cmd)
+    if cxx_type == "gcc":
+        return "gxx"
+    else:
+        return cxx_type
+
+def _detect_cc_type(ctx, cc_cmd):
     cc_type = None
 
     def detect_type(vflag):
