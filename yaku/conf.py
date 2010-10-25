@@ -104,10 +104,10 @@ def write_log(conf, log, tasks, code, succeed, explanation):
     s = StringIO()
     s.write("Command sequence was:\n")
     for t in tasks:
-        sig = t.signature()
-        s.write("%s\n" % " ".join(conf.cmd_cache[sig]))
-        if conf.stdout_cache.has_key(sig):
-            stdout = conf.stdout_cache[sig]
+        tid = t.get_uid()
+        s.write("%s\n" % " ".join(conf.cmd_cache[tid]))
+        if conf.stdout_cache.has_key(tid):
+            stdout = conf.stdout_cache[tid]
             if stdout:
                 s.write("\n")
                 for line in stdout.splitlines():

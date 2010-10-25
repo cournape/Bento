@@ -115,7 +115,7 @@ class _Task(object):
                 pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join([i.bldpath() for i in self.inputs])))
 
         if hasattr(self.gen.bld, "cmd_cache"):
-            self.gen.bld.cmd_cache[self.signature()] = cmd[:]
+            self.gen.bld.cmd_cache[self.get_uid()] = cmd[:]
         try:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT, cwd=cwd)
@@ -131,7 +131,7 @@ class _Task(object):
             else:
                 sys.stderr.write(stdout)
             if hasattr(self.gen.bld, "stdout_cache"):
-                self.gen.bld.stdout_cache[self.signature()] = stdout
+                self.gen.bld.stdout_cache[self.get_uid()] = stdout
         except OSError, e:
             raise TaskRunFailure(cmd, str(e))
         except WindowsError, e:
