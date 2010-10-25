@@ -1,6 +1,5 @@
 import os
 import re
-import distutils.ccompiler
 import subprocess
 import _winreg
 
@@ -189,7 +188,6 @@ def find_versions(abi):
 
 def setup(ctx):
     env = ctx.env
-    from distutils.msvc9compiler import query_vcvarsall
     from string import digits as string_digits
 
     msvc_version = "9.0"
@@ -210,10 +208,6 @@ def setup(ctx):
         batfilename = os.path.join(pdir, "vcvarsall.bat")
 
     vc_paths = get_output(ctx, batfilename, "amd64")
-    #vc_paths = query_vcvarsall(9.0, "amd64")
-    #print vc_paths.keys()
-    #compiler = distutils.ccompiler.new_compiler(compiler="msvc")
-    #compiler.initialize()
     cc = r"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\amd64\cl.exe"
     linker = r"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\amd64\link.exe"
 
@@ -260,16 +254,6 @@ def setup(ctx):
         elif k in ["CPPPATH"]:
             env.extend(k, v, create=True)
 
-    #init()
-
-#def init():
-#    # We temporarily use distutils to initialize
-#    # environment so that we can use msvc. This will be
-#    # removed as soon as we have a proper msvc tool which
-#    # knows how to initialize itself
-#compiler = distutils.ccompiler.new_compiler(
-#        compiler="msvc")
-#compiler.initialize()
 for task_class in ["cc", "cxx", "pycc", "pycxx"]:
     klass = yaku.task.task_factory(task_class)
     saved = klass.exec_command
