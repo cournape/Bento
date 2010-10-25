@@ -18,7 +18,7 @@ from yaku.compiled_fun \
         compile_fun
 import yaku.tools
 
-ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${INCPATH} ${CC_TGT_F}${TGT[0].abspath()} ${CC_SRC_F}${SRC}", False)
+ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${APP_DEFINES} ${INCPATH} ${CC_TGT_F}${TGT[0].abspath()} ${CC_SRC_F}${SRC}", False)
 
 ccprogram, ccprogram_vars = compile_fun("ccprogram", "${LINK} ${LINK_TGT_F}${TGT[0].abspath()} ${LINK_SRC_F}${SRC} ${APP_LIBDIR} ${APP_LIBS} ${LINKFLAGS}", False)
 
@@ -90,6 +90,10 @@ def ccprogram_task(self, name):
     task.env_vars = ccprogram_vars
     return [task]
 
+def apply_define(task_gen):
+    defines = task_gen.env["DEFINES"]
+    task_gen.env["APP_DEFINES"] = [task_gen.env["DEFINES_FMT"] % p for p in defines]
+
 def apply_cpppath(task_gen):
     cpppaths = task_gen.env["CPPPATH"]
     implicit_paths = set([s.parent.srcpath() \
@@ -143,6 +147,7 @@ class CCBuilder(yaku.tools.Builder):
         task_gen = CompiledTaskGen("cccompile", self.ctx,
                                    sources, name)
         task_gen.env = _merge_env(self.env, env)
+        apply_define(task_gen)
         apply_cpppath(task_gen)
 
         tasks = task_gen.process()
@@ -159,6 +164,7 @@ class CCBuilder(yaku.tools.Builder):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("ccstaticlib", self.ctx, sources, name)
         task_gen.env = _merge_env(self.env, env)
+        apply_define(task_gen)
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
         apply_libs(task_gen)
@@ -182,6 +188,7 @@ class CCBuilder(yaku.tools.Builder):
         task_gen = CompiledTaskGen("ccprogram", self.ctx,
                                    sources, name)
         task_gen.env = _merge_env(self.env, env)
+        apply_define(task_gen)
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
         apply_libs(task_gen)

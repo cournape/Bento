@@ -217,6 +217,8 @@ def setup(ctx):
     ctx.env["CFLAGS"] = ["/nologo"]
     ctx.env["CPPPATH"] = []
     ctx.env["CPPPATH_FMT"] = "/I%s"
+    ctx.env["DEFINES"] = []
+    ctx.env["DEFINES_FMT"] = "/D%s"
     ctx.env["LINK"] = [linker]
     ctx.env["LINK_TGT_F"] = ["/out:"]
     ctx.env["LINK_SRC_F"] = []
