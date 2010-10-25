@@ -20,6 +20,9 @@ from yaku.scheduler \
 from yaku.utils \
     import \
         ensure_dir
+from yaku.tools.ctasks \
+    import \
+        apply_libdir
 from yaku.conf \
     import create_link_conf_taskgen, create_compile_conf_taskgen, \
            generate_config_h, ConfigureContext, \
@@ -66,6 +69,7 @@ def _create_fbinary_conf_taskgen(conf, name, body, builder):
     task_gen = CompiledTaskGen("conf", conf,
                                sources, name)
     task_gen.env.update(copy.deepcopy(conf.env))
+    apply_libdir(task_gen)
 
     tasks = task_gen.process()
     link_task = builder(task_gen, name)
