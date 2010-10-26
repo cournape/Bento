@@ -17,6 +17,9 @@ from yaku.tools \
 from yaku.utils \
     import \
         ensure_dir, rename
+from yaku.errors \
+    import \
+        UnknownTask
 import yaku.node
 import yaku.task_manager
 
@@ -63,8 +66,8 @@ class ConfigureContext(object):
         self.cache = {}
         self.conf_results = []
         self._configured = {}
-        self.stdout_cache = {}
-        self.cmd_cache = {}
+        self._stdout_cache = {}
+        self._cmd_cache = {}
 
     def load_tool(self, tool, tooldir=None):
         _t = import_tools([tool], tooldir)
@@ -99,8 +102,8 @@ class ConfigureContext(object):
         fid = open(CONFIG_CACHE, "wb")
         try:
             dump(self.cache, fid)
-            dump(self.stdout_cache, fid)
-            dump(self.cmd_cache, fid)
+            dump(self._stdout_cache, fid)
+            dump(self._cmd_cache, fid)
         finally:
             fid.close()
 
@@ -125,6 +128,26 @@ class ConfigureContext(object):
 
     def end_message(self, msg):
         sys.stderr.write("%s\n" % msg)
+
+    def set_cmd_cache(self, task, cmd):
+        self._cmd_cache[task.get_uid()] = cmd[:]
+
+    def get_cmd(self, task):
+        tid = task.get_uid()
+        try:
+            return self._cmd_cache[tid]
+        except KeyError:
+            raise UnknownTask
+
+    def set_stdout_cache(self, task, stdout):
+        self._stdout_cache[task.get_uid()] = stdout
+
+    def get_stdout(self, task):
+        tid = task.get_uid()
+        try:
+            return self._stdout_cache[tid]
+        except KeyError:
+            raise UnknownTask
 
 def load_tools(self, fid):
     tools = eval(fid.read())
@@ -191,6 +214,11 @@ class BuildContext(object):
             tmp_fid.close()
         rename(BUILD_CACHE + ".tmp", BUILD_CACHE)
 
+    def set_stdout_cache(self, task, stdout):
+        pass
+
+    def set_cmd_cache(self, task, stdout):
+        pass
 def myopen(filename, mode="r"):
     if "w" in mode:
         ensure_dir(filename)
@@ -202,8 +230,8 @@ def get_cfg():
         fid = open(CONFIG_CACHE, "rb")
         try:
             ctx.cache = load(fid)
-            ctx.stdout_cache = load(fid)
-            ctx.cmd_cache = load(fid)
+            ctx._stdout_cache = load(fid)
+            ctx._cmd_cache = load(fid)
         finally:
             fid.close()
 

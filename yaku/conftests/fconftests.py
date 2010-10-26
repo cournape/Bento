@@ -126,7 +126,9 @@ def check_fortran_verbose_flag(conf):
             conf.env["F77_LINKFLAGS"].append(flag)
             ret = create_fprogram_conf_taskgen(conf,
                     "check_fc_verbose", code)
-            stdout = conf.stdout_cache[conf.last_task.signature()]
+            if not ret:
+                continue
+            stdout = conf.get_stdout(conf.last_task)
             if ret and is_output_verbose(stdout):
                 conf.end_message(flag)
                 conf.env[FC_VERBOSE_FLAG] = flag
@@ -169,7 +171,7 @@ flags (or to define the %s variable)""" % FC_VERBOSE_FLAG)
         conf.env["F77_LINKFLAGS"].append(conf.env["FC_VERBOSE_FLAG"])
         ret = create_fprogram_conf_taskgen(conf, "check_fc", code)
         if ret:
-            stdout = conf.stdout_cache[conf.last_task.signature()]
+            stdout = conf.get_stdout(conf.last_task)
             flags = parse_flink(stdout)
             conf.end_message("%r" % " ".join(flags))
             conf.env[FC_RUNTIME_LDFLAGS] = flags

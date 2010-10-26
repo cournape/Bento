@@ -25,5 +25,8 @@ class TaskRunFailure(YakuError):
     def __str__(self):
         return "cmd %s failed: \n\n%s" % (" ".join(self.cmd), self.explain)
 
+class UnknownTask(YakuError):
+    pass
+
 class ToolNotFound(YakuError):
     pass

@@ -18,7 +18,7 @@ from cStringIO \
 
 from yaku.errors \
     import \
-        TaskRunFailure
+        TaskRunFailure, UnknownTask
 from yaku.task_manager \
     import \
         CompiledTaskGen
@@ -104,15 +104,17 @@ def write_log(conf, log, tasks, code, succeed, explanation):
     s = StringIO()
     s.write("Command sequence was:\n")
     for t in tasks:
-        tid = t.get_uid()
-        s.write("%s\n" % " ".join(conf.cmd_cache[tid]))
-        if conf.stdout_cache.has_key(tid):
-            stdout = conf.stdout_cache[tid]
+        try:
+            cmd = conf.get_cmd(t)
+            s.write("%s\n" % " ".join(cmd))
+            stdout = conf.get_stdout(t)
             if stdout:
                 s.write("\n")
                 for line in stdout.splitlines():
                     s.write("%s\n" % line)
                 s.write("\n")
+        except UnknownTask:
+            break
     log.write(s.getvalue())
     log.write("\n")
 
