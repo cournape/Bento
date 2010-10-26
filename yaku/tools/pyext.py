@@ -32,6 +32,9 @@ from yaku.environment \
 from yaku.conftests \
     import \
         check_compiler, check_header
+from yaku.tools.ctasks \
+    import \
+        apply_define
 
 import yaku.tools
 
@@ -357,6 +360,7 @@ def create_pyext(bld, name, sources, env):
     old_hook_cxx = set_extension_hook(".cxx", pycxx_hook)
 
     task_gen.env = env
+    apply_define(task_gen)
     apply_cpppath(task_gen)
     apply_libpath(task_gen)
     apply_libs(task_gen)
