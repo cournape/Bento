@@ -1,16 +1,18 @@
 import sys
 import os
-import _winreg
+if sys.platform == "win32":
+    import _winreg
 
 import yaku.utils
 import yaku.task
 
-from yaku.tools.mscommon.common \
-    import \
-        read_keys, open_key, close_key, get_output
-from yaku.tools.msvc \
-    import \
-        _exec_command_factory
+if sys.platform == "win32":
+    from yaku.tools.mscommon.common \
+        import \
+            read_keys, open_key, close_key, get_output
+    from yaku.tools.msvc \
+        import \
+            _exec_command_factory
 
 _ROOT = {"amd64": r"Software\Wow6432Node\Intel\Suites",
          "ia32": r"Software\Intel\Compilers"}
