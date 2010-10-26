@@ -86,7 +86,7 @@ def _create_compile_conf_taskgen(conf, name, body, headers,
         run_tasks(conf, tasks)
         succeed = True
     except TaskRunFailure, e:
-        explanation = unicode(e).encode("utf-8")
+        explanation = str(e)
 
     write_log(conf, conf.log, tasks, code, succeed, explanation)
     return succeed
