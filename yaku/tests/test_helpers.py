@@ -11,3 +11,4 @@ class TmpContextBase(TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.d)
+        os.chdir(self.cwd)
