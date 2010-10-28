@@ -3,35 +3,25 @@ Fortran-specific configuration tests
 """
 import sys
 import copy
-import os
-import types
-import re
-import shlex
 
 from yaku.errors \
     import \
-        TaskRunFailure, WindowsError
+        TaskRunFailure
 from yaku.task_manager \
     import \
         CompiledTaskGen
 from yaku.scheduler \
     import \
         run_tasks
-from yaku.utils \
-    import \
-        ensure_dir
 from yaku.tools.ctasks \
     import \
         apply_libdir
 from yaku.conf \
     import \
-       generate_config_h, ConfigureContext, \
        write_log, create_file, create_conf_blddir
 from yaku.conftests.fconftests_imp \
     import \
         is_output_verbose, parse_flink
-
-import subprocess
 
 FC_VERBOSE_FLAG = "FC_VERBOSE_FLAG"
 FC_RUNTIME_LDFLAGS = "FC_RUNTIME_LDFLAGS"
