@@ -24,9 +24,9 @@ from yaku.tools.ctasks \
     import \
         apply_libdir
 from yaku.conf \
-    import create_link_conf_taskgen, create_compile_conf_taskgen, \
-           generate_config_h, ConfigureContext, \
-           write_log, create_file, create_conf_blddir
+    import \
+       generate_config_h, ConfigureContext, \
+       write_log, create_file, create_conf_blddir
 from yaku.conftests.fconftests_imp \
     import \
         is_output_verbose, parse_flink
@@ -204,7 +204,7 @@ int main()
     old = copy.deepcopy(conf.env["F77_LINKFLAGS"])
     try:
         conf.env["F77_LINKFLAGS"].extend(conf.env[FC_RUNTIME_LDFLAGS])
-        ret = create_link_conf_taskgen(conf, "check_fc_dummy_main",
+        ret = conf.builders["ctasks"].try_program("check_fc_dummy_main",
                 code_tpl % {"main": "FC_DUMMY_MAIN"})
         if ret:
             conf.end_message("none")
@@ -265,7 +265,7 @@ def check_fortran_mangling(conf):
                     else:
                         return "nu"
                 name += "_%s_%s_%s" % (_name(u), _name(du), case)
-                ret = create_link_conf_taskgen(conf, name, main + prog)
+                ret = conf.builders["ctasks"].try_program(name, main + prog)
                 if ret:
                     conf.env["FC_MANGLING"] = (u, du, case)
                     conf.end_message("%r %r %r" % (u, du, case))

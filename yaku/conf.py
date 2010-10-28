@@ -1,7 +1,4 @@
-import copy
-import sys
 import os
-import types
 import re
 
 try:
@@ -9,39 +6,16 @@ try:
 except ImportError:
     from md5 import md5
 
-from os.path \
-    import \
-        join
 from cStringIO \
     import \
         StringIO
 
 from yaku.errors \
     import \
-        TaskRunFailure, UnknownTask
-from yaku.task_manager \
-    import \
-        CompiledTaskGen
-from yaku.scheduler \
-    import \
-        run_tasks
-from yaku.compiled_fun \
-    import \
-        compile_fun
+        UnknownTask
 from yaku.utils \
     import \
         ensure_dir
-
-from yaku.tools.ctasks \
-    import \
-        shlink_task, apply_libs, apply_libdir, ccprogram_task, ccompile_task, \
-        apply_cpppath, apply_define
-
-class ConfigureContext(object):
-    def __init__(self):
-        self.cache = {}
-        self.env = {}
-        self.conf_results = []
 
 def create_file(conf, code, prefix="", suffix=""):
     filename = "%s%s%s" % (prefix, md5(code.encode()).hexdigest(), suffix)
@@ -61,48 +35,6 @@ def with_conf_blddir(conf, name, body, func):
         return func()
     finally:
         conf.bld_root = old_root
-
-def create_compile_conf_taskgen(conf, name, body, headers,
-        extension=".c"):
-    old_root, new_root = create_conf_blddir(conf, name, body)
-    try:
-        conf.bld_root = new_root
-        return _create_compile_conf_taskgen(conf, name, body,
-                headers, extension)
-    finally:
-        conf.bld_root = old_root
-
-def _create_compile_conf_taskgen(conf, name, body, headers,
-        extension=".c"):
-    if headers:
-        head = "\n".join(["#include <%s>" % h for h in headers])
-    else:
-        head = ""
-    code = "\n".join([c for c in [head, body]])
-    sources = [create_file(conf, code, name, extension)]
-
-    task_gen = CompiledTaskGen("conf", conf, sources, name)
-    task_gen.env.update(copy.deepcopy(conf.env))
-    apply_cpppath(task_gen)
-    apply_define(task_gen)
-
-    tasks = task_gen.process()
-    conf.last_task = tasks[-1]
-
-    for t in tasks:
-        t.disable_output = True
-        t.log = conf.log
-
-    succeed = False
-    explanation = None
-    try:
-        run_tasks(conf, tasks)
-        succeed = True
-    except TaskRunFailure, e:
-        explanation = str(e)
-
-    write_log(conf, conf.log, tasks, code, succeed, explanation)
-    return succeed
 
 def write_log(conf, log, tasks, code, succeed, explanation):
     for line in code.splitlines():
@@ -132,61 +64,6 @@ def write_log(conf, log, tasks, code, succeed, explanation):
             break
     log.write(s.getvalue())
     log.write("\n")
-
-def create_link_conf_taskgen(conf, name, body, headers=None,
-        extension=".c"):
-    old_root, new_root = create_conf_blddir(conf, name, body)
-    try:
-        conf.bld_root = new_root
-        return _create_binary_conf_taskgen(conf, name, body, ccprogram_task,
-                headers, extension)
-    finally:
-        conf.bld_root = old_root
-
-def create_program_conf_taskgen(conf, name, body, headers=None,
-        extension=".c"):
-    old_root, new_root = create_conf_blddir(conf, name, body)
-    try:
-        conf.bld_root = new_root
-        return _create_binary_conf_taskgen(conf, name, body, ccprogram_task,
-                headers, extension)
-    finally:
-        conf.bld_root = old_root
-
-def _create_binary_conf_taskgen(conf, name, body, builder, headers=None,
-        extension=".c"):
-    if headers is not None:
-        head = "\n".join(["#include <%s>" % h for h in headers])
-    else:
-        head = ""
-    code = "\n".join([c for c in [head, body]])
-    sources = [create_file(conf, code, name, extension)]
-
-    task_gen = CompiledTaskGen("conf", conf, sources, name)
-    task_gen.env.update(copy.deepcopy(conf.env))
-    task_gen.env["INCPATH"] = ""
-    apply_define(task_gen)
-    apply_libs(task_gen)
-    apply_libdir(task_gen)
-
-    tasks = task_gen.process()
-    tasks.extend(builder(task_gen, name))
-
-    for t in tasks:
-        t.disable_output = True
-        t.log = conf.log
-
-    succeed = False
-    explanation = None
-    try:
-        run_tasks(conf, tasks)
-        succeed = True
-    except TaskRunFailure, e:
-        msg = str(e)
-        explanation = unicode(msg).encode("utf-8")
-
-    write_log(conf, conf.log, tasks, code, succeed, explanation)
-    return succeed
 
 VALUE_SUB = re.compile('[^A-Z0-9_]')
 
