@@ -16,6 +16,9 @@ def configure(ctx):
     assert cc.try_program("foo", "int main() {}")
     assert not cc.try_program("foo", "intt main() {}")
 
+    assert cc.try_static_library("foo", "int foo() {}")
+    assert not cc.try_static_library("foo", "intt foo() {}")
+
 if __name__ == "__main__":
     ctx = get_cfg()
     configure(ctx)

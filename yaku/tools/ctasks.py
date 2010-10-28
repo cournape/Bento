@@ -211,6 +211,15 @@ class CCBuilder(yaku.tools.Builder):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("ccstaticlib", self.ctx, sources, name)
         task_gen.env = _merge_env(self.env, env)
+
+        tasks = self._static_library(task_gen, name)
+        self.ctx.tasks.extend(tasks)
+        outputs = []
+        for t in task_gen.link_task:
+            outputs.extend(t.outputs)
+        return outputs
+
+    def _static_library(self, task_gen, name):
         apply_define(task_gen)
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
@@ -221,14 +230,14 @@ class CCBuilder(yaku.tools.Builder):
         tasks.extend(ltask)
         for t in tasks:
             t.env = task_gen.env
-        self.ctx.tasks.extend(tasks)
-        self.link_task = ltask
+        task_gen.link_task = ltask
+        return tasks
 
-        outputs = []
-        for t in ltask:
-            outputs.extend(t.outputs)
-        return outputs
-
+    def try_static_library(self, name, body, headers=None):
+        # FIXME: temporary workaround for cyclic import between ctasks and conf
+        from yaku.conf import with_conf_blddir
+        return with_conf_blddir(self.ctx, name, body,
+                                lambda : self._try_task_maker(self._static_library, name, body, headers))
 
     def program(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
