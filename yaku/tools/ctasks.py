@@ -16,6 +16,12 @@ from yaku.utils \
 from yaku.compiled_fun \
     import \
         compile_fun
+from yaku.errors \
+    import \
+        TaskRunFailure
+from yaku.scheduler \
+    import \
+        run_tasks
 import yaku.tools
 
 ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${APP_DEFINES} ${INCPATH} ${CC_TGT_F}${TGT[0].abspath()} ${CC_SRC_F}${SRC}", False)
@@ -143,22 +149,63 @@ class CCBuilder(yaku.tools.Builder):
     def __init__(self, ctx):
         yaku.tools.Builder.__init__(self, ctx)
 
-    def ccompile(self, name, sources, env=None):
-        task_gen = CompiledTaskGen("cccompile", self.ctx,
-                                   sources, name)
-        task_gen.env = _merge_env(self.env, env)
+    def _compile(self, task_gen):
         apply_define(task_gen)
         apply_cpppath(task_gen)
 
         tasks = task_gen.process()
         for t in tasks:
             t.env = task_gen.env
+        return tasks
+
+    def compile(self, name, sources, env=None):
+        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        task_gen = CompiledTaskGen("cccompile", self.ctx, sources, name)
+        task_gen.env = _merge_env(self.env, env)
+        tasks = self._compile(task_gen)
         self.ctx.tasks.extend(tasks)
 
         outputs = []
         for t in tasks:
             outputs.extend(t.outputs)
         return outputs
+
+    def try_compile(self, name, body, headers=None):
+        # FIXME: temporary workaround for cyclic import between ctasks and conf
+        from yaku.conf import with_conf_blddir
+        return with_conf_blddir(self.ctx, name, body,
+                                lambda : self._try_compile(name, body, headers))
+
+    def _try_compile(self, name, body, headers):
+        # FIXME: temporary workaround for cyclic import between ctasks and conf
+        from yaku.conf import create_file, write_log
+        conf = self.ctx
+        if headers:
+            head = "\n".join(["#include <%s>" % h for h in headers])
+        else:
+            head = ""
+        code = "\n".join([c for c in [head, body]])
+        sources = [create_file(conf, code, name, ".c")]
+
+        task_gen = CompiledTaskGen("conf", conf, sources, name)
+        task_gen.env.update(copy.deepcopy(conf.env))
+
+        tasks = self._compile(task_gen)
+
+        for t in tasks:
+            t.disable_output = True
+            t.log = conf.log
+
+        succeed = False
+        explanation = None
+        try:
+            run_tasks(conf, tasks)
+            succeed = True
+        except TaskRunFailure, e:
+            explanation = str(e)
+
+        write_log(conf, conf.log, tasks, code, succeed, explanation)
+        return succeed
 
     def static_library(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]

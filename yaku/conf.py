@@ -49,6 +49,19 @@ def create_file(conf, code, prefix="", suffix=""):
     node.write(code)
     return node
 
+def with_conf_blddir(conf, name, body, func):
+    """'Context manager' to execute a series of tasks into code-specific build
+    directory.
+    
+    func must be a callable taking no arguments
+    """
+    old_root, new_root = create_conf_blddir(conf, name, body)
+    try:
+        conf.bld_root = new_root
+        return func()
+    finally:
+        conf.bld_root = old_root
+
 def create_compile_conf_taskgen(conf, name, body, headers,
         extension=".c"):
     old_root, new_root = create_conf_blddir(conf, name, body)
