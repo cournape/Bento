@@ -24,7 +24,10 @@ class TaskRunFailure(YakuError):
 
     def __str__(self):
         ret = "cmd %s failed: \n\n%s" % (" ".join(self.cmd), self.explain)
-        return ret.encode("utf-8")
+        if sys.version_info < (3,):
+            return ret.encode("utf-8")
+        else:
+            return ret
 
 class UnknownTask(YakuError):
     pass
