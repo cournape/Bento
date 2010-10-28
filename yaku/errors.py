@@ -23,7 +23,8 @@ class TaskRunFailure(YakuError):
         self.explain = explain
 
     def __str__(self):
-        return "cmd %s failed: \n\n%s" % (" ".join(self.cmd), self.explain)
+        ret = "cmd %s failed: \n\n%s" % (" ".join(self.cmd), self.explain)
+        return ret.encode("utf-8")
 
 class UnknownTask(YakuError):
     pass
