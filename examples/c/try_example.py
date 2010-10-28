@@ -4,6 +4,9 @@ from yaku.scheduler \
 from yaku.context \
     import \
         get_bld, get_cfg
+from yaku.conftests \
+    import \
+        check_func, check_header, check_compiler, check_cpp_symbol
 
 def configure(ctx):
     ctx.use_tools(["ctasks", "cxxtasks"])
@@ -18,6 +21,16 @@ def configure(ctx):
 
     assert cc.try_static_library("foo", "int foo() {}")
     assert not cc.try_static_library("foo", "intt foo() {}")
+
+    assert check_func(ctx, "malloc")
+    assert not check_func(ctx, "mmalloc")
+
+    assert check_header(ctx, "stdio.h")
+    assert not check_header(ctx, "stdioo.h")
+
+    assert check_compiler(ctx)
+    assert check_cpp_symbol(ctx, "NULL", ["stdio.h"])
+    assert not check_cpp_symbol(ctx, "VERY_UNLIKELY_SYMOBOL_@aqwhn")
 
 if __name__ == "__main__":
     ctx = get_cfg()

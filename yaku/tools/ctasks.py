@@ -76,7 +76,7 @@ def static_link_task(self, name):
     target = self.bld.bld_root.declare(tmp)
     ensure_dir(target.abspath())
 
-    task = task_factory("cc_link")(inputs=objects, outputs=[target])
+    task = task_factory("cc_stlink")(inputs=objects, outputs=[target])
     task.gen = self
     task.env = self.env
     task.func = clink
