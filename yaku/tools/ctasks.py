@@ -149,7 +149,7 @@ class CCBuilder(yaku.tools.Builder):
     def __init__(self, ctx):
         yaku.tools.Builder.__init__(self, ctx)
 
-    def _compile(self, task_gen):
+    def _compile(self, task_gen, name):
         apply_define(task_gen)
         apply_cpppath(task_gen)
 
@@ -162,7 +162,7 @@ class CCBuilder(yaku.tools.Builder):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("cccompile", self.ctx, sources, name)
         task_gen.env = _merge_env(self.env, env)
-        tasks = self._compile(task_gen)
+        tasks = self._compile(task_gen, name)
         self.ctx.tasks.extend(tasks)
 
         outputs = []
@@ -174,9 +174,9 @@ class CCBuilder(yaku.tools.Builder):
         # FIXME: temporary workaround for cyclic import between ctasks and conf
         from yaku.conf import with_conf_blddir
         return with_conf_blddir(self.ctx, name, body,
-                                lambda : self._try_compile(name, body, headers))
+                                lambda : self._try_task_maker(self._compile, name, body, headers))
 
-    def _try_compile(self, name, body, headers):
+    def _try_task_maker(self, task_maker, name, body, headers):
         # FIXME: temporary workaround for cyclic import between ctasks and conf
         from yaku.conf import create_file, write_log
         conf = self.ctx
@@ -190,7 +190,7 @@ class CCBuilder(yaku.tools.Builder):
         task_gen = CompiledTaskGen("conf", conf, sources, name)
         task_gen.env.update(copy.deepcopy(conf.env))
 
-        tasks = self._compile(task_gen)
+        tasks = task_maker(task_gen, name)
 
         for t in tasks:
             t.disable_output = True
@@ -235,6 +235,15 @@ class CCBuilder(yaku.tools.Builder):
         task_gen = CompiledTaskGen("ccprogram", self.ctx,
                                    sources, name)
         task_gen.env = _merge_env(self.env, env)
+        tasks = self._program(task_gen, name)
+
+        self.ctx.tasks.extend(tasks)
+        outputs = []
+        for t in task_gen.link_task:
+            outputs.extend(t.outputs)
+        return outputs
+
+    def _program(self, task_gen, name):
         apply_define(task_gen)
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
@@ -245,13 +254,14 @@ class CCBuilder(yaku.tools.Builder):
         tasks.extend(ltask)
         for t in tasks:
             t.env = task_gen.env
-        self.ctx.tasks.extend(tasks)
-        self.link_task = ltask
+        task_gen.link_task = ltask
+        return tasks
 
-        outputs = []
-        for t in ltask:
-            outputs.extend(t.outputs)
-        return outputs
+    def try_program(self, name, body, headers=None):
+        # FIXME: temporary workaround for cyclic import between ctasks and conf
+        from yaku.conf import with_conf_blddir
+        return with_conf_blddir(self.ctx, name, body,
+                                lambda : self._try_task_maker(self._program, name, body, headers))
 
     def configure(self, candidates=None):
         ctx = self.ctx

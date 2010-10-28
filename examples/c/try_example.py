@@ -13,6 +13,9 @@ def configure(ctx):
     assert cc.try_compile("foo", "int main() {}")
     assert not cc.try_compile("foo", "intt main() {}")
 
+    assert cc.try_program("foo", "int main() {}")
+    assert not cc.try_program("foo", "intt main() {}")
+
 if __name__ == "__main__":
     ctx = get_cfg()
     configure(ctx)
