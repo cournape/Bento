@@ -9,6 +9,25 @@ import yaku.errors
 
 def configure(ctx):
     ctx.use_tools(["fortran", "ctasks"])
+    assert ctx.builders["fortran"].try_compile("foo", """\
+       program foo
+       end
+""")
+
+    assert not ctx.builders["fortran"].try_compile("foo", """\
+       pprogram foo
+       end
+""")
+
+    assert ctx.builders["fortran"].try_program("foo", """\
+       program foo
+       end
+""")
+
+    assert not ctx.builders["fortran"].try_program("foo", """\
+       pprogram foo
+       end
+""")
 
 def build(ctx):
     builder = ctx.builders["fortran"]

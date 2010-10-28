@@ -16,6 +16,15 @@ from yaku.utils \
 from yaku.tools.ctasks \
     import \
         apply_libdir
+from yaku.errors \
+    import \
+        TaskRunFailure
+from yaku.scheduler \
+    import \
+        run_tasks
+from yaku.conf \
+    import \
+        with_conf_blddir, create_file, write_log
 import yaku.tools
 
 f77_compile, f77_vars = compile_fun("f77", "${F77} ${F77FLAGS} ${F77_TGT_F}${TGT[0].abspath()} ${F77_SRC_F}${SRC}", False)
@@ -44,25 +53,72 @@ class FortranBuilder(yaku.tools.Builder):
     def __init__(self, ctx):
         yaku.tools.Builder.__init__(self, ctx)
 
-    def ccompile(self, name, sources, env=None):
+    def _try_task_maker(self, task_maker, name, body):
+        conf = self.ctx
+        code =  body
+        sources = [create_file(conf, code, name, ".f")]
+
+        task_gen = CompiledTaskGen("conf", conf, sources, name)
+        task_gen.env.update(copy.deepcopy(conf.env))
+
+        tasks = task_maker(task_gen, name)
+        self.ctx.last_task = tasks[-1]
+
+        for t in tasks:
+            t.disable_output = True
+            t.log = conf.log
+
+        succeed = False
+        explanation = None
+        try:
+            run_tasks(conf, tasks)
+            succeed = True
+        except TaskRunFailure, e:
+            explanation = str(e)
+
+        write_log(conf, conf.log, tasks, code, succeed, explanation)
+        return succeed
+
+    def try_compile(self, name, body):
+        # FIXME: temporary workaround for cyclic import between ctasks and conf
+        #from yaku.conf import with_conf_blddir
+        return with_conf_blddir(self.ctx, name, body,
+                                lambda : self._try_task_maker(self._compile, name, body))
+
+    def compile(self, name, sources, env=None):
         _env = copy.deepcopy(self.env)
         if env is not None:
             _env.update(env)
 
-        task_gen = CompiledTaskGen("cccompile", self.ctx,
+        task_gen = CompiledTaskGen("fcompile", self.ctx,
                                    sources, name)
         task_gen.env = _env
-        apply_cpppath(task_gen)
-
-        tasks = task_gen.process()
-        for t in tasks:
-            t.env = task_gen.env
+        tasks = self._compile(name, sources)
         self.ctx.tasks.extend(tasks)
 
         outputs = []
         for t in tasks:
             outputs.extend(t.outputs)
         return outputs
+
+    def _compile(self, task_gen, name):
+        tasks = task_gen.process()
+        for t in tasks:
+            t.env = task_gen.env
+        return tasks
+
+    def try_static_library(self, name, body):
+        # FIXME: temporary workaround for cyclic import between ctasks and conf
+        #from yaku.conf import with_conf_blddir
+        cc_builder = self.ctx.builders["ctasks"]
+        return with_conf_blddir(self.ctx, name, body,
+                                lambda : self._try_task_maker(cc_builder._static_library, name, body))
+
+    def try_program(self, name, body):
+        # FIXME: temporary workaround for cyclic import between ctasks and conf
+        #from yaku.conf import with_conf_blddir
+        return with_conf_blddir(self.ctx, name, body,
+                                lambda : self._try_task_maker(self._program, name, body))
 
     def program(self, name, sources, env=None):
         _env = copy.deepcopy(self.env)
@@ -73,6 +129,16 @@ class FortranBuilder(yaku.tools.Builder):
         task_gen = CompiledTaskGen("fprogram", self.ctx,
                                    sources, name)
         task_gen.env = _env
+        tasks = self._program(task_gen, name)
+
+        self.ctx.tasks.extend(tasks)
+
+        outputs = []
+        for t in task_gen.link_task:
+            outputs.extend(t.outputs)
+        return outputs
+
+    def _program(self, task_gen, name):
         apply_libdir(task_gen)
 
         tasks = task_gen.process()
@@ -80,12 +146,8 @@ class FortranBuilder(yaku.tools.Builder):
         tasks.extend(ltask)
         for t in tasks:
             t.env = task_gen.env
-        self.ctx.tasks.extend(tasks)
-
-        outputs = []
-        for t in ltask:
-            outputs.extend(t.outputs)
-        return outputs
+        task_gen.link_task = ltask
+        return tasks
 
     def configure(self, candidates=None):
         ctx = self.ctx

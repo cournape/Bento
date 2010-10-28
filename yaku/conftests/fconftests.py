@@ -4,21 +4,6 @@ Fortran-specific configuration tests
 import sys
 import copy
 
-from yaku.errors \
-    import \
-        TaskRunFailure
-from yaku.task_manager \
-    import \
-        CompiledTaskGen
-from yaku.scheduler \
-    import \
-        run_tasks
-from yaku.tools.ctasks \
-    import \
-        apply_libdir
-from yaku.conf \
-    import \
-       write_log, create_file, create_conf_blddir
 from yaku.conftests.fconftests_imp \
     import \
         is_output_verbose, parse_flink
@@ -26,61 +11,6 @@ from yaku.conftests.fconftests_imp \
 FC_VERBOSE_FLAG = "FC_VERBOSE_FLAG"
 FC_RUNTIME_LDFLAGS = "FC_RUNTIME_LDFLAGS"
 FC_DUMMY_MAIN = "FC_DUMMY_MAIN"
-
-def create_fprogram_conf_taskgen(conf, name, body):
-    # FIXME: make tools modules available through config context
-    ftool = __import__("fortran")
-    builder = ftool.fprogram_task
-
-    old_root, new_root = create_conf_blddir(conf, name, body)
-    try:
-        conf.bld_root = new_root
-        return _create_fbinary_conf_taskgen(conf, name, body, builder)
-    finally:
-        conf.bld_root = old_root
-
-def create_fstatic_conf_taskgen(conf, name, body):
-    # FIXME: make tools modules available through config context
-    ctool = __import__("ctasks")
-    builder = ctool.static_link_task
-
-    old_root, new_root = create_conf_blddir(conf, name, body)
-    try:
-        conf.bld_root = new_root
-        return _create_fbinary_conf_taskgen(conf, name, body, builder)
-    finally:
-        conf.bld_root = old_root
-
-def _create_fbinary_conf_taskgen(conf, name, body, builder):
-    # FIXME: refactor commonalities between configuration taskgens
-    code = body
-    sources = [create_file(conf, code, name, ".f")]
-
-    task_gen = CompiledTaskGen("conf", conf,
-                               sources, name)
-    task_gen.env.update(copy.deepcopy(conf.env))
-    apply_libdir(task_gen)
-
-    tasks = task_gen.process()
-    link_task = builder(task_gen, name)
-
-    tasks.extend(link_task)
-    conf.last_task = tasks[-1]
-
-    for t in tasks:
-        t.disable_output = True
-        t.log = conf.log
-
-    succeed = False
-    explanation = None
-    try:
-        run_tasks(conf, tasks)
-        succeed = True
-    except TaskRunFailure, e:
-        explanation = str(e)
-
-    write_log(conf, conf.log, tasks, code, succeed, explanation)
-    return succeed
 
 def check_fcompiler(conf, msg=None):
     code = """\
@@ -91,7 +21,7 @@ def check_fcompiler(conf, msg=None):
         conf.start_message("Checking whether Fortran compiler works")
     else:
         conf.start_message(msg)
-    ret = create_fprogram_conf_taskgen(conf, "check_fcompiler", code)
+    ret = conf.builders["fortran"].try_program("check_fcompiler", code)
     if ret:
         conf.end_message("yes")
     else:
@@ -114,8 +44,7 @@ def check_fortran_verbose_flag(conf):
         old = copy.deepcopy(conf.env["F77_LINKFLAGS"])
         try:
             conf.env["F77_LINKFLAGS"].append(flag)
-            ret = create_fprogram_conf_taskgen(conf,
-                    "check_fc_verbose", code)
+            ret = conf.builders["fortran"].try_program("check_fc_verbose", code)
             if not ret:
                 continue
             stdout = conf.get_stdout(conf.last_task)
@@ -159,7 +88,7 @@ flags (or to define the %s variable)""" % FC_VERBOSE_FLAG)
     old = copy.deepcopy(conf.env["F77_LINKFLAGS"])
     try:
         conf.env["F77_LINKFLAGS"].append(conf.env["FC_VERBOSE_FLAG"])
-        ret = create_fprogram_conf_taskgen(conf, "check_fc", code)
+        ret = conf.builders["fortran"].try_program("check_fc", code)
         if ret:
             stdout = conf.get_stdout(conf.last_task)
             flags = parse_flink(stdout)
@@ -234,7 +163,7 @@ def check_fortran_mangling(conf):
         old[k] = copy.deepcopy(conf.env[k])
     try:
         mangling_lib = "check_fc_mangling_lib"
-        ret = create_fstatic_conf_taskgen(conf, mangling_lib, subr)
+        ret = conf.builders["fortran"].try_static_library(mangling_lib, subr)
         if ret:
             if conf.env[FC_DUMMY_MAIN] is not None:
                 main = main_tmpl % conf.env["FC_DUMMY_MAIN"]

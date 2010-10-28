@@ -22,6 +22,9 @@ from yaku.errors \
 from yaku.scheduler \
     import \
         run_tasks
+from yaku.conf \
+    import \
+        with_conf_blddir, create_file, write_log
 import yaku.tools
 
 ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${APP_DEFINES} ${INCPATH} ${CC_TGT_F}${TGT[0].abspath()} ${CC_SRC_F}${SRC}", False)
@@ -171,14 +174,10 @@ class CCBuilder(yaku.tools.Builder):
         return outputs
 
     def try_compile(self, name, body, headers=None):
-        # FIXME: temporary workaround for cyclic import between ctasks and conf
-        from yaku.conf import with_conf_blddir
         return with_conf_blddir(self.ctx, name, body,
                                 lambda : self._try_task_maker(self._compile, name, body, headers))
 
     def _try_task_maker(self, task_maker, name, body, headers):
-        # FIXME: temporary workaround for cyclic import between ctasks and conf
-        from yaku.conf import create_file, write_log
         conf = self.ctx
         if headers:
             head = "\n".join(["#include <%s>" % h for h in headers])
@@ -234,8 +233,6 @@ class CCBuilder(yaku.tools.Builder):
         return tasks
 
     def try_static_library(self, name, body, headers=None):
-        # FIXME: temporary workaround for cyclic import between ctasks and conf
-        from yaku.conf import with_conf_blddir
         return with_conf_blddir(self.ctx, name, body,
                                 lambda : self._try_task_maker(self._static_library, name, body, headers))
 
@@ -267,8 +264,6 @@ class CCBuilder(yaku.tools.Builder):
         return tasks
 
     def try_program(self, name, body, headers=None):
-        # FIXME: temporary workaround for cyclic import between ctasks and conf
-        from yaku.conf import with_conf_blddir
         return with_conf_blddir(self.ctx, name, body,
                                 lambda : self._try_task_maker(self._program, name, body, headers))
 
