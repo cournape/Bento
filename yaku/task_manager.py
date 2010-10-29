@@ -1,5 +1,9 @@
 import os
 
+from yaku.environment \
+    import \
+        Environment
+
 RULES_REGISTRY = {}
 FILES_REGISTRY = {}
 
@@ -209,7 +213,7 @@ class TaskGen(object):
         self.sources = sources
         self.target = target
 
-        self.env = {}
+        self.env = Environment()
 
     def process(self):
         tasks = []
