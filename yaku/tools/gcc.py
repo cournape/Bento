@@ -13,6 +13,7 @@ def setup(ctx):
     ctx.env["LINKFLAGS"] = []
     ctx.env["LINK_TGT_F"] = ["-o"]
     ctx.env["LINK_SRC_F"] = []
+    ctx.env["SHAREDLIB_FMT"] = "lib%s.so"
     ctx.env["SHLINK"] = ["gcc", "-shared"]
     ctx.env["SHLINKFLAGS"] = []
     ctx.env["SHLINK_TGT_F"] = ["-o"]

@@ -31,7 +31,7 @@ ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${APP_DEFINES} ${INCPATH}
 
 ccprogram, ccprogram_vars = compile_fun("ccprogram", "${LINK} ${LINK_TGT_F}${TGT[0].abspath()} ${LINK_SRC_F}${SRC} ${APP_LIBDIR} ${APP_LIBS} ${LINKFLAGS}", False)
 
-cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${APP_LIBDIR} ${APP_LIBS} ${SHLINK_TGT_F}${TGT[0]} ${SHLINK_SRC_F}${SRC} ${SHLINKFLAGS}", False)
+cshlink, cshlink_vars = compile_fun("cshlib", "${SHLINK} ${APP_LIBDIR} ${APP_LIBS} ${SHLINK_TGT_F}${TGT[0].abspath()} ${SHLINK_SRC_F}${SRC} ${SHLINKFLAGS}", False)
 
 clink, clink_vars = compile_fun("clib", "${STLINK} ${STLINKFLAGS} ${STLINK_TGT_F}${TGT[0].abspath()} ${STLINK_SRC_F}${SRC}", False)
 
@@ -58,10 +58,13 @@ def ccompile_task(self, node):
 
 def shlink_task(self, name):
     objects = [tsk.outputs[0] for tsk in self.object_tasks]
-    target = os.path.join(self.env["BLDDIR"], name + ".so")
-    ensure_dir(target)
 
-    task = task_factory("cc_shlink")(inputs=objects, outputs=target)
+    folder, base = os.path.split(name)
+    tmp = folder + os.path.sep + self.env["SHAREDLIB_FMT"] % base
+    target = self.bld.bld_root.declare(tmp)
+    ensure_dir(target.abspath())
+
+    task = task_factory("cc_shlink")(inputs=objects, outputs=[target])
     task.gen = self
     task.env = self.env
     task.func = cshlink
@@ -177,7 +180,7 @@ class CCBuilder(yaku.tools.Builder):
         return with_conf_blddir(self.ctx, name, body,
                                 lambda : self._try_task_maker(self._compile, name, body, headers))
 
-    def _try_task_maker(self, task_maker, name, body, headers):
+    def _try_task_maker(self, task_maker, name, body, headers, env=None):
         conf = self.ctx
         if headers:
             head = "\n".join(["#include <%s>" % h for h in headers])
@@ -235,6 +238,36 @@ class CCBuilder(yaku.tools.Builder):
     def try_static_library(self, name, body, headers=None):
         return with_conf_blddir(self.ctx, name, body,
                                 lambda : self._try_task_maker(self._static_library, name, body, headers))
+
+    def shared_library(self, name, sources, env=None):
+        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        task_gen = CompiledTaskGen("ccsharedlib", self.ctx, sources, name)
+        task_gen.env = _merge_env(self.env, env)
+
+        tasks = self._shared_library(task_gen, name)
+        self.ctx.tasks.extend(tasks)
+        outputs = []
+        for t in task_gen.link_task:
+            outputs.extend(t.outputs)
+        return outputs
+
+    def _shared_library(self, task_gen, name):
+        apply_define(task_gen)
+        apply_cpppath(task_gen)
+        apply_libdir(task_gen)
+        apply_libs(task_gen)
+
+        tasks = task_gen.process()
+        ltask = shlink_task(task_gen, name)
+        tasks.extend(ltask)
+        for t in tasks:
+            t.env = task_gen.env
+        task_gen.link_task = ltask
+        return tasks
+
+    def try_shared_library(self, name, body, headers=None):
+        return with_conf_blddir(self.ctx, name, body,
+                                lambda : self._try_task_maker(self._shared_library, name, body, headers))
 
     def program(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
