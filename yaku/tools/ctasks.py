@@ -191,8 +191,11 @@ class CCBuilder(yaku.tools.Builder):
 
         task_gen = CompiledTaskGen("conf", conf, sources, name)
         task_gen.env.update(copy.deepcopy(conf.env))
+        task_gen.env = _merge_env(task_gen.env, env)
+        task_gen.env.prepend("LIBDIR", os.curdir)
 
         tasks = task_maker(task_gen, name)
+        self.ctx.last_task = tasks[-1]
 
         for t in tasks:
             t.disable_output = True
