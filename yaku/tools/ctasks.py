@@ -356,6 +356,44 @@ class CCBuilder(yaku.tools.Builder):
             ar = ctx.load_tool("ar")
             ar.setup(ctx)
 
+        ctx.start_message("Checking whether %s can build objects" % cc_type)
+        if self.try_compile("foo", "int foo() {return 0;}"):
+            ctx.end_message("yes")
+        else:
+            raise ValueError()
+        ctx.start_message("Checking whether %s can build programs" % cc_type)
+        if self.try_program("foo", "int main() {return 0;}"):
+            ctx.end_message("yes")
+        else:
+            raise ValueError()
+        ctx.start_message("Checking whether %s can build static libraries" % cc_type)
+        if self.try_static_library("foo", "int foo() {return 0;}"):
+            ctx.end_message("yes")
+        else:
+            raise ValueError()
+        ctx.start_message("Checking whether %s can link static libraries to exe" % cc_type)
+        def f():
+            assert self.try_static_library_no_blddir("foo", "int foo() { return 0;}")
+            if self.try_program_no_blddir("exe", "int foo(); int main() { return foo();}",
+                                          env={"LIBS": ["foo"]}):
+                ctx.end_message("yes")
+            else:
+                raise ValueError()
+        with_conf_blddir(self.ctx, "exelib", "checking static link", f)
+        ctx.start_message("Checking whether %s can build shared libraries" % cc_type)
+        if self.try_shared_library("foo", "int foo() {return 0;}"):
+            ctx.end_message("yes")
+        else:
+            raise ValueError()
+        ctx.start_message("Checking whether %s can link shared libraries to exe" % cc_type)
+        def f():
+            assert self.try_shared_library_no_blddir("foo", "int foo() { return 0;}")
+            if self.try_program_no_blddir("exe", "int foo(); int main() { return foo();}",
+                                          env={"LIBS": ["foo"]}):
+                ctx.end_message("yes")
+            else:
+                raise ValueError()
+        with_conf_blddir(self.ctx, "exeshlib", "checking shared link", f)
         self.configured = True
 
 def get_builder(ctx):
