@@ -180,6 +180,9 @@ class CCBuilder(yaku.tools.Builder):
         return with_conf_blddir(self.ctx, name, body,
                                 lambda : self._try_task_maker(self._compile, name, body, headers))
 
+    def try_compile_no_blddir(self, name, body, headers=None, env=None):
+        return self._try_task_maker(self._compile, name, body, headers, env)
+
     def _try_task_maker(self, task_maker, name, body, headers, env=None):
         conf = self.ctx
         if headers:
@@ -242,6 +245,9 @@ class CCBuilder(yaku.tools.Builder):
         return with_conf_blddir(self.ctx, name, body,
                                 lambda : self._try_task_maker(self._static_library, name, body, headers))
 
+    def try_static_library_no_blddir(self, name, body, headers=None, env=None):
+        return self._try_task_maker(self._static_library, name, body, headers, env)
+
     def shared_library(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("ccsharedlib", self.ctx, sources, name)
@@ -272,6 +278,9 @@ class CCBuilder(yaku.tools.Builder):
         return with_conf_blddir(self.ctx, name, body,
                                 lambda : self._try_task_maker(self._shared_library, name, body, headers))
 
+    def try_shared_library_no_blddir(self, name, body, headers=None, env=None):
+        return self._try_task_maker(self._shared_library, name, body, headers, env)
+
     def program(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("ccprogram", self.ctx,
@@ -299,9 +308,12 @@ class CCBuilder(yaku.tools.Builder):
         task_gen.link_task = ltask
         return tasks
 
-    def try_program(self, name, body, headers=None):
+    def try_program(self, name, body, headers=None, env=None):
         return with_conf_blddir(self.ctx, name, body,
-                                lambda : self._try_task_maker(self._program, name, body, headers))
+                                lambda : self._try_task_maker(self._program, name, body, headers, env))
+
+    def try_program_no_blddir(self, name, body, headers=None, env=None):
+        return self._try_task_maker(self._program, name, body, headers, env)
 
     def configure(self, candidates=None):
         ctx = self.ctx
