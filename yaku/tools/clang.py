@@ -7,6 +7,7 @@ def setup(ctx):
     ctx.env["CC_TGT_F"] = ["-c", "-o"]
     ctx.env["CC_SRC_F"] = []
     ctx.env["CFLAGS"] = []
+    ctx.env["DEFINES"] = []
     ctx.env["LINK"] = ["clang"]
     ctx.env["LINKFLAGS"] = []
     ctx.env["LINK_TGT_F"] = ["-o"]
