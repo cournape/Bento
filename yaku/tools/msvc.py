@@ -223,7 +223,7 @@ def setup(ctx):
     ctx.env["LINK_TGT_F"] = ["/out:"]
     ctx.env["LINK_SRC_F"] = []
     ctx.env["LINKFLAGS"] = ["/nologo"]
-    ctx.env["SHLINK"] = [linker]
+    ctx.env["SHLINK"] = [linker, "/DLL"]
     ctx.env["SHLINK_TGT_F"] = ["/out:"]
     ctx.env["SHLINK_SRC_F"] = []
     ctx.env["SHLINKFLAGS"] = []
@@ -247,6 +247,7 @@ def setup(ctx):
 
     ctx.env["CC_OBJECT_FMT"] = "%s.obj"
     ctx.env["CXX_OBJECT_FMT"] = "%s.obj"
+    ctx.env["SHAREDLIB_FMT"] = "%s.dll"
     ctx.env["PROGRAM_FMT"] = "%s.exe"
 
     for k, v in vc_paths.items():
@@ -256,7 +257,7 @@ def setup(ctx):
         elif k in ["CPPPATH"]:
             env.extend(k, v, create=True)
 
-for task_class in ["cc", "cxx", "pycc", "pycxx"]:
+for task_class in ["cc", "cc_shlink", "cc_stlink", "cxx", "pycc", "pycxx"]:
     klass = yaku.task.task_factory(task_class)
     saved = klass.exec_command
     klass.exec_command = _exec_command_factory(saved)
