@@ -35,7 +35,15 @@ from yaku.conftests \
 from yaku.tools.ctasks \
     import \
         apply_define
-
+from yaku.scheduler \
+    import \
+        run_tasks
+from yaku.conf \
+    import \
+        with_conf_blddir, create_file, write_log
+from yaku.errors \
+    import \
+        TaskRunFailure
 import yaku.tools
 
 pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0].abspath()} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_APP_FRAMEWORKS} ${PYEXT_SHLINKFLAGS}", False)
@@ -180,10 +188,111 @@ class PythonBuilder(yaku.tools.Builder):
     def __init__(self, ctx):
         yaku.tools.Builder.__init__(self, ctx)
 
+    def _try_task_maker(self, task_maker, name, body, headers, env=None):
+        conf = self.ctx
+        if headers:
+            head = "\n".join(["#include <%s>" % h for h in headers])
+        else:
+            head = ""
+        code = "\n".join([c for c in [head, body]])
+        sources = [create_file(conf, code, name, ".c")]
+
+        task_gen = CompiledTaskGen("conf", conf, sources, name)
+        task_gen.env.update(copy.deepcopy(conf.env))
+        task_gen.env = _merge_env(task_gen.env, env)
+        task_gen.env.prepend("LIBDIR", os.curdir)
+
+        tasks = task_maker(task_gen, name)
+        self.ctx.last_task = tasks[-1]
+
+        for t in tasks:
+            t.disable_output = True
+            t.log = conf.log
+
+        succeed = False
+        explanation = None
+        try:
+            run_tasks(conf, tasks)
+            succeed = True
+        except TaskRunFailure, e:
+            explanation = str(e)
+
+        write_log(conf, conf.log, tasks, code, succeed, explanation)
+        return succeed
+
+    def _compile(self, task_gen, name):
+        apply_define(task_gen)
+        apply_cpppath(task_gen)
+
+        tasks = task_gen.process()
+        for t in tasks:
+            t.env = task_gen.env
+        return tasks
+
+    def try_compile(self, name, body, headers=None):
+        old_hook = set_extension_hook(".c", pycc_task)
+        try:
+            return with_conf_blddir(self.ctx, name, body,
+                                    lambda : self._try_task_maker(self._compile, name, body, headers))
+        finally:
+            set_extension_hook(".c", old_hook)
+
+    def try_extension(self, name, body, headers=None):
+        old_hook = set_extension_hook(".c", pycc_task)
+        try:
+            return with_conf_blddir(self.ctx, name, body,
+                                    lambda : self._try_task_maker(self._extension, name, body, headers))
+        finally:
+            set_extension_hook(".c", old_hook)
+
+    def _extension(self, task_gen, name):
+        bld = self.ctx
+        base = name.replace(".", os.sep)
+
+        tasks = []
+
+        old_hook = set_extension_hook(".c", pycc_hook)
+        old_hook_cxx = set_extension_hook(".cxx", pycxx_hook)
+
+        apply_define(task_gen)
+        apply_cpppath(task_gen)
+        apply_libpath(task_gen)
+        apply_libs(task_gen)
+        apply_frameworks(task_gen)
+
+        tasks = task_gen.process()
+
+        ltask = pylink_task(task_gen, base)
+        task_gen.link_task = ltask
+        if task_gen.has_cxx:
+            task_gen.link_task.func = pycxxlink
+            task_gen.link_task.env_vars = pycxxlink_vars
+
+        tasks.extend(ltask)
+        for t in tasks:
+            t.env = task_gen.env
+
+        set_extension_hook(".c", old_hook)
+        set_extension_hook(".cxx", old_hook_cxx)
+        return tasks
+
     def extension(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
-        return create_pyext(self.ctx, name, sources,
-                _merge_env(self.env, env))
+        task_gen = CompiledTaskGen("pyext", self.ctx, sources, name)
+        task_gen.bld = self.ctx
+        task_gen.env = _merge_env(self.env, env)
+        tasks = self._extension(task_gen, name)
+        self.ctx.tasks.extend(tasks)
+
+        outputs = []
+        for t in task_gen.link_task:
+            outputs.extend(t.outputs)
+        task_gen.outputs = outputs
+        return tasks
+
+    def try_extension(self, name, body, headers=None):
+        return with_conf_blddir(self.ctx, name, body,
+                                lambda : self._try_task_maker(self._extension, name, body, headers))
 
     def configure(self, candidates=None, use_distutils=True):
         ctx = self.ctx
@@ -222,6 +331,41 @@ class PythonBuilder(yaku.tools.Builder):
             dist_env = setup_pyext_env(ctx, compiler_type, False)
             ctx.env.update(dist_env)
             _setup_compiler(ctx, compiler_type)
+
+        pycode = r"""\
+#include <Python.h>
+#include <stdio.h>
+
+static PyObject*
+hello(PyObject *self, PyObject *args)
+{
+    printf("Hello from C\n");
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyMethodDef HelloMethods[] = {
+    {"hello",  hello, METH_VARARGS, "Print a hello world."},
+    {NULL, NULL, 0, NULL}        /* Sentinel */
+};
+
+PyMODINIT_FUNC
+init_bar(void)
+{
+    (void) Py_InitModule("_bar", HelloMethods);
+}
+"""
+        ctx.start_message("Checking whether %s can build python object code" % compiler_type)
+        if self.try_compile("foo", pycode):
+            ctx.end_message("yes")
+        else:
+            raise ValueError()
+
+        ctx.start_message("Checking whether %s can build python extension" % compiler_type)
+        if self.try_extension("foo", pycode):
+            ctx.end_message("yes")
+        else:
+            raise ValueError()
         self.configured = True
 
 def get_builder(ctx):
@@ -348,44 +492,6 @@ def _setup_cxxcompiler(ctx, cxx_type):
     for k in ["CXX", "CXXFLAGS", "CXX_TGT_F", "CXX_SRC_F",
               "CXXSHLINK"]:
         ctx.env["PYEXT_%s" % k] = cxx_env[k]
-
-def create_pyext(bld, name, sources, env):
-    base = name.replace(".", os.sep)
-
-    tasks = []
-
-    task_gen = CompiledTaskGen("pyext", bld, sources, name)
-    task_gen.bld = bld
-    old_hook = set_extension_hook(".c", pycc_hook)
-    old_hook_cxx = set_extension_hook(".cxx", pycxx_hook)
-
-    task_gen.env = env
-    apply_define(task_gen)
-    apply_cpppath(task_gen)
-    apply_libpath(task_gen)
-    apply_libs(task_gen)
-    apply_frameworks(task_gen)
-
-    tasks = task_gen.process()
-
-    ltask = pylink_task(task_gen, base)
-    if task_gen.has_cxx:
-        task_gen.link_task.func = pycxxlink
-        task_gen.link_task.env_vars = pycxxlink_vars
-
-    tasks.extend(ltask)
-    for t in tasks:
-        t.env = task_gen.env
-
-    set_extension_hook(".c", old_hook)
-    set_extension_hook(".cxx", old_hook_cxx)
-    bld.tasks.extend(tasks)
-
-    outputs = []
-    for t in ltask:
-        outputs.extend(t.outputs)
-    task_gen.outputs = outputs
-    return tasks
 
 # FIXME: find a way to reuse this kind of code between tools
 def apply_frameworks(task_gen):
