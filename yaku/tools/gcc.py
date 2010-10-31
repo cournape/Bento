@@ -18,6 +18,10 @@ def setup(ctx):
     ctx.env["SHLINKFLAGS"] = []
     ctx.env["SHLINK_TGT_F"] = ["-o"]
     ctx.env["SHLINK_SRC_F"] = []
+    ctx.env["MODLINK"] = ["gcc", "-bundle", "-undefined", "dynamic_lookup"]
+    ctx.env["MODLINKFLAGS"] = []
+    ctx.env["MODLINK_TGT_F"] = ["-o"]
+    ctx.env["MODLINK_SRC_F"] = []
     ctx.env["CPPPATH"] = []
     ctx.env["CPPPATH_FMT"] = "-I%s"
     ctx.env["LIBDIR"] = []

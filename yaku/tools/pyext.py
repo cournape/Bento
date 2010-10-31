@@ -96,33 +96,44 @@ _SYS_TO_CCENV = {
 }
 
 def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
-    pyenv = {}
+    pyenv = Environment()
     if use_distutils:
         if cc_type == "default":
             dist_env = get_configuration()
         else:
             dist_env = get_configuration(cc_type)
+        for name, value in dist_env.items():
+            pyenv["PYEXT_%s" % name] = value
+        pyenv["PYEXT_FMT"] = "%%s%s" % dist_env["SO"]
+        pyenv["PYEXT_CFLAGS"] = pyenv["PYEXT_BASE_CFLAGS"] + \
+                pyenv["PYEXT_OPT"] + \
+                pyenv["PYEXT_SHARED"]
+        pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
     else:
-        dist_env = {
-                "CC": ["clang"],
-                "CPPPATH": [],
-                "BASE_CFLAGS": ["-fno-strict-aliasing"],
-                "OPT": [],
-                "SHARED": ["-fPIC"],
-                "SHLINK": ["clang", "-shared"],
-                "LDFLAGS": [],
-                "LIBDIR": [],
-                "LIBS": [],
-                "SO": ".so"}
-        dist_env["CPPPATH"].append(distutils.sysconfig.get_python_inc())
+        old_env = ctx.env
+        ctx.env = Environment()
+        cc_env = None
+        sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
+        try:
+            try:
+                mod = __import__(cc_type)
+                mod.setup(ctx)
+            except ImportError:
+                raise RuntimeError("No tool %s is available (import failed)" \
+                                % cc_type)
+            cc_env = ctx.env
+        finally:
+            sys.path.pop(0)
+            ctx.env = old_env
+        pyenv["PYEXT_CC"] = cc_env["CC"]
+        pyenv["PYEXT_CFLAGS"] = cc_env["CFLAGS"]
+        pyenv["PYEXT_LIBDIR"] = cc_env["LIBDIR"]
+        pyenv["PYEXT_LIBS"] = cc_env["LIBS"]
+        pyenv["PYEXT_FMT"] = "%s.so"
+        pyenv["PYEXT_SHLINK"] = cc_env["MODLINK"]
+        pyenv["PYEXT_SHLINKFLAGS"] = cc_env["MODLINKFLAGS"]
+        pyenv.append("PYEXT_CPPPATH", distutils.sysconfig.get_python_inc(), create=True)
 
-    for name, value in dist_env.items():
-        pyenv["PYEXT_%s" % name] = value
-    pyenv["PYEXT_FMT"] = "%%s%s" % dist_env["SO"]
-    pyenv["PYEXT_CFLAGS"] = pyenv["PYEXT_BASE_CFLAGS"] + \
-            pyenv["PYEXT_OPT"] + \
-            pyenv["PYEXT_SHARED"]
-    pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
     return pyenv
 
 def pycc_hook(self, node):
