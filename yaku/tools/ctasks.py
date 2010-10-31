@@ -385,7 +385,7 @@ class CCBuilder(yaku.tools.Builder):
 #ifdef _MSC_VER
 #define __YAKU_DLL_MARK __declspec(dllexport)
 #else
-#define __YAKU_DLL_NARK
+#define __YAKU_DLL_MARK
 #endif
 
 __YAKU_DLL_MARK int foo()
