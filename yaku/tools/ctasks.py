@@ -380,14 +380,28 @@ class CCBuilder(yaku.tools.Builder):
             else:
                 raise ValueError()
         with_conf_blddir(self.ctx, "exelib", "checking static link", f)
+
+        shared_code = """\
+#ifdef _MSC_VER
+#define __YAKU_DLL_MARK __declspec(dllexport)
+#else
+#define __YAKU_DLL_NARK
+#endif
+
+__YAKU_DLL_MARK int foo()
+{
+    return 0;
+}
+"""
         ctx.start_message("Checking whether %s can build shared libraries" % cc_type)
-        if self.try_shared_library("foo", "int foo() {return 0;}"):
+        if self.try_shared_library("foo", shared_code):
             ctx.end_message("yes")
         else:
             raise ValueError()
+
         ctx.start_message("Checking whether %s can link shared libraries to exe" % cc_type)
         def f():
-            assert self.try_shared_library_no_blddir("foo", "int foo() { return 0;}")
+            assert self.try_shared_library_no_blddir("foo", shared_code)
             if self.try_program_no_blddir("exe", "int foo(); int main() { return foo();}",
                                           env={"LIBS": ["foo"]}):
                 ctx.end_message("yes")
