@@ -24,7 +24,7 @@ from yaku.scheduler \
         run_tasks
 from yaku.conf \
     import \
-        with_conf_blddir, create_file, write_log
+        with_conf_blddir
 import yaku.tools
 
 ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${APP_DEFINES} ${INCPATH} ${CC_TGT_F}${TGT[0].abspath()} ${CC_SRC_F}${SRC}", False)
@@ -134,20 +134,6 @@ def apply_libdir(task_gen):
     task_gen.env["APP_LIBDIR"] = [
             task_gen.env["LIBDIR_FMT"] % d for d in libdir]
 
-def _merge_env(_env, new_env):
-    if new_env is not None:
-        ret = copy.copy(_env)
-        for k, v in new_env.items():
-            if hasattr(_env[k], "extend"):
-                old = copy.copy(_env[k])
-                old.extend(v)
-                ret[k] = old
-            else:
-                ret[k] = v
-        return ret
-    else:
-        return _env
-
 class CCBuilder(yaku.tools.Builder):
     def clone(self):
         return CCBuilder(self.ctx)
@@ -167,7 +153,7 @@ class CCBuilder(yaku.tools.Builder):
     def compile(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("cccompile", self.ctx, sources, name)
-        task_gen.env = _merge_env(self.env, env)
+        task_gen.env = yaku.tools._merge_env(self.env, env)
         tasks = self._compile(task_gen, name)
         self.ctx.tasks.extend(tasks)
 
@@ -178,47 +164,15 @@ class CCBuilder(yaku.tools.Builder):
 
     def try_compile(self, name, body, headers=None):
         return with_conf_blddir(self.ctx, name, body,
-                                lambda : self._try_task_maker(self._compile, name, body, headers))
+                                lambda : yaku.tools.try_task_maker(self.ctx, self._compile, name, body, headers))
 
     def try_compile_no_blddir(self, name, body, headers=None, env=None):
-        return self._try_task_maker(self._compile, name, body, headers, env)
-
-    def _try_task_maker(self, task_maker, name, body, headers, env=None):
-        conf = self.ctx
-        if headers:
-            head = "\n".join(["#include <%s>" % h for h in headers])
-        else:
-            head = ""
-        code = "\n".join([c for c in [head, body]])
-        sources = [create_file(conf, code, name, ".c")]
-
-        task_gen = CompiledTaskGen("conf", conf, sources, name)
-        task_gen.env.update(copy.deepcopy(conf.env))
-        task_gen.env = _merge_env(task_gen.env, env)
-        task_gen.env.prepend("LIBDIR", os.curdir)
-
-        tasks = task_maker(task_gen, name)
-        self.ctx.last_task = tasks[-1]
-
-        for t in tasks:
-            t.disable_output = True
-            t.log = conf.log
-
-        succeed = False
-        explanation = None
-        try:
-            run_tasks(conf, tasks)
-            succeed = True
-        except TaskRunFailure, e:
-            explanation = str(e)
-
-        write_log(conf, conf.log, tasks, code, succeed, explanation)
-        return succeed
+        return yaku.tools._try_task_maker(self.ctx, self._compile, name, body, headers, env)
 
     def static_library(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("ccstaticlib", self.ctx, sources, name)
-        task_gen.env = _merge_env(self.env, env)
+        task_gen.env = yaku.tools._merge_env(self.env, env)
 
         tasks = self._static_library(task_gen, name)
         self.ctx.tasks.extend(tasks)
@@ -243,15 +197,15 @@ class CCBuilder(yaku.tools.Builder):
 
     def try_static_library(self, name, body, headers=None):
         return with_conf_blddir(self.ctx, name, body,
-                                lambda : self._try_task_maker(self._static_library, name, body, headers))
+                                lambda : yaku.tools.try_task_maker(self.ctx, self._static_library, name, body, headers))
 
     def try_static_library_no_blddir(self, name, body, headers=None, env=None):
-        return self._try_task_maker(self._static_library, name, body, headers, env)
+        return yaku.tools.try_task_maker(self.ctx, self._static_library, name, body, headers, env)
 
     def shared_library(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("ccsharedlib", self.ctx, sources, name)
-        task_gen.env = _merge_env(self.env, env)
+        task_gen.env = yaku.tools._merge_env(self.env, env)
 
         tasks = self._shared_library(task_gen, name)
         self.ctx.tasks.extend(tasks)
@@ -276,16 +230,16 @@ class CCBuilder(yaku.tools.Builder):
 
     def try_shared_library(self, name, body, headers=None):
         return with_conf_blddir(self.ctx, name, body,
-                                lambda : self._try_task_maker(self._shared_library, name, body, headers))
+                                lambda : yaku.tools.try_task_maker(self.ctx, self._shared_library, name, body, headers))
 
     def try_shared_library_no_blddir(self, name, body, headers=None, env=None):
-        return self._try_task_maker(self._shared_library, name, body, headers, env)
+        return yaku.tools.try_task_maker(self.ctx, self._shared_library, name, body, headers, env)
 
     def program(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("ccprogram", self.ctx,
                                    sources, name)
-        task_gen.env = _merge_env(self.env, env)
+        task_gen.env = yaku.tools._merge_env(self.env, env)
         tasks = self._program(task_gen, name)
 
         self.ctx.tasks.extend(tasks)
@@ -310,10 +264,10 @@ class CCBuilder(yaku.tools.Builder):
 
     def try_program(self, name, body, headers=None, env=None):
         return with_conf_blddir(self.ctx, name, body,
-                                lambda : self._try_task_maker(self._program, name, body, headers, env))
+                                lambda : yaku.tools.try_task_maker(self.ctx, self._program, name, body, headers, env))
 
     def try_program_no_blddir(self, name, body, headers=None, env=None):
-        return self._try_task_maker(self._program, name, body, headers, env)
+        return yaku.tools.try_task_maker(self.ctx, self._program, name, body, headers, env)
 
     def configure(self, candidates=None):
         ctx = self.ctx

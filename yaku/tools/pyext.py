@@ -180,45 +180,12 @@ def pylink_task(self, name):
     return [task]
 
 # XXX: fix merge env location+api
-from yaku.tools.ctasks import _merge_env
 class PythonBuilder(yaku.tools.Builder):
     def clone(self):
         return PythonBuilder(self.ctx)
 
     def __init__(self, ctx):
         yaku.tools.Builder.__init__(self, ctx)
-
-    def _try_task_maker(self, task_maker, name, body, headers, env=None):
-        conf = self.ctx
-        if headers:
-            head = "\n".join(["#include <%s>" % h for h in headers])
-        else:
-            head = ""
-        code = "\n".join([c for c in [head, body]])
-        sources = [create_file(conf, code, name, ".c")]
-
-        task_gen = CompiledTaskGen("conf", conf, sources, name)
-        task_gen.env.update(copy.deepcopy(conf.env))
-        task_gen.env = _merge_env(task_gen.env, env)
-        task_gen.env.prepend("LIBDIR", os.curdir)
-
-        tasks = task_maker(task_gen, name)
-        self.ctx.last_task = tasks[-1]
-
-        for t in tasks:
-            t.disable_output = True
-            t.log = conf.log
-
-        succeed = False
-        explanation = None
-        try:
-            run_tasks(conf, tasks)
-            succeed = True
-        except TaskRunFailure, e:
-            explanation = str(e)
-
-        write_log(conf, conf.log, tasks, code, succeed, explanation)
-        return succeed
 
     def _compile(self, task_gen, name):
         apply_define(task_gen)
@@ -233,7 +200,7 @@ class PythonBuilder(yaku.tools.Builder):
         old_hook = set_extension_hook(".c", pycc_task)
         try:
             return with_conf_blddir(self.ctx, name, body,
-                                    lambda : self._try_task_maker(self._compile, name, body, headers))
+                                    lambda : yaku.tools.try_task_maker(self.ctx, self._compile, name, body, headers))
         finally:
             set_extension_hook(".c", old_hook)
 
@@ -241,7 +208,7 @@ class PythonBuilder(yaku.tools.Builder):
         old_hook = set_extension_hook(".c", pycc_task)
         try:
             return with_conf_blddir(self.ctx, name, body,
-                                    lambda : self._try_task_maker(self._extension, name, body, headers))
+                                    lambda : yaku.tools.try_task_maker(self.ctx, self._extension, name, body, headers))
         finally:
             set_extension_hook(".c", old_hook)
 
@@ -280,7 +247,7 @@ class PythonBuilder(yaku.tools.Builder):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("pyext", self.ctx, sources, name)
         task_gen.bld = self.ctx
-        task_gen.env = _merge_env(self.env, env)
+        task_gen.env = yaku.tools._merge_env(self.env, env)
         tasks = self._extension(task_gen, name)
         self.ctx.tasks.extend(tasks)
 
@@ -292,7 +259,7 @@ class PythonBuilder(yaku.tools.Builder):
 
     def try_extension(self, name, body, headers=None):
         return with_conf_blddir(self.ctx, name, body,
-                                lambda : self._try_task_maker(self._extension, name, body, headers))
+                                lambda : yaku.tools.try_task_maker(self.ctx, self._extension, name, body, headers))
 
     def configure(self, candidates=None, use_distutils=True):
         ctx = self.ctx
