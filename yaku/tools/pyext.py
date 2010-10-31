@@ -464,7 +464,7 @@ def _setup_cxxcompiler(ctx, cxx_type):
 def apply_frameworks(task_gen):
     # XXX: do this correctly (platform specific tool config)
     if sys.platform == "darwin":
-        frameworks = task_gen.env["PYEXT_FRAMEWORKS"]
+        frameworks = task_gen.env.get("PYEXT_FRAMEWORKS", [])
         task_gen.env["PYEXT_APP_FRAMEWORKS"] = []
         for framework in frameworks:
             task_gen.env["PYEXT_APP_FRAMEWORKS"].extend(["-framework", framework])
