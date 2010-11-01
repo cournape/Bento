@@ -167,7 +167,7 @@ class CCBuilder(yaku.tools.Builder):
                                 lambda : yaku.tools.try_task_maker(self.ctx, self._compile, name, body, headers))
 
     def try_compile_no_blddir(self, name, body, headers=None, env=None):
-        return yaku.tools._try_task_maker(self.ctx, self._compile, name, body, headers, env)
+        return yaku.tools.try_task_maker(self.ctx, self._compile, name, body, headers, env)
 
     def static_library(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
