@@ -186,10 +186,10 @@ def find_versions(abi):
             close_key(key)
     return availables
 
-def setup(ctx):
-    env = ctx.env
+def _detect_msvc(ctx):
     from string import digits as string_digits
 
+    msvc_version_info = (9, 0)
     msvc_version = "9.0"
     pdir = find_vc_pdir(msvc_version)
     if pdir is None:
@@ -207,15 +207,36 @@ def setup(ctx):
     else: # >= 8
         batfilename = os.path.join(pdir, "vcvarsall.bat")
 
-    vc_paths = get_output(ctx, batfilename, "amd64")
-    cc = r"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\amd64\cl.exe"
-    linker = r"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\amd64\link.exe"
+    vc_paths = get_output(ctx, batfilename, "x86")
+    cc = None
+    linker = None
+    lib = None
+    for p in vc_paths["PATH"]:
+        _cc = os.path.join(p, "cl.exe")
+        _linker = os.path.join(p, "link.exe")
+        _lib = os.path.join(p, "lib.exe")
+        if os.path.exists(_cc) and os.path.exists(_linker) and os.path.exists(_lib):
+            cc = _cc
+            linker = _linker
+            lib = _lib
+            break
+    if cc is None or linker is None:
+        raise RuntimeError("Could not find cl.exe/link.exe")
+
+    return cc, linker, lib, vc_paths, msvc_version_info
+
+def setup(ctx):
+    env = ctx.env
+
+    cc, linker, lib, vc_paths, msvc_version_info = _detect_msvc(ctx)
+    ctx.env["PATH"] = vc_paths["PATH"][:]
+    ctx.env.prextend("CPPPATH", vc_paths["INCLUDE"], create=True)
+    ctx.env.prextend("LIBDIR", vc_paths["LIB"], create=True)
 
     ctx.env["CC"] = [cc]
     ctx.env["CC_TGT_F"] = ["/c", "/Fo"]
     ctx.env["CC_SRC_F"] = []
     ctx.env["CFLAGS"] = ["/nologo"]
-    ctx.env["CPPPATH"] = []
     ctx.env["CPPPATH_FMT"] = "/I%s"
     ctx.env["DEFINES"] = []
     ctx.env["DEFINES_FMT"] = "/D%s"
@@ -227,15 +248,27 @@ def setup(ctx):
     ctx.env["SHLINK_TGT_F"] = ["/out:"]
     ctx.env["SHLINK_SRC_F"] = []
     ctx.env["SHLINKFLAGS"] = []
+    ctx.env["MODLINK"] = [linker, "/DLL"]
+    ctx.env["MODLINK_TGT_F"] = ["/out:"]
+    ctx.env["MODLINK_SRC_F"] = []
+    ctx.env["MODLINKFLAGS"] = ["/nologo"]
     ctx.env["LIBS"] = []
     ctx.env["LIB_FMT"] = "%s.lib"
     ctx.env["LIBDIR"] = []
     ctx.env["LIBDIR_FMT"] = "/LIBPATH:%s"
 
+    ctx.env["STLINK"] = [lib]
+    ctx.env["STLINK_TGT_F"] = ["/OUT:"]
+    ctx.env["STLINK_SRC_F"] = []
+    ctx.env["STLINKFLAGS"] = ["/nologo"]
+    ctx.env["STATICLIB_FMT"] = "%s.lib"
+
     ctx.env["CXX"] = [cc]
     ctx.env["CXX_TGT_F"] = ["/c", "/Fo"]
     ctx.env["CXX_SRC_F"] = []
     ctx.env["CXXFLAGS"] = ["/nologo"]
+    if msvc_version_info >= (9, 0):
+        ctx.env.append("CXXFLAGS", "/EHsc")
     ctx.env["CXXLINK"] = [linker]
     ctx.env["CXXLINKFLAGS"] = ["/nologo"]
     ctx.env["CXXLINK_TGT_F"] = ["/out:"]
