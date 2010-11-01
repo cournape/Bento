@@ -18,7 +18,7 @@ from yaku.compiled_fun \
         compile_fun
 from yaku.tools.ctasks \
     import \
-        _merge_env, apply_cpppath, apply_libdir, apply_libs, apply_define
+        apply_cpppath, apply_libdir, apply_libs, apply_define
 import yaku.tools
 
 cxxcompile, cxx_vars = compile_fun("cxx", "${CXX} ${CXXFLAGS} ${INCPATH} ${APP_DEFINES} ${CXX_TGT_F}${TGT[0].abspath()} ${CXX_SRC_F}${SRC}", False)
@@ -72,7 +72,7 @@ class CXXBuilder(yaku.tools.Builder):
     def ccompile(self, name, sources, env=None):
         task_gen = CompiledTaskGen("cxccompile", self.ctx,
                                    sources, name)
-        task_gen.env = _merge_env(self.env, env)
+        task_gen.env = yaku.tools._merge_env(self.env, env)
         apply_define(task_gen)
         apply_cpppath(task_gen)
 
@@ -90,7 +90,7 @@ class CXXBuilder(yaku.tools.Builder):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = CompiledTaskGen("cxxprogram", self.ctx,
                                    sources, name)
-        task_gen.env = _merge_env(self.env, env)
+        task_gen.env = yaku.tools._merge_env(self.env, env)
         apply_define(task_gen)
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
