@@ -454,6 +454,8 @@ def _setup_compiler(ctx, cc_type):
             "LINK_SRC_F"]
     for k in copied_values:
         ctx.env["PYEXT_%s" % k] = cc_env[k]
+    ctx.env.prextend("PYEXT_CPPPATH", cc_env["CPPPATH"])
+    ctx.env.prextend("PYEXT_LIBDIR", cc_env["LIBDIR"])
 
 def _setup_cxxcompiler(ctx, cxx_type):
     old_env = ctx.env
