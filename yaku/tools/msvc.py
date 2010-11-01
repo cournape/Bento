@@ -299,10 +299,5 @@ for task_class in ["cc", "cc_shlink", "cc_stlink", "cc_program", "cxx", "pycc", 
     klass.exec_command = _exec_command_factory(saved)
 
 def detect(ctx):
-    from distutils.ccompiler import new_compiler
-    try:
-        cc = new_compiler(compiler="msvc")
-        cc.initialize()
-        return True
-    except Exception, e:
-        return False
+    _detect_msvc(ctx)
+    return True
