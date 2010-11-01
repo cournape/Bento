@@ -14,9 +14,6 @@ from yaku.task_manager \
 from yaku.utils \
     import \
         ensure_dir
-from yaku.tools.ctasks \
-    import \
-        _merge_env
 import yaku.tools
 
 VARS = {"template": ["SUBST_DICT"]}
@@ -53,7 +50,7 @@ class TemplateBuilder(yaku.tools.Builder):
     def build(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
         task_gen = TaskGen("template", self.ctx, sources, name)
-        task_gen.env = _merge_env(self.env, env)
+        task_gen.env = yaku.tools._merge_env(self.env, env)
         tasks = task_gen.process()
         for t in tasks:
             t.env = task_gen.env
