@@ -257,7 +257,7 @@ def setup(ctx):
         elif k in ["CPPPATH"]:
             env.extend(k, v, create=True)
 
-for task_class in ["cc", "cc_shlink", "cc_stlink", "cxx", "pycc", "pycxx"]:
+for task_class in ["cc", "cc_shlink", "cc_stlink", "cc_program", "cxx", "pycc", "pycxx", "pylink"]:
     klass = yaku.task.task_factory(task_class)
     saved = klass.exec_command
     klass.exec_command = _exec_command_factory(saved)

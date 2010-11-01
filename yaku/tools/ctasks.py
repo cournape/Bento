@@ -95,7 +95,7 @@ def ccprogram_task(self, name):
     target = declare_target()
     ensure_dir(target.abspath())
 
-    task = task_factory("ccprogram")(inputs=objects, outputs=[target])
+    task = task_factory("cc_program")(inputs=objects, outputs=[target])
     task.gen = self
     task.env = self.env
     task.func = ccprogram
