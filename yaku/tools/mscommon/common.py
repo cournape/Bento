@@ -27,6 +27,10 @@ echo INCLUDE=%%INCLUDE%%
 
     p = subprocess.Popen(["cmd", "/E:one", "/V:on", "/C", batnode.abspath()], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     (out, err) = p.communicate()
+    for line in out.splitlines():
+        if re.match("^Error", line):
+            print "Error: %r" % line
+            raise RuntimeError("Error while executing bat script: %r" % out)
 
     res = {"PATH": re.compile("^PATH=(.+)$"),
         "INCLUDE": re.compile("^INCLUDE=(.+)$"),
