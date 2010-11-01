@@ -9,7 +9,7 @@ from yaku.tools.mscommon.common \
         read_values, read_value, get_output
 
 def _exec_command_factory(saved):
-    def msvc_exec_command(self, cmd, cwd):
+    def msvc_exec_command(self, cmd, cwd, env=None):
         new_cmd = []
         carry = ""
         for c in cmd:
@@ -19,7 +19,10 @@ def _exec_command_factory(saved):
                 c = carry + c
                 carry = ""
                 new_cmd.append(c)
-        saved(self, new_cmd, cwd)
+
+        env = dict(os.environ)
+        env.update(PATH=os.pathsep.join(self.env["PATH"]))
+        saved(self, new_cmd, cwd, env=env)
     return msvc_exec_command
 
 # Dict to 'canonalize' the arch
