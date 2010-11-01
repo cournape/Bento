@@ -132,7 +132,10 @@ def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
         pyenv["PYEXT_FMT"] = "%s.so"
         pyenv["PYEXT_SHLINK"] = cc_env["MODLINK"]
         pyenv["PYEXT_SHLINKFLAGS"] = cc_env["MODLINKFLAGS"]
+        pyenv["PYEXT_CPPPATH"] = cc_env["CPPPATH"]
         pyenv.append("PYEXT_CPPPATH", distutils.sysconfig.get_python_inc(), create=True)
+        if sys.platform == "win32":
+            pyenv.append("PYEXT_LIBDIR", os.path.join(sys.exec_prefix, "libs"))
 
     return pyenv
 
