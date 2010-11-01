@@ -303,10 +303,7 @@ class CCBuilder(yaku.tools.Builder):
         cc = ctx.load_tool(cc_type)
         cc.setup(ctx)
 
-        if sys.platform == "win32":
-            lib = ctx.load_tool("mslib")
-            lib.setup(ctx)
-        else:
+        if sys.platform != "win32":
             ar = ctx.load_tool("ar")
             ar.setup(ctx)
 
