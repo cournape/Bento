@@ -105,9 +105,12 @@ class _Task(object):
     def run(self):
         self.func(self)
 
-    def exec_command(self, cmd, cwd):
+    def exec_command(self, cmd, cwd, env=None):
         if cwd is None:
             cwd = self.gen.bld.bld_root.abspath()
+        kw = {}
+        if env is not None:
+            kw["env"] = env
         if not self.disable_output:
             if self.env["VERBOSE"]:
                 pprint('GREEN', " ".join([str(c) for c in cmd]))
@@ -117,7 +120,7 @@ class _Task(object):
         self.gen.bld.set_cmd_cache(self, cmd)
         try:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT, cwd=cwd)
+                    stderr=subprocess.STDOUT, cwd=cwd, **kw)
             stdout = p.communicate()[0].decode("utf-8")
             if p.returncode:
                 raise TaskRunFailure(cmd, stdout)
