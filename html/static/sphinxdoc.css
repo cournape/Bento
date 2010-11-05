@@ -1,13 +1,8 @@
-/*
- * sphinxdoc.css_t
- * ~~~~~~~~~~~~~~~
+/**
+ * Sphinx stylesheet -- sphinxdoc theme
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
- * Sphinx stylesheet -- sphinxdoc theme.  Originally created by
- * Armin Ronacher for Werkzeug.
- *
- * :copyright: Copyright 2007-2010 by the Sphinx team, see AUTHORS.
- * :license: BSD, see LICENSE for details.
- *
+ * Originally created by Armin Ronacher for Werkzeug, adapted by Georg Brandl.
  */
 
 @import url("basic.css");
@@ -325,15 +320,4 @@ div.versioninfo {
     padding: 8px;
     line-height: 1.3em;
     font-size: 0.9em;
-}
-
-.viewcode-back {
-    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva',
-                 'Verdana', sans-serif;
-}
-
-div.viewcode-block:target {
-    background-color: #f4debf;
-    border-top: 1px solid #ac9;
-    border-bottom: 1px solid #ac9;
 }

@@ -19,7 +19,7 @@ A typical .info file contains the following information:
 
     * The package metadata (name, version, etc...)
     * Optionally, it may contain addition user-customizable options such as
-      path or flags, which exact value may be set at configure time.
+      path or flags, whose exact value may be set at configure time.
     * A Library section, which defines the package content (packages, modules,
       C extensions, etc...)
     * Optionally, the .info file may contain one or several Executable
@@ -303,9 +303,9 @@ Bentomaker has a basic help facility::
     bentomaker help
 
 will list all available commands. Once the project is configured, every
-installation path and user customization is setup, and cannot be changed
-(except by reconfiguring the package, of course). Bentomaker is still in infancy,
-and quite limited:
+installation path and user customization is set up, and cannot be changed
+(except by reconfiguring the package, of course). Bentomaker is still in its
+infancy, and quite limited:
 
     - it will complain when you try to install without having run build first (it
       will not automatically run build for you).
@@ -320,7 +320,7 @@ Available commands
 configure
 ---------
 
-This commands must be run before any build/install command. It is similar to
+This command must be run before any build/install command. It is similar to
 the well-known configure script from autoconf. Every customizable option is
 available from the command help::
 
@@ -355,7 +355,7 @@ This simply produces a source tarball. Currently, only .tar.gz is supported.
 convert
 -------
 
-This convert a package built from distutils, setuptools or numpy.distutils::
+This converts a package built from distutils, setuptools or numpy.distutils::
 
     bentomaker convert
 
