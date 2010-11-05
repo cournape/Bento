@@ -152,10 +152,10 @@ bento.info can refer to another bento.info::
     ...
     Recurse: foo, bar
 
-The subento field indicates to bento that it should look for
-bento.info in both foo/ and bar/ directories. Such sub-bento.info
-files support a strict subset of the top bento.info. For example, no
-metadata may be defined in sub-bento.info.
+The Recurse field indicates to bento that it should look for bento.info in both
+foo/ and bar/ directories. At this time, those bento.info files support a
+strict subset of the top bento.info. For example, no metadata may be defined in
+sub-bento.info.
 
 Simple example
 --------------
@@ -181,12 +181,14 @@ and the foo/bento.info::
     Library:
         Packages: bar, fubar
 
-The packages are defined relatively to the directory where the subento
-file is located. Obviously, in this case, it is overkill, but for
-complex, deeply nested packages (like scipy or twisted), this makes
-the bento.info more readable. It is especially useful when you use
-this with the hook file mechanism, where each subento file can drive a
-part of the configure/build through command hooks and overrides.
+The packages are defined relatively to the directory where the subento file is
+located. Obviously, in this case, it is overkill, but for complex, deeply
+nested packages (like scipy or twisted), this makes the bento.info more
+readable. It is especially useful when you use this with the hook file
+mechanism, where each subento file can drive a part of the configure/build
+through command hooks and overrides. In that case, the hook file defined in a
+subdirectory only sees the libraries, modules, etc... defined in the
+corresponding bento.info by default (see hook section).
 
 Hook files
 ==========
@@ -247,11 +249,12 @@ Each hook is a regular python function - its hook "status" is defined by the hoo
     def pconfigure(ctx):
         pass
 
-The function takes one parameter, ctx. Its class does not matter much
-at this point, but its members do. First, both the command instance
-(cmd) and the command options (cmd_opts) are always available. The
-command instance corresponds to the requested command (bentomaker
-configure -> bento.commands.configure.Configure class). cmd_opts is a simple list of the command line arguments::
+The function takes one parameter, ctx. Its class does not matter much at this
+point, but its members do. First, both the command instance (cmd) and the
+command options (cmd_opts) are always available. The command instance
+corresponds to the requested command (bentomaker configure ->
+bento.commands.configure.Configure class). cmd_opts is a simple list of the
+command line arguments::
 
     from bento.commands.hooks import post_configure
 
