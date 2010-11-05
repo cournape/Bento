@@ -68,7 +68,7 @@ META_FIELDS_ID = {
     "InstallRequires": "INSTALL_REQUIRES_ID",
     "HookFile": "HOOK_FILE_ID",
     "ConfigPy": "CONFIG_PY_ID",
-    "Subento": "SUBENTO_ID",
+    "Recurse": "SUBENTO_ID",
 }
 
 CONDITIONAL_ID = {

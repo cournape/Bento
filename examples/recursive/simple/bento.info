@@ -1,6 +1,6 @@
 Name: Foo
 
-Subento: foo, bar
+Recurse: foo, bar
 
 HookFile: bscript, foo/bscript, bar/bscript
 

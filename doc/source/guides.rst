@@ -150,7 +150,7 @@ restrictive. Bento has a simple recursive feature so that one
 bento.info can refer to another bento.info::
 
     ...
-    Subento: foo, bar
+    Recurse: foo, bar
 
 The subento field indicates to bento that it should look for
 bento.info in both foo/ and bar/ directories. Such sub-bento.info
@@ -170,7 +170,7 @@ and foo.foo. The simplest way to define this software would be::
 Alternatively, an equivalent description, using the recursive feature::
 
     ...
-    Subento: foo
+    Recurse: foo
 
     Library:
         Package: foo
