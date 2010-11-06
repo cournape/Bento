@@ -69,33 +69,34 @@ def get_command_override(cmd_name):
     global __COMMANDS_OVERRIDE
     return __COMMANDS_OVERRIDE.get(cmd_name, None)
 
-def pre_build(f):
-    local_dir = os.path.dirname(compat_inspect.stack()[1][1])
-    add_to_registry((f, local_dir), "pre_build")
-    add_to_pre_registry((f, local_dir), "build")
+def _make_hook_decorator(command_name, kind):
+    name = "%s_%s" % (kind, command_name)
+    def func(help_bypass=True):
+        def decorator(f):
+            local_dir = os.path.dirname(compat_inspect.stack()[1][1])
+            add_to_registry((f, local_dir, help_bypass), name)
+            if kind == "post":
+                add_to_post_registry((f, local_dir, help_bypass), command_name)
+            elif kind == "pre":
+                add_to_pre_registry((f, local_dir, help_bypass), command_name)
+            else:
+                raise ValueError("invalid hook kind %s" % kind)
+        return decorator
+    func.__name__ = name
+    func.__doc__ = """\
+Tag the given function as a %(kind)s %(command_name)s hook.
 
-def post_build(f):
-    local_dir = os.path.dirname(compat_inspect.stack()[1][1])
-    add_to_registry((f, local_dir), "post_build")
-    add_to_post_registry((f, local_dir), "build")
+If help_bypass is True, the hook will not be executed if the command is
+called in help mode.
+""" % {"kind": kind, "command_name": command_name}
+    return func
 
-def post_configure(f):
-    local_dir = os.path.dirname(compat_inspect.stack()[1][1])
-    add_to_registry((f, local_dir), "post_configure")
-    add_to_post_registry((f, local_dir), "configure")
-
-def pre_configure(f):
-    local_dir = os.path.dirname(compat_inspect.stack()[1][1])
-    add_to_registry((f, local_dir), "pre_configure")
-    add_to_pre_registry((f, local_dir), "configure")
-
-def post_sdist(f):
-    add_to_registry((f,), "post_sdist")
-    add_to_post_registry((f,), "sdist")
-
-def pre_sdist(f):
-    add_to_registry((f,), "pre_sdist")
-    add_to_pre_registry((f,), "sdist")
+post_configure = _make_hook_decorator("configure", "post")
+pre_configure = _make_hook_decorator("configure", "pre")
+post_build = _make_hook_decorator("build", "post")
+pre_build = _make_hook_decorator("build", "pre")
+post_sdist = _make_hook_decorator("sdist", "post")
+pre_sdist = _make_hook_decorator("sdist", "pre")
 
 def override(f):
     override_command(f.__name__, f)
