@@ -246,8 +246,8 @@ class PythonBuilder(yaku.tools.Builder):
         ltask = pylink_task(task_gen, base)
         task_gen.link_task = ltask
         if task_gen.has_cxx:
-            task_gen.link_task.func = pycxxlink
-            task_gen.link_task.env_vars = pycxxlink_vars
+            task_gen.link_task[-1].func = pycxxlink
+            task_gen.link_task[-1].env_vars = pycxxlink_vars
 
         tasks.extend(ltask)
         for t in tasks:
