@@ -191,8 +191,15 @@ class Context(object):
     def __init__(self, cmd, cmd_opts, pkg, top_node):
         self.pkg = pkg
         self.cmd = cmd
+        # FIXME: ugly hack to get help option - think about option handling
+        # interaction between bentomaker and bento commands
+        if cmd.parser is not None:
+            o, a = cmd.parser.parse_args(cmd_opts)
+            self.help = o.help
+        else:
+            self.help = False
+
         self.cmd_opts = cmd_opts
-        self.help = False
         self.top_node = top_node
 
     def get_package(self):
@@ -339,16 +346,18 @@ def run_cmd(cmd_name, cmd_opts):
             return hook(ctx)
 
         if get_pre_hooks(cmd_name) is not None:
-            for hook, local_dir in get_pre_hooks(cmd_name):
-                set_local_ctx(ctx, hook, local_dir)
+            for hook, local_dir, help_bypass in get_pre_hooks(cmd_name):
+                if not ctx.help and help_bypass:
+                    set_local_ctx(ctx, hook, local_dir)
 
         while cmd_funcs:
             cmd_func, local_dir = cmd_funcs.pop(0)
             set_local_ctx(ctx, cmd_func, local_dir)
 
         if get_post_hooks(cmd_name) is not None:
-            for hook, local_dir in get_post_hooks(cmd_name):
-                set_local_ctx(ctx, hook, local_dir)
+            for hook, local_dir, help_bypass in get_post_hooks(cmd_name):
+                if not ctx.help and help_bypass:
+                    set_local_ctx(ctx, hook, local_dir)
         cmd.shutdown(ctx)
     finally:
         ctx.store()
