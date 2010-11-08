@@ -144,13 +144,22 @@ Usage: bentomaker configure [OPTIONS]"""
         for opt in self.opts:
             self.parser.add_option(opt)
 
-    def _set_options(self, custom_options):
+    def setup_options_parser(self, custom_options):
+        #Command.setup_options_parser(self, custom_options)
+        self._setup_options_parser(custom_options)
+
+    def _setup_options_parser(self, custom_options):
+        """Setup the command options parser, merging standard options as well
+        as custom options defined in the bento.info file, if any.
+        """
         self.add_user_group("build_customization", "Build customization")
         opt = Option("--use-distutils", help="Build extensions with distutils",
                      action="store_true")
         self.add_user_option(opt, "build_customization")
 
-        return self.add_configuration_options(custom_options)
+        scheme, flag_opts = self.add_configuration_options(custom_options)
+        self.scheme = scheme
+        self.flag_opts = flag_opts
 
     def add_user_option(self, opt, group_name=None):
         #self.opts.append(opt)
@@ -169,8 +178,6 @@ Usage: bentomaker configure [OPTIONS]"""
         self.option_callback = func
 
     def run(self, ctx):
-        scheme, flag_opts = self._set_options(ctx.package_options)
-
         args = ctx.cmd_opts
         o, a = self.parser.parse_args(args)
         if o.help:
@@ -184,8 +191,8 @@ Usage: bentomaker configure [OPTIONS]"""
 
         self.option_callback(self, o, a)
 
-        set_scheme_options(scheme, o)
-        flag_vals = set_flag_options(flag_opts, o)
+        set_scheme_options(self.scheme, o)
+        flag_vals = set_flag_options(self.flag_opts, o)
 
         pkg = ctx.pkg
 

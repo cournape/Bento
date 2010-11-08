@@ -313,6 +313,8 @@ def run_cmd(cmd_name, cmd_opts):
     finally:
         pkg_cache.close()
 
+    cmd.setup_options_parser(package_options)
+
     if cmd_name == "configure":
         ctx = ConfigureContext(cmd, cmd_opts, pkg, top)
     elif cmd_name == "build":
