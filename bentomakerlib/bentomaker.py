@@ -322,7 +322,6 @@ def run_cmd(cmd_name, cmd_opts):
     else:
         ctx = Context(cmd, cmd_opts, pkg, top)
 
-    ctx.package_options = package_options
     try:
         spkgs = pkg.subpackages
 

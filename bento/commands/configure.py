@@ -203,13 +203,18 @@ Usage: bentomaker configure [OPTIONS]"""
             if extensions or libraries:
                 yaku_ctx.use_tools(["ctasks", "pyext"])
 
-        s = ConfigureState(BENTO_SCRIPT, pkg, scheme, flag_vals,
+        s = ConfigureState(BENTO_SCRIPT, pkg, self.scheme, flag_vals,
                            self.user_data)
         s.dump()
 
-    def add_configuration_options(self, pkg_opts):
-        """Add the path and flags-related options as defined in the
-        script file to the command."""
+    def add_configuration_options(self, package_options):
+        """Add the path and flags-related options as defined in the script file
+        to the command.
+
+        Parameters
+        ----------
+        package_options: PackageOptions
+        """
         scheme, scheme_opts_d = get_scheme(sys.platform)
 
         scheme_opts = {}
@@ -222,33 +227,29 @@ Usage: bentomaker configure [OPTIONS]"""
         py_version = sys.version.split()[0]
         scheme['py_version_short'] = py_version[0:3]
 
-        scheme['pkgname'] = pkg_opts.name
+        scheme['pkgname'] = package_options.name
 
-        # Add path options to the path scheme
-        for name, f in pkg_opts.path_options.items():
+        # Add custom path options (as defined in bento.info) to the path scheme
+        for name, f in package_options.path_options.items():
             scheme[name] = f.default_value
             scheme_opts[name] = \
                 Option('--%s' % f.name,
-                       help='%s [%s]' % (f.description,
-                                         f.default_value))
+                       help='%s [%s]' % (f.description, f.default_value))
 
-        install_group = self.parser.add_option_group(
-                "Installation fine tuning")
+        install_group = self.parser.add_option_group("Installation fine tuning")
         for opt in scheme_opts.values():
             self.opts.append(opt)
             install_group.add_option(opt)
 
         flag_opts = {}
-        if pkg_opts.flag_options:
-            flags_group = self.parser.add_option_group(
-                    "Optional features")
-        for name, v in pkg_opts.flag_options.items():
-            flag_opts[name] = Option(
-                    "--with-%s" % v.name,
-                    help="%s [default=%s]" % (
-                        v.description, v.default_value))
-            self.opts.append(flag_opts[name])
-            flags_group.add_option(flag_opts[name])
+        if package_options.flag_options:
+            flags_group = self.parser.add_option_group("Optional features")
+            for name, v in package_options.flag_options.items():
+                flag_opts[name] = Option(
+                        "--with-%s" % v.name,
+                        help="%s [default=%s]" % (v.description, v.default_value))
+                self.opts.append(flag_opts[name])
+                flags_group.add_option(flag_opts[name])
 
         return scheme, flag_opts
 
