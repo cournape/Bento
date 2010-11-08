@@ -306,14 +306,26 @@ def run_cmd(cmd_name, cmd_opts):
 
     if not os.path.exists(BENTO_SCRIPT):
         raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
+
     pkg_cache = CachedPackage()
     try:
-        pkg = pkg_cache.get_package(BENTO_SCRIPT)
         package_options = pkg_cache.get_options(BENTO_SCRIPT)
     finally:
         pkg_cache.close()
-
     cmd.setup_options_parser(package_options)
+
+    if cmd_name == "configure":
+        # FIXME: this whole dance to get the user-given flag values is insane
+        from bento.commands.configure import set_flag_options
+        o, a = cmd.parser.parse_args(cmd_opts)
+        flag_values = set_flag_options(cmd.flag_opts, o)
+    else:
+        flag_values = None
+    pkg_cache = CachedPackage()
+    try:
+        pkg = pkg_cache.get_package(BENTO_SCRIPT, flag_values)
+    finally:
+        pkg_cache.close()
 
     if cmd_name == "configure":
         ctx = ConfigureContext(cmd, cmd_opts, pkg, top)
