@@ -309,7 +309,7 @@ def run_cmd(cmd_name, cmd_opts):
     pkg_cache = CachedPackage()
     try:
         pkg = pkg_cache.get_package(BENTO_SCRIPT)
-        pkg_opts = pkg_cache.get_options(BENTO_SCRIPT)
+        package_options = pkg_cache.get_options(BENTO_SCRIPT)
     finally:
         pkg_cache.close()
 
@@ -320,7 +320,7 @@ def run_cmd(cmd_name, cmd_opts):
     else:
         ctx = Context(cmd, cmd_opts, pkg, top)
 
-    ctx.pkg_opts = pkg_opts
+    ctx.package_options = package_options
     try:
         spkgs = pkg.subpackages
 

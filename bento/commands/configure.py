@@ -144,6 +144,14 @@ Usage: bentomaker configure [OPTIONS]"""
         for opt in self.opts:
             self.parser.add_option(opt)
 
+    def _set_options(self, custom_options):
+        self.add_user_group("build_customization", "Build customization")
+        opt = Option("--use-distutils", help="Build extensions with distutils",
+                     action="store_true")
+        self.add_user_option(opt, "build_customization")
+
+        return self.add_configuration_options(custom_options)
+
     def add_user_option(self, opt, group_name=None):
         #self.opts.append(opt)
         if group_name is not None:
@@ -161,17 +169,10 @@ Usage: bentomaker configure [OPTIONS]"""
         self.option_callback = func
 
     def run(self, ctx):
-        opts = ctx.cmd_opts
+        scheme, flag_opts = self._set_options(ctx.package_options)
 
-        self.add_user_group("build_customization", "Build customization")
-        opt = Option("--use-distutils", help="Build extensions with distutils",
-                     action="store_true")
-        self.add_user_option(opt, "build_customization")
-
-        pkg_opts = ctx.pkg_opts
-        scheme, flag_opts = self.add_configuration_options(pkg_opts)
-
-        o, a = self.parser.parse_args(opts)
+        args = ctx.cmd_opts
+        o, a = self.parser.parse_args(args)
         if o.help:
             self.parser.print_help()
             ctx.help = True
