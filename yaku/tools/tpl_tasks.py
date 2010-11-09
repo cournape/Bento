@@ -18,20 +18,26 @@ import yaku.tools
 
 VARS = {"template": ["SUBST_DICT"]}
 
+def _escape_backslash(s):
+    return s.replace("\\", "\\\\")
+
+def _render(content, d):
+    subs_re = dict([(k, re.compile("@%s@" % k)) for k in d])
+    for k, v in d.items():
+        # we cannot use re.escape because it escapes slash as well
+        content = subs_re[k].sub(_escape_backslash(v), content)
+    return content
+
 def template(self):
     if not len(self.inputs) == 1:
         raise ValueError("template func needs exactly one input")
 
     pprint('GREEN', "%-16s%s" % (self.name.upper(),
         " ".join([str(s) for s in self.inputs])))
-    subs_re = dict([(k, re.compile("@" + k + "@")) 
-                     for k in self.env["SUBST_DICT"]])
-    cnt = self.inputs[0].read()
-    for k, v in self.env["SUBST_DICT"].items():
-        cnt = subs_re[k].sub(v, cnt)
-
+    content = self.inputs[0].read()
+    content = _render(content, self.env["SUBST_DICT"])
     ensure_dir(self.outputs[0].abspath())
-    self.outputs[0].write(cnt)
+    self.outputs[0].write(content)
 
 @extension(".in")
 def template_task(self, node):
