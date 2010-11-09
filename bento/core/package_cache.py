@@ -103,8 +103,9 @@ class CachedPackage(object):
                 elif r_user_flags != user_flags:
                     return _create_package_nocached(filename, user_flags, self.db)
                 else:
-                    raw = cPickle.loads(self.db["parsed_data"])
-                    return _raw_to_pkg(raw, user_flags, filename)
+                    raw = cPickle.loads(self.db["parsed_dict"])
+                    pkg, files = _raw_to_pkg(raw, user_flags, filename)
+                    return pkg
 
     def get_options(self, filename):
         if self._first_time:

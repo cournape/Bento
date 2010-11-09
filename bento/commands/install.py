@@ -43,7 +43,6 @@ Usage:   bentomaker install [OPTIONS]."""
     short_descr = "install the project."
     def run(self, ctx):
         opts = ctx.cmd_opts
-        self.set_option_parser()
         o, a = self.parser.parse_args(opts)
         if o.help:
             self.parser.print_help()
