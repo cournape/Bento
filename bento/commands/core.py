@@ -69,7 +69,7 @@ class Command(object):
         self.parser = None
         self._create_parser()
 
-    def set_option_parser(self):
+    def setup_options_parser(self, package_options):
         self._create_parser()
         try:
             oo = copy.deepcopy(self.opts)
