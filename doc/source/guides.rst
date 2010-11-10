@@ -245,7 +245,7 @@ Each hook is a regular python function - its hook "status" is defined by the hoo
 
     from bento.commands.hooks import post_configure
 
-    @post_configure
+    @post_configure()
     def pconfigure(ctx):
         pass
 
@@ -258,7 +258,7 @@ command line arguments::
 
     from bento.commands.hooks import post_configure
 
-    @post_configure
+    @post_configure()
     def pconfigure(ctx):
         print ctx.cmd_opts
 
@@ -277,7 +277,7 @@ For example::
 
     from bento.commands.hooks import post_configure
 
-    @post_configure
+    @post_configure()
     def pconfigure(ctx):
         for ext_name in pkg.extensions:
             # List the sources of every extension
@@ -310,7 +310,7 @@ distutils. Bento includes by default a simple build tool, yaku. Bento
 has a few API to make interaction with yaku easier, in particular for
 compilation customization::
 
-    @pre_build
+    @pre_build()
     def pbuild(ctx):
         env = {"CFLAGS": ["-Os"]}
         ctx.register_environment("foo", env)
@@ -327,7 +327,7 @@ basically any kind of transformation, like compiling each source
 differently, associating new tools to existing source suffix, etc....
 This is unfortunately the only way to override environments ATM::
 
-    @pre_build
+    @pre_build()
     def pbuild(ctx):
         def builder(bld, extension, verbose):
             # Environments are attached to builders, and cloning a
