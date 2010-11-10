@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Guides &mdash; Bento v0.0.4-gitaf30a118aa documentation</title>
+    <title>Guides &mdash; Bento v0.0.4-git83e01993f8 documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '#',
-        VERSION:     '0.0.4-gitaf30a118aa',
+        URL_ROOT:    '',
+        VERSION:     '0.0.4-git83e01993f8',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.4-gitaf30a118aa documentation" href="index.html" /> 
+    <link rel="top" title="Bento v0.0.4-git83e01993f8 documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -28,7 +28,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="index.html">Bento v0.0.4-gitaf30a118aa documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -309,7 +309,7 @@ to do interesting things.</p>
 <p>Each hook is a regular python function - its hook &#8220;status&#8221; is defined by the hook decorator(s):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">bento.commands.hooks</span> <span class="kn">import</span> <span class="n">post_configure</span>
 
-<span class="nd">@post_configure</span>
+<span class="nd">@post_configure</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">pconfigure</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
     <span class="k">pass</span>
 </pre></div>
@@ -322,7 +322,7 @@ bento.commands.configure.Configure class). cmd_opts is a simple list of the
 command line arguments:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">bento.commands.hooks</span> <span class="kn">import</span> <span class="n">post_configure</span>
 
-<span class="nd">@post_configure</span>
+<span class="nd">@post_configure</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">pconfigure</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">ctx</span><span class="o">.</span><span class="n">cmd_opts</span>
 </pre></div>
@@ -343,7 +343,7 @@ configure time</li>
 <p>For example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">bento.commands.hooks</span> <span class="kn">import</span> <span class="n">post_configure</span>
 
-<span class="nd">@post_configure</span>
+<span class="nd">@post_configure</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">pconfigure</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">ext_name</span> <span class="ow">in</span> <span class="n">pkg</span><span class="o">.</span><span class="n">extensions</span><span class="p">:</span>
         <span class="c"># List the sources of every extension</span>
@@ -372,7 +372,7 @@ change, but the features will stay</em></p>
 distutils. Bento includes by default a simple build tool, yaku. Bento
 has a few API to make interaction with yaku easier, in particular for
 compilation customization:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@pre_build</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@pre_build</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">pbuild</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
     <span class="n">env</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;CFLAGS&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;-Os&quot;</span><span class="p">]}</span>
     <span class="n">ctx</span><span class="o">.</span><span class="n">register_environment</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
@@ -388,7 +388,7 @@ requires dealing with yaku&#8217;s relatively low-level API, but it enables
 basically any kind of transformation, like compiling each source
 differently, associating new tools to existing source suffix, etc....
 This is unfortunately the only way to override environments ATM:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@pre_build</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@pre_build</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">pbuild</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">builder</span><span class="p">(</span><span class="n">bld</span><span class="p">,</span> <span class="n">extension</span><span class="p">,</span> <span class="n">verbose</span><span class="p">):</span>
         <span class="c"># Environments are attached to builders, and cloning a</span>
@@ -425,12 +425,12 @@ possible.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="index.html">Bento v0.0.4-gitaf30a118aa documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2010, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
     </div>
   </body>
 </html>
