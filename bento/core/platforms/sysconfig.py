@@ -1,4 +1,5 @@
 import sys
+import copy
 
 # Whenever you add a variable in _SCHEME, you should add one in _SCHEME_OPTS as
 # well, otherwise the it will not be customizable from configure.
@@ -110,7 +111,7 @@ def get_scheme(platform):
         pkg_platform = 'unix'
 
     try:
-        scheme = _SCHEME[pkg_platform]
+        scheme = copy.deepcopy(_SCHEME[pkg_platform])
     except KeyError:
         raise ValueError("Platform %s not yet supported" % platform)
 
