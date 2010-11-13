@@ -27,18 +27,23 @@ def ipkg_meta_from_pkg(pkg):
 class InstalledSection(object):
     @classmethod
     def from_data_files(cls, name, data_files):
-        return cls("datafiles", name,
+        return cls.from_source_target_directories("datafiles", name,
                    data_files.source_dir,
                    data_files.target_dir,
                    data_files.files)
-        
+
+    @classmethod
+    def from_source_target_directories(cls, category, name, source_dir, target_dir, files):
+        files = [(f, f) for f in files]
+        return cls(category, name, source_dir, target_dir, files)
+
     def __init__(self, category, name, srcdir, target, files):
         self.category = category
         self.name = name
         if os.sep != "/":
             self.source_dir = normalize_path(srcdir)
             self.target_dir = normalize_path(target)
-            self.files = [normalize_path(path) for path in files]
+            self.files = [(normalize_path(f), normalize_path(g)) for f, g in files]
         else:
             self.source_dir = srcdir
             self.target_dir = target
@@ -184,7 +189,7 @@ class InstalledPkgDescription(object):
                 target = subst_vars(section.target_dir, self.path_variables)
 
                 file_sections[category][name] = \
-                        [(os.path.join(srcdir, f), os.path.join(target, f))
-                         for f in section.files]
+                        [(os.path.join(srcdir, f), os.path.join(target, g))
+                         for f, g in section.files]
 
         return file_sections 
