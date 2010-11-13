@@ -32,8 +32,8 @@ class InstalledSection(object):
                    data_files.target_dir,
                    data_files.files)
         
-    def __init__(self, tp, name, srcdir, target, files):
-        self.tp = tp
+    def __init__(self, category, name, srcdir, target, files):
+        self.category = category
         self.name = name
         if os.sep != "/":
             self.source_dir = normalize_path(srcdir)
@@ -43,10 +43,6 @@ class InstalledSection(object):
             self.source_dir = srcdir
             self.target_dir = target
             self.files = files
-
-    @property
-    def fullname(self):
-        return self.tp + ":" + self.name
 
 def iter_source_files(file_sections):
     for kind in file_sections:
@@ -108,10 +104,11 @@ class InstalledPkgDescription(object):
         file_sections = {}
 
         def json_to_file_section(data):
-            tp, section_name = data["name"].split(":", 1)
-            section = InstalledSection(tp, section_name, data["source_dir"],
+            category = data["category"]
+            name = data["name"]
+            section = InstalledSection(category, name, data["source_dir"],
                                        data["target_dir"], data["files"])
-            return tp, section_name, section
+            return category, name, section
 
         for section in data["file_sections"]:
             tp, name, files = json_to_file_section(section)
@@ -143,7 +140,8 @@ class InstalledPkgDescription(object):
                     "function": executable.function}
 
         def section_to_json(section):
-            return {"name": section.fullname,
+            return {"name": section.name,
+                    "category": section.category,
                     "source_dir": section.source_dir,
                     "target_dir": section.target_dir,
                     "files": section.files}
@@ -158,17 +156,17 @@ class InstalledPkgDescription(object):
         data["variables"] = variables
 
         file_sections = []
-        for tp, value in self.files.items():
-            if tp in ["pythonfiles", "bentofiles"]:
+        for category, value in self.files.items():
+            if category in ["pythonfiles", "bentofiles"]:
                 for i in value.values():
                     i.srcdir = "$_srcrootdir"
                     file_sections.append(section_to_json(i))
-            elif tp in ["datafiles", "extensions", "executables",
+            elif category in ["datafiles", "extensions", "executables",
                         "compiled_libraries"]:
                 for i in value.values():
                     file_sections.append(section_to_json(i))
             else:
-                raise ValueError("Unknown section %s" % tp)
+                raise ValueError("Unknown section %s" % category)
         data["file_sections"] = file_sections
         if os.environ.has_key("BENTOMAKER_PRETTY"):
             json.dump(data, fid, sort_keys=True, indent=4)
@@ -179,13 +177,13 @@ class InstalledPkgDescription(object):
         self.path_variables['_srcrootdir'] = src_root_dir
 
         file_sections = {}
-        for tp in self.files:
-            file_sections[tp] = {}
-            for name, section in self.files[tp].items():
+        for category in self.files:
+            file_sections[category] = {}
+            for name, section in self.files[category].items():
                 srcdir = subst_vars(section.source_dir, self.path_variables)
                 target = subst_vars(section.target_dir, self.path_variables)
 
-                file_sections[tp][name] = \
+                file_sections[category][name] = \
                         [(os.path.join(srcdir, f), os.path.join(target, f))
                          for f in section.files]
 
