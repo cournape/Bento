@@ -151,7 +151,7 @@ def _build_python_files(pkg, top_node):
     for m in pkg.py_modules:
         node = top_node.find_node("%s.py" % m)
         python_files.append(node.path_from(node))
-    py_section = InstalledSection("pythonfiles", "library",
+    py_section = InstalledSection.from_source_target_directories("pythonfiles", "library",
             "$_srcrootdir", "$sitedir", python_files)
 
     return {"library": py_section}
@@ -172,7 +172,7 @@ def build_bento_files(pkg):
         ensure_dir(target)
         rename(tmp_config, target)
 
-        section = InstalledSection("bentofiles", "config",
+        section = InstalledSection.from_source_target_directories("bentofiles", "config",
                 os.path.join("$_srcrootdir", BUILD_DIR),
                 "$sitedir", [pkg.config_py])
         return {"bentofiles": section}
