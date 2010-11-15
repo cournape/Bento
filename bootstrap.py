@@ -19,9 +19,9 @@ def install_inplace(pkg):
             section = create_win32_script(name, executable, ".")
         else:
             section = create_posix_script(name, executable, ".")
-            for f in section.files:
-                os.chmod(f, 0755)
-        installed = ",".join(section.files)
+            for f, g in section.files:
+                os.chmod(g, 0755)
+        installed = ",".join([g for f, g in section.files])
         pprint("GREEN", "installing %s in current directory" % installed)
 
 if __name__ == "__main__":

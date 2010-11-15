@@ -57,12 +57,10 @@ def build_egg(ipkg, source_root=".", path=None):
 
     zid = compat.ZipFile(egg, "w", compat.ZIP_DEFLATED)
     try:
-        ipkg.path_variables["sitedir"] = "."
-        ipkg.path_variables["prefix"] = "."
+        ipkg.update_paths({"prefix": ".", "eprefix": ".", "sitedir": "."})
         for filename, cnt in egg_info.iter_meta():
             zid.writestr(os.path.join("EGG-INFO", filename), cnt)
 
-        #ipkg.path_variables["sitedir"] = "."
         file_sections = ipkg.resolve_paths(source_root)
         for kind, source, target in iter_files(file_sections):
             if not kind in ["executables"]:

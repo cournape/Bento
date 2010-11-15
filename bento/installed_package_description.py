@@ -1,4 +1,6 @@
 import os
+import sys
+import copy
 import StringIO
 
 try:
@@ -6,6 +8,8 @@ try:
 except ImportError:
     import simplejson as json
 
+from bento.core.platforms import \
+    get_scheme
 from bento.core.utils import \
     subst_vars, normalize_path, unnormalize_path
 from bento.core.pkg_objects import \
@@ -100,10 +104,11 @@ class InstalledPkgDescription(object):
             return dict([(k.encode(), v) for k, v in d.items()])
 
         meta_vars = _encode_kw(data["meta"])
-        path_vars = data["variables"]["paths"]
+        #variables = data["variables"]
+        install_paths = data.get("install_paths", None)
 
         executables = {}
-        for name, executable in data["variables"]["executables"].items():
+        for name, executable in data["executables"].items():
             executables[name] = Executable.from_parse_dict(_encode_kw(executable))
 
         file_sections = {}
@@ -123,13 +128,19 @@ class InstalledPkgDescription(object):
                 file_sections[tp][name] = files
             else:
                 file_sections[tp] = {name: files}
-        return cls(file_sections, meta_vars, path_vars, executables)
+        return cls(file_sections, meta_vars, executables, install_paths)
 
-    def __init__(self, files, meta, path_options, executables):
+    def __init__(self, files, meta, executables, path_variables=None):
         self.files = files
         self.meta = meta
-        self.path_variables = path_options
+        if path_variables is None:
+            self._path_variables = get_scheme(sys.platform)[0]
+        else:
+            self._path_variables = path_variables
         self.executables = executables
+
+        self._variables = {"pkgname": self.meta["name"],
+                           "py_version_short": ".".join([str(i) for i in sys.version_info[:2]])}
 
     def write(self, filename):
         fid = open(filename, "w")
@@ -156,9 +167,8 @@ class InstalledPkgDescription(object):
 
         executables = dict([(k, executable_to_json(v)) \
                             for k, v in self.executables.items()])
-        variables = {"paths": self.path_variables,
-                     "executables": executables}
-        data["variables"] = variables
+        data["executables"] = executables
+        data["install_paths"] = self._path_variables
 
         file_sections = []
         for category, value in self.files.items():
@@ -178,15 +188,26 @@ class InstalledPkgDescription(object):
         else:
             json.dump(data, fid, separators=(',', ':'))
 
+    def update_paths(self, paths):
+        for k, v in paths.items():
+            self._path_variables[k] = v
+
+    def resolve_path(self, path):
+        variables = copy.copy(self._path_variables)
+        variables.update(self._variables)
+        return subst_vars(path, variables)
+
     def resolve_paths(self, src_root_dir="."):
-        self.path_variables['_srcrootdir'] = src_root_dir
+        variables = copy.copy(self._path_variables)
+        variables.update(self._variables)
+        variables['_srcrootdir'] = src_root_dir
 
         file_sections = {}
         for category in self.files:
             file_sections[category] = {}
             for name, section in self.files[category].items():
-                srcdir = subst_vars(section.source_dir, self.path_variables)
-                target = subst_vars(section.target_dir, self.path_variables)
+                srcdir = subst_vars(section.source_dir, variables)
+                target = subst_vars(section.target_dir, variables)
 
                 file_sections[category][name] = \
                         [(os.path.join(srcdir, f), os.path.join(target, g))

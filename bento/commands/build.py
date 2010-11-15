@@ -12,6 +12,9 @@ from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries, get_packages
 
+from bento.commands.configure \
+    import \
+        get_configured_state
 from bento.commands.core \
     import \
         Option
@@ -23,8 +26,6 @@ from bento.commands \
         build_yaku
 from bento.commands.core import \
         Command
-from bento.commands.configure import \
-        get_configured_state
 from bento.commands.script_utils import \
         create_posix_script, create_win32_script
 
@@ -136,12 +137,8 @@ class SectionWriter(object):
             self.sections[name].update(updater(pkg))
 
     def store(self, filename, pkg):
-        s = get_configured_state()
-        scheme = dict([(k, s.paths[k]) for k in s.paths])
-
         meta = ipkg_meta_from_pkg(pkg)
-        p = InstalledPkgDescription(self.sections, meta, scheme,
-                                    pkg.executables)
+        p = InstalledPkgDescription(self.sections, meta, pkg.executables)
         p.write(filename)
 
 def _build_python_files(pkg, top_node):
