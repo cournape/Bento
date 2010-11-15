@@ -106,6 +106,8 @@ def set_main():
     return modules
 
 def main(argv=None):
+    if os.getuid() == 0:
+        raise UsageException("You should not use bentomaker with root account or sudo")
     if argv is None:
         argv = sys.argv[1:]
     popts = parse_global_options(argv)
