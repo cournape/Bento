@@ -11,6 +11,9 @@ from bento.installed_package_description import \
 from bento.commands.errors \
     import \
         UsageException
+from bento.commands.configure \
+    import \
+        get_configured_state
 from bento.commands.core import \
     Command
 from bento.core.utils import \
@@ -53,6 +56,9 @@ Usage:   bentomaker install [OPTIONS]."""
             raise UsageException(msg)
 
         ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
+        s = get_configured_state()
+        scheme = dict([(k, s.paths[k]) for k in s.paths])
+        ipkg.update_paths(scheme)
         file_sections = ipkg.resolve_paths()
 
         for kind, source, target in iter_files(file_sections):
