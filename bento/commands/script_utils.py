@@ -154,7 +154,7 @@ def create_win32_script(name, executable, bdir):
     _write(name + ".exe", cnt, 'b')
     _write(name + ".exe.manifest", _LAUNCHER_MANIFEST % (name,), 't')
 
-    return InstalledSection("executables", name, bdir, "$bindir",
+    return InstalledSection.from_source_target_directories("executables", name, bdir, "$bindir",
                             files)
 
 def create_posix_script(name, executable, bdir):
@@ -175,5 +175,5 @@ def create_posix_script(name, executable, bdir):
     finally:
         f.close()
 
-    return InstalledSection("executables", name, d, "$bindir",
+    return InstalledSection.from_source_target_directories("executables", name, d, "$bindir",
                             [os.path.basename(target)])
