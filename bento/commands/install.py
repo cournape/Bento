@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import errno
 
 from bento._config \
     import \
@@ -18,6 +19,85 @@ from bento.commands.core import \
     Command
 from bento.core.utils import \
     pprint
+
+def _rollback_operation(line):
+    operation, arg = line.split()
+    if operation == "MKDIR":
+        try:
+            os.rmdir(arg)
+        except OSError, e:
+            if e.errno != 66:
+                raise
+    elif operation == "COPY":
+        os.remove(arg)
+    else:
+        raise ValueError("Unknown operation: %s" % operation)
+
+def rollback_transaction(f):
+    fid = open(f)
+    try:
+        lines = fid.readlines()
+        for i in range(len(lines)-1, -1, -1):
+            _rollback_operation(lines[i])
+            lines.pop(i)
+    finally:
+        fid.close()
+        if len(lines) < 1:
+            os.remove(f)
+        else:
+            fid = open(f, "w")
+            try:
+                fid.writelines(lines)
+            finally:
+                fid.close()
+
+class TransactionLog(object):
+    def __init__(self, f):
+        if os.path.exists(f):
+            raise IOError("file %s already exists" % f)
+        open(f, "w").close()
+        self.f = open(f, "r+w")
+
+    def copy(self, source, target, category):
+        if os.path.exists(target):
+            self.rollback()
+            raise ValueError("File %s already exists, rolled back installation" % target)
+        d = os.path.dirname(target)
+        if not os.path.exists(d):
+            self.makedirs(d)
+        self.f.write("COPY %s\n" % target)
+        shutil.copy(source, target)
+        if category == "executables":
+            os.chmod(target, 0755)
+
+    def makedirs(self, name, mode=0777):
+        head, tail = os.path.split(name)
+        if not tail:
+            head, tail = os.path.split(head)
+        if head and tail and not os.path.exists(head):
+            try:
+                self.makedirs(head, mode)
+            except OSError, e:
+                if e.errno != errno.EEXIST:
+                    raise
+            if tail == os.curdir:
+                return
+        self.mkdir(name, mode)
+
+    def mkdir(self, name, mode=0777):
+        self.f.write("MKDIR %s\n" % name) 
+        self.f.flush()
+        os.mkdir(name, mode)
+
+    def close(self):
+        self.f.close()
+
+    def rollback(self):
+        self.f.flush()
+        self.f.seek(0, 0)
+        lines = self.f.readlines()
+        for line in lines[::-1]:
+            _rollback_operation(line.strip())
 
 def copy_installer(source, target, kind):
     dtarget = os.path.dirname(target)
@@ -61,5 +141,9 @@ Usage:   bentomaker install [OPTIONS]."""
         ipkg.update_paths(scheme)
         file_sections = ipkg.resolve_paths()
 
-        for kind, source, target in iter_files(file_sections):
-            copy_installer(source, target, kind)
+        trans = TransactionLog("transaction.log")
+        try:
+            for kind, source, target in iter_files(file_sections):
+                trans.copy(source, target, kind)
+        finally:
+            trans.close()
