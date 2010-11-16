@@ -16,7 +16,7 @@ from bento.commands._config \
         SCRIPT_NAME
 from bento.commands.errors \
     import \
-        UsageException, OptionError
+        UsageException
 
 USAGE = """\
 bentomaker %(version)s -- an alternative to distutils-based systems
