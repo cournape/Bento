@@ -73,3 +73,7 @@ Library:
 Executable: bentomaker
     Module: bentomakerlib.bentomaker
     Function: noexc_main
+
+Executable: bentoshop
+    Module: bentoshoplib.bentoshop
+    Function: noexc_main
