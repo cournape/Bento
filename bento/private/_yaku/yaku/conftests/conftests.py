@@ -1,13 +1,4 @@
-import sys
 import copy
-import os
-
-from yaku.utils \
-    import \
-        ensure_dir
-from yaku.conf \
-    import create_program_conf_taskgen, create_compile_conf_taskgen, \
-           generate_config_h, ConfigureContext, ccompile, create_file
 
 def check_compiler(conf, msg=None):
     code = """\
@@ -21,7 +12,7 @@ int main(void)
         conf.start_message("Checking whether C compiler works")
     else:
         conf.start_message(msg)
-    ret = create_program_conf_taskgen(conf, "check_cc", code, None)
+    ret = conf.builders["ctasks"].try_program("check_cc", code, None)
     if ret:
         conf.end_message("yes")
     else:
@@ -47,7 +38,7 @@ int main()
     src = "\n".join(code)
 
     conf.start_message("Checking for declaration %s" % symbol)
-    ret = create_compile_conf_taskgen(conf, "check_cpp_symbol", src, headers)
+    ret = conf.builders["ctasks"].try_compile("check_cpp_symbol", src, headers)
     conf.conf_results.append({"type": "decl", "value": symbol,
                               "result": ret})
     if ret:
@@ -67,7 +58,7 @@ int main() {
 """ % {'name': type_name}
 
     conf.start_message("Checking for type %s" % type_name)
-    ret = create_compile_conf_taskgen(conf, "check_type", code,
+    ret = conf.builders["ctasks"].try_compile("check_type", code,
                         headers)
     conf.conf_results.append({"type": "type", "value": type_name,
                               "result": ret})
@@ -109,7 +100,7 @@ int main ()
 }
 """ % {"type": type_name}
 
-    ret = create_compile_conf_taskgen(conf, "check_type_size", body, headers)
+    ret = conf.builders["ctasks"].try_compile("check_type_size", body, headers)
     if not ret:
         conf.end_message("no (cannot compile type)")
         return False
@@ -135,7 +126,7 @@ int main ()
         mid = 0
         while True:
             code = body % {'type': type_name, 'size': mid}
-            ret = create_compile_conf_taskgen(conf, "check_type_size",
+            ret = conf.builders["ctasks"].try_compile("check_type_size",
                     code, headers)
             if ret:
                 break
@@ -148,7 +139,7 @@ int main ()
         while low != high:
             mid = (high - low) / 2 + low
             code = body % {'type': type_name, 'size': mid}
-            if create_compile_conf_taskgen(conf, "check_type_size",
+            if conf.builders["ctasks"].try_compile("check_type_size",
                     code, headers):
                 high = mid
             else:
@@ -207,7 +198,7 @@ def check_header(conf, header):
 """ % header
 
     conf.start_message("Checking for header %s" % header)
-    ret = create_compile_conf_taskgen(conf, "check_header", code, None)
+    ret = conf.builders["ctasks"].try_compile("check_header", code, None)
     if ret:
         conf.end_message("yes")
     else:
@@ -246,7 +237,7 @@ int main (void)
     try:
         for lib in libs[::-1]:
             conf.env["LIBS"].insert(0, lib)
-        ret = create_program_conf_taskgen(conf, "check_func", code, None)
+        ret = conf.builders["ctasks"].try_program("check_func", code, None)
         if ret:
             conf.end_message("yes")
         else:
@@ -257,7 +248,7 @@ int main (void)
                               "result": ret})
     return ret
 
-def check_lib(conf, lib, func):
+def check_lib(conf, libs, func):
     # XXX: refactor with check_func
 
     # Handle MSVC intrinsics: force MS compiler to make a function
@@ -278,20 +269,22 @@ int main (void)
     """ % {"func": func}
 
     conf.start_message("Checking for function %s in %s" % \
-                       (func, conf.env["LIB_FMT"] % lib))
+                       (func, " ".join([conf.env["LIB_FMT"] % lib for lib in libs])))
 
     old_lib = copy.deepcopy(conf.env["LIBS"])
     try:
-        conf.env["LIBS"].insert(0, lib)
-        ret = create_program_conf_taskgen(conf, "check_lib", code, None)
+        for i in range(len(libs)):
+            conf.env["LIBS"].insert(i, libs[i])
+        ret = conf.builders["ctasks"].try_program("check_lib", code, None)
         if ret:
             conf.end_message("yes")
         else:
             conf.end_message("no !")
     finally:
         conf.env["LIBS"] = old_lib
-    conf.conf_results.append({"type": "lib", "value": lib,
-                              "result": ret, "func": func})
+    for lib in libs:
+        conf.conf_results.append({"type": "lib", "value": lib,
+                                  "result": ret, "func": func})
     return ret
 
 def check_funcs_at_once(conf, funcs, libs=None):
@@ -337,7 +330,7 @@ int main (void)
     try:
         for lib in libs[::-1]:
             conf.env["LIBS"].insert(0, lib)
-        ret = create_program_conf_taskgen(conf, "check_func", body, None)
+        ret = conf.builders["ctasks"].try_program("check_func", body, None)
         if ret:
             conf.end_message("yes")
         else:

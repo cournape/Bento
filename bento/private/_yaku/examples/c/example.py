@@ -7,6 +7,7 @@ from yaku.context \
 
 def configure(ctx):
     ctx.use_tools(["ctasks", "cxxtasks"])
+    ctx.env.append("DEFINES", "_FOO")
 
 def build(ctx):
     builder = ctx.builders["cxxtasks"]

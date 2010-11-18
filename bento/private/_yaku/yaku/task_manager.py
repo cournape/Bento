@@ -1,5 +1,9 @@
 import os
 
+from yaku.environment \
+    import \
+        Environment
+
 RULES_REGISTRY = {}
 FILES_REGISTRY = {}
 
@@ -209,7 +213,7 @@ class TaskGen(object):
         self.sources = sources
         self.target = target
 
-        self.env = {}
+        self.env = Environment()
 
     def process(self):
         tasks = []
@@ -234,8 +238,6 @@ class CompiledTaskGen(TaskGen):
                              "before setting the link task !")
         else:
             self.object_tasks += tasks
-            for t in tasks:
-                self.link_task.inputs += t.outputs
 
 def order_tasks(tasks):
     tuid_to_task = dict([(t.get_uid(), t) for t in tasks])

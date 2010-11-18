@@ -17,6 +17,9 @@ from yaku.tools \
 from yaku.utils \
     import \
         ensure_dir, rename
+from yaku.errors \
+    import \
+        UnknownTask
 import yaku.node
 import yaku.task_manager
 
@@ -56,14 +59,15 @@ def _hook_path_to_hook_id(src_root, hook_dict):
 
 class ConfigureContext(object):
     def __init__(self):
-        self.env = {}
+        self.env = Environment()
         self.tools = []
         self._tool_modules = {}
         self.builders = {}
         self.cache = {}
         self.conf_results = []
         self._configured = {}
-        self.stdout_cache = {}
+        self._stdout_cache = {}
+        self._cmd_cache = {}
 
     def load_tool(self, tool, tooldir=None):
         _t = import_tools([tool], tooldir)
@@ -72,8 +76,6 @@ class ConfigureContext(object):
         self._tool_modules[tool] = mod
         if hasattr(mod, "get_builder"):
             self.builders[tool] = mod.get_builder(self)
-        if not hasattr(mod, "configure"):
-            mod.configure = lambda x: None
         return mod
 
     def use_tools(self, tools, tooldir=None):
@@ -84,15 +86,14 @@ class ConfigureContext(object):
             else:
                 _t = self.load_tool(t, tooldir)
             ret[t] = _t
-        for mod in self._tool_modules.values():
-            if not self._configured.has_key(mod):
-                mod.configure(self)
-                self._configured[mod] = True
+        self.setup_tools()
         return ret
 
     def setup_tools(self):
-        for mod in self._tool_modules.values():
-            mod.configure(self)
+        for builder in self.builders.values():
+            if not builder.configured:
+               builder.configure()
+               self._configured[builder] = True
 
     def store(self):
         self.env.store(DEFAULT_ENV)
@@ -101,7 +102,8 @@ class ConfigureContext(object):
         fid = open(CONFIG_CACHE, "wb")
         try:
             dump(self.cache, fid)
-            dump(self.stdout_cache, fid)
+            dump(self._stdout_cache, fid)
+            dump(self._cmd_cache, fid)
         finally:
             fid.close()
 
@@ -121,9 +123,31 @@ class ConfigureContext(object):
 
     def start_message(self, msg):
         sys.stderr.write(msg + "... ")
+        self.log.write("=" * 79 + "\n")
+        self.log.write("%s\n" % msg)
 
     def end_message(self, msg):
         sys.stderr.write("%s\n" % msg)
+
+    def set_cmd_cache(self, task, cmd):
+        self._cmd_cache[task.get_uid()] = cmd[:]
+
+    def get_cmd(self, task):
+        tid = task.get_uid()
+        try:
+            return self._cmd_cache[tid]
+        except KeyError:
+            raise UnknownTask
+
+    def set_stdout_cache(self, task, stdout):
+        self._stdout_cache[task.get_uid()] = stdout
+
+    def get_stdout(self, task):
+        tid = task.get_uid()
+        try:
+            return self._stdout_cache[tid]
+        except KeyError:
+            raise UnknownTask
 
 def load_tools(self, fid):
     tools = eval(fid.read())
@@ -133,11 +157,15 @@ def load_tools(self, fid):
         tool_mod = _t[tool_name]
         if hasattr(tool_mod, "get_builder"):
             self.builders[tool_name] = tool_mod.get_builder(self)
+        # XXX: this is ugly - need to rethinkg tool
+        # initialization/configuration
+        if hasattr(tool_mod, "init"):
+            tool_mod.init()
     self.tools = tools
 
 class BuildContext(object):
     def __init__(self):
-        self.env = {}
+        self.env = Environment()
         self.tools = []
         self.cache = {}
         self.builders = {}
@@ -186,6 +214,11 @@ class BuildContext(object):
             tmp_fid.close()
         rename(BUILD_CACHE + ".tmp", BUILD_CACHE)
 
+    def set_stdout_cache(self, task, stdout):
+        pass
+
+    def set_cmd_cache(self, task, stdout):
+        pass
 def myopen(filename, mode="r"):
     if "w" in mode:
         ensure_dir(filename)
@@ -197,7 +230,8 @@ def get_cfg():
         fid = open(CONFIG_CACHE, "rb")
         try:
             ctx.cache = load(fid)
-            ctx.stdout_cache = load(fid)
+            ctx._stdout_cache = load(fid)
+            ctx._cmd_cache = load(fid)
         finally:
             fid.close()
 
@@ -209,6 +243,7 @@ def get_cfg():
     env["VERBOSE"] = False
     if "-v" in sys.argv:
         env["VERBOSE"] = True
+    env["ENV"] = {}
 
     srcnode, bldnode = create_top_nodes(
             os.path.abspath(os.getcwd()),

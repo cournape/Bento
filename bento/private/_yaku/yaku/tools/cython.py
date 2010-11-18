@@ -6,7 +6,7 @@ from yaku.task_manager \
         extension, get_extension_hook
 from yaku.task \
     import \
-        Task
+        task_factory
 from yaku.compiled_fun \
     import \
         compile_fun
@@ -25,7 +25,7 @@ def cython_task(self, node):
     target = node.parent.declare(out.name)
     ensure_dir(target.name)
 
-    task = Task("cython", inputs=[node], outputs=[target])
+    task = task_factory("cython")(inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = []
     task.env = self.env
@@ -36,18 +36,26 @@ def cython_task(self, node):
                             False)[0]
     return [task]
 
-def configure(ctx):
-    sys.stderr.write("Looking for cython... ")
-    if detect(ctx):
-        sys.stderr.write("yes\n")
-    else:
-        sys.stderr.write("no!\n")
-        raise yaku.errors.ToolNotFound()
-    ctx.env["CYTHON_CPPPATH"] = []
-    ctx.env["CYTHON"] = [sys.executable, "-m", "cython"]
+class CythonBuilder(yaku.tools.Builder):
+    def __init__(self, ctx):
+        yaku.tools.Builder.__init__(self, ctx)
+
+    def configure(self):
+        ctx = self.ctx
+        sys.stderr.write("Looking for cython... ")
+        if detect(ctx):
+            sys.stderr.write("yes\n")
+        else:
+            sys.stderr.write("no!\n")
+            raise yaku.errors.ToolNotFound()
+        ctx.env["CYTHON_CPPPATH"] = []
+        ctx.env["CYTHON"] = [sys.executable, "-m", "cython"]
 
 def detect(ctx):
     if find_program("cython") is None:
         return False
     else:
         return True
+
+def get_builder(ctx):
+    return CythonBuilder(ctx)

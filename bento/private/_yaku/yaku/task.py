@@ -20,8 +20,28 @@ from yaku.errors \
 # TODO:
 #   - factory for tasks, so that tasks can be created from strings
 #   instead of import (import not extensible)
-class Task(object):
-    def __init__(self, name, outputs, inputs, func=None, deps=None):
+
+# Task factory - taken from waf, to avoid metaclasses magic
+class _TaskFakeMetaclass(type):
+    def __init__(cls, name, bases, d):
+        super(_TaskFakeMetaclass, cls).__init__(name, bases, d)
+        name = cls.__name__
+
+_CLASSES = {}
+def task_factory(name):
+    global _CLASSES
+    try:
+        klass = _CLASSES[name]
+    except KeyError:
+        klass = _TaskFakeMetaclass('%sTask' % name, (_Task,), {})
+        klass.name = name
+        _CLASSES[name] = klass
+    return klass
+
+base = _TaskFakeMetaclass('__task_base', (object,), {})
+
+class _Task(object):
+    def __init__(self, outputs, inputs, func=None, deps=None):
         if isinstance(inputs, basestring):
             self.inputs = [inputs]
         else:
@@ -30,7 +50,6 @@ class Task(object):
             self.outputs = [outputs]
         else:
             self.outputs = outputs
-        self.name = name or ""
         self.uid = None
         self.func = func
         if deps is None:
@@ -86,28 +105,34 @@ class Task(object):
     def run(self):
         self.func(self)
 
-    def exec_command(self, cmd, cwd):
+    def exec_command(self, cmd, cwd, env=None):
         if cwd is None:
             cwd = self.gen.bld.bld_root.abspath()
+        kw = {}
+        if env is not None:
+            kw["env"] = env
         if not self.disable_output:
             if self.env["VERBOSE"]:
                 pprint('GREEN', " ".join([str(c) for c in cmd]))
             else:
                 pprint('GREEN', "%-16s%s" % (self.name.upper(), " ".join([i.bldpath() for i in self.inputs])))
 
+        self.gen.bld.set_cmd_cache(self, cmd)
         try:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT, cwd=cwd)
+                    stderr=subprocess.STDOUT, cwd=cwd, **kw)
             stdout = p.communicate()[0].decode("utf-8")
             if p.returncode:
                 raise TaskRunFailure(cmd, stdout)
-            if self.disable_output:
-                if sys.version_info >= (3,):
-                    self.log.write(stdout)
-                else:
-                    self.log.write(stdout.encode("utf-8"))
+            if sys.version_info >= (3,):
+                stdout = stdout
             else:
-                sys.stderr.write(stdout.encode("utf-8"))
+                stdout = stdout.encode("utf-8")
+            if self.disable_output:
+                self.log.write(stdout)
+            else:
+                sys.stderr.write(stdout)
+            self.gen.bld.set_stdout_cache(self, stdout)
         except OSError, e:
             raise TaskRunFailure(cmd, str(e))
         except WindowsError, e:

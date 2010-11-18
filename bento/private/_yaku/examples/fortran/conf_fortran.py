@@ -1,3 +1,5 @@
+import sys
+
 from yaku.scheduler \
     import \
         run_tasks
@@ -12,7 +14,10 @@ from yaku.conftests.fconftests \
         check_fortran_mangling
 
 def configure(ctx):
-    ctx.use_tools(["fortran", "ctasks"])
+    ctx.use_tools(["ctasks", "cxxtasks"])
+    ctx.load_tool("fortran")
+    ctx.builders["fortran"].configure(candidates=["ifort"])
+
     check_fcompiler(ctx)
     check_fortran_verbose_flag(ctx)
     check_fortran_runtime_flags(ctx)
@@ -21,7 +26,13 @@ def configure(ctx):
 
 def build(ctx):
     builder = ctx.builders["fortran"]
-    #builder.program("fbar", ["src/bar.f"])
+    builder.program("fbar", ["src/bar.f"])
+
+    builder = ctx.builders["ctasks"]
+    builder.program("cbar", ["src/bar.c"])
+
+    builder = ctx.builders["cxxtasks"]
+    builder.program("cxxbar", ["src/bar.cxx"])
 
 if __name__ == "__main__":
     ctx = get_cfg()

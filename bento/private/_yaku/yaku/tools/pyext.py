@@ -22,14 +22,28 @@ from yaku.compiled_fun \
         compile_fun
 from yaku.task \
     import \
-        Task
+        task_factory
 from yaku.utils \
     import \
         ensure_dir
+from yaku.environment \
+    import \
+        Environment
 from yaku.conftests \
     import \
         check_compiler, check_header
-
+from yaku.tools.ctasks \
+    import \
+        apply_define
+from yaku.scheduler \
+    import \
+        run_tasks
+from yaku.conf \
+    import \
+        with_conf_blddir, create_file, write_log
+from yaku.errors \
+    import \
+        TaskRunFailure
 import yaku.tools
 
 pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0].abspath()} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_APP_FRAMEWORKS} ${PYEXT_SHLINKFLAGS}", False)
@@ -82,33 +96,47 @@ _SYS_TO_CCENV = {
 }
 
 def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
-    pyenv = {}
+    pyenv = Environment()
     if use_distutils:
         if cc_type == "default":
             dist_env = get_configuration()
         else:
             dist_env = get_configuration(cc_type)
+        for name, value in dist_env.items():
+            pyenv["PYEXT_%s" % name] = value
+        pyenv["PYEXT_FMT"] = "%%s%s" % dist_env["SO"]
+        pyenv["PYEXT_CFLAGS"] = pyenv["PYEXT_BASE_CFLAGS"] + \
+                pyenv["PYEXT_OPT"] + \
+                pyenv["PYEXT_SHARED"]
+        pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
     else:
-        dist_env = {
-                "CC": ["clang"],
-                "CPPPATH": [],
-                "BASE_CFLAGS": ["-fno-strict-aliasing"],
-                "OPT": [],
-                "SHARED": ["-fPIC"],
-                "SHLINK": ["clang", "-shared"],
-                "LDFLAGS": [],
-                "LIBDIR": [],
-                "LIBS": [],
-                "SO": ".so"}
-        dist_env["CPPPATH"].append(distutils.sysconfig.get_python_inc())
+        old_env = ctx.env
+        ctx.env = Environment()
+        cc_env = None
+        sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
+        try:
+            try:
+                mod = __import__(cc_type)
+                mod.setup(ctx)
+            except ImportError:
+                raise RuntimeError("No tool %s is available (import failed)" \
+                                % cc_type)
+            cc_env = ctx.env
+        finally:
+            sys.path.pop(0)
+            ctx.env = old_env
+        pyenv["PYEXT_CC"] = cc_env["CC"]
+        pyenv["PYEXT_CFLAGS"] = cc_env["CFLAGS"]
+        pyenv["PYEXT_LIBDIR"] = cc_env["LIBDIR"]
+        pyenv["PYEXT_LIBS"] = cc_env["LIBS"]
+        pyenv["PYEXT_FMT"] = "%s.so"
+        pyenv["PYEXT_SHLINK"] = cc_env["MODLINK"]
+        pyenv["PYEXT_SHLINKFLAGS"] = cc_env["MODLINKFLAGS"]
+        pyenv["PYEXT_CPPPATH"] = cc_env["CPPPATH"]
+        pyenv.append("PYEXT_CPPPATH", distutils.sysconfig.get_python_inc(), create=True)
+        if sys.platform == "win32":
+            pyenv.append("PYEXT_LIBDIR", os.path.join(sys.exec_prefix, "libs"))
 
-    for name, value in dist_env.items():
-        pyenv["PYEXT_%s" % name] = value
-    pyenv["PYEXT_FMT"] = "%%s%s" % dist_env["SO"]
-    pyenv["PYEXT_CFLAGS"] = pyenv["PYEXT_BASE_CFLAGS"] + \
-            pyenv["PYEXT_OPT"] + \
-            pyenv["PYEXT_SHARED"]
-    pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
     return pyenv
 
 def pycc_hook(self, node):
@@ -121,7 +149,7 @@ def pycc_task(self, node):
     target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
-    task = Task("pycc", inputs=[node], outputs=[target])
+    task = task_factory("pycc")(inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = pycc_vars
     task.env = self.env
@@ -139,7 +167,7 @@ def pycxx_task(self, node):
     target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
-    task = Task("pycxx", inputs=[node], outputs=[target])
+    task = task_factory("pycxx")(inputs=[node], outputs=[target])
     task.gen = self
     task.env_vars = pycxx_vars
     task.env = self.env
@@ -157,7 +185,7 @@ def pylink_task(self, name):
     target = declare_target()
     ensure_dir(target.abspath())
 
-    task = Task("pylink", inputs=objects, outputs=[target])
+    task = task_factory("pylink")(inputs=objects, outputs=[target])
     task.gen = self
     task.func = pylink
     task.env_vars = pylink_vars
@@ -166,31 +194,180 @@ def pylink_task(self, name):
     return [task]
 
 # XXX: fix merge env location+api
-from yaku.tools.ctasks import _merge_env
-class PythonBuilder(object):
+class PythonBuilder(yaku.tools.Builder):
     def clone(self):
         return PythonBuilder(self.ctx)
 
     def __init__(self, ctx):
-        self.ctx = ctx
-        self.env = copy.deepcopy(ctx.env)
-        self.compiler_type = "default"
-        self.use_distutils = True
+        yaku.tools.Builder.__init__(self, ctx)
+
+    def _compile(self, task_gen, name):
+        apply_define(task_gen)
+        apply_cpppath(task_gen)
+
+        tasks = task_gen.process()
+        for t in tasks:
+            t.env = task_gen.env
+        return tasks
+
+    def try_compile(self, name, body, headers=None):
+        old_hook = set_extension_hook(".c", pycc_task)
+        try:
+            return with_conf_blddir(self.ctx, name, body,
+                                    lambda : yaku.tools.try_task_maker(self.ctx, self._compile, name, body, headers))
+        finally:
+            set_extension_hook(".c", old_hook)
+
+    def try_extension(self, name, body, headers=None):
+        old_hook = set_extension_hook(".c", pycc_task)
+        try:
+            return with_conf_blddir(self.ctx, name, body,
+                                    lambda : yaku.tools.try_task_maker(self.ctx, self._extension, name, body, headers))
+        finally:
+            set_extension_hook(".c", old_hook)
+
+    def _extension(self, task_gen, name):
+        bld = self.ctx
+        base = name.replace(".", os.sep)
+
+        tasks = []
+
+        old_hook = set_extension_hook(".c", pycc_hook)
+        old_hook_cxx = set_extension_hook(".cxx", pycxx_hook)
+
+        apply_define(task_gen)
+        apply_cpppath(task_gen)
+        apply_libpath(task_gen)
+        apply_libs(task_gen)
+        apply_frameworks(task_gen)
+
+        tasks = task_gen.process()
+
+        ltask = pylink_task(task_gen, base)
+        task_gen.link_task = ltask
+        if task_gen.has_cxx:
+            task_gen.link_task[-1].func = pycxxlink
+            task_gen.link_task[-1].env_vars = pycxxlink_vars
+
+        tasks.extend(ltask)
+        for t in tasks:
+            t.env = task_gen.env
+
+        set_extension_hook(".c", old_hook)
+        set_extension_hook(".cxx", old_hook_cxx)
+        return tasks
 
     def extension(self, name, sources, env=None):
         sources = [self.ctx.src_root.find_resource(s) for s in sources]
-        return create_pyext(self.ctx, name, sources,
-                _merge_env(self.env, env))
+        task_gen = CompiledTaskGen("pyext", self.ctx, sources, name)
+        task_gen.bld = self.ctx
+        task_gen.env = yaku.tools._merge_env(self.env, env)
+        tasks = self._extension(task_gen, name)
+        self.ctx.tasks.extend(tasks)
+
+        outputs = []
+        for t in task_gen.link_task:
+            outputs.extend(t.outputs)
+        task_gen.outputs = outputs
+        return tasks
+
+    def try_extension(self, name, body, headers=None):
+        return with_conf_blddir(self.ctx, name, body,
+                                lambda : yaku.tools.try_task_maker(self.ctx, self._extension, name, body, headers))
+
+    def configure(self, candidates=None, use_distutils=True):
+        ctx = self.ctx
+        # How we do it
+        # 1: for distutils-based configuration
+        #   - get compile/flags flags from sysconfig
+        #   - detect yaku tool name from CC used by distutils:
+        #       - get the compiler executable used by distutils ($CC
+        #       variable)
+        #       - try to determine yaku tool name from $CC
+        #   - apply necessary variables from yaku tool to $PYEXT_
+        #   "namespace"
+        if candidates is None:
+            compiler_type = "default"
+        else:
+            compiler_type = candidates[0]
+
+        if use_distutils:
+            dist_env = setup_pyext_env(ctx, compiler_type)
+            ctx.env.update(dist_env)
+
+            cc_exec = get_distutils_cc_exec(ctx, compiler_type)
+            yaku_cc_type = detect_cc_type(ctx, cc_exec)
+            if yaku_cc_type is None:
+                raise ValueError("No adequate C compiler found (distutils mode)")
+
+            _setup_compiler(ctx, yaku_cc_type)
+
+            cxx_exec = get_distutils_cxx_exec(ctx, compiler_type)
+            yaku_cxx_type = detect_cxx_type(ctx, cxx_exec)
+            if yaku_cxx_type is None:
+                raise ValueError("No adequate CXX compiler found (distutils mode)")
+
+            _setup_cxxcompiler(ctx, yaku_cxx_type)
+        else:
+            dist_env = setup_pyext_env(ctx, compiler_type, False)
+            ctx.env.update(dist_env)
+            _setup_compiler(ctx, compiler_type)
+
+        pycode = r"""\
+#include <Python.h>
+#include <stdio.h>
+
+static PyObject*
+hello(PyObject *self, PyObject *args)
+{
+    printf("Hello from C\n");
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyMethodDef HelloMethods[] = {
+    {"hello",  hello, METH_VARARGS, "Print a hello world."},
+    {NULL, NULL, 0, NULL}        /* Sentinel */
+};
+
+PyMODINIT_FUNC
+init_bar(void)
+{
+    (void) Py_InitModule("_bar", HelloMethods);
+}
+"""
+        ctx.start_message("Checking whether %s can build python object code" % compiler_type)
+        if self.try_compile("foo", pycode):
+            ctx.end_message("yes")
+        else:
+            raise ValueError()
+
+        ctx.start_message("Checking whether %s can build python extension" % compiler_type)
+        if self.try_extension("foo", pycode):
+            ctx.end_message("yes")
+        else:
+            raise ValueError()
+        self.configured = True
 
 def get_builder(ctx):
     return PythonBuilder(ctx)
 
 CC_SIGNATURE = {
         "gcc": re.compile("gcc version"),
-        "msvc": re.compile("Microsoft \(R\) 32-bit C/C\+\+ Optimizing Compiler")
+        "msvc": re.compile("Microsoft \(R\) (32-bit |)C/C\+\+ Optimizing Compiler")
 }
 
 def detect_cc_type(ctx, cc_cmd):
+    return _detect_cc_type(ctx, cc_cmd)
+
+def detect_cxx_type(ctx, cxx_cmd):
+    cxx_type = _detect_cc_type(ctx, cxx_cmd)
+    if cxx_type == "gcc":
+        return "gxx"
+    else:
+        return cxx_type
+
+def _detect_cc_type(ctx, cc_cmd):
     cc_type = None
 
     def detect_type(vflag):
@@ -237,34 +414,28 @@ def get_distutils_cc_exec(ctx, compiler_type="default"):
     sys.stderr.write("%s\n" % " ".join(cc))
     return cc
 
-def configure(ctx):
-    # How we do it
-    # 1: for distutils-based configuration
-    #   - get compile/flags flags from sysconfig
-    #   - detect yaku tool name from CC used by distutils:
-    #       - get the compiler executable used by distutils ($CC
-    #       variable)
-    #       - try to determine yaku tool name from $CC
-    #   - apply necessary variables from yaku tool to $PYEXT_
-    #   "namespace"
-    compiler_type = ctx.builders["pyext"].compiler_type
+def get_distutils_cxx_exec(ctx, compiler_type="default"):
+    from distutils import ccompiler
+    from distutils.sysconfig import customize_compiler
 
-    if ctx.builders["pyext"].use_distutils:
-        dist_env = setup_pyext_env(ctx, compiler_type)
-        ctx.env.update(dist_env)
+    sys.stderr.write("Detecting distutils CXX exec ... ")
+    if compiler_type == "default":
+        compiler_type = \
+                distutils.ccompiler.get_default_compiler()
 
-        cc_exec = get_distutils_cc_exec(ctx, compiler_type)
-        yaku_cc_type = detect_cc_type(ctx, cc_exec)
-
-        _setup_compiler(ctx, yaku_cc_type)
+    compiler = ccompiler.new_compiler(compiler=compiler_type)
+    if compiler_type == "msvc":
+        compiler.initialize()
+        cc = [compiler.cc]
     else:
-        dist_env = setup_pyext_env(ctx, compiler_type, False)
-        ctx.env.update(dist_env)
-        _setup_compiler(ctx, compiler_type)
+        customize_compiler(compiler)
+        cc = compiler.compiler_cxx
+    sys.stderr.write("%s\n" % " ".join(cc))
+    return cc
 
 def _setup_compiler(ctx, cc_type):
     old_env = ctx.env
-    ctx.env = {}
+    ctx.env = Environment()
     cc_env = None
     sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
     try:
@@ -286,66 +457,30 @@ def _setup_compiler(ctx, cc_type):
             "LINK_SRC_F"]
     for k in copied_values:
         ctx.env["PYEXT_%s" % k] = cc_env[k]
+    ctx.env.prextend("PYEXT_CPPPATH", cc_env["CPPPATH"])
+    ctx.env.prextend("PYEXT_LIBDIR", cc_env["LIBDIR"])
 
-    def setup_cxx():
-        old_env = ctx.env
-        ctx.env = {}
-        sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
-        try:
-            mod = __import__("gxx")
-            mod.setup(ctx)
-            cxx_env = ctx.env
-        finally:
-            sys.path.pop(0)
-            ctx.env = old_env
+def _setup_cxxcompiler(ctx, cxx_type):
+    old_env = ctx.env
+    ctx.env = Environment()
+    sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
+    try:
+        mod = __import__(cxx_type)
+        mod.setup(ctx)
+        cxx_env = ctx.env
+    finally:
+        sys.path.pop(0)
+        ctx.env = old_env
 
-        for k in ["CXX", "CXXFLAGS", "CXX_TGT_F", "CXX_SRC_F",
-                  "CXXSHLINK"]:
-            ctx.env["PYEXT_%s" % k] = cxx_env[k]
-    setup_cxx()
-
-def create_pyext(bld, name, sources, env):
-    base = name.replace(".", os.sep)
-
-    tasks = []
-
-    task_gen = CompiledTaskGen("pyext", bld, sources, name)
-    task_gen.bld = bld
-    old_hook = set_extension_hook(".c", pycc_hook)
-    old_hook_cxx = set_extension_hook(".cxx", pycxx_hook)
-
-    task_gen.env = env
-    apply_cpppath(task_gen)
-    apply_libpath(task_gen)
-    apply_libs(task_gen)
-    apply_frameworks(task_gen)
-
-    tasks = task_gen.process()
-
-    ltask = pylink_task(task_gen, base)
-    if task_gen.has_cxx:
-        task_gen.link_task.func = pycxxlink
-        task_gen.link_task.env_vars = pycxxlink_vars
-
-    tasks.extend(ltask)
-    for t in tasks:
-        t.env = task_gen.env
-
-    set_extension_hook(".c", old_hook)
-    set_extension_hook(".cxx", old_hook_cxx)
-    bld.tasks.extend(tasks)
-
-    outputs = []
-    for t in ltask:
-        outputs.extend(t.outputs)
-    task_gen.outputs = outputs
-    return tasks
+    for k in ["CXX", "CXXFLAGS", "CXX_TGT_F", "CXX_SRC_F",
+              "CXXSHLINK"]:
+        ctx.env["PYEXT_%s" % k] = cxx_env[k]
 
 # FIXME: find a way to reuse this kind of code between tools
 def apply_frameworks(task_gen):
     # XXX: do this correctly (platform specific tool config)
     if sys.platform == "darwin":
-        frameworks = task_gen.env["PYEXT_FRAMEWORKS"]
+        frameworks = task_gen.env.get("PYEXT_FRAMEWORKS", [])
         task_gen.env["PYEXT_APP_FRAMEWORKS"] = []
         for framework in frameworks:
             task_gen.env["PYEXT_APP_FRAMEWORKS"].extend(["-framework", framework])
