@@ -53,6 +53,15 @@ class InstalledSection(object):
             self.target_dir = target
             self.files = files
 
+    def __repr__(self):
+        ret = """\
+InstalledSection:
+    source dir: %s
+    target dir: %s
+    category: %s\
+""" % (self.source_dir, self.target_dir, self.category)
+        return ret
+
 def iter_source_files(file_sections):
     for kind in file_sections:
         if not kind in ["executables"]:
