@@ -2,6 +2,7 @@ import os
 import sys
 import copy
 import StringIO
+import warnings
 
 try:
     import json
@@ -190,7 +191,9 @@ class InstalledPkgDescription(object):
                 for i in value.values():
                     file_sections.append(section_to_json(i))
             else:
-                raise ValueError("Unknown section %s" % category)
+                warnings.warn("Unknown category %r" % category)
+                for i in value.values():
+                    file_sections.append(section_to_json(i))
         data["file_sections"] = file_sections
         if os.environ.has_key("BENTOMAKER_PRETTY"):
             json.dump(data, fid, sort_keys=True, indent=4)
