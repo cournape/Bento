@@ -71,16 +71,22 @@ def iter_source_files(file_sections):
                     yield f[0]
 
 def iter_files(file_sections):
+    installed_files = set()
     if os.sep != "/":
         for kind in file_sections:
             for name, section in file_sections[kind].items():
                 for source, target in section:
-                    yield kind, unnormalize_path(source), unnormalize_path(target)
+                    itarget = unnormalize_path(target)
+                    if not itarget in installed_files:
+                        installed_files.add(itarget)
+                        yield kind, unnormalize_path(source), unnormalize_path(target)
     else:
         for kind in file_sections:
             for name, section in file_sections[kind].items():
                 for source, target in section:
-                    yield kind, source, target
+                    if not target in installed_files:
+                        installed_files.add(target)
+                        yield kind, source, target
 
 class InstalledPkgDescription(object):
     @classmethod

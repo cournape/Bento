@@ -5,6 +5,11 @@ import glob
 import shutil
 import errno
 
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
+
 from itertools import izip, imap
 from copy import deepcopy
 
@@ -399,3 +404,15 @@ def safe_write(target, writer, mode="wb"):
     finally:
         f.close()
         rename(target + ".tmp", target)
+
+def same_content(f1, f2):
+    """Return true if files in f1 and f2 has the same content."""
+    fid1 = open(f1, "rb")
+    try:
+        fid2 = open(f2, "rb")
+        try:
+            return md5(fid1.read()).digest() == md5(fid2.read()).digest()
+        finally:
+            fid2.close()
+    finally:
+        fid1.close()
