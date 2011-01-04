@@ -12,7 +12,7 @@ except ImportError:
 from bento.core.platforms import \
     get_scheme
 from bento.core.utils import \
-    subst_vars, normalize_path, unnormalize_path
+    subst_vars, normalize_path, unnormalize_path, same_content
 from bento.core.pkg_objects import \
     Executable
 
@@ -71,21 +71,38 @@ def iter_source_files(file_sections):
                     yield f[0]
 
 def iter_files(file_sections):
-    installed_files = set()
+    # XXX: what to do with multiple source for a same target ? It is not always
+    # easy to avoid this situation, especially for python files and files
+    # installed from wildcards. For now, we raise an exception unless the
+    # sources have the exact same content, but this may not be enough (what if
+    # category changes ? This may cause different target permissions and other
+    # category-specific post-processing during install)
+    installed_files = {}
+    def _is_redundant(source, target):
+        # If this install already installs something @ target, we raise an
+        # error unless the content is exactly the same
+        if not target in installed_files:
+            installed_files[target] = source
+            return False
+        else:
+            if not same_content(source, installed_files[target]):
+                raise IOError("Multiple source for same target %r !" % target)
+            else:
+                return True
+
     if os.sep != "/":
         for kind in file_sections:
             for name, section in file_sections[kind].items():
                 for source, target in section:
-                    itarget = unnormalize_path(target)
-                    if not itarget in installed_files:
-                        installed_files.add(itarget)
-                        yield kind, unnormalize_path(source), unnormalize_path(target)
+                    source = unnormalize_path(source)
+                    target = unnormalize_path(target)
+                    if not _is_redundant(source, target):
+                        yield kind, source, target
     else:
         for kind in file_sections:
             for name, section in file_sections[kind].items():
                 for source, target in section:
-                    if not target in installed_files:
-                        installed_files.add(target)
+                    if not _is_redundant(source, target):
                         yield kind, source, target
 
 class InstalledPkgDescription(object):
