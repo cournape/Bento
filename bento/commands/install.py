@@ -16,7 +16,7 @@ from bento.commands.configure \
     import \
         get_configured_state
 from bento.commands.core import \
-    Command
+    Command, Option
 from bento.core.utils import \
     pprint
 
@@ -124,6 +124,8 @@ class InstallCommand(Command):
 Purpose: install the project
 Usage:   bentomaker install [OPTIONS]."""
     short_descr = "install the project."
+    opts = Command.opts + [Option("-t", "--transaction",
+                                  help="Do a transaction-based install", action="store_true")]
     def run(self, ctx):
         opts = ctx.cmd_opts
         o, a = self.parser.parse_args(opts)
@@ -141,9 +143,13 @@ Usage:   bentomaker install [OPTIONS]."""
         ipkg.update_paths(scheme)
         file_sections = ipkg.resolve_paths()
 
-        trans = TransactionLog("transaction.log")
-        try:
+        if o.transaction:
+            trans = TransactionLog("transaction.log")
+            try:
+                for kind, source, target in iter_files(file_sections):
+                    trans.copy(source, target, kind)
+            finally:
+                trans.close()
+        else:
             for kind, source, target in iter_files(file_sections):
-                trans.copy(source, target, kind)
-        finally:
-            trans.close()
+                copy_installer(source, target, kind)
