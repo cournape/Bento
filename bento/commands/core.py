@@ -51,7 +51,10 @@ def register_command(name, klass, public=True):
     _CMDS_TO_CLASS.update(_UCMDS_TO_CLASS)
 
 class Command(object):
-    long_descr = None
+    long_descr = """\
+Purpose: command's purposed (default description)
+Usage: command's usage (default description)
+"""
     short_descr = None
     # XXX: decide how to deal with subcommands options
     opts = [Option('-h', '--help',
