@@ -1,9 +1,7 @@
 #! /usr/bin/env python
 import sys
 import os
-import re
 import getopt
-import optparse
 import traceback
 
 import bento
@@ -13,9 +11,7 @@ from bento.compat.api \
         relpath
 
 from bento.core.utils import \
-        subst_vars, pprint
-from bento.core.platforms import \
-        get_scheme
+        pprint
 from bento.core.parser.api import \
         ParseError
 from bento.core.package_cache import \
@@ -25,7 +21,7 @@ from bento._config import \
 import bento.core.node
 
 from bento.commands.core import \
-        Command, HelpCommand, get_usage
+        HelpCommand
 from bento.commands.configure import \
         ConfigureCommand
 from bento.commands.build import \
@@ -50,8 +46,7 @@ from bento.commands.distcheck import \
         DistCheckCommand
 from bento.commands.core import \
         register_command, \
-        get_command_names, get_command, \
-        get_public_command_names
+        get_command_names, get_command
 from bento.commands.errors import \
         ConvertionError, UsageException, CommandExecutionFailure
 
