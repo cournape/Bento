@@ -9,6 +9,7 @@ from bento import PackageDescription
 from bento.core.package import file_list
 from bento.core.meta import PackageMetadata
 from bento.core.pkg_objects import DataFiles
+from bento.core.node import Node
 
 def create_file(file, makedirs=True):
     if makedirs:
@@ -32,14 +33,16 @@ class TestPackage(unittest.TestCase):
         # Create a simple package in temp dir, and check file_list(pkg) is what
         # we expect
         _files = [
-            os.path.join("foo", "pkg", "__init__.py"),
-            os.path.join("foo", "pkg", "yo.py"),
-            os.path.join("foo", "module.py"),
-            os.path.join("foo", "data", "foo.dat"),
+            os.path.join("pkg", "__init__.py"),
+            os.path.join("pkg", "yo.py"),
+            os.path.join("module.py"),
+            os.path.join("data", "foo.dat"),
         ]
 
         d = tempfile.mkdtemp()
-        files = [os.path.join(d, f) for f in _files]
+        root = Node("", None)
+        top_node = root.find_dir(d)
+        files = [os.path.join(d, "foo", f) for f in _files]
         try:
             for f in files:
                 create_file(f)
@@ -51,8 +54,8 @@ class TestPackage(unittest.TestCase):
                                             target_dir="$prefix",
                                             source_dir=".")
                                      })
-            fl = [os.path.normpath(f) for f in file_list(pkg, root_src=os.path.join(d, "foo"))]
-            assert_equal(sorted(fl), sorted(files))
+            fl = [os.path.normpath(f) for f in file_list(pkg, top_node.find_dir("foo"))]
+            assert_equal(sorted(fl), sorted(_files))
         finally:
             clean_tree(files)
             os.rmdir(d)

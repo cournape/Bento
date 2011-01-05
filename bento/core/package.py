@@ -269,7 +269,8 @@ def file_list(pkg, top_node):
         files.extend(find_package(p, top_node))
 
     for m in pkg.py_modules:
-        files.append(os.path.join(root_src, '%s.py' % m))
+        m_node = top_node.find_node("%s.py" % m)
+        files.append(m_node.path_from(top_node))
 
     extensions = get_extensions(pkg, top_node)
     libraries = get_compiled_libraries(pkg, top_node)

@@ -38,6 +38,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
 
         pprint('PINK', "\t-> Running sdist...")
         sdist = get_command("sdist")()
+        sdist.setup_options_parser(None)
         sdist.run(ctx)
         tarname = sdist.tarname
         tardir = sdist.topdir
