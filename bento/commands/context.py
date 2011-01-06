@@ -15,6 +15,9 @@ from bento.core.package_cache \
 from bento.commands.configure \
     import \
         get_configured_state
+from bento._config \
+    import \
+        ARGS_CHECKSUM_DB_FILE
 
 class CmdContext(object):
     def __init__(self, cmd, cmd_opts, pkg, top_node):
@@ -104,7 +107,7 @@ def _argv_checksum(argv):
     return md5(cPickle.dumps(argv)).hexdigest()
 
 def _read_argv_checksum(cmd_name):
-    fid = open("build/bento/argcheck.db", "rb")
+    fid = open(ARGS_CHECKSUM_DB_FILE, "rb")
     try:
         data = cPickle.load(fid)
         return data[cmd_name]
@@ -112,8 +115,8 @@ def _read_argv_checksum(cmd_name):
         fid.close()
 
 def _write_argv_checksum(checksum, cmd_name):
-    if os.path.exists("build/bento/argcheck.db"):
-        fid = open("build/bento/argcheck.db", "rb")
+    if os.path.exists(ARGS_CHECKSUM_DB_FILE):
+        fid = open(ARGS_CHECKSUM_DB_FILE, "rb")
         try:
             data = cPickle.load(fid)
         finally:
@@ -122,7 +125,7 @@ def _write_argv_checksum(checksum, cmd_name):
         data = {}
 
     data[cmd_name] = checksum
-    fid = open("build/bento/argcheck.db", "wb")
+    fid = open(ARGS_CHECKSUM_DB_FILE, "wb")
     try:
         cPickle.dump(data, fid)
     finally:
