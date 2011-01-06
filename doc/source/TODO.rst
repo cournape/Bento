@@ -29,20 +29,24 @@ Release 0.0.5
 0.0.5 goals:
 
     - Fix package + parser cache mess
+    - clean up command / bentomaker interaction:
+        - clean API for command context, add command context registration
+        - add API for option handling in command (customization in bscript)
     - add an option to hooks to avoid running during help
-    - fixing yaku Parallel runner
     - specify commands dependencies with after/before
-    - dynamic version (e.g. svn version appended to the build, etc...)
     - egg <-> wininst lossless conversion (on windows)
-    - add basic distutils support
     - specify hook mechanism: document contexts + command flow in bento
+
+Post 0.0.5
+----------
+
+    - dynamic version (e.g. svn version appended to the build, etc...)
+    - fixing yaku Parallel runner
+    - add basic distutils support
     - add tool specification to yaku
     - test and distcheck support: in particular, add virtualenv-like (or
       virtual proper) to bootstrap environment to install and test packages
       which cannot be tested without being installed)
-
-Post 0.0.5
-----------
 
 Start working on scipi (nest ?). First proto could be purely static,
 file-based. An index easy to parse/update is all we need, really.
