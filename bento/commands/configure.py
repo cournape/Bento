@@ -178,7 +178,7 @@ Usage: bentomaker configure [OPTIONS]"""
         self.option_callback = func
 
     def run(self, ctx):
-        args = ctx.cmd_opts
+        args = ctx.get_command_arguments()
         o, a = self.parser.parse_args(args)
         if o.help:
             self.parser.print_help()

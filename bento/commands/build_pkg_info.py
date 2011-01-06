@@ -19,7 +19,7 @@ Usage:   bentomaker build_pkg_info [OPTIONS]"""
     ]
 
     def run(self, ctx):
-        o, a = self.parser.parse_args(ctx.cmd_opts)
+        o, a = self.parser.parse_args(ctx.get_command_arguments())
         if o.help:
             self.parser.print_help()
             return

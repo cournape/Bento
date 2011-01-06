@@ -165,7 +165,7 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
                dest="setup_args")]
 
     def run(self, ctx):
-        opts = ctx.cmd_opts
+        opts = ctx.get_command_arguments()
         o, a = self.parser.parse_args(opts)
         if o.help:
             self.parser.print_help()

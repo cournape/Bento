@@ -127,7 +127,7 @@ Usage:   bentomaker install [OPTIONS]."""
     opts = Command.opts + [Option("-t", "--transaction",
                                   help="Do a transaction-based install", action="store_true")]
     def run(self, ctx):
-        opts = ctx.cmd_opts
+        opts = ctx.get_command_arguments()
         o, a = self.parser.parse_args(opts)
         if o.help:
             self.parser.print_help()

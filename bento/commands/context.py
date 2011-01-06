@@ -20,19 +20,22 @@ from bento._config \
         ARGS_CHECKSUM_DB_FILE
 
 class CmdContext(object):
-    def __init__(self, cmd, cmd_opts, pkg, top_node):
+    def __init__(self, cmd, cmd_argv, pkg, top_node):
         self.pkg = pkg
         self.cmd = cmd
         # FIXME: ugly hack to get help option - think about option handling
         # interaction between bentomaker and bento commands
         if cmd.parser is not None:
-            o, a = cmd.parser.parse_args(cmd_opts)
+            o, a = cmd.parser.parse_args(cmd_argv)
             self.help = o.help
         else:
             self.help = False
 
-        self.cmd_opts = cmd_opts
+        self.cmd_argv = cmd_argv
         self.top_node = top_node
+
+    def get_command_arguments(self):
+        return self.cmd_argv
 
     def get_package(self):
         state = get_configured_state()
@@ -46,8 +49,8 @@ class CmdContext(object):
         pass
 
 class ConfigureContext(CmdContext):
-    def __init__(self, cmd, cmd_opts, pkg, top_node):
-        CmdContext.__init__(self, cmd, cmd_opts, pkg, top_node)
+    def __init__(self, cmd, cmd_argv, pkg, top_node):
+        CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
         self.yaku_configure_ctx = yaku.context.get_cfg()
 
     def store(self):
@@ -57,8 +60,8 @@ class ConfigureContext(CmdContext):
         _write_argv_checksum(_argv_checksum(sys.argv), "configure")
 
 class BuildContext(CmdContext):
-    def __init__(self, cmd, cmd_opts, pkg, top_node):
-        CmdContext.__init__(self, cmd, cmd_opts, pkg, top_node)
+    def __init__(self, cmd, cmd_argv, pkg, top_node):
+        CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
         self._extensions_callback = {}
         self._clibraries_callback = {}
