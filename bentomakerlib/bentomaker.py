@@ -55,7 +55,7 @@ from bento.commands.hooks \
         get_pre_hooks, get_post_hooks, get_command_override, create_hook_module
 from bento.commands.context \
     import \
-        CmdContext, BuildContext, ConfigureContext, CONTEXT_REGISTRY
+        CmdContext, BuildYakuContext, ConfigureYakuContext, CONTEXT_REGISTRY
 import bento.core.errors
 
 if os.environ.get("BENTOMAKER_DEBUG", "0") != "0":
@@ -85,8 +85,8 @@ def register_commands():
  
 def register_command_contexts():
     CONTEXT_REGISTRY.set_default(CmdContext)
-    CONTEXT_REGISTRY.register("configure", ConfigureContext)
-    CONTEXT_REGISTRY.register("build", BuildContext)
+    CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
+    CONTEXT_REGISTRY.register("build", BuildYakuContext)
 
 def set_main():
     # Some commands work without a bento description file (convert, help)

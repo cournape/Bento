@@ -75,18 +75,24 @@ class CmdContext(object):
 class ConfigureContext(CmdContext):
     def __init__(self, cmd, cmd_argv, pkg, top_node):
         CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
-        self.yaku_configure_ctx = yaku.context.get_cfg()
 
     def store(self):
         CmdContext.store(self)
-        self.yaku_configure_ctx.store()
         CachedPackage.write_checksums()
         _write_argv_checksum(_argv_checksum(sys.argv), "configure")
+
+class ConfigureYakuContext(ConfigureContext):
+    def __init__(self, cmd, cmd_argv, pkg, top_node):
+        super(ConfigureYakuContext, self).__init__(cmd, cmd_argv, pkg, top_node)
+        self.yaku_configure_ctx = yaku.context.get_cfg()
+
+    def store(self):
+        super(ConfigureYakuContext, self).store()
+        self.yaku_configure_ctx.store()
 
 class BuildContext(CmdContext):
     def __init__(self, cmd, cmd_argv, pkg, top_node):
         CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
-        self.yaku_build_ctx = yaku.context.get_bld()
         self._extensions_callback = {}
         self._clibraries_callback = {}
         self._clibrary_envs = {}
@@ -94,8 +100,6 @@ class BuildContext(CmdContext):
 
     def store(self):
         CmdContext.store(self)
-        self.yaku_build_ctx.store()
-
         checksum = _read_argv_checksum("configure")
         _write_argv_checksum(checksum, "build")
 
@@ -129,6 +133,15 @@ class BuildContext(CmdContext):
         relpos = self.local_node.path_from(self.top_node)
         full_name = os.path.join(relpos, clib_name)
         self._clibrary_envs[full_name] = env
+
+class BuildYakuContext(BuildContext):
+    def __init__(self, cmd, cmd_argv, pkg, top_node):
+        super(BuildYakuContext, self).__init__(cmd, cmd_argv, pkg, top_node)
+        self.yaku_build_ctx = yaku.context.get_bld()
+
+    def store(self):
+        super(BuildYakuContext, self).store()
+        self.yaku_build_ctx.store()
 
 def _argv_checksum(argv):
     return md5(cPickle.dumps(argv)).hexdigest()
