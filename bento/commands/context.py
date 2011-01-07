@@ -19,6 +19,30 @@ from bento._config \
     import \
         ARGS_CHECKSUM_DB_FILE
 
+class ContextRegistry(object):
+    def __init__(self, default=None):
+        self._contexts = {}
+        self.set_default(default)
+
+    def set_default(self, default):
+        self._default = default
+
+    def register(self, name, context):
+        if self._contexts.has_key(name):
+            raise ValueError("context for command %r already registered !" % name)
+        else:
+            self._contexts[name] = context
+
+    def get(self, name):
+        context = self._contexts.get(name, None)
+        if context is None:
+            if self._default is None:
+                raise ValueError("No context registered for command %r" % name)
+            else:
+                return self._default
+        else:
+            return context
+
 class CmdContext(object):
     def __init__(self, cmd, cmd_argv, pkg, top_node):
         self.pkg = pkg
@@ -133,3 +157,5 @@ def _write_argv_checksum(checksum, cmd_name):
         cPickle.dump(data, fid)
     finally:
         fid.close()
+
+CONTEXT_REGISTRY = ContextRegistry()

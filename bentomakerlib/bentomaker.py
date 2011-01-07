@@ -55,7 +55,7 @@ from bento.commands.hooks \
         get_pre_hooks, get_post_hooks, get_command_override, create_hook_module
 from bento.commands.context \
     import \
-        CmdContext, BuildContext, ConfigureContext
+        CmdContext, BuildContext, ConfigureContext, CONTEXT_REGISTRY
 import bento.core.errors
 
 if os.environ.get("BENTOMAKER_DEBUG", "0") != "0":
@@ -83,6 +83,11 @@ def register_commands():
     register_command("parse", ParseCommand, public=False)
     register_command("detect_type", DetectTypeCommand, public=False)
  
+def register_command_contexts():
+    CONTEXT_REGISTRY.set_default(CmdContext)
+    CONTEXT_REGISTRY.register("configure", ConfigureContext)
+    CONTEXT_REGISTRY.register("build", BuildContext)
+
 def set_main():
     # Some commands work without a bento description file (convert, help)
     if not os.path.exists(BENTO_SCRIPT):
@@ -155,6 +160,7 @@ def parse_global_options(argv):
 
 def _main(popts):
     register_commands()
+    register_command_contexts()
 
     if popts["show_version"]:
         print bento.__version__
@@ -242,12 +248,8 @@ def run_cmd(cmd_name, cmd_opts):
     finally:
         pkg_cache.close()
 
-    if cmd_name == "configure":
-        ctx = ConfigureContext(cmd, cmd_opts, pkg, top)
-    elif cmd_name == "build":
-        ctx = BuildContext(cmd, cmd_opts, pkg, top)
-    else:
-        ctx = CmdContext(cmd, cmd_opts, pkg, top)
+    ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+    ctx = ctx_klass(cmd, cmd_opts, pkg, top)
 
     try:
         spkgs = pkg.subpackages
