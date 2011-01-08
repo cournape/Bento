@@ -1,9 +1,7 @@
 #! /usr/bin/env python
 import sys
 import os
-import re
 import getopt
-import optparse
 import traceback
 
 import bento
@@ -13,9 +11,7 @@ from bento.compat.api \
         relpath
 
 from bento.core.utils import \
-        subst_vars, pprint
-from bento.core.platforms import \
-        get_scheme
+        pprint
 from bento.core.parser.api import \
         ParseError
 from bento.core.package_cache import \
@@ -25,9 +21,9 @@ from bento._config import \
 import bento.core.node
 
 from bento.commands.core import \
-        Command, HelpCommand, get_usage
+        HelpCommand
 from bento.commands.configure import \
-        ConfigureCommand, get_configured_state
+        ConfigureCommand
 from bento.commands.build import \
         BuildCommand
 from bento.commands.install import \
@@ -50,14 +46,16 @@ from bento.commands.distcheck import \
         DistCheckCommand
 from bento.commands.core import \
         register_command, \
-        get_command_names, get_command, \
-        get_public_command_names
+        get_command_names, get_command
 from bento.commands.errors import \
         ConvertionError, UsageException, CommandExecutionFailure
 
 from bento.commands.hooks \
     import \
         get_pre_hooks, get_post_hooks, get_command_override, create_hook_module
+from bento.commands.context \
+    import \
+        CmdContext, BuildYakuContext, ConfigureYakuContext, CONTEXT_REGISTRY
 import bento.core.errors
 
 if os.environ.get("BENTOMAKER_DEBUG", "0") != "0":
@@ -85,6 +83,11 @@ def register_commands():
     register_command("parse", ParseCommand, public=False)
     register_command("detect_type", DetectTypeCommand, public=False)
  
+def register_command_contexts():
+    CONTEXT_REGISTRY.set_default(CmdContext)
+    CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
+    CONTEXT_REGISTRY.register("build", BuildYakuContext)
+
 def set_main():
     # Some commands work without a bento description file (convert, help)
     if not os.path.exists(BENTO_SCRIPT):
@@ -157,6 +160,7 @@ def parse_global_options(argv):
 
 def _main(popts):
     register_commands()
+    register_command_contexts()
 
     if popts["show_version"]:
         print bento.__version__
@@ -168,7 +172,7 @@ def _main(popts):
 
     if popts["show_usage"]:
         cmd = get_command('help')()
-        cmd.run(Context(cmd, [], None, None))
+        cmd.run(CmdContext(cmd, [], None, None))
         return 0
 
     cmd_name = popts["cmd_name"]
@@ -184,97 +188,9 @@ def _main(popts):
             check_command_dependencies(cmd_name)
             run_cmd(cmd_name, cmd_opts)
 
-import yaku.context
-# XXX: bentomakerlib.hacks are temporary hacks to signal the user that some
-# commands need reconfigure/build/etc... Once automatic command dependency is
-# implemented, this won't be necessary anymore.
-from bentomakerlib.hacks \
+from bento.commands.context \
     import \
-        _read_argv_checksum, _write_argv_checksum, _argv_checksum
-# XXX: The yaku configure stuff is ugly, and introduces a lot of global state.
-class Context(object):
-    def __init__(self, cmd, cmd_opts, pkg, top_node):
-        self.pkg = pkg
-        self.cmd = cmd
-        # FIXME: ugly hack to get help option - think about option handling
-        # interaction between bentomaker and bento commands
-        if cmd.parser is not None:
-            o, a = cmd.parser.parse_args(cmd_opts)
-            self.help = o.help
-        else:
-            self.help = False
-
-        self.cmd_opts = cmd_opts
-        self.top_node = top_node
-
-    def get_package(self):
-        state = get_configured_state()
-        return state.pkg
-
-    def get_user_data(self):
-        state = get_configured_state()
-        return state.user_data
-
-    def store(self):
-        pass
-
-class ConfigureContext(Context):
-    def __init__(self, cmd, cmd_opts, pkg, top_node):
-        Context.__init__(self, cmd, cmd_opts, pkg, top_node)
-        self.yaku_configure_ctx = yaku.context.get_cfg()
-
-    def store(self):
-        Context.store(self)
-        self.yaku_configure_ctx.store()
-        CachedPackage.write_checksums()
-        _write_argv_checksum(_argv_checksum(sys.argv), "configure")
-
-class BuildContext(Context):
-    def __init__(self, cmd, cmd_opts, pkg, top_node):
-        Context.__init__(self, cmd, cmd_opts, pkg, top_node)
-        self.yaku_build_ctx = yaku.context.get_bld()
-        self._extensions_callback = {}
-        self._clibraries_callback = {}
-        self._clibrary_envs = {}
-        self._extension_envs = {}
-
-    def store(self):
-        Context.store(self)
-        self.yaku_build_ctx.store()
-
-        checksum = _read_argv_checksum("configure")
-        _write_argv_checksum(checksum, "build")
-
-    def _compute_extension_name(self, extension_name):
-        if self.local_node ==  self.top_node:
-            relpos = ""
-        else:
-            relpos = self.local_node.path_from(self.top_node)
-        extension = relpos.replace(os.path.pathsep, ".")
-        if extension:
-            full_name = extension + ".%s" % extension_name
-        else:
-            full_name = extension_name
-        return full_name
-
-    # XXX: none of those register_* really belong here
-    def register_builder(self, extension_name, builder):
-        full_name = self._compute_extension_name(extension_name)
-        self._extensions_callback[full_name] = builder
-
-    def register_clib_builder(self, clib_name, builder):
-        relpos = self.local_node.path_from(self.top_node)
-        full_name = os.path.join(relpos, clib_name)
-        self._clibraries_callback[full_name] = builder
-
-    def register_environment(self, extension_name, env):
-        full_name = self._compute_extension_name(extension_name)
-        self._extension_envs[full_name] = env
-
-    def register_clib_environment(self, clib_name, env):
-        relpos = self.local_node.path_from(self.top_node)
-        full_name = os.path.join(relpos, clib_name)
-        self._clibrary_envs[full_name] = env
+        _read_argv_checksum
 
 def check_command_dependencies(cmd_name):
     # FIXME: temporary hack to inform the user, handle command dependency
@@ -332,12 +248,8 @@ def run_cmd(cmd_name, cmd_opts):
     finally:
         pkg_cache.close()
 
-    if cmd_name == "configure":
-        ctx = ConfigureContext(cmd, cmd_opts, pkg, top)
-    elif cmd_name == "build":
-        ctx = BuildContext(cmd, cmd_opts, pkg, top)
-    else:
-        ctx = Context(cmd, cmd_opts, pkg, top)
+    ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+    ctx = ctx_klass(cmd, cmd_opts, pkg, top)
 
     try:
         spkgs = pkg.subpackages

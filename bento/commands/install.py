@@ -12,9 +12,6 @@ from bento.installed_package_description import \
 from bento.commands.errors \
     import \
         UsageException
-from bento.commands.configure \
-    import \
-        get_configured_state
 from bento.commands.core import \
     Command, Option
 from bento.core.utils import \
@@ -127,7 +124,7 @@ Usage:   bentomaker install [OPTIONS]."""
     opts = Command.opts + [Option("-t", "--transaction",
                                   help="Do a transaction-based install", action="store_true")]
     def run(self, ctx):
-        opts = ctx.cmd_opts
+        opts = ctx.get_command_arguments()
         o, a = self.parser.parse_args(opts)
         if o.help:
             self.parser.print_help()
@@ -138,8 +135,7 @@ Usage:   bentomaker install [OPTIONS]."""
             raise UsageException(msg)
 
         ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
-        s = get_configured_state()
-        scheme = dict([(k, s.paths[k]) for k in s.paths])
+        scheme = ctx.get_paths_scheme()
         ipkg.update_paths(scheme)
         file_sections = ipkg.resolve_paths()
 

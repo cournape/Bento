@@ -33,7 +33,7 @@ from bento.commands.errors \
 
 import yaku.context
 
-class ConfigureState(object):
+class _ConfigureState(object):
     def __init__(self, filename, pkg, paths=None, flags=None,
                  user_data=None):
         self.filename = filename
@@ -178,7 +178,7 @@ Usage: bentomaker configure [OPTIONS]"""
         self.option_callback = func
 
     def run(self, ctx):
-        args = ctx.cmd_opts
+        args = ctx.get_command_arguments()
         o, a = self.parser.parse_args(args)
         if o.help:
             self.parser.print_help()
@@ -203,8 +203,8 @@ Usage: bentomaker configure [OPTIONS]"""
             if extensions or libraries:
                 yaku_ctx.use_tools(["ctasks", "pyext"])
 
-        s = ConfigureState(BENTO_SCRIPT, pkg, self.scheme, flag_vals,
-                           self.user_data)
+        s = _ConfigureState(BENTO_SCRIPT, pkg, self.scheme, flag_vals,
+                            self.user_data)
         s.dump()
 
     def add_configuration_options(self, package_options):
@@ -252,11 +252,3 @@ Usage: bentomaker configure [OPTIONS]"""
                 flags_group.add_option(flag_opts[name])
 
         return scheme, flag_opts
-
-def get_configured_state():
-    if not os.path.exists(CONFIGURED_STATE_DUMP):
-        raise UsageException(
-               "You need to run %s configure before building" % SCRIPT_NAME)
-
-    s = ConfigureState.from_dump(CONFIGURED_STATE_DUMP)
-    return s

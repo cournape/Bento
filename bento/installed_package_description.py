@@ -154,13 +154,13 @@ class InstalledPkgDescription(object):
             return category, name, section
 
         for section in data["file_sections"]:
-            tp, name, files = json_to_file_section(section)
-            if tp in file_sections:
-                if name in file_sections[tp]:
-                    raise ValueError("section %s of type %s already exists !" % (name, type))
-                file_sections[tp][name] = files
+            category, name, files = json_to_file_section(section)
+            if category in file_sections:
+                if name in file_sections[category]:
+                    raise ValueError("section %s of type %s already exists !" % (name, category))
+                file_sections[category][name] = files
             else:
-                file_sections[tp] = {name: files}
+                file_sections[category] = {name: files}
         return cls(file_sections, meta_vars, executables, install_paths)
 
     def __init__(self, files, meta, executables, path_variables=None):

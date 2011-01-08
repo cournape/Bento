@@ -12,9 +12,6 @@ from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries, get_packages
 
-from bento.commands.configure \
-    import \
-        get_configured_state
 from bento.commands.core \
     import \
         Option
@@ -53,7 +50,7 @@ Usage:   bentomaker build [OPTIONS]."""
         self.build_type = None
 
     def run(self, ctx):
-        opts = ctx.cmd_opts
+        opts = ctx.get_command_arguments()
         o, a = self.parser.parse_args(opts)
         if o.help:
             self.parser.print_help()
@@ -100,6 +97,11 @@ Usage:   bentomaker build [OPTIONS]."""
             return _build_python_files(pkg, ctx.top_node)
         self.section_writer.sections_callbacks["pythonfiles"] = \
                 build_packages
+
+        def build_config_py(pkg):
+            return _build_config_py(pkg, ctx.get_paths_scheme())
+        self.section_writer.sections_callbacks["bentofiles"] = \
+                build_config_py
         self.section_writer.update_sections(ctx.pkg)
 
     def register_builder(self, extension_name, builder):
@@ -122,7 +124,7 @@ class SectionWriter(object):
     def __init__(self):
         callbacks = [
             ("pythonfiles", None),
-            ("bentofiles", build_bento_files),
+            ("bentofiles", None),
             ("datafiles", build_data_files),
             ("compiled_libraries", build_distutils.build_compiled_libraries),
             ("extensions", build_distutils.build_extensions),
@@ -153,15 +155,13 @@ def _build_python_files(pkg, top_node):
 
     return {"library": py_section}
 
-def build_bento_files(pkg):
-    s = get_configured_state()
-    scheme = s.paths
+def _build_config_py(pkg, paths):
     if pkg.config_py is not None:
         tmp_config = os.path.join(BUILD_DIR, "__tmp_config.py")
         fid = open(tmp_config, "w")
         try:
-            for name, value in scheme.items():
-                fid.write('%s = "%s"\n' % (name.upper(), subst_vars(value, scheme)))
+            for name, value in paths.items():
+                fid.write('%s = "%s"\n' % (name.upper(), subst_vars(value, paths)))
         finally:
             fid.close()
         target = os.path.join(os.path.dirname(tmp_config),
