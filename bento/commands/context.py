@@ -14,10 +14,10 @@ from bento.core.package_cache \
         CachedPackage
 from bento.commands.configure \
     import \
-        get_configured_state
+        _ConfigureState
 from bento._config \
     import \
-        ARGS_CHECKSUM_DB_FILE
+        ARGS_CHECKSUM_DB_FILE, CONFIGURED_STATE_DUMP
 
 class ContextRegistry(object):
     def __init__(self, default=None):
@@ -58,16 +58,31 @@ class CmdContext(object):
         self.cmd_argv = cmd_argv
         self.top_node = top_node
 
+        self._configured_state = None
+
     def get_command_arguments(self):
         return self.cmd_argv
 
+    def _get_configured_state(self):
+        if self._configured_state is None:
+            if not os.path.exists(CONFIGURED_STATE_DUMP):
+                raise UsageException(
+                       "You need to run %s configure before building" % SCRIPT_NAME)
+
+            self._configured_state = _ConfigureState.from_dump(CONFIGURED_STATE_DUMP)
+        return self._configured_state
+
     def get_package(self):
-        state = get_configured_state()
+        state = self._get_configured_state()
         return state.pkg
 
     def get_user_data(self):
-        state = get_configured_state()
+        state = self._get_configured_state()
         return state.user_data
+
+    def get_paths_scheme(self):
+        state = self._get_configured_state()
+        return state.paths
 
     def store(self):
         pass
