@@ -73,10 +73,7 @@ def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
         for filename, cnt in egg_info.iter_meta():
             zid.writestr(os.path.join(egg_info_dir, filename), cnt)
 
-        ipkg.path_variables["bindir"] = "SCRIPTS"
-        ipkg.path_variables["sitedir"] = "PURELIB"
-        ipkg.path_variables["gendatadir"] = "$sitedir"
-
+        ipkg.update_paths({"bindir": "SCRIPTS", "sitedir": "PURELIB", "gendatadir": "$sitedir"})
         file_sections = ipkg.resolve_paths(src_root_dir)
 
         def write_content(source, target, kind):
