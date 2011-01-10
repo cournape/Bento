@@ -1,5 +1,6 @@
 import sys
 import os
+import zipfile
 
 try:
     from cStringIO import StringIO
@@ -10,7 +11,7 @@ from bento._config \
     import \
         IPKG_PATH
 from bento.installed_package_description import \
-        iter_source_files
+        iter_source_files, InstalledPkgDescription
 from bento.conv import \
         to_distutils_meta
 
@@ -119,3 +120,25 @@ class EggInfo(object):
 
         for k in func_table:
             yield file_table[k], func_table[k]()
+
+def extract_egg(egg, extract_dir):
+    # Given a bento-produced egg, extract its content in the given directory,
+    # and returned the corresponding ipkg info instance
+    ipkg = InstalledPkgDescription.from_egg(egg)
+    # egg scheme
+    ipkg.update_paths({"prefix": ".", "eprefix": ".", "sitedir": "."})
+
+    zid = zipfile.ZipFile(egg)
+    try:
+        for type, sections in ipkg.files.items():
+            for name, section in sections.items():
+                target_dir = ipkg.resolve_path(section.target_dir)
+                section.source_dir = os.path.join(extract_dir, target_dir)
+                for source, target in section.files:
+                    g = os.path.join(target_dir, target)
+                    g = os.path.normpath(g)
+                    zid.extract(g, extract_dir)
+    finally:
+        zid.close()
+
+    return ipkg
