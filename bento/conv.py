@@ -1,3 +1,7 @@
+import os
+
+import bento.core.node
+
 from bento.core import \
         PackageDescription
 from bento.core.utils import \
@@ -28,11 +32,11 @@ def pkg_to_distutils(pkg):
 
     return d
 
-def validate_packages(pkgs):
+def validate_packages(pkgs, top):
     ret_pkgs = []
     for pkg in pkgs:
         try:
-            _validate_package(pkg, ".")
+            _validate_package(pkg, top)
         except InvalidPackage:
             # FIXME: add the package as data here
             pass
@@ -41,6 +45,9 @@ def validate_packages(pkgs):
     return ret_pkgs
 
 def distutils_to_package_description(dist):
+    root = bento.core.node.Node("", None)
+    top = root.find_dir(os.getcwd())
+
     data = {}
 
     data['name'] = dist.get_name()
@@ -69,7 +76,7 @@ def distutils_to_package_description(dist):
         pass
 
     data['py_modules'] = dist.py_modules
-    data['packages'] = validate_packages(dist.packages)
+    data['packages'] = validate_packages(dist.packages, top)
     if dist.ext_modules:
         data['extensions'] = dict([(e.name, e) for e in dist.ext_modules])
     else:

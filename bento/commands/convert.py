@@ -211,7 +211,7 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
                 monkey_patch(tp, filename)
                 # analyse_setup_py put results in LIVE_OBJECTS
                 dist = analyse_setup_py(filename, setup_args)
-                pkg, options = build_pkg(dist, LIVE_OBJECTS)
+                pkg, options = build_pkg(dist, LIVE_OBJECTS, ctx.top_node)
 
                 out = static_representation(pkg, options)
                 if output == '-':
@@ -274,7 +274,7 @@ def analyse_setup_py(filename, setup_args):
 
     return dist
 
-def build_pkg(dist, live_objects):
+def build_pkg(dist, live_objects, top_node):
     pkg = distutils_to_package_description(dist)
     modules = []
     for m in pkg.py_modules:
@@ -305,7 +305,7 @@ def build_pkg(dist, live_objects):
     if live_objects["extra_data"]:
         extra_source_files.extend([canonalize_path(f) 
                                   for f in live_objects["extra_data"]])
-    pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg))
+    pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg, top_node))
 
     if live_objects["data_files"]:
         pkg.data_files = combine_groups(live_objects["data_files"])
@@ -317,11 +317,11 @@ def build_pkg(dist, live_objects):
     
     return pkg, options
 
-def prune_extra_files(files, pkg):
+def prune_extra_files(files, pkg, top_node):
 
     package_files = []
     for p in pkg.packages:
-        package_files.extend(find_package(p))
+        package_files.extend(find_package(p, top_node))
 
     data_files = []
     for sec in pkg.data_files:
