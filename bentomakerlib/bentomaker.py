@@ -251,6 +251,17 @@ def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
     ctx = ctx_klass(cmd, cmd_opts, pkg, top)
     return pkg, ctx
 
+def _get_subpackage(pkg, top, local_node):
+    rpath = local_node.path_from(top)
+    k = os.path.join(rpath, "bento.info")
+    if local_node == top:
+        return pkg
+    else:
+        if k in pkg.subpackages:
+            return pkg.subpackages[k]
+        else:
+            return None
+
 def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)
     top = root.find_dir(os.getcwd())
@@ -264,42 +275,32 @@ def run_cmd(cmd_name, cmd_opts):
     pkg, ctx = _prepare_cmd(cmd, cmd_name, cmd_opts, top)
 
     try:
-        spkgs = pkg.subpackages
-
-        def get_subpackage(local_node):
-            rpath = local_node.path_from(top)
-            k = os.path.join(rpath, "bento.info")
-            if local_node == top:
-                return pkg
-            else:
-                if k in spkgs:
-                    return spkgs[k]
-                else:
-                    return None
-        def set_local_ctx(ctx, hook, local_dir):
-            local_node = top.find_dir(
-                    relpath(local_dir, top.abspath()))
-            spkg = get_subpackage(local_node)
+        def set_local_ctx(ctx, local_dir):
+            local_node = top.find_dir(relpath(local_dir, top.abspath()))
+            spkg = _get_subpackage(pkg, top, local_node)
             ctx.local_dir = local_dir
             ctx.local_node = local_node
             ctx.top_node = top
             ctx.local_pkg = spkg
             ctx.pkg = pkg
-            return hook(ctx)
 
         if get_pre_hooks(cmd_name) is not None:
             for hook, local_dir, help_bypass in get_pre_hooks(cmd_name):
                 if not ctx.help and help_bypass:
-                    set_local_ctx(ctx, hook, local_dir)
+                    set_local_ctx(ctx, local_dir)
+                    hook(ctx)
 
         while cmd_funcs:
             cmd_func, local_dir = cmd_funcs.pop(0)
-            set_local_ctx(ctx, cmd_func, local_dir)
+            set_local_ctx(ctx, local_dir)
+            cmd_func(ctx)
 
         if get_post_hooks(cmd_name) is not None:
             for hook, local_dir, help_bypass in get_post_hooks(cmd_name):
                 if not ctx.help and help_bypass:
-                    set_local_ctx(ctx, hook, local_dir)
+                    set_local_ctx(ctx, local_dir)
+                    hook(ctx)
+
         cmd.shutdown(ctx)
     finally:
         ctx.store()
