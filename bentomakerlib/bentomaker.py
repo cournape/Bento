@@ -215,16 +215,7 @@ The project was not built: you need to 'bentomaker build' first""")
 The project was reconfigured: you need to re-run 'bentomaker build' before \
 installing""")
 
-def run_cmd(cmd_name, cmd_opts):
-    root = bento.core.node.Node("", None)
-    top = root.find_dir(os.getcwd())
-
-    cmd = get_command(cmd_name)()
-    if get_command_override(cmd_name):
-        cmd_funcs = get_command_override(cmd_name)
-    else:
-        cmd_funcs = [(cmd.run, top.abspath())]
-
+def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
     # XXX: fix this special casing
     if cmd_name in ["help", "convert"]:
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
@@ -258,6 +249,19 @@ def run_cmd(cmd_name, cmd_opts):
 
     ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
     ctx = ctx_klass(cmd, cmd_opts, pkg, top)
+    return pkg, ctx
+
+def run_cmd(cmd_name, cmd_opts):
+    root = bento.core.node.Node("", None)
+    top = root.find_dir(os.getcwd())
+
+    cmd = get_command(cmd_name)()
+    if get_command_override(cmd_name):
+        cmd_funcs = get_command_override(cmd_name)
+    else:
+        cmd_funcs = [(cmd.run, top.abspath())]
+
+    pkg, ctx = _prepare_cmd(cmd, cmd_name, cmd_opts, top)
 
     try:
         spkgs = pkg.subpackages
