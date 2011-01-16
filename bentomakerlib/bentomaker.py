@@ -45,8 +45,7 @@ from bento.commands.build_wininst import \
 from bento.commands.distcheck import \
         DistCheckCommand
 from bento.commands.core import \
-        register_command, \
-        get_command_names, get_command
+        COMMANDS_REGISTRY
 from bento.commands.errors import \
         ConvertionError, UsageException, CommandExecutionFailure
 
@@ -69,19 +68,19 @@ SCRIPT_NAME = 'bentomaker'
 #   Create the command line UI
 #================================
 def register_commands():
-    register_command("help", HelpCommand)
-    register_command("configure", ConfigureCommand)
-    register_command("build", BuildCommand)
-    register_command("install", InstallCommand)
-    register_command("convert", ConvertCommand)
-    register_command("sdist", SdistCommand)
-    register_command("build_egg", BuildEggCommand)
-    register_command("build_wininst", BuildWininstCommand)
-    register_command("distcheck", DistCheckCommand)
+    COMMANDS_REGISTRY.register_command("help", HelpCommand)
+    COMMANDS_REGISTRY.register_command("configure", ConfigureCommand)
+    COMMANDS_REGISTRY.register_command("build", BuildCommand)
+    COMMANDS_REGISTRY.register_command("install", InstallCommand)
+    COMMANDS_REGISTRY.register_command("convert", ConvertCommand)
+    COMMANDS_REGISTRY.register_command("sdist", SdistCommand)
+    COMMANDS_REGISTRY.register_command("build_egg", BuildEggCommand)
+    COMMANDS_REGISTRY.register_command("build_wininst", BuildWininstCommand)
+    COMMANDS_REGISTRY.register_command("distcheck", DistCheckCommand)
 
-    register_command("build_pkg_info", BuildPkgInfoCommand, public=False)
-    register_command("parse", ParseCommand, public=False)
-    register_command("detect_type", DetectTypeCommand, public=False)
+    COMMANDS_REGISTRY.register_command("build_pkg_info", BuildPkgInfoCommand, public=False)
+    COMMANDS_REGISTRY.register_command("parse", ParseCommand, public=False)
+    COMMANDS_REGISTRY.register_command("detect_type", DetectTypeCommand, public=False)
  
 def register_command_contexts():
     CONTEXT_REGISTRY.set_default(CmdContext)
@@ -171,7 +170,7 @@ def _main(popts):
         return 0
 
     if popts["show_usage"]:
-        cmd = get_command('help')()
+        cmd = COMMANDS_REGISTRY.get_command('help')()
         cmd.run(CmdContext(cmd, [], None, None))
         return 0
 
@@ -182,7 +181,7 @@ def _main(popts):
         print "Type '%s help' for usage." % SCRIPT_NAME
         return 1
     else:
-        if not cmd_name in get_command_names():
+        if not cmd_name in COMMANDS_REGISTRY.get_command_names():
             raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
         else:
             check_command_dependencies(cmd_name)
@@ -196,7 +195,7 @@ def check_command_dependencies(cmd_name):
     # FIXME: temporary hack to inform the user, handle command dependency
     # automatically at some point
     if cmd_name == "build":
-        configure_cmd = get_command("configure")
+        configure_cmd = COMMANDS_REGISTRY.get_command("configure")
         if not configure_cmd.has_run():
             raise UsageException("""\
 The project was not configured: you need to run 'bentomaker configure' first""")
@@ -204,7 +203,7 @@ The project was not configured: you need to run 'bentomaker configure' first""")
             raise UsageException("""\
 The project configuration has changed. You need to re-run 'bentomaker configure' first""")
     elif cmd_name in ["install", "build_egg", "build_wininst"]:
-        build_cmd = get_command("build")
+        build_cmd = COMMANDS_REGISTRY.get_command("build")
         if not build_cmd.has_run():
             raise UsageException("""\
 The project was not built: you need to 'bentomaker build' first""")
@@ -266,7 +265,8 @@ def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)
     top = root.find_dir(os.getcwd())
 
-    cmd = get_command(cmd_name)()
+    cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
+    cmd = cmd_klass()
     if get_command_override(cmd_name):
         cmd_funcs = get_command_override(cmd_name)
     else:

@@ -12,7 +12,7 @@ from bento.commands.errors \
         CommandExecutionFailure
 from bento.commands.core \
     import \
-        Command, get_command, get_command_names
+        Command, COMMANDS_REGISTRY
 from bento.core.utils \
     import \
         pprint
@@ -37,7 +37,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
             bentomaker_script = [bentomaker_script]
 
         pprint('PINK', "\t-> Running sdist...")
-        sdist = get_command("sdist")()
+        sdist = COMMANDS_REGISTRY.get_command("sdist")()
         sdist.setup_options_parser(None)
         sdist.run(ctx)
         tarname = sdist.tarname
@@ -72,7 +72,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                 pprint('PINK', "\t-> Building wininst from sdist...")
                 check_call(bentomaker_script + ["build_wininst"])
 
-            if "test" in get_command_names():
+            if "test" in COMMANDS_REGISTRY.get_command_names():
                 pprint('PINK', "\t-> Testing from sdist...")
                 try:
                     check_call(bentomaker_script + ["test"])

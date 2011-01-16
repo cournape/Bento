@@ -23,33 +23,6 @@ bentomaker %(version)s -- an alternative to distutils-based systems
 Usage: %(name)s [command [options]]
 """
 
-# FIXME: better way to register commands
-_CMDS_TO_CLASS = {}
-_PCMDS_TO_CLASS = {}
-_UCMDS_TO_CLASS = {}
-
-def get_command_names():
-    return _CMDS_TO_CLASS.keys()
-
-def get_public_command_names():
-    return _UCMDS_TO_CLASS.keys()
-
-def get_command(name):
-    return _CMDS_TO_CLASS[name]
-
-def register_command(name, klass, public=True):
-    global _CMDS_TO_CLASS
-    global _UCMDS_TO_CLASS
-    global _PCMDS_TO_CLASS
-
-    if public:
-        _UCMDS_TO_CLASS[name] = klass
-    else:
-        _PCMDS_TO_CLASS[name] = klass
-
-    _CMDS_TO_CLASS = dict([(k, v) for k, v in _PCMDS_TO_CLASS.items()])
-    _CMDS_TO_CLASS.update(_UCMDS_TO_CLASS)
-
 class Command(object):
     long_descr = """\
 Purpose: command's purposed (default description)
@@ -192,3 +165,31 @@ def get_usage():
     for header, hlp in commands:
         ret.append(fill_string(header, minlen) + hlp)
     return "\n".join(ret)
+
+class CommandRegistry(object):
+    def __init__(self):
+        self._klasses = {}
+        self._privates = {}
+
+    def register_command(self, name, cmd_klass, public=True):
+        if self._klasses.has_key(name):
+            raise ValueError("context for command %r already registered !" % name)
+        else:
+            self._klasses[name] = cmd_klass
+            if not public:
+                self._privates[name] = None
+
+    def get_command(self, name):
+        cmd_klass = self._klasses.get(name, None)
+        if cmd_klass is None:
+            raise ValueError("No command class registered for name %r" % name)
+        else:
+            return cmd_klass
+
+    def get_command_names(self):
+        return self._klasses.keys()
+
+    def get_public_command_names(self):
+        return [k for k in self._klasses.keys() if self._privates.has_key(k)]
+
+COMMANDS_REGISTRY = CommandRegistry()
