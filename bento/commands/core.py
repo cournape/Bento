@@ -168,7 +168,9 @@ def get_usage():
 
 class CommandRegistry(object):
     def __init__(self):
+        # command line name -> command class
         self._klasses = {}
+        # command line name -> None for private commands
         self._privates = {}
 
     def register_command(self, name, cmd_klass, public=True):
@@ -191,5 +193,11 @@ class CommandRegistry(object):
 
     def get_public_command_names(self):
         return [k for k in self._klasses.keys() if self._privates.has_key(k)]
+
+    def get_command_name_from_class_name(self, class_name):
+        for k, v in self._klasses.iteritems():
+            if v.__name__ == class_name:
+                return k
+        raise ValueError("Unregistered class %r" % class_name)
 
 COMMANDS_REGISTRY = CommandRegistry()

@@ -48,6 +48,9 @@ from bento.commands.core import \
         COMMANDS_REGISTRY
 from bento.commands.errors import \
         ConvertionError, UsageException, CommandExecutionFailure
+from bento.commands.dependency \
+    import \
+        CommandScheduler
 
 from bento.commands.hooks \
     import \
@@ -63,6 +66,12 @@ else:
     BENTOMAKER_DEBUG = False
 
 SCRIPT_NAME = 'bentomaker'
+
+CMD_SCHEDULER = CommandScheduler()
+CMD_SCHEDULER.set_before(BuildCommand, ConfigureCommand)
+CMD_SCHEDULER.set_before(BuildEggCommand, BuildCommand)
+CMD_SCHEDULER.set_before(BuildWininstCommand, BuildCommand)
+CMD_SCHEDULER.set_before(InstallCommand, BuildCommand)
 
 #================================
 #   Create the command line UI
@@ -184,7 +193,7 @@ def _main(popts):
         if not cmd_name in COMMANDS_REGISTRY.get_command_names():
             raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
         else:
-            check_command_dependencies(cmd_name)
+            #check_command_dependencies(cmd_name)
             run_cmd(cmd_name, cmd_opts)
 
 from bento.commands.context \
@@ -213,6 +222,16 @@ The project was not built: you need to 'bentomaker build' first""")
             raise UsageException("""\
 The project was reconfigured: you need to re-run 'bentomaker build' before \
 installing""")
+
+from bento.commands.dependency \
+    import \
+        TaskStore
+CMD_DATA_DUMP = "build/bento/cmd_data.db"
+
+if os.path.exists(CMD_DATA_DUMP):
+    CMD_DATA_STORE = TaskStore.from_dump(CMD_DATA_DUMP)
+else:
+    CMD_DATA_STORE = TaskStore()
 
 def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
     # XXX: fix this special casing
@@ -246,8 +265,31 @@ def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
     finally:
         pkg_cache.close()
 
+    from bento.commands.dependency import CommandTask
+    deps = CMD_SCHEDULER.order(cmd.__class__)
+
+    def __run_cmd(cmd_name, cmd_argv=None):
+        if cmd_argv is None:
+            cmd_argv = []
+        return run_cmd(cmd_name, cmd_argv)
+
+    for dep in deps[:-1]:
+        # Get CommandDependency instance
+        dep_name = COMMANDS_REGISTRY.get_command_name_from_class_name(dep)
+        try:
+            stored_task = CMD_DATA_STORE.get(dep_name)
+        except KeyError:
+            __run_cmd(dep_name)
+
     ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
     ctx = ctx_klass(cmd, cmd_opts, pkg, top)
+
+    def _store_command_task():
+        task = CommandTask(cmd_name)
+        CMD_DATA_STORE.set(cmd_name, task)
+        CMD_DATA_STORE.store(CMD_DATA_DUMP)
+    _store_command_task()
+
     return pkg, ctx
 
 def _get_subpackage(pkg, top, local_node):
