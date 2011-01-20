@@ -98,9 +98,9 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             print get_usage()
             return
 
-        if not cmd_name in get_command_names():
+        if not cmd_name in COMMANDS_REGISTRY.get_command_names():
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
-        cmd_class = get_command(cmd_name)
+        cmd_class = COMMANDS_REGISTRY.get_command(cmd_name)
 
         parser = OptionParser(usage='')
         for o in cmd_class.opts:
@@ -123,7 +123,7 @@ def get_simple_usage():
 
     def add_group(cmd_names):
         for name in cmd_names:
-            v = get_command(name)
+            v = COMMANDS_REGISTRY.get_command(name)
             doc = v.short_descr
             if doc is None:
                 doc = "undocumented"
@@ -152,9 +152,9 @@ def get_usage():
     ret.append("Bento commands:")
 
     commands = []
-    cmd_names = sorted(get_public_command_names())
+    cmd_names = sorted(COMMANDS_REGISTRY.get_public_command_names())
     for name in cmd_names:
-        v = get_command(name)
+        v = COMMANDS_REGISTRY.get_command(name)
         doc = v.short_descr
         if doc is None:
             doc = "undocumented"
