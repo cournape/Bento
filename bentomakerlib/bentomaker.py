@@ -234,14 +234,6 @@ else:
     CMD_DATA_STORE = TaskStore()
 
 def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
-    # XXX: fix this special casing
-    if cmd_name in ["help", "convert"]:
-        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-        ctx = ctx_klass(cmd, cmd_opts, None, top)
-        cmd.setup_options_parser(None)
-        cmd.run(ctx)
-        return
-
     if not os.path.exists(BENTO_SCRIPT):
         raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
 
@@ -313,6 +305,14 @@ def run_cmd(cmd_name, cmd_opts):
         cmd_funcs = get_command_override(cmd_name)
     else:
         cmd_funcs = [(cmd.run, top.abspath())]
+
+    # XXX: fix this special casing
+    if cmd_name in ["help", "convert"]:
+        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+        ctx = ctx_klass(cmd, cmd_opts, None, top)
+        cmd.setup_options_parser(None)
+        cmd.run(ctx)
+        return
 
     pkg, ctx = _prepare_cmd(cmd, cmd_name, cmd_opts, top)
 
