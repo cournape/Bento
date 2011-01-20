@@ -192,7 +192,7 @@ class CommandRegistry(object):
         return self._klasses.keys()
 
     def get_public_command_names(self):
-        return [k for k in self._klasses.keys() if self._privates.has_key(k)]
+        return [k for k in self._klasses.keys() if not self._privates.has_key(k)]
 
     def get_command_name_from_class_name(self, class_name):
         for k, v in self._klasses.iteritems():
