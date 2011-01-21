@@ -109,11 +109,13 @@ def set_main():
     return modules
 
 def main(argv=None):
-    if os.getuid() == 0:
-        pprint("RED", "Using bentomaker under root/sudo is *strongly* discouraged - do you want to continue ? y/N")
-        ans = raw_input()
-        if not ans.lower() in ["y", "yes"]:
-            raise UsageException("bentomaker execution canceld (not using bentomaker with admin privileges)")
+    if hasattr(os, "getuid"):
+        if os.getuid() == 0:
+            pprint("RED", "Using bentomaker under root/sudo is *strongly* discouraged - do you want to continue ? y/N")
+            ans = raw_input()
+            if not ans.lower() in ["y", "yes"]:
+                raise UsageException("bentomaker execution canceld (not using bentomaker with admin privileges)")
+
     if argv is None:
         argv = sys.argv[1:]
     popts = parse_global_options(argv)
