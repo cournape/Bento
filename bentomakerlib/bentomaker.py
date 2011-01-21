@@ -101,11 +101,7 @@ def set_main():
     if not os.path.exists(BENTO_SCRIPT):
         return []
 
-    pkg_cache = CachedPackage()
-    try:
-        pkg = pkg_cache.get_package(BENTO_SCRIPT)
-    finally:
-        pkg_cache.close()
+    pkg = CachedPackage.get_package(BENTO_SCRIPT)
     #create_package_description(BENTO_SCRIPT)
 
     modules = []
@@ -237,11 +233,7 @@ def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
     if not os.path.exists(BENTO_SCRIPT):
         raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
 
-    pkg_cache = CachedPackage()
-    try:
-        package_options = pkg_cache.get_options(BENTO_SCRIPT)
-    finally:
-        pkg_cache.close()
+    package_options = CachedPackage.get_options(BENTO_SCRIPT)
     cmd.setup_options_parser(package_options)
 
     if cmd_name == "configure":
@@ -251,11 +243,8 @@ def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
         flag_values = set_flag_options(cmd.flag_opts, o)
     else:
         flag_values = None
-    pkg_cache = CachedPackage()
-    try:
-        pkg = pkg_cache.get_package(BENTO_SCRIPT, flag_values)
-    finally:
-        pkg_cache.close()
+
+    pkg = CachedPackage.get_package(BENTO_SCRIPT, flag_values)
 
     from bento.commands.dependency import CommandTask
     deps = CMD_SCHEDULER.order(cmd.__class__)
