@@ -223,6 +223,8 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
                         fid.write(out)
                     finally:
                         fid.close()
+            except ConvertionError, e:
+                raise
             except Exception, e:
                 log.write("Error while converting - traceback:\n")
                 tb = sys.exc_info()[2]
@@ -275,6 +277,8 @@ def analyse_setup_py(filename, setup_args):
     return dist
 
 def build_pkg(dist, live_objects, top_node):
+    if dist.package_dir is not None:
+        raise ConvertionError("setup.py with package_dir arguments is not supported.")
     pkg = distutils_to_package_description(dist)
     modules = []
     for m in pkg.py_modules:
