@@ -109,6 +109,14 @@ lines.\
         assert_equal(parse_and_analyse(data), ref)
 
 class TestLibrary(unittest.TestCase):
+    def test_empty(self):
+        data = """\
+Library:
+"""
+
+        ref = {"libraries": {"default": {"name": "default"}}}
+        assert_equal(parse_and_analyse(data), ref)
+
     def test_modules(self):
         data = """\
 Library:

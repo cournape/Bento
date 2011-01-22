@@ -219,7 +219,11 @@ class Dispatcher(object):
             else:
                 raise ValueError("Unhandled node type: %s" % c)
 
-        for c in [node.children[0]] + node.children[1]:
+        if len(node.children) > 1:
+            nodes = [node.children[0]] + node.children[1]
+        else:
+            nodes = [node.children[0]]
+        for c in nodes:
             update(library, c)
         return Node("library", value=library)
 
