@@ -342,12 +342,11 @@ def static_representation(pkg, options={}):
         r.append('')
 
     if pkg.data_files:
-        for section in pkg.data_files:
-            v = pkg.data_files[section]
-            r.append("DataFiles: %s" % section)
-            r.append(' ' * indent_level + "SourceDir: %s" % v["srcdir"])
-            r.append(' ' * indent_level + "TargetDir: %s" % v["target"])
-            indented_list("Files", v["files"], 2)
+        for section in pkg.data_files.values():
+            r.append("DataFiles: %s" % section.name)
+            r.append(' ' * indent_level + "SourceDir: %s" % section.source_dir)
+            r.append(' ' * indent_level + "TargetDir: %s" % section.target_dir)
+            indented_list("Files", section.files, 2)
             r.append('')
 
     # Fix indentation handling instead of hardcoding it
