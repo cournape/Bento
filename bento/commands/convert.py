@@ -16,7 +16,7 @@ from bento.core.package import \
 from bento.conv import \
         distutils_to_package_description
 from bento.core.pkg_objects import \
-        PathOption
+        PathOption, DataFiles
 
 from bento.commands.core import \
         Command
@@ -31,12 +31,14 @@ class SetupCannotRun(Exception):
 # ====================================================
 LIVE_OBJECTS = {}
 def _process_data_files(seq):
-    ret = []
-    for i in seq:
-        # FIXME: use package_dir to translate package to path
-        target = i[0].replace(".", os.path.sep)
-        srcdir = i[1]
-        ret.append({"files": i[3], "srcdir": srcdir, "target": target})
+    ret = {}
+    for name, data in seq.iteritems():
+        ndots = name.count(".")
+        if ndots > 0:
+            pdir = os.path.join(*[os.pardir for i in range(ndots)])
+        else:
+            pdir = ""
+        ret[name] = [os.path.join(pdir, f) for f in data]
     return ret
 
 # XXX: this is where the magic happens. This is highly dependent on the
@@ -109,9 +111,9 @@ def monkey_patch(type, filename):
                 # setuptools has its own logic to deal with package_data, and
                 # do so in build_py
                 if type == "setuptools":
-                    LIVE_OBJECTS["package_data"] = _process_data_files(self._get_data_files())
+                    LIVE_OBJECTS["package_data"] = _process_data_files(self.distribution.package_data)
                 else:
-                    LIVE_OBJECTS["package_data"] = []
+                    LIVE_OBJECTS["package_data"] = {}
                 _build_py.run(self)
 
                 # extra_data
@@ -279,6 +281,7 @@ def analyse_setup_py(filename, setup_args):
 def build_pkg(dist, live_objects, top_node):
     if dist.package_dir is not None:
         raise ConvertionError("setup.py with package_dir arguments is not supported.")
+
     pkg = distutils_to_package_description(dist)
     modules = []
     for m in pkg.py_modules:
@@ -292,18 +295,16 @@ def build_pkg(dist, live_objects, top_node):
     pkg.data_files = {}
     if live_objects["package_data"]:
         gendatafiles = {}
-        for d in live_objects["package_data"]:
-            if len(d["files"]) > 0:
-                name = "gendata_%s" % d["target"].replace(os.path.sep, "_")
-                gendatafiles[name] = {
-                    "srcdir": canonalize_path(d["srcdir"]),
-                    "target": posjoin("$gendatadir", canonalize_path(d["target"])),
-                    "files": [canonalize_path(f) for f in d["files"]]
-                }
+        for package, files in live_objects["package_data"].iteritems():
+            if len(files) > 0:
+                # FIXME: use nodes here instead of ugly path manipulations
+                name = "gendata_%s" % package.replace(".", "_")
+                target_dir = os.path.join("$gendatadir", package.replace(".", "/"))
+                data_section = DataFiles(name, files, target_dir)
+                pkg.data_files[name] = data_section
         path_options.append(PathOption("gendatadir", "$sitedir",
                 "Directory for datafiles obtained from distutils conversion"
                 ))
-        pkg.data_files.update(gendatafiles)
 
     extra_source_files = []
     if live_objects["extra_data"]:
@@ -328,10 +329,8 @@ def prune_extra_files(files, pkg, top_node):
         package_files.extend(find_package(p, top_node))
 
     data_files = []
-    for sec in pkg.data_files:
-        srcdir_field = pkg.data_files[sec]['srcdir']
-        files_field = pkg.data_files[sec]['files']
-        data_files.extend([os.path.join(srcdir_field, f) for f in files_field])
+    for data_section in pkg.data_files.values():
+        data_files.extend([os.path.join(data_section.source_dir, f) for f in data_section.files])
 
     redundant = package_files + data_files + pkg.py_modules
 
