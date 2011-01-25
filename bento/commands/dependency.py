@@ -95,16 +95,16 @@ def _invert_dependencies(deps):
 class CommandScheduler(object):
     def __init__(self):
         self.before = defaultdict(list)
-        self.klasses = []
+        self.klasses = {}
 
-    def register(self, klass):
+    def _register(self, klass):
         if not klass.__name__ in self.klasses:
-            self.klasses.append(klass.__name__)
+            self.klasses[klass.__name__] = klass
 
     def set_before(self, klass, klass_prev):
         """Set klass_prev to be run before klass"""
-        self.register(klass)
-        self.register(klass_prev)
+        self._register(klass)
+        self._register(klass_prev)
         klass_name = klass.__name__
         klass_prev_name = klass_prev.__name__
         if not klass_prev_name in self.before[klass_name]:
@@ -137,4 +137,4 @@ class CommandScheduler(object):
                 out.append(n)
             stack_visited.pop(n)
         _visit(target.__name__, {})
-        return out
+        return [self.klasses[o] for o in out]
