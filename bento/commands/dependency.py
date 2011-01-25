@@ -1,3 +1,5 @@
+import os
+
 from collections \
     import \
         defaultdict
@@ -138,3 +140,63 @@ class CommandScheduler(object):
             stack_visited.pop(n)
         _visit(target.__name__, {})
         return [self.klasses[o] for o in out]
+
+# Instance of this class record, persist and retrieve data on a per command
+# basis, to reuse them between runs. Anything refered in Command.external_deps
+# need to be registered here
+class CommandDataProvider(object):
+    @classmethod
+    def from_file(cls, filename):
+        if os.path.exists(filename):
+            fid = open(filename, "rb")
+            try:
+                cmd_argv = load(fid)
+            finally:
+                fid.close()
+        else:
+            cmd_argv = {}
+        return cls(cmd_argv)
+
+    def __init__(self, cmd_argv=None):
+        if cmd_argv is None:
+            cmd_argv = {}
+        self._cmd_argv = cmd_argv
+        self._current_data = {}
+
+    def set_current_data(self, k, v):
+        """Add data for the current run."""
+        self._current_data[k] = v
+
+    def save_data(self, cmd_name, cmd_instance):
+        """Save all external dependencies of a command instance."""
+        self._data[cmd_name] = {}
+        for k in cmd_instance.external_deps:
+            if not self._current_data.has_key(k):
+                raise ValueError("Dependency %r for cmd %r not registered into data provider !" % (k, cmd_instance))
+            else:
+                self._data[cmd_name][k] = self._current_data[k]
+
+    def get_saved_data(self, cmd_name):
+        """Get recorded data for the given command."""
+        ret = copy.copy(self._data.get(cmd_name, {}))
+        ret["argv"] = self.get_argv(cmd_name)
+        return ret
+
+    def get_current_data(self):
+        return self._current_data
+
+    def set(self, cmd_name, cmd_argv):
+        self._cmd_argv[cmd_name] = cmd_argv[:]
+
+    def get_argv(self, cmd_name):
+        try:
+            return self._cmd_argv[cmd_name]
+        except KeyError:
+            return []
+
+    def store(self, filename):
+        fid = open(filename, "wb")
+        try:
+            dump(self._cmd_argv, fid)
+        finally:
+            fid.close()

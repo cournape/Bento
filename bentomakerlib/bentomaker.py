@@ -221,13 +221,9 @@ installing""")
 
 from bento.commands.dependency \
     import \
-        TaskStore
+        CommandDataProvider
 CMD_DATA_DUMP = "build/bento/cmd_data.db"
-
-if os.path.exists(CMD_DATA_DUMP):
-    CMD_DATA_STORE = TaskStore.from_dump(CMD_DATA_DUMP)
-else:
-    CMD_DATA_STORE = TaskStore()
+CMD_DATA_STORE = CommandDataProvider.from_file(CMD_DATA_DUMP)
 
 def _get_package_with_user_flags(cmd_name, cmd_opts):
     cmd = COMMANDS_REGISTRY.get_command(cmd_name)()
@@ -256,6 +252,14 @@ def _get_subpackage(pkg, top, local_node):
         else:
             return None
 
+def run_dependencies(cmd_klass, top, pkg):
+    deps = CMD_SCHEDULER.order(cmd_klass)
+    for cmd_klass in deps[:-1]:
+        cmd_name = COMMANDS_REGISTRY.get_command_name(cmd_klass)
+        cmd_argv = CMD_DATA_STORE.get_argv(cmd_name)
+        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+        run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, top, pkg)
+
 def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)
     top = root.find_dir(os.getcwd())
@@ -274,9 +278,13 @@ def run_cmd(cmd_name, cmd_opts):
         raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
 
     pkg = _get_package_with_user_flags(cmd_name, cmd_opts)
+    run_dependencies(cmd_klass, top, pkg)
 
     ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
     run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
+
+    CMD_DATA_STORE.set(cmd_name, cmd_opts)
+    CMD_DATA_STORE.store(CMD_DATA_DUMP)
 
 def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
     """Run the given Command instance inside its context, including any hook
