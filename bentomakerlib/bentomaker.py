@@ -245,40 +245,6 @@ def _get_package_with_user_flags(cmd_name, cmd_opts):
 
     return CachedPackage.get_package(BENTO_SCRIPT, flag_values)
 
-def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
-    if not os.path.exists(BENTO_SCRIPT):
-        raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
-
-    pkg = _get_package_with_user_flags(cmd_name, cmd_opts)
-    cmd.setup_options_parser(CachedPackage.get_options(BENTO_SCRIPT))
-
-    from bento.commands.dependency import CommandTask
-    deps = CMD_SCHEDULER.order(cmd.__class__)
-
-    def __run_cmd(cmd_name, cmd_argv=None):
-        if cmd_argv is None:
-            cmd_argv = []
-        return run_cmd(cmd_name, cmd_argv)
-
-    for dep in deps[:-1]:
-        # Get CommandDependency instance
-        dep_name = COMMANDS_REGISTRY.get_command_name_from_class_name(dep)
-        try:
-            stored_task = CMD_DATA_STORE.get(dep_name)
-        except KeyError:
-            __run_cmd(dep_name)
-
-    ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-    ctx = ctx_klass(cmd, cmd_opts, pkg, top)
-
-    def _store_command_task():
-        task = CommandTask(cmd_name)
-        CMD_DATA_STORE.set(cmd_name, task)
-        CMD_DATA_STORE.store(CMD_DATA_DUMP)
-    _store_command_task()
-
-    return pkg, ctx
-
 def _get_subpackage(pkg, top, local_node):
     rpath = local_node.path_from(top)
     k = os.path.join(rpath, "bento.info")
@@ -304,13 +270,21 @@ def run_cmd(cmd_name, cmd_opts):
         cmd.run(ctx)
         return
 
-    cmd = cmd_klass()
-    pkg, ctx = _prepare_cmd(cmd, cmd_name, cmd_opts, top)
-    run_cmd_in_context(cmd, cmd_name, ctx, top, pkg)
+    if not os.path.exists(BENTO_SCRIPT):
+        raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
 
-def run_cmd_in_context(cmd, cmd_name, ctx, top, pkg):
+    pkg = _get_package_with_user_flags(cmd_name, cmd_opts)
+
+    ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+    run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
+
+def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
+    cmd = cmd_klass()
+    cmd.setup_options_parser(CachedPackage.get_options(BENTO_SCRIPT))
+
+    ctx = ctx_klass(cmd, cmd_opts, pkg, top)
     if get_command_override(cmd_name):
         cmd_funcs = get_command_override(cmd_name)
     else:
