@@ -18,25 +18,41 @@ The goals of bento are simplicity and extensibility. There should be only one
 way to package simple packages (ideally, relying only on the bento.info
 file), while being flexible enough to handle complex softwares. The ultimate
 goal of bento is to replace the hideous distutils extensions to build NumPy
-and SciPy.
+and SciPy, and enable reliable installation of scikits and other scientific
+python packages.
 
 The main features of bento are:
 
-    * Indentation-based declarative package description
-    * Automatic conversion from setup.py to bento format
+    * Static package description which can be queried without running any
+      python code
     * Support for arbitrary installation scheme (ala autoconf, with sensible
       defaults on Windows)
-    * Simple and flexible data files installation description
+    * Simple and flexible data files installation description: you can tell
+      bento to install any file anywhere, without the need to harcode any
+      installation path in the package description.
+    * Hooks to complement or override commands. Hooks provide access to most
+      key data of the package, to enable powerful customization. A proof of
+      concept overriding the build command to build C extensions with waf is
+      provided.
+    * Dependencies between commands is not harcoded in the command themselves,
+      but are specified externally in a directed acyclic graph. This will
+      enable customization of commands without typical hacks seen in distutils
+      and its successor, where you need to monkey patch things just to make
+      your command run in the right order.
+
+But bento do more:
+
+    * Easily bundable, one-file distribution to avoid extra-dependencies when
+      using bento. You only need to add one file to your source tarball !
+    * Automatic conversion from setup.py to bento format
     * Basic support for console scripts ala setuptools
     * Preliminary support for building eggs and windows installers
     * Dependency-based extension builders (source content change is
       automatically rebuilt)
     * Parallel build support for C extensions
-    * Easily bundable, one-file distribution to avoid extra-dependencies
-    * Hooks to complement or override commands
     * Low-level interface to the included build tool to override/change any
       compilation parameter (compilation flag, compiler, etc...)
-    * optionally generate a python module with all installation paths to avoid
+    * Optionally generate a python module with all installation paths to avoid
       relying on __file__ to retrieve resources.
 
 Planned features:
@@ -50,7 +66,7 @@ Planned features:
     * Protocol to integrate with real build tools like scons, waf or
       make
     * Infrastructure for a correctly designed package index, using
-      well-known practices instead of the broken easy_install + pypi
+      well-known packaging practices instead of the broken easy_install + pypi
       model (easy mirroring, enforced metadata, indexing to enable
       querying-before-installing, etc...).
 
