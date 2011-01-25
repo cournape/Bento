@@ -229,9 +229,8 @@ if os.path.exists(CMD_DATA_DUMP):
 else:
     CMD_DATA_STORE = TaskStore()
 
-def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
-    if not os.path.exists(BENTO_SCRIPT):
-        raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
+def _get_package_with_user_flags(cmd_name, cmd_opts):
+    cmd = COMMANDS_REGISTRY.get_command(cmd_name)()
 
     package_options = CachedPackage.get_options(BENTO_SCRIPT)
     cmd.setup_options_parser(package_options)
@@ -244,7 +243,14 @@ def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
     else:
         flag_values = None
 
-    pkg = CachedPackage.get_package(BENTO_SCRIPT, flag_values)
+    return CachedPackage.get_package(BENTO_SCRIPT, flag_values)
+
+def _prepare_cmd(cmd, cmd_name, cmd_opts, top):
+    if not os.path.exists(BENTO_SCRIPT):
+        raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
+
+    pkg = _get_package_with_user_flags(cmd_name, cmd_opts)
+    cmd.setup_options_parser(CachedPackage.get_options(BENTO_SCRIPT))
 
     from bento.commands.dependency import CommandTask
     deps = CMD_SCHEDULER.order(cmd.__class__)
@@ -289,21 +295,26 @@ def run_cmd(cmd_name, cmd_opts):
     top = root.find_dir(os.getcwd())
 
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
-    cmd = cmd_klass()
-    if get_command_override(cmd_name):
-        cmd_funcs = get_command_override(cmd_name)
-    else:
-        cmd_funcs = [(cmd.run, top.abspath())]
-
     # XXX: fix this special casing
     if cmd_name in ["help", "convert"]:
+        cmd = cmd_klass()
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         ctx = ctx_klass(cmd, cmd_opts, None, top)
         cmd.setup_options_parser(None)
         cmd.run(ctx)
         return
 
+    cmd = cmd_klass()
     pkg, ctx = _prepare_cmd(cmd, cmd_name, cmd_opts, top)
+    run_cmd_in_context(cmd, cmd_name, ctx, top, pkg)
+
+def run_cmd_in_context(cmd, cmd_name, ctx, top, pkg):
+    """Run the given Command instance inside its context, including any hook
+    and/or override."""
+    if get_command_override(cmd_name):
+        cmd_funcs = get_command_override(cmd_name)
+    else:
+        cmd_funcs = [(cmd.run, top.abspath())]
 
     try:
         def set_local_ctx(ctx, local_dir):
