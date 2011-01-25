@@ -150,7 +150,7 @@ class ConvertCommand(Command):
 Purpose: convert a setup.py to an .info file
 Usage:   bentomaker convert [OPTIONS] setup.py"""
     short_descr = "convert distutils/setuptools project to bento."
-    opts = Command.opts + [
+    common_options = Command.common_options + [
         Option("-t", help="TODO", default="automatic",
                dest="type"),
         Option("-o", "--output", help="output file",

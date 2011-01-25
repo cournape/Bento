@@ -121,8 +121,9 @@ class InstallCommand(Command):
 Purpose: install the project
 Usage:   bentomaker install [OPTIONS]."""
     short_descr = "install the project."
-    opts = Command.opts + [Option("-t", "--transaction",
-                                  help="Do a transaction-based install", action="store_true")]
+    common_options = Command.common_options + \
+                        [Option("-t", "--transaction",
+                                help="Do a transaction-based install", action="store_true")]
     def run(self, ctx):
         opts = ctx.get_command_arguments()
         o, a = self.parser.parse_args(opts)

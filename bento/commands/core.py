@@ -7,6 +7,12 @@ from optparse \
 
 import bento
 
+from bento._config \
+    import \
+        BENTO_SCRIPT
+from bento.core.package_cache \
+    import \
+        CachedPackage
 from bento.commands.options \
     import \
         OptionParser
@@ -30,12 +36,13 @@ Usage: command's usage (default description)
 """
     short_descr = None
     # XXX: decide how to deal with subcommands options
-    opts = [Option('-h', '--help',
-                   help="Show this message and exits.",
-                   action="store_true")]
+    common_options = [Option('-h', '--help',
+                             help="Show this message and exits.",
+                             action="store_true")]
 
     def __init__(self):
         self.parser = None
+        self.options = self.__class__.common_options[:]
 
     def _create_parser(self):
         if self.parser is None:
@@ -48,8 +55,7 @@ Usage: command's usage (default description)
     def setup_options_parser(self, package_options):
         self._create_parser()
         try:
-            oo = copy.deepcopy(self.opts)
-            for o in oo:
+            for o in self.options:
                 self.parser.add_option(o)
         except getopt.GetoptError, e:
             raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
@@ -88,7 +94,7 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
         # XXX: overkill as we don't support any options for now
         try:
             parser = OptionParser()
-            for o in self.opts:
+            for o in self.options:
                 parser.add_option(o)
             parser.parse_args(help_args)
         except OptionError, e:
@@ -101,9 +107,15 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
         if not cmd_name in COMMANDS_REGISTRY.get_command_names():
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
         cmd_class = COMMANDS_REGISTRY.get_command(cmd_name)
+        cmd = cmd_class()
+
+        # XXX: think more about how to deal with command options which require
+        # to parse bento.info
+        package_options = CachedPackage.get_options(BENTO_SCRIPT)
+        cmd.setup_options_parser(package_options)
 
         parser = OptionParser(usage='')
-        for o in cmd_class.opts:
+        for o in cmd.options:
             parser.add_option(o)
         print cmd_class.long_descr
         print ""

@@ -14,7 +14,7 @@ class BuildPkgInfoCommand(Command):
 Purpose: generate PKG-INFO file
 Usage:   bentomaker build_pkg_info [OPTIONS]"""
     short_descr = "generate PKG-INFO file."
-    opts = Command.opts + [
+    common_options = Command.common_options + [
         {"opts": ["-o", "--output"], "dest": "output", "help": "Output file for PKG-INFO"},
     ]
 
