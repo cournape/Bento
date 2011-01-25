@@ -264,6 +264,8 @@ def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)
     top = root.find_dir(os.getcwd())
 
+    CMD_DATA_STORE.set_current_data("argv", cmd_opts)
+
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
     # XXX: fix this special casing
     if cmd_name in ["help", "convert"]:
