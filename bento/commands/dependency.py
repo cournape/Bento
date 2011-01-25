@@ -5,12 +5,7 @@ from collections \
         defaultdict
 from cPickle \
     import \
-        dump, load, dumps
-
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
+        dump, load
 
 class PickledStore(object):
     """Simple class to store/retrieve data from a pickled file."""
@@ -92,6 +87,8 @@ class CommandScheduler(object):
 # Instance of this class record, persist and retrieve data on a per command
 # basis, to reuse them between runs. Anything refered in Command.external_deps
 # need to be registered here
+# It is slightly over-designed for the current use-case of storing per-command
+# arguments
 class CommandDataProvider(object):
     @classmethod
     def from_file(cls, filename):
@@ -109,29 +106,6 @@ class CommandDataProvider(object):
         if cmd_argv is None:
             cmd_argv = {}
         self._cmd_argv = cmd_argv
-        self._current_data = {}
-
-    def set_current_data(self, k, v):
-        """Add data for the current run."""
-        self._current_data[k] = v
-
-    def save_data(self, cmd_name, cmd_instance):
-        """Save all external dependencies of a command instance."""
-        self._data[cmd_name] = {}
-        for k in cmd_instance.external_deps:
-            if not self._current_data.has_key(k):
-                raise ValueError("Dependency %r for cmd %r not registered into data provider !" % (k, cmd_instance))
-            else:
-                self._data[cmd_name][k] = self._current_data[k]
-
-    def get_saved_data(self, cmd_name):
-        """Get recorded data for the given command."""
-        ret = copy.copy(self._data.get(cmd_name, {}))
-        ret["argv"] = self.get_argv(cmd_name)
-        return ret
-
-    def get_current_data(self):
-        return self._current_data
 
     def set(self, cmd_name, cmd_argv):
         self._cmd_argv[cmd_name] = cmd_argv[:]
