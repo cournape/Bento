@@ -27,58 +27,6 @@ class PickledStore(object):
         with open(filename, "wb") as fid:
             dump(self._data, fid)
 
-class TaskStore(PickledStore):
-    def __init__(self):
-        super(TaskStore, self).__init__()
-        self._data = {}
-
-    def set(self, k, v):
-        self._data[k] = v
-
-    def get(self, k):
-        return self._data[k]
-
-class CommandTask(object):
-    def __init__(self, cmd_name):
-        self._uid = None
-        self._sig = None
-        self.cmd_name = cmd_name
-        self.data_deps = {}
-
-    def set_dependencies(self, **kw):
-        for k, v in kw.iteritems():
-            self.data_deps[k] = v
-
-    def signature(self):
-        if self._sig is None:
-            m = md5()
-            m.update(dumps(self.data_deps))
-            self._sig = m.digest()
-        return self._sig
-
-    def uid(self):
-        # XXX: normally, we don't expect to have multiple instances of the same
-        # cmd class. Cannot use python id, as we want the same id to be
-        # deterministic across runs
-        if self._uid is None:
-            m = md5()
-            m.update(self.__class__.__name__.encode())
-            m.update(self.cmd_name)
-            self._uid = m.digest()
-        return self._uid
-
-    # XXX: Each command should have a data dict associated to it, with data on
-    # which it depends
-    def store_state(self, cmd_data):
-        cmd_data.set(self.uid(), self.env)
-
-    def up_to_date(self, signature_cache):
-        try:
-            cached_sig = signature_cache.get(self)
-            return self.signature() == cached_sig
-        except KeyError:
-            return False
-
 def _invert_dependencies(deps):
     """Given a dictionary of edge -> dependencies representing a DAG, "invert"
     all the dependencies."""
