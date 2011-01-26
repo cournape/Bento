@@ -123,7 +123,10 @@ Usage:   bentomaker install [OPTIONS]."""
     short_descr = "install the project."
     common_options = Command.common_options + \
                         [Option("-t", "--transaction",
-                                help="Do a transaction-based install", action="store_true")]
+                                help="Do a transaction-based install", action="store_true"),
+                         Option("--list-files",
+                                help="List installed files (do not install anything)",
+                                action="store_true")]
     def run(self, ctx):
         opts = ctx.get_command_arguments()
         o, a = self.parser.parse_args(opts)
@@ -139,6 +142,13 @@ Usage:   bentomaker install [OPTIONS]."""
         scheme = ctx.get_paths_scheme()
         ipkg.update_paths(scheme)
         file_sections = ipkg.resolve_paths()
+        if o.list_files:
+            # XXX: this won't take into account action in post install scripts.
+            # A better way would be to log install steps and display those, but
+            # this will do for now.
+            for kind, source, target in iter_files(file_sections):
+                print target
+            return
 
         if o.transaction:
             trans = TransactionLog("transaction.log")
