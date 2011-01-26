@@ -416,3 +416,15 @@ def same_content(f1, f2):
             fid2.close()
     finally:
         fid1.close()
+
+def virtualenv_prefix():
+    """Return the virtual environment prefix if running python is "virtualized"
+    (i.e. run inside virtualenv), None otherwise."""
+    has_env = "VIRTUAL_ENV" in os.environ
+    if has_env:
+        p = os.environ["VIRTUAL_ENV"]
+        for d in ["bin", "Scripts"]:
+            venv_path = os.path.join(p, d, "activate_this.py")
+            if os.path.exists(venv_path):
+                return p
+    return None

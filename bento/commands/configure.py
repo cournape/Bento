@@ -10,7 +10,7 @@ from bento.compat.api \
     import \
         rename
 from bento.core.utils import \
-        pprint, subst_vars, ensure_dir
+        pprint, subst_vars, ensure_dir, virtualenv_prefix
 from bento.core.platforms import \
         get_scheme
 from bento.core import \
@@ -188,6 +188,9 @@ Usage: bentomaker configure [OPTIONS]"""
 
         self.option_callback(self, o, a)
 
+        venv_prefix = virtualenv_prefix()
+        if venv_prefix is not None:
+            self.scheme["prefix"] = self.scheme["eprefix"] = venv_prefix
         set_scheme_options(self.scheme, o)
         flag_vals = set_flag_options(self.flag_opts, o)
 
