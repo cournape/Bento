@@ -17,7 +17,7 @@ from bento.core.parser.api import \
 from bento.core.package_cache import \
         CachedPackage
 from bento._config import \
-        BENTO_SCRIPT
+        BENTO_SCRIPT, BUILD_DIR
 import bento.core.node
 
 from bento.commands.core import \
@@ -45,10 +45,12 @@ from bento.commands.build_wininst import \
 from bento.commands.distcheck import \
         DistCheckCommand
 from bento.commands.core import \
-        register_command, \
-        get_command_names, get_command
+        COMMANDS_REGISTRY
 from bento.commands.errors import \
         ConvertionError, UsageException, CommandExecutionFailure
+from bento.commands.dependency \
+    import \
+        CommandScheduler, CommandDataProvider
 
 from bento.commands.hooks \
     import \
@@ -65,23 +67,32 @@ else:
 
 SCRIPT_NAME = 'bentomaker'
 
+CMD_SCHEDULER = CommandScheduler()
+CMD_SCHEDULER.set_before(BuildCommand, ConfigureCommand)
+CMD_SCHEDULER.set_before(BuildEggCommand, BuildCommand)
+CMD_SCHEDULER.set_before(BuildWininstCommand, BuildCommand)
+CMD_SCHEDULER.set_before(InstallCommand, BuildCommand)
+
+CMD_DATA_DUMP = os.path.join(BUILD_DIR, "cmd_data.db")
+CMD_DATA_STORE = CommandDataProvider.from_file(CMD_DATA_DUMP)
+
 #================================
 #   Create the command line UI
 #================================
 def register_commands():
-    register_command("help", HelpCommand)
-    register_command("configure", ConfigureCommand)
-    register_command("build", BuildCommand)
-    register_command("install", InstallCommand)
-    register_command("convert", ConvertCommand)
-    register_command("sdist", SdistCommand)
-    register_command("build_egg", BuildEggCommand)
-    register_command("build_wininst", BuildWininstCommand)
-    register_command("distcheck", DistCheckCommand)
+    COMMANDS_REGISTRY.register_command("help", HelpCommand)
+    COMMANDS_REGISTRY.register_command("configure", ConfigureCommand)
+    COMMANDS_REGISTRY.register_command("build", BuildCommand)
+    COMMANDS_REGISTRY.register_command("install", InstallCommand)
+    COMMANDS_REGISTRY.register_command("convert", ConvertCommand)
+    COMMANDS_REGISTRY.register_command("sdist", SdistCommand)
+    COMMANDS_REGISTRY.register_command("build_egg", BuildEggCommand)
+    COMMANDS_REGISTRY.register_command("build_wininst", BuildWininstCommand)
+    COMMANDS_REGISTRY.register_command("distcheck", DistCheckCommand)
 
-    register_command("build_pkg_info", BuildPkgInfoCommand, public=False)
-    register_command("parse", ParseCommand, public=False)
-    register_command("detect_type", DetectTypeCommand, public=False)
+    COMMANDS_REGISTRY.register_command("build_pkg_info", BuildPkgInfoCommand, public=False)
+    COMMANDS_REGISTRY.register_command("parse", ParseCommand, public=False)
+    COMMANDS_REGISTRY.register_command("detect_type", DetectTypeCommand, public=False)
  
 def register_command_contexts():
     CONTEXT_REGISTRY.set_default(CmdContext)
@@ -93,11 +104,7 @@ def set_main():
     if not os.path.exists(BENTO_SCRIPT):
         return []
 
-    pkg_cache = CachedPackage()
-    try:
-        pkg = pkg_cache.get_package(BENTO_SCRIPT)
-    finally:
-        pkg_cache.close()
+    pkg = CachedPackage.get_package(BENTO_SCRIPT)
     #create_package_description(BENTO_SCRIPT)
 
     modules = []
@@ -173,7 +180,7 @@ def _main(popts):
         return 0
 
     if popts["show_usage"]:
-        cmd = get_command('help')()
+        cmd = COMMANDS_REGISTRY.get_command('help')()
         cmd.run(CmdContext(cmd, [], None, None))
         return 0
 
@@ -184,65 +191,15 @@ def _main(popts):
         print "Type '%s help' for usage." % SCRIPT_NAME
         return 1
     else:
-        if not cmd_name in get_command_names():
+        if not cmd_name in COMMANDS_REGISTRY.get_command_names():
             raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
         else:
-            check_command_dependencies(cmd_name)
             run_cmd(cmd_name, cmd_opts)
 
-from bento.commands.context \
-    import \
-        _read_argv_checksum
+def _get_package_with_user_flags(cmd_name, cmd_opts):
+    cmd = COMMANDS_REGISTRY.get_command(cmd_name)()
 
-def check_command_dependencies(cmd_name):
-    # FIXME: temporary hack to inform the user, handle command dependency
-    # automatically at some point
-    if cmd_name == "build":
-        configure_cmd = get_command("configure")
-        if not configure_cmd.has_run():
-            raise UsageException("""\
-The project was not configured: you need to run 'bentomaker configure' first""")
-        if not configure_cmd.up_to_date():
-            raise UsageException("""\
-The project configuration has changed. You need to re-run 'bentomaker configure' first""")
-    elif cmd_name in ["install", "build_egg", "build_wininst"]:
-        build_cmd = get_command("build")
-        if not build_cmd.has_run():
-            raise UsageException("""\
-The project was not built: you need to 'bentomaker build' first""")
-        built_config = _read_argv_checksum("build")
-        configured_config = _read_argv_checksum("configure")
-        if built_config != configured_config:
-            raise UsageException("""\
-The project was reconfigured: you need to re-run 'bentomaker build' before \
-installing""")
-
-def run_cmd(cmd_name, cmd_opts):
-    root = bento.core.node.Node("", None)
-    top = root.find_dir(os.getcwd())
-
-    cmd = get_command(cmd_name)()
-    if get_command_override(cmd_name):
-        cmd_funcs = get_command_override(cmd_name)
-    else:
-        cmd_funcs = [(cmd.run, top.abspath())]
-
-    # XXX: fix this special casing
-    if cmd_name in ["help", "convert"]:
-        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-        ctx = ctx_klass(cmd, cmd_opts, None, top)
-        cmd.setup_options_parser(None)
-        cmd.run(ctx)
-        return
-
-    if not os.path.exists(BENTO_SCRIPT):
-        raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
-
-    pkg_cache = CachedPackage()
-    try:
-        package_options = pkg_cache.get_options(BENTO_SCRIPT)
-    finally:
-        pkg_cache.close()
+    package_options = CachedPackage.get_options(BENTO_SCRIPT)
     cmd.setup_options_parser(package_options)
 
     if cmd_name == "configure":
@@ -252,52 +209,93 @@ def run_cmd(cmd_name, cmd_opts):
         flag_values = set_flag_options(cmd.flag_opts, o)
     else:
         flag_values = None
-    pkg_cache = CachedPackage()
-    try:
-        pkg = pkg_cache.get_package(BENTO_SCRIPT, flag_values)
-    finally:
-        pkg_cache.close()
+
+    return CachedPackage.get_package(BENTO_SCRIPT, flag_values)
+
+def _get_subpackage(pkg, top, local_node):
+    rpath = local_node.path_from(top)
+    k = os.path.join(rpath, "bento.info")
+    if local_node == top:
+        return pkg
+    else:
+        if k in pkg.subpackages:
+            return pkg.subpackages[k]
+        else:
+            return None
+
+def run_dependencies(cmd_klass, top, pkg):
+    deps = CMD_SCHEDULER.order(cmd_klass)
+    for cmd_klass in deps[:-1]:
+        cmd_name = COMMANDS_REGISTRY.get_command_name(cmd_klass)
+        cmd_argv = CMD_DATA_STORE.get_argv(cmd_name)
+        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+        run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, top, pkg)
+
+def run_cmd(cmd_name, cmd_opts):
+    root = bento.core.node.Node("", None)
+    top = root.find_dir(os.getcwd())
+
+    cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
+    # XXX: fix this special casing
+    if cmd_name in ["help", "convert"]:
+        cmd = cmd_klass()
+        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+        ctx = ctx_klass(cmd, cmd_opts, None, top)
+        cmd.setup_options_parser(None)
+        cmd.run(ctx)
+        return
+
+    if not os.path.exists(BENTO_SCRIPT):
+        raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
+
+    pkg = _get_package_with_user_flags(cmd_name, cmd_opts)
+    run_dependencies(cmd_klass, top, pkg)
 
     ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+    run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
+
+    CMD_DATA_STORE.set(cmd_name, cmd_opts)
+    CMD_DATA_STORE.store(CMD_DATA_DUMP)
+
+def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
+    """Run the given Command instance inside its context, including any hook
+    and/or override."""
+    cmd = cmd_klass()
+    cmd.setup_options_parser(CachedPackage.get_options(BENTO_SCRIPT))
+
     ctx = ctx_klass(cmd, cmd_opts, pkg, top)
+    if get_command_override(cmd_name):
+        cmd_funcs = get_command_override(cmd_name)
+    else:
+        cmd_funcs = [(cmd.run, top.abspath())]
 
     try:
-        spkgs = pkg.subpackages
-
-        def get_subpackage(local_node):
-            rpath = local_node.path_from(top)
-            k = os.path.join(rpath, "bento.info")
-            if local_node == top:
-                return pkg
-            else:
-                if k in spkgs:
-                    return spkgs[k]
-                else:
-                    return None
-        def set_local_ctx(ctx, hook, local_dir):
-            local_node = top.find_dir(
-                    relpath(local_dir, top.abspath()))
-            spkg = get_subpackage(local_node)
+        def set_local_ctx(ctx, local_dir):
+            local_node = top.find_dir(relpath(local_dir, top.abspath()))
+            spkg = _get_subpackage(pkg, top, local_node)
             ctx.local_dir = local_dir
             ctx.local_node = local_node
             ctx.top_node = top
             ctx.local_pkg = spkg
             ctx.pkg = pkg
-            return hook(ctx)
 
         if get_pre_hooks(cmd_name) is not None:
             for hook, local_dir, help_bypass in get_pre_hooks(cmd_name):
                 if not ctx.help and help_bypass:
-                    set_local_ctx(ctx, hook, local_dir)
+                    set_local_ctx(ctx, local_dir)
+                    hook(ctx)
 
         while cmd_funcs:
             cmd_func, local_dir = cmd_funcs.pop(0)
-            set_local_ctx(ctx, cmd_func, local_dir)
+            set_local_ctx(ctx, local_dir)
+            cmd_func(ctx)
 
         if get_post_hooks(cmd_name) is not None:
             for hook, local_dir, help_bypass in get_post_hooks(cmd_name):
                 if not ctx.help and help_bypass:
-                    set_local_ctx(ctx, hook, local_dir)
+                    set_local_ctx(ctx, local_dir)
+                    hook(ctx)
+
         cmd.shutdown(ctx)
     finally:
         ctx.store()

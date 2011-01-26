@@ -7,6 +7,12 @@ from optparse \
 
 import bento
 
+from bento._config \
+    import \
+        BENTO_SCRIPT
+from bento.core.package_cache \
+    import \
+        CachedPackage
 from bento.commands.options \
     import \
         OptionParser
@@ -23,33 +29,6 @@ bentomaker %(version)s -- an alternative to distutils-based systems
 Usage: %(name)s [command [options]]
 """
 
-# FIXME: better way to register commands
-_CMDS_TO_CLASS = {}
-_PCMDS_TO_CLASS = {}
-_UCMDS_TO_CLASS = {}
-
-def get_command_names():
-    return _CMDS_TO_CLASS.keys()
-
-def get_public_command_names():
-    return _UCMDS_TO_CLASS.keys()
-
-def get_command(name):
-    return _CMDS_TO_CLASS[name]
-
-def register_command(name, klass, public=True):
-    global _CMDS_TO_CLASS
-    global _UCMDS_TO_CLASS
-    global _PCMDS_TO_CLASS
-
-    if public:
-        _UCMDS_TO_CLASS[name] = klass
-    else:
-        _PCMDS_TO_CLASS[name] = klass
-
-    _CMDS_TO_CLASS = dict([(k, v) for k, v in _PCMDS_TO_CLASS.items()])
-    _CMDS_TO_CLASS.update(_UCMDS_TO_CLASS)
-
 class Command(object):
     long_descr = """\
 Purpose: command's purposed (default description)
@@ -57,12 +36,13 @@ Usage: command's usage (default description)
 """
     short_descr = None
     # XXX: decide how to deal with subcommands options
-    opts = [Option('-h', '--help',
-                   help="Show this message and exits.",
-                   action="store_true")]
+    common_options = [Option('-h', '--help',
+                             help="Show this message and exits.",
+                             action="store_true")]
 
     def __init__(self):
         self.parser = None
+        self.options = self.__class__.common_options[:]
 
     def _create_parser(self):
         if self.parser is None:
@@ -75,8 +55,7 @@ Usage: command's usage (default description)
     def setup_options_parser(self, package_options):
         self._create_parser()
         try:
-            oo = copy.deepcopy(self.opts)
-            for o in oo:
+            for o in self.options:
                 self.parser.add_option(o)
         except getopt.GetoptError, e:
             raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
@@ -115,7 +94,7 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
         # XXX: overkill as we don't support any options for now
         try:
             parser = OptionParser()
-            for o in self.opts:
+            for o in self.options:
                 parser.add_option(o)
             parser.parse_args(help_args)
         except OptionError, e:
@@ -125,12 +104,18 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             print get_usage()
             return
 
-        if not cmd_name in get_command_names():
+        if not cmd_name in COMMANDS_REGISTRY.get_command_names():
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
-        cmd_class = get_command(cmd_name)
+        cmd_class = COMMANDS_REGISTRY.get_command(cmd_name)
+        cmd = cmd_class()
+
+        # XXX: think more about how to deal with command options which require
+        # to parse bento.info
+        package_options = CachedPackage.get_options(BENTO_SCRIPT)
+        cmd.setup_options_parser(package_options)
 
         parser = OptionParser(usage='')
-        for o in cmd_class.opts:
+        for o in cmd.options:
             parser.add_option(o)
         print cmd_class.long_descr
         print ""
@@ -150,7 +135,7 @@ def get_simple_usage():
 
     def add_group(cmd_names):
         for name in cmd_names:
-            v = get_command(name)
+            v = COMMANDS_REGISTRY.get_command(name)
             doc = v.short_descr
             if doc is None:
                 doc = "undocumented"
@@ -179,9 +164,9 @@ def get_usage():
     ret.append("Bento commands:")
 
     commands = []
-    cmd_names = sorted(get_public_command_names())
+    cmd_names = sorted(COMMANDS_REGISTRY.get_public_command_names())
     for name in cmd_names:
-        v = get_command(name)
+        v = COMMANDS_REGISTRY.get_command(name)
         doc = v.short_descr
         if doc is None:
             doc = "undocumented"
@@ -192,3 +177,45 @@ def get_usage():
     for header, hlp in commands:
         ret.append(fill_string(header, minlen) + hlp)
     return "\n".join(ret)
+
+class CommandRegistry(object):
+    def __init__(self):
+        # command line name -> command class
+        self._klasses = {}
+        # command line name -> None for private commands
+        self._privates = {}
+
+    def register_command(self, name, cmd_klass, public=True):
+        if self._klasses.has_key(name):
+            raise ValueError("context for command %r already registered !" % name)
+        else:
+            self._klasses[name] = cmd_klass
+            if not public:
+                self._privates[name] = None
+
+    def get_command(self, name):
+        cmd_klass = self._klasses.get(name, None)
+        if cmd_klass is None:
+            raise ValueError("No command class registered for name %r" % name)
+        else:
+            return cmd_klass
+
+    def get_command_names(self):
+        return self._klasses.keys()
+
+    def get_public_command_names(self):
+        return [k for k in self._klasses.keys() if not self._privates.has_key(k)]
+
+    def get_command_name(self, klass):
+        for k, v in self._klasses.iteritems():
+            if v == klass:
+                return k
+        raise ValueError("Unregistered class %r" % klass)
+
+    def get_command_name_from_class_name(self, class_name):
+        for k, v in self._klasses.iteritems():
+            if v.__name__ == class_name:
+                return k
+        raise ValueError("Unregistered class %r" % class_name)
+
+COMMANDS_REGISTRY = CommandRegistry()

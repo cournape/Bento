@@ -114,9 +114,6 @@ class ConfigureCommand(Command):
 Purpose: configure the project
 Usage: bentomaker configure [OPTIONS]"""
     short_descr = "configure the project."
-    opts = [Option('-h', '--help',
-                   help="Show package-specific configuration options",
-                   action="store_true")]
 
     @classmethod
     def has_run(self):
@@ -141,7 +138,7 @@ Usage: bentomaker configure [OPTIONS]"""
         # the script file (flags, paths variables), we cannot just
         # call set_options_parser, and we set it up manually instead
         self.reset_parser()
-        for opt in self.opts:
+        for opt in self.options:
             self.parser.add_option(opt)
 
     def setup_options_parser(self, custom_options):
@@ -164,7 +161,7 @@ Usage: bentomaker configure [OPTIONS]"""
     def add_user_option(self, opt, group_name=None):
         #self.opts.append(opt)
         if group_name is not None:
-            self.opts.append(opt)
+            self.options.append(opt)
             self._user_opt_groups[group_name].add_option(opt)
         else:
             self.parser.add_option(opt)
@@ -238,7 +235,7 @@ Usage: bentomaker configure [OPTIONS]"""
 
         install_group = self.parser.add_option_group("Installation fine tuning")
         for opt in scheme_opts.values():
-            self.opts.append(opt)
+            self.options.append(opt)
             install_group.add_option(opt)
 
         flag_opts = {}
@@ -248,7 +245,7 @@ Usage: bentomaker configure [OPTIONS]"""
                 flag_opts[name] = Option(
                         "--with-%s" % v.name,
                         help="%s [default=%s]" % (v.description, v.default_value))
-                self.opts.append(flag_opts[name])
+                self.options.append(flag_opts[name])
                 flags_group.add_option(flag_opts[name])
 
         return scheme, flag_opts

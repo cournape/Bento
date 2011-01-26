@@ -5,10 +5,6 @@ from bento.compat \
     import \
         inspect as compat_inspect
 
-from bento.commands.core \
-    import \
-        register_command
-
 __HOOK_REGISTRY = {}
 __PRE_HOOK_REGISTRY = {}
 __POST_HOOK_REGISTRY = {}
@@ -100,11 +96,6 @@ pre_sdist = _make_hook_decorator("sdist", "pre")
 
 def override(f):
     override_command(f.__name__, f)
-
-def command_register(f, *a, **kw):
-    ret = f(*a, **kw)
-    for cmd_name, cmd_class in ret.items():
-        register_command(cmd_name, cmd_class)
 
 def dummy_startup():
     pass

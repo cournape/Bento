@@ -37,6 +37,27 @@ from bento.core.utils \
         ensure_dir, safe_write
 
 class CachedPackage(object):
+    @classmethod
+    def get_package(cls, filename, user_flags=None):
+        cache = _CachedPackageImpl()
+        try:
+            return cache.get_package(filename, user_flags)
+        finally:
+            cache.close()
+
+    @classmethod
+    def get_options(cls, filename):
+        cache = _CachedPackageImpl()
+        try:
+            return cache.get_options(filename)
+        finally:
+            cache.close()
+
+    @classmethod
+    def write_checksums(cls, target=CHECKSUM_DB_FILE):
+        _CachedPackageImpl.write_checksums(target)
+
+class _CachedPackageImpl(object):
     __version__ = "1"
     __magic__ = "CACHED_PACKAGE_BENTOMAGIC"
 
@@ -52,8 +73,8 @@ class CachedPackage(object):
 
     def _reset(self):
         self.db = {}
-        self.db["magic"] = CachedPackage.__magic__
-        self.db["version"] = CachedPackage.__version__
+        self.db["magic"] = self.__magic__
+        self.db["version"] = self.__version__
         self._first_time = True
 
     def __init__(self, db_location=DB_FILE):

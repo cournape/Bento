@@ -17,7 +17,7 @@ class ParseCommand(Command):
 Purpose: query the given package description file (debugging tool)
 Usage:   bentomaker parse [OPTIONS]"""
     short_descr = "parse the package description file."
-    opts = Command.opts + [
+    common_options = Command.common_options + [
         Option("-f", "--flags", action="store_true",
                help="print flags variables"),
         Option("-p", "--path", action="store_true",

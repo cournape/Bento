@@ -31,7 +31,8 @@ class BuildCommand(Command):
 Purpose: build the project
 Usage:   bentomaker build [OPTIONS]."""
     short_descr = "build the project."
-    opts = Command.opts + [Option("-i", "--inplace",
+    common_options = Command.common_options \
+                        + [Option("-i", "--inplace",
                                   help="Build extensions in place", action="store_true"),
                            Option("-j", "--jobs",
                                   help="Parallel builds (yaku build only - EXPERIMENTAL)",

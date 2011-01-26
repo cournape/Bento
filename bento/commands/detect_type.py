@@ -12,7 +12,7 @@ class DetectTypeCommand(Command):
 Purpose: detect type of distutils extension used by given setup.py
 Usage:   bentomaker detect_type [OPTIONS]."""
     short_descr = "detect extension type."
-    opts = Command.opts + [
+    common_options = Command.common_options + [
         {"opts": ["-i", "--input"], "help": "TODO", "default": "setup.py",
                  "dest": "setup_file"},
         {"opts": ["-v", "--verbose"], "help": "verbose run", "action" : "store_true"},
