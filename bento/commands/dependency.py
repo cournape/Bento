@@ -82,7 +82,7 @@ class CommandScheduler(object):
                 out.append(n)
             stack_visited.pop(n)
         _visit(target.__name__, {})
-        return [self.klasses[o] for o in out]
+        return [self.klasses[o] for o in out[:-1]]
 
 # Instance of this class record, persist and retrieve data on a per command
 # basis, to reuse them between runs. Anything refered in Command.external_deps

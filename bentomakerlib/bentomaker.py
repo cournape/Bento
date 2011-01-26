@@ -226,7 +226,7 @@ def _get_subpackage(pkg, top, local_node):
 
 def run_dependencies(cmd_klass, top, pkg):
     deps = CMD_SCHEDULER.order(cmd_klass)
-    for cmd_klass in deps[:-1]:
+    for cmd_klass in deps:
         cmd_name = COMMANDS_REGISTRY.get_command_name(cmd_klass)
         cmd_argv = CMD_DATA_STORE.get_argv(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
