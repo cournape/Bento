@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+import time
 import sys
 import os
 import getopt
@@ -231,6 +232,16 @@ def run_dependencies(cmd_klass, top, pkg):
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, top, pkg)
 
+def is_help_only(cmd_klass, cmd_argv):
+    cmd = cmd_klass()
+    package_options = CachedPackage.get_options(BENTO_SCRIPT)
+    cmd.setup_options_parser(package_options)
+    o, a = cmd.parser.parse_args(cmd_argv)
+    if o.help:
+        return True
+    else:
+        return False
+
 def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)
     top = root.find_dir(os.getcwd())
@@ -249,13 +260,17 @@ def run_cmd(cmd_name, cmd_opts):
         raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
 
     pkg = _get_package_with_user_flags(cmd_name, cmd_opts)
-    run_dependencies(cmd_klass, top, pkg)
+    if is_help_only(cmd_klass, cmd_opts):
+        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+        run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
+    else:
+        run_dependencies(cmd_klass, top, pkg)
 
-    ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-    run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
+        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+        run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
 
-    CMD_DATA_STORE.set(cmd_name, cmd_opts)
-    CMD_DATA_STORE.store(CMD_DATA_DUMP)
+        CMD_DATA_STORE.set(cmd_name, cmd_opts)
+        CMD_DATA_STORE.store(CMD_DATA_DUMP)
 
 def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
     """Run the given Command instance inside its context, including any hook
