@@ -1,3 +1,34 @@
+Version 0.0.5
+=============
+
+Released on .... This is mostly a stabilization of features implemented so far,
+with some code refactoring to enable easier customization of the build process.
+Main features:
+
+    - If run under a virtual environment (virtualenv), bento will install the
+      package inside the virtualenvironment by default
+    - When a command depends on other commands, those are now automatically
+      run, e.g.::
+
+        bentomaker build_egg # automatically run configure and build
+
+    - Update to last yaku, which contains a lot of improvements (too many to
+      list here)
+    - Add --list-files option to install command to list files to be installed
+    - Add --transaction option to install to produce a "transaction log". The
+      transaction log will enable rollback (a first step towards reliable
+      uninstall). 
+
+Internals
+---------
+
+    - Commands are now registered to a single global command registry
+    - Commands are now run with a command-specific context, which can be
+      extended for further customization (e.g. waf support in the build stage).
+    - Command dependency is now handled dynamically: order is set outside
+      command class definition, and order resolution is done at runtime with a
+      simple topological sort on the dependency order.
+
 Version 0.0.4
 =============
 
