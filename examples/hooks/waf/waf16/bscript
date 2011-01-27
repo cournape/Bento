@@ -8,6 +8,9 @@ from bento.commands.hooks \
 from bento.commands.context \
     import \
         CONTEXT_REGISTRY, ConfigureContext, BuildContext
+from bento.installed_package_description \
+    import \
+        InstalledSection
 
 if os.environ.has_key("WAFDIR"):
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
@@ -46,7 +49,7 @@ def _init():
 
     Logs.init_log()
     opts = OptionsContext()
-    opts.parse_args()
+    opts.parse_args([])
     opts.load("compiler_c")
     Options.options.check_c_compiler = "gcc"
     class FakeModule(object):
@@ -102,6 +105,9 @@ def poconfigure(bento_conf):
     conf.check_python_version((2,4,2))
     conf.check_python_headers()
 
+    # HACK for mac os x
+    if sys.platform == "darwin":
+        conf.env["CC"] = ["/usr/bin/gcc-4.0"]
     conf.store()
     
 def ext_name_to_path(name):
@@ -112,27 +118,21 @@ def ext_name_to_path(name):
     """
     return name.replace('.', os.path.sep)
 
-def get_build_products(bld):
-    outputs = {}
+def build_installed_sections(bld):
+    sections = {}
     for group in bld.groups:
         for task_gen in group:
             if hasattr(task_gen, "link_task"):
                 name = task_gen.name.replace(os.sep, ".")
-                outputs[name] = task_gen.link_task.outputs
-    return outputs
+                pkg_dir = os.path.dirname(task_gen.name)
+                source_dir = task_gen.link_task.outputs[0].parent.path_from(bld.srcnode)
+                target = os.path.join("$sitedir", pkg_dir)
+                files = [o.name for o in task_gen.link_task.outputs]
 
-@post_build()
-def pobuild(bento_bld):
-    from bento.core.subpackage import get_extensions
-    bld = bento_bld.waf_context
-    pkg = bento_bld.pkg
-
-    for name, extension in get_extensions(pkg, bento_bld.top_node).iteritems():
-        bld(features='c cshlib pyext', source=extension.sources,
-            target=ext_name_to_path(extension.name))
-    bld.compile()
-
-    outputs = get_build_products(bld)
+                section = InstalledSection.from_source_target_directories("extensions", name,
+                                        source_dir, target, files)
+                sections[name] = section
+    return sections
 
 class WafConfigureContext(ConfigureContext):
     def __init__(self, *a, **kw):
@@ -140,10 +140,28 @@ class WafConfigureContext(ConfigureContext):
         _init_configure(self)
 
 class WafBuildContext(BuildContext):
-    build_type = "waf"
     def __init__(self, *a, **kw):
         super(WafBuildContext, self).__init__(*a, **kw)
         _init_build(self)
+
+    def build_extensions_factory(self, *a, **kw):
+        from bento.core.subpackage import get_extensions
+        def builder(pkg):
+            bld = self.waf_context
+            for name, extension in get_extensions(pkg, self.top_node).iteritems():
+                bld(features='c cshlib pyext', source=extension.sources,
+                    target=ext_name_to_path(extension.name))
+            bld.compile()
+            return build_installed_sections(bld)
+        return builder
+
+    def build_compiled_libraries_factory(self, *a, **kw):
+        def builder(pkg):
+            if len(self.pkg.compiled_libraries) > 0:
+                raise NotImplementedError("waf mode for compiled " \
+                                          "libraries not yet implemented")
+            return {}
+        return builder
 
 def startup():
     CONTEXT_REGISTRY.register("configure", WafConfigureContext)
