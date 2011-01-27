@@ -14,13 +14,6 @@ bento::
     bentomaker build
     bentomaker install
 
-The goals of bento are simplicity and extensibility. There should be only one
-way to package simple packages (ideally, relying only on the bento.info
-file), while being flexible enough to handle complex softwares. The ultimate
-goal of bento is to replace the hideous distutils extensions to build NumPy
-and SciPy, and enable reliable installation of scikits and other scientific
-python packages.
-
 The main features of bento are:
 
     * Static package description which can be queried without running any
@@ -40,7 +33,7 @@ The main features of bento are:
       and its successor, where you need to monkey patch things just to make
       your command run in the right order.
 
-But bento do more:
+But bento does more:
 
     * Easily bundable, one-file distribution to avoid extra-dependencies when
       using bento. You only need to add one file to your source tarball !
@@ -55,11 +48,18 @@ But bento do more:
     * Optionally generate a python module with all installation paths to avoid
       relying on __file__ to retrieve resources.
 
+The goals of bento are simplicity and extensibility. There should be only one
+way to package simple packages (ideally, relying only on the bento.info
+file), while being flexible enough to handle complex softwares. The ultimate
+goal of bento is to replace the hideous distutils extensions to build NumPy
+and SciPy, and enable reliable installation of scikits and other scientific
+python packages.
+
 Planned features:
 
     * Support for msi and Mac OS X .mpkg
-    * Reliable conversion between packaging formats (egg <-> wininst, mpkg <->
-      egg, etc...)
+    * Reliable conversion between packaging formats on the platforms where it
+      makes sense (egg <-> wininst, mpkg <-> egg, etc...)
     * Provide API to enable Linux distributors to write simple extensions for
       packaging bento-packages as they see fit
     * Distutils compatibility mode, driven by the bento.info file
@@ -68,7 +68,7 @@ Planned features:
     * Infrastructure for a correctly designed package index, using
       well-known packaging practices instead of the broken easy_install + pypi
       model (easy mirroring, enforced metadata, indexing to enable
-      querying-before-installing, etc...).
+      querying-before-installing, reliable install, etc...).
 
 Code-wise, bento has the following advantages:
 
