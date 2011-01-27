@@ -48,7 +48,6 @@ Usage:   bentomaker build [OPTIONS]."""
     def __init__(self, *a, **kw):
         Command.__init__(self, *a, **kw)
         self.section_writer = SectionWriter()
-        self.build_type = None
 
     def run(self, ctx):
         opts = ctx.get_command_arguments()
@@ -72,11 +71,10 @@ Usage:   bentomaker build [OPTIONS]."""
         extensions = get_extensions(ctx.pkg, ctx.top_node)
         libraries = get_compiled_libraries(ctx.pkg, ctx.top_node)
 
-        if ctx.get_user_data()["use_distutils"]:
-            self.build_type = "distutils"
+        if ctx.build_type == "distutils":
             build_extensions = build_distutils.build_extensions
-        else:
-            self.build_type = "yaku"
+            build_compiled_libraries = build_distutils.build_compiled_libraries
+        elif ctx.build_type == "yaku":
             def builder(pkg):
                 return build_yaku.build_extensions(extensions,
                         ctx.yaku_build_ctx, ctx._extensions_callback,
@@ -88,6 +86,8 @@ Usage:   bentomaker build [OPTIONS]."""
                         ctx.yaku_build_ctx, ctx._clibraries_callback,
                         ctx._clibrary_envs, inplace, verbose, jobs)
             build_compiled_libraries = builder
+        else:
+            raise ValueError("Unhandled build type %r" % ctx.build_type)
 
         self.section_writer.sections_callbacks["compiled_libraries"] = \
                 build_compiled_libraries

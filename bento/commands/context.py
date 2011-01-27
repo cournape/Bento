@@ -12,6 +12,9 @@ import yaku.context
 from bento.core.package_cache \
     import \
         CachedPackage
+from bento.core.subpackage \
+    import \
+        get_extensions, get_compiled_libraries
 from bento.commands.configure \
     import \
         _ConfigureState
@@ -91,6 +94,9 @@ class ConfigureContext(CmdContext):
     def __init__(self, cmd, cmd_argv, pkg, top_node):
         CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
 
+    def setup(self):
+        pass
+
     def store(self):
         CmdContext.store(self)
         CachedPackage.write_checksums()
@@ -101,11 +107,20 @@ class ConfigureYakuContext(ConfigureContext):
         super(ConfigureYakuContext, self).__init__(cmd, cmd_argv, pkg, top_node)
         self.yaku_configure_ctx = yaku.context.get_cfg()
 
+    def setup(self):
+        extensions = get_extensions(self.pkg, self.top_node)
+        libraries = get_compiled_libraries(self.pkg, self.top_node)
+
+        yaku_ctx = self.yaku_configure_ctx
+        if extensions or libraries:
+            yaku_ctx.use_tools(["ctasks", "pyext"])
+
     def store(self):
         super(ConfigureYakuContext, self).store()
         self.yaku_configure_ctx.store()
 
 class BuildContext(CmdContext):
+    build_type = "distutils"
     def __init__(self, cmd, cmd_argv, pkg, top_node):
         CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
         self._extensions_callback = {}
@@ -150,6 +165,7 @@ class BuildContext(CmdContext):
         self._clibrary_envs[full_name] = env
 
 class BuildYakuContext(BuildContext):
+    build_type = "yaku"
     def __init__(self, cmd, cmd_argv, pkg, top_node):
         super(BuildYakuContext, self).__init__(cmd, cmd_argv, pkg, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
