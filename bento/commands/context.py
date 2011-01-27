@@ -105,6 +105,9 @@ class ConfigureContext(CmdContext):
         CachedPackage.write_checksums()
         _write_argv_checksum(_argv_checksum(sys.argv), "configure")
 
+class DistutilsConfigureContext(ConfigureContext):
+    pass
+
 class ConfigureYakuContext(ConfigureContext):
     def __init__(self, cmd, cmd_argv, pkg, top_node):
         super(ConfigureYakuContext, self).__init__(cmd, cmd_argv, pkg, top_node)
@@ -123,7 +126,6 @@ class ConfigureYakuContext(ConfigureContext):
         self.yaku_configure_ctx.store()
 
 class BuildContext(CmdContext):
-    build_type = "distutils"
     def __init__(self, cmd, cmd_argv, pkg, top_node):
         CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
         self._extensions_callback = {}
@@ -167,8 +169,20 @@ class BuildContext(CmdContext):
         full_name = os.path.join(relpos, clib_name)
         self._clibrary_envs[full_name] = env
 
+class DistutilsBuildContext(BuildContext):
+    def build_extensions_factory(self, *a, **kw):
+        from bento.commands.build_distutils \
+            import \
+                build_extensions
+        return build_extensions
+
+    def build_compiled_libraries_factory(self, *a, **kw):
+        from bento.commands.build_distutils \
+            import \
+                build_compiled_libraries
+        return build_compiled_libraries
+
 class BuildYakuContext(BuildContext):
-    build_type = "yaku"
     def __init__(self, cmd, cmd_argv, pkg, top_node):
         super(BuildYakuContext, self).__init__(cmd, cmd_argv, pkg, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
@@ -176,6 +190,28 @@ class BuildYakuContext(BuildContext):
     def store(self):
         super(BuildYakuContext, self).store()
         self.yaku_build_ctx.store()
+
+    def build_extensions_factory(self, *a, **kw):
+        from bento.commands.build_yaku \
+            import \
+                build_extensions
+        extensions = get_extensions(self.pkg, self.top_node)
+        def builder(pkg):
+            return build_extensions(extensions,
+                    self.yaku_build_ctx, self._extensions_callback,
+                    self._extension_envs, *a, **kw)
+        return builder
+
+    def build_compiled_libraries_factory(self, *a, **kw):
+        from bento.commands.build_yaku \
+            import \
+                build_compiled_libraries
+        libraries = get_compiled_libraries(self.pkg, self.top_node)
+        def builder(pkg):
+            return build_compiled_libraries(libraries,
+                    self.yaku_build_ctx, self._clibraries_callback,
+                    self._clibrary_envs, *a, **kw)
+        return builder
 
 def _argv_checksum(argv):
     return md5(cPickle.dumps(argv)).hexdigest()

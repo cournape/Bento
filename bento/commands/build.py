@@ -68,26 +68,8 @@ Usage:   bentomaker build [OPTIONS]."""
         else:
             jobs = None
 
-        extensions = get_extensions(ctx.pkg, ctx.top_node)
-        libraries = get_compiled_libraries(ctx.pkg, ctx.top_node)
-
-        if ctx.build_type == "distutils":
-            build_extensions = build_distutils.build_extensions
-            build_compiled_libraries = build_distutils.build_compiled_libraries
-        elif ctx.build_type == "yaku":
-            def builder(pkg):
-                return build_yaku.build_extensions(extensions,
-                        ctx.yaku_build_ctx, ctx._extensions_callback,
-                        ctx._extension_envs, inplace, verbose, jobs)
-            build_extensions = builder
-
-            def builder(pkg):
-                return build_yaku.build_compiled_libraries(libraries,
-                        ctx.yaku_build_ctx, ctx._clibraries_callback,
-                        ctx._clibrary_envs, inplace, verbose, jobs)
-            build_compiled_libraries = builder
-        else:
-            raise ValueError("Unhandled build type %r" % ctx.build_type)
+        build_extensions = ctx.build_extensions_factory(inplace, verbose, jobs)
+        build_compiled_libraries = ctx.build_compiled_libraries_factory(inplace, verbose, jobs)
 
         self.section_writer.sections_callbacks["compiled_libraries"] = \
                 build_compiled_libraries
