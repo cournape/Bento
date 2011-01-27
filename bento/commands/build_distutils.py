@@ -83,8 +83,8 @@ def build_extensions(pkg):
             ext_target = os.path.join(bld_cmd.build_lib,
                                      bld_cmd.get_ext_filename(fullname))
             srcdir = os.path.dirname(ext_target)
-            section = InstalledSection("extensions", fullname, srcdir,
-                                        target, [os.path.basename(ext_target)])
+            section = InstalledSection.from_source_target_directories("extensions", fullname,
+                                    srcdir, target, [os.path.basename(ext_target)])
             ret[fullname] = section
         return ret
     except distutils.errors.DistutilsError, e:
