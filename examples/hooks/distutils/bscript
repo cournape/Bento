@@ -1,0 +1,7 @@
+from bento.commands.context \
+    import \
+        CONTEXT_REGISTRY, ConfigureContext, BuildContext
+
+def startup():
+    CONTEXT_REGISTRY.register("configure", ConfigureContext)
+    CONTEXT_REGISTRY.register("build", BuildContext)

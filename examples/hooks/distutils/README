@@ -1,0 +1,2 @@
+Example to override context and build extensions with distutils instead of the
+default build tool included in bento.
