@@ -1,0 +1,12 @@
+Experiment to build extensions with waf 1.6. The example assumes that you have
+a copy of the waflib directory, i.e.:
+
+	bento.info
+	bscript
+	waflib
+
+Alternatively, if you have WAFDIR environment variable defined, it will be used, e.g.::
+
+	WAFDIR=$HOME/src/waf bentomaker ....
+
+where WAFDIR is such as $WAFDIR/waflib contains waf code.
