@@ -18,6 +18,8 @@ Main features:
     - Add --transaction option to install to produce a "transaction log". The
       transaction log will enable rollback (a first step towards reliable
       uninstall). 
+    - Internal changes to enable easier change of build tool (a waf-based
+      example for simple extensions is available for waf 1.6.x)
 
 Internals
 ---------
