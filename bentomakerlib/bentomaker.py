@@ -97,8 +97,10 @@ def register_commands():
  
 def register_command_contexts():
     CONTEXT_REGISTRY.set_default(CmdContext)
-    CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
-    CONTEXT_REGISTRY.register("build", BuildYakuContext)
+    if not CONTEXT_REGISTRY.is_registered("configure"):
+        CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
+    if not CONTEXT_REGISTRY.is_registered("build"):
+        CONTEXT_REGISTRY.register("build", BuildYakuContext)
 
 def set_main():
     # Some commands work without a bento description file (convert, help)

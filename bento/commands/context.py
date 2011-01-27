@@ -30,6 +30,9 @@ class ContextRegistry(object):
     def set_default(self, default):
         self._default = default
 
+    def is_registered(self, name):
+        return name in self._contexts
+
     def register(self, name, context):
         if self._contexts.has_key(name):
             raise ValueError("context for command %r already registered !" % name)
