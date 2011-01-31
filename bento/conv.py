@@ -75,8 +75,15 @@ def distutils_to_package_description(dist):
     except AttributeError:
         pass
 
-    data['py_modules'] = dist.py_modules
-    data['packages'] = validate_packages(dist.packages, top)
+    if dist.py_modules is None:
+        data['py_modules'] = []
+    else:
+        data['py_modules'] = dist.py_modules
+    if dist.packages is None:
+        packages = []
+    else:
+        packages = dist.packages
+    data['packages'] = validate_packages(packages, top)
     if dist.ext_modules:
         data['extensions'] = dict([(e.name, e) for e in dist.ext_modules])
     else:
