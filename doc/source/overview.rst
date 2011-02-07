@@ -43,16 +43,14 @@ install simple packages. Its interface is similar to autotools::
     bentomaker build
     bentomaker install
 
-In addition, the following subcommands are available::
+If you are fine with default configuration values, you can install in one step::
 
-    bentomaker sdist
+    bentomaker install
 
-to build a source distribution and::
+Bentomaker contains a basic help facility, which list existing commands,
+etc...::
 
-    bentomaker build_egg
-
-to build an egg. Building an egg requires to run configure and build first -
-this is not done automatically (yet).
+    bentomaker help commands # list commands
 
 From existing setup.py
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -61,9 +59,10 @@ Bentomaker has an experimental convert command to convert an existing setup.py::
 
     bentomaker convert
 
-If successfull, it will write a file named bento.info. The convert command
-is inherently fragile, because it has to hook into distutils/setuptools
-internals.
+If successfull, it will write a file named bento.info. The convert command is
+inherently fragile, because it has to hook into distutils/setuptools internals.
+The more setup.py relies on distutils extensions, the less likely the convert
+command will be successful
 
 Note: because the convert command does not parse the setup.py, but runs it
 instead, it only handles package description as defined by one run of setup.py.
