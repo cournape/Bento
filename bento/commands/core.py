@@ -3,7 +3,7 @@ import copy
 
 from optparse \
     import \
-        Option, OptionGroup
+        Option, OptionGroup, OptionParser
 
 import bento
 
@@ -13,9 +13,6 @@ from bento._config \
 from bento.core.package_cache \
     import \
         CachedPackage
-from bento.commands.options \
-    import \
-        OptionParser
 
 from bento.commands._config \
     import \
@@ -46,7 +43,7 @@ Usage: command's usage (default description)
 
     def _create_parser(self):
         if self.parser is None:
-            self.parser = OptionParser(self.long_descr.splitlines()[1])
+            self.parser = OptionParser(self.long_descr.splitlines()[1], add_help_option=False)
 
     def reset_parser(self):
         self.parser = None
@@ -93,7 +90,7 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
 
         # XXX: overkill as we don't support any options for now
         try:
-            parser = OptionParser()
+            parser = OptionParser(add_help_option=False)
             for o in self.options:
                 parser.add_option(o)
             parser.parse_args(help_args)
@@ -114,7 +111,7 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
         package_options = CachedPackage.get_options(BENTO_SCRIPT)
         cmd.setup_options_parser(package_options)
 
-        parser = OptionParser(usage='')
+        parser = OptionParser(usage='', add_help_option=False)
         for o in cmd.options:
             parser.add_option(o)
         print cmd_class.long_descr
