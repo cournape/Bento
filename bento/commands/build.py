@@ -51,10 +51,7 @@ Usage:   bentomaker build [OPTIONS]."""
 
     def run(self, ctx):
         opts = ctx.get_command_arguments()
-        o, a = self.parser.parse_args(opts)
-        if o.help:
-            self.parser.print_help()
-            return
+        o, a = self._setup_parser(opts)
         if o.inplace is None:
             inplace = False
         else:

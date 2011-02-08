@@ -129,11 +129,7 @@ Usage:   bentomaker install [OPTIONS]."""
                                 action="store_true")]
     def run(self, ctx):
         opts = ctx.get_command_arguments()
-        o, a = self.parser.parse_args(opts)
-        if o.help:
-            self.parser.print_help()
-            return
-
+        o, a = self._setup_parser(opts)
         if not os.path.exists(IPKG_PATH):
             msg = "%s file not found ! (Did you run build ?)" % IPKG_PATH
             raise UsageException(msg)

@@ -43,10 +43,7 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
 
     def run(self, ctx):
         opts = ctx.get_command_arguments()
-        o, a = self.parser.parse_args(opts)
-        if o.help:
-            self.parser.print_help()
-            return
+        o, a = self._setup_parser(opts)
 
         if not os.path.exists(IPKG_PATH):
             raise UsageException("%s: error: %s subcommand require executed build" \

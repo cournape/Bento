@@ -53,13 +53,13 @@ class CmdContext(object):
     def __init__(self, cmd, cmd_argv, pkg, top_node):
         self.pkg = pkg
         self.cmd = cmd
-        # FIXME: ugly hack to get help option - think about option handling
-        # interaction between bentomaker and bento commands
-        if cmd.parser is not None:
-            o, a = cmd.parser.parse_args(cmd_argv)
-            self.help = o.help
-        else:
-            self.help = False
+        ## FIXME: ugly hack to get help option - think about option handling
+        ## interaction between bentomaker and bento commands
+        #if cmd.parser is not None:
+        #    o, a = cmd.parser.parse_args(cmd_argv)
+        #    self.help = o.help
+        #else:
+        self.help = False
 
         self.cmd_argv = cmd_argv
         self.top_node = top_node

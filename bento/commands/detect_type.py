@@ -21,10 +21,7 @@ Usage:   bentomaker detect_type [OPTIONS]."""
 
     def run(self, ctx):
         opts = ctx.get_command_arguments()
-        o, a = self.parser.parse_args(opts)
-        if o.help:
-            self.parser.print_help()
-            return
+        o, a = self._setup_parser(opts)
 
         log = StringIO.StringIO()
         pprint("PINK",

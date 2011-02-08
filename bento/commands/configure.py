@@ -128,18 +128,13 @@ Usage: bentomaker configure [OPTIONS]"""
 
     def __init__(self):
         Command.__init__(self)
-        self._user_opt_groups = {}
-        def _dummy(self, o, a):
-            pass
-        self.option_callback = _dummy
-        self.user_data = {}
 
-        # As the configure command line handling is customized from
-        # the script file (flags, paths variables), we cannot just
-        # call set_options_parser, and we set it up manually instead
-        self.reset_parser()
-        for opt in self.options:
-            self.parser.add_option(opt)
+        ## As the configure command line handling is customized from
+        ## the script file (flags, paths variables), we cannot just
+        ## call set_options_parser, and we set it up manually instead
+        #self.reset_parser()
+        #for opt in self.options:
+        #    self.parser.add_option(opt)
 
     def setup_options_parser(self, custom_options):
         #Command.setup_options_parser(self, custom_options)
@@ -149,44 +144,19 @@ Usage: bentomaker configure [OPTIONS]"""
         """Setup the command options parser, merging standard options as well
         as custom options defined in the bento.info file, if any.
         """
-        self.add_user_group("build_customization", "Build customization")
+        p = self.options_context
+        p.add_group("build_customization", "Build customization")
         opt = Option("--use-distutils", help="Build extensions with distutils",
                      action="store_true")
-        self.add_user_option(opt, "build_customization")
+        p.add_option(opt, "build_customization")
 
         scheme, flag_opts = self.add_configuration_options(custom_options)
         self.scheme = scheme
         self.flag_opts = flag_opts
 
-    def add_user_option(self, opt, group_name=None):
-        #self.opts.append(opt)
-        if group_name is not None:
-            self.options.append(opt)
-            self._user_opt_groups[group_name].add_option(opt)
-        else:
-            self.parser.add_option(opt)
-
-    def add_user_group(self, name, title):
-        grp = OptionGroup(self.parser, title)
-        self._user_opt_groups[name] = grp
-        self.parser.add_option_group(grp)
-
-    def add_option_callback(self, func):
-        self.option_callback = func
-
     def run(self, ctx):
         args = ctx.get_command_arguments()
-        o, a = self.parser.parse_args(args)
-        if o.help:
-            self.parser.print_help()
-            ctx.help = True
-            return
-        if o.use_distutils:
-            self.user_data["use_distutils"] = True
-        else:
-            self.user_data["use_distutils"] = False
-
-        self.option_callback(self, o, a)
+        o, a = self._setup_parser(args)
 
         venv_prefix = virtualenv_prefix()
         if venv_prefix is not None:
@@ -195,8 +165,7 @@ Usage: bentomaker configure [OPTIONS]"""
         flag_vals = set_flag_options(self.flag_opts, o)
 
         ctx.setup()
-        s = _ConfigureState(BENTO_SCRIPT, ctx.pkg, self.scheme, flag_vals,
-                            self.user_data)
+        s = _ConfigureState(BENTO_SCRIPT, ctx.pkg, self.scheme, flag_vals, {})
         s.dump()
 
     def add_configuration_options(self, package_options):
@@ -228,19 +197,18 @@ Usage: bentomaker configure [OPTIONS]"""
                 Option('--%s' % f.name,
                        help='%s [%s]' % (f.description, f.default_value))
 
-        install_group = self.parser.add_option_group("Installation fine tuning")
+        p = self.options_context
+        p.add_group("installation_options", "Installation fine tuning")
         for opt in scheme_opts.values():
-            self.options.append(opt)
-            install_group.add_option(opt)
+            p.add_option(opt, "installation_options")
 
         flag_opts = {}
         if package_options.flag_options:
-            flags_group = self.parser.add_option_group("Optional features")
+            flags_group = p.add_group("optional_features", "Optional features")
             for name, v in package_options.flag_options.items():
                 flag_opts[name] = Option(
                         "--with-%s" % v.name,
                         help="%s [default=%s]" % (v.description, v.default_value))
-                self.options.append(flag_opts[name])
-                flags_group.add_option(flag_opts[name])
+                p.add_option(flag_opts[name], "optional_features")
 
         return scheme, flag_opts

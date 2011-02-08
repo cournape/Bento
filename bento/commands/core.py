@@ -13,6 +13,9 @@ from bento._config \
 from bento.core.package_cache \
     import \
         CachedPackage
+from bento.commands.options \
+    import \
+        OptionsContext
 
 from bento.commands._config \
     import \
@@ -38,24 +41,32 @@ Usage: command's usage (default description)
                              action="store_true")]
 
     def __init__(self):
-        self.parser = None
         self.options = self.__class__.common_options[:]
+        self.options_context = OptionsContext()
+        for o in self.options:
+            self.options_context.parser.add_option(o)
+
+    def _setup_parser(self, cmd_argv):
+        p = self.options_context.parser
+        o, a = p.parse_args(cmd_argv)
+        if o.help:
+            p.print_help()
+        return o, a
 
     def _create_parser(self):
-        if self.parser is None:
-            self.parser = OptionParser(self.long_descr.splitlines()[1], add_help_option=False)
+        pass
 
     def reset_parser(self):
-        self.parser = None
-        self._create_parser()
+        pass
 
     def setup_options_parser(self, package_options):
-        self._create_parser()
-        try:
-            for o in self.options:
-                self.parser.add_option(o)
-        except getopt.GetoptError, e:
-            raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
+        pass
+        #self._create_parser()
+        #try:
+        #    for o in self.options:
+        #        self.parser.add_option(o)
+        #except getopt.GetoptError, e:
+        #    raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
 
     def run(self, ctx):
         raise NotImplementedError("run method should be implemented by command classes.")
