@@ -90,24 +90,20 @@ def set_scheme_options(scheme, options):
     if options.prefix is not None and options.exec_prefix is None:
         scheme["eprefix"] = scheme["prefix"]
 
-def set_flag_options(flag_opts, options):
-    """Set flag variables given in options in flag dictionary."""
-    # FIXME: fix this mess
-    flag_vals = {}
-    for k in flag_opts:
-        opt_name = "with_" + k
-        if hasattr(options, opt_name):
-            val = getattr(options, opt_name)
-            if val:
-                if val.lower() in ["true", "yes"]:
-                    flag_vals[k] = True
-                elif val.lower() in ["false", "no"]:
-                    flag_vals[k] = False
-                else:
-                    msg = """Error: %s: option %s expects a true or false argument"""
-                    raise UsageException(msg % (SCRIPT_NAME, "--with-%s" % k))
-
-    return flag_vals
+def get_flag_values(flag_options, options):
+    """Return flag values as defined by the options."""
+    flag_values = {}
+    for option_name in flag_options:
+        flag_value = getattr(options, option_name, None)
+        if flag_value is not None:
+            if flag_value.lower() in ["true", "yes"]:
+                flag_values[option_name] = True
+            elif flag_value.lower() in ["false", "no"]:
+                flag_values[option_name] = False
+            else:
+                msg = """Error: %s: option %s expects a true or false argument"""
+                raise UsageException(msg % (SCRIPT_NAME, "--%s" % option_name))
+    return flag_values
 
 class ConfigureCommand(Command):
     long_descr = """\
@@ -128,13 +124,6 @@ Usage: bentomaker configure [OPTIONS]"""
 
     def __init__(self):
         Command.__init__(self)
-
-        ## As the configure command line handling is customized from
-        ## the script file (flags, paths variables), we cannot just
-        ## call set_options_parser, and we set it up manually instead
-        #self.reset_parser()
-        #for opt in self.options:
-        #    self.parser.add_option(opt)
 
     def setup_options_parser(self, custom_options):
         #Command.setup_options_parser(self, custom_options)
@@ -162,7 +151,7 @@ Usage: bentomaker configure [OPTIONS]"""
         if venv_prefix is not None:
             self.scheme["prefix"] = self.scheme["eprefix"] = venv_prefix
         set_scheme_options(self.scheme, o)
-        flag_vals = set_flag_options(self.flag_opts, o)
+        flag_vals = get_flag_values(self.flag_opts, o)
 
         ctx.setup()
         s = _ConfigureState(BENTO_SCRIPT, ctx.pkg, self.scheme, flag_vals, {})
@@ -207,7 +196,7 @@ Usage: bentomaker configure [OPTIONS]"""
             flags_group = p.add_group("optional_features", "Optional features")
             for name, v in package_options.flag_options.items():
                 flag_opts[name] = Option(
-                        "--with-%s" % v.name,
+                        "--%s" % v.name,
                         help="%s [default=%s]" % (v.description, v.default_value))
                 p.add_option(flag_opts[name], "optional_features")
 

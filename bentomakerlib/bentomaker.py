@@ -207,12 +207,11 @@ def _get_package_with_user_flags(cmd_name, cmd_opts):
 
     if cmd_name == "configure":
         # FIXME: this whole dance to get the user-given flag values is insane
-        from bento.commands.configure import set_flag_options
-        o, a = cmd.parser.parse_args(cmd_opts)
-        flag_values = set_flag_options(cmd.flag_opts, o)
+        from bento.commands.configure import get_flag_values
+        o, a = cmd.options_context.parser.parse_args(cmd_opts)
+        flag_values = get_flag_values(cmd.flag_opts, o)
     else:
         flag_values = None
-
     return CachedPackage.get_package(BENTO_SCRIPT, flag_values)
 
 def _get_subpackage(pkg, top, local_node):
@@ -238,7 +237,7 @@ def is_help_only(cmd_klass, cmd_argv):
     cmd = cmd_klass()
     package_options = CachedPackage.get_options(BENTO_SCRIPT)
     cmd.setup_options_parser(package_options)
-    o, a = cmd.parser.parse_args(cmd_argv)
+    o, a = cmd.options_context.parser.parse_args(cmd_argv)
     if o.help:
         return True
     else:
