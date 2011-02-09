@@ -119,17 +119,6 @@ Purpose: configure the project
 Usage: bentomaker configure [OPTIONS]"""
     short_descr = "configure the project."
 
-    @classmethod
-    def has_run(self):
-        return os.path.exists(CONFIGURED_STATE_DUMP)
-
-    @classmethod
-    def up_to_date(self):
-        if os.path.exists(CHECKSUM_DB_FILE):
-            return not CachedPackage.has_changed(CHECKSUM_DB_FILE)
-        else:
-            return False
-
     def __init__(self):
         Command.__init__(self)
         self._setup_options_parser()
