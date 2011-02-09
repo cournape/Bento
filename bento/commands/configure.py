@@ -90,10 +90,19 @@ def set_scheme_options(scheme, options):
     if options.prefix is not None and options.exec_prefix is None:
         scheme["eprefix"] = scheme["prefix"]
 
-def get_flag_values(flag_options, options):
+def get_flag_values(cmd, cmd_argv):
+    """Return flag values from the command instance and its arguments.
+
+    Assumes cmd is an instance of Configure."""
+    package_options = CachedPackage.get_options(BENTO_SCRIPT)
+    cmd.setup_options_parser(package_options)
+    o, a = cmd.options_context.parser.parse_args(cmd_argv)
+    flag_values = _get_flag_values(cmd.flag_opts.keys(), o)
+
+def _get_flag_values(flag_names, options):
     """Return flag values as defined by the options."""
     flag_values = {}
-    for option_name in flag_options:
+    for option_name in flag_names:
         flag_value = getattr(options, option_name, None)
         if flag_value is not None:
             if flag_value.lower() in ["true", "yes"]:
@@ -151,7 +160,7 @@ Usage: bentomaker configure [OPTIONS]"""
         if venv_prefix is not None:
             self.scheme["prefix"] = self.scheme["eprefix"] = venv_prefix
         set_scheme_options(self.scheme, o)
-        flag_vals = get_flag_values(self.flag_opts, o)
+        flag_vals = _get_flag_values(self.flag_opts.keys(), o)
 
         ctx.setup()
         s = _ConfigureState(BENTO_SCRIPT, ctx.pkg, self.scheme, flag_vals, {})

@@ -53,20 +53,9 @@ Usage: command's usage (default description)
             p.print_help()
         return o, a
 
-    def _create_parser(self):
-        pass
-
-    def reset_parser(self):
-        pass
-
+    # FIXME: to remove
     def setup_options_parser(self, package_options):
         pass
-        #self._create_parser()
-        #try:
-        #    for o in self.options:
-        #        self.parser.add_option(o)
-        #except getopt.GetoptError, e:
-        #    raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
 
     def run(self, ctx):
         raise NotImplementedError("run method should be implemented by command classes.")

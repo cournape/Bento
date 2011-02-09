@@ -200,16 +200,10 @@ def _main(popts):
             run_cmd(cmd_name, cmd_opts)
 
 def _get_package_with_user_flags(cmd_name, cmd_opts):
-    cmd = COMMANDS_REGISTRY.get_command(cmd_name)()
-
-    package_options = CachedPackage.get_options(BENTO_SCRIPT)
-    cmd.setup_options_parser(package_options)
-
     if cmd_name == "configure":
-        # FIXME: this whole dance to get the user-given flag values is insane
         from bento.commands.configure import get_flag_values
-        o, a = cmd.options_context.parser.parse_args(cmd_opts)
-        flag_values = get_flag_values(cmd.flag_opts, o)
+        cmd = COMMANDS_REGISTRY.get_command(cmd_name)()
+        flag_values = get_flag_values(cmd, cmd_opts)
     else:
         flag_values = None
     return CachedPackage.get_package(BENTO_SCRIPT, flag_values)
