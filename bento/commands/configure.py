@@ -98,6 +98,7 @@ def get_flag_values(cmd, cmd_argv):
     cmd.setup_options_parser(package_options)
     o, a = cmd.options_context.parser.parse_args(cmd_argv)
     flag_values = _get_flag_values(cmd.flag_opts.keys(), o)
+    return flag_values
 
 def _get_flag_values(flag_names, options):
     """Return flag values as defined by the options."""
