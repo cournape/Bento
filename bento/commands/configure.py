@@ -94,8 +94,6 @@ def get_flag_values(cmd, cmd_argv):
     """Return flag values from the command instance and its arguments.
 
     Assumes cmd is an instance of Configure."""
-    package_options = CachedPackage.get_options(BENTO_SCRIPT)
-    cmd.setup_options_parser(package_options)
     o, a = cmd.options_context.parser.parse_args(cmd_argv)
     flag_values = _get_flag_values(cmd.flag_opts.keys(), o)
     return flag_values
@@ -134,15 +132,14 @@ Usage: bentomaker configure [OPTIONS]"""
 
     def __init__(self):
         Command.__init__(self)
+        self._setup_options_parser()
 
-    def setup_options_parser(self, custom_options):
-        #Command.setup_options_parser(self, custom_options)
-        self._setup_options_parser(custom_options)
-
-    def _setup_options_parser(self, custom_options):
+    def _setup_options_parser(self, custom_options=None):
         """Setup the command options parser, merging standard options as well
         as custom options defined in the bento.info file, if any.
         """
+        if custom_options is None:
+            custom_options = CachedPackage.get_options(BENTO_SCRIPT)
         p = self.options_context
         p.add_group("build_customization", "Build customization")
         opt = Option("--use-distutils", help="Build extensions with distutils",

@@ -53,10 +53,6 @@ Usage: command's usage (default description)
             p.print_help()
         return o, a
 
-    # FIXME: to remove
-    def setup_options_parser(self, package_options):
-        pass
-
     def run(self, ctx):
         raise NotImplementedError("run method should be implemented by command classes.")
 
@@ -105,11 +101,6 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
         cmd_class = COMMANDS_REGISTRY.get_command(cmd_name)
         cmd = cmd_class()
-
-        # XXX: think more about how to deal with command options which require
-        # to parse bento.info
-        package_options = CachedPackage.get_options(BENTO_SCRIPT)
-        cmd.setup_options_parser(package_options)
 
         parser = OptionParser(usage='', add_help_option=False)
         for o in cmd.options:

@@ -229,8 +229,6 @@ def run_dependencies(cmd_klass, top, pkg):
 
 def is_help_only(cmd_klass, cmd_argv):
     cmd = cmd_klass()
-    package_options = CachedPackage.get_options(BENTO_SCRIPT)
-    cmd.setup_options_parser(package_options)
     o, a = cmd.options_context.parser.parse_args(cmd_argv)
     if o.help:
         return True
@@ -247,7 +245,6 @@ def run_cmd(cmd_name, cmd_opts):
         cmd = cmd_klass()
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         ctx = ctx_klass(cmd, cmd_opts, None, top)
-        cmd.setup_options_parser(None)
         cmd.run(ctx)
         return
 
@@ -271,8 +268,6 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
     cmd = cmd_klass()
-    cmd.setup_options_parser(CachedPackage.get_options(BENTO_SCRIPT))
-
     ctx = ctx_klass(cmd, cmd_opts, pkg, top)
     if get_command_override(cmd_name):
         cmd_funcs = get_command_override(cmd_name)
