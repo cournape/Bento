@@ -95,7 +95,7 @@ def get_flag_values(cmd, cmd_argv):
 
     Assumes cmd is an instance of Configure."""
     o, a = cmd.options_context.parser.parse_args(cmd_argv)
-    flag_values = _get_flag_values(cmd.flag_opts.keys(), o)
+    flag_values = _get_flag_values(cmd.flags, o)
     return flag_values
 
 def _get_flag_values(flag_names, options):
@@ -135,9 +135,11 @@ Usage: bentomaker configure [OPTIONS]"""
                      action="store_true")
         p.add_option(opt, "build_customization")
 
-        scheme, flag_opts = self.add_configuration_options(custom_options)
+        flag_opts = self._create_configure_options(custom_options)
+        scheme = self._add_configuration_options(custom_options)
+
         self.scheme = scheme
-        self.flag_opts = flag_opts
+        self.flags = flag_opts.keys()
 
     def run(self, ctx):
         args = ctx.get_command_arguments()
@@ -147,13 +149,13 @@ Usage: bentomaker configure [OPTIONS]"""
         if venv_prefix is not None:
             self.scheme["prefix"] = self.scheme["eprefix"] = venv_prefix
         set_scheme_options(self.scheme, o)
-        flag_vals = _get_flag_values(self.flag_opts.keys(), o)
+        flag_vals = _get_flag_values(self.flags, o)
 
         ctx.setup()
         s = _ConfigureState(BENTO_SCRIPT, ctx.pkg, self.scheme, flag_vals, {})
         s.dump()
 
-    def add_configuration_options(self, package_options):
+    def _add_configuration_options(self, package_options):
         """Add the path and flags-related options as defined in the script file
         to the command.
 
@@ -163,21 +165,27 @@ Usage: bentomaker configure [OPTIONS]"""
         """
         scheme, scheme_opts_d = get_scheme(sys.platform)
 
+        # XXX: abstract away those, as it is copied from distutils
+        py_version = sys.version.split()[0]
+        scheme['py_version_short'] = py_version[0:3]
+        scheme['pkgname'] = package_options.name
+
+        for name, f in package_options.path_options.items():
+            scheme[name] = f.default_value
+        return scheme
+
+    def _create_configure_options(self, package_options):
+        scheme, scheme_opts_d = get_scheme(sys.platform)
+
+        # Create default path options
         scheme_opts = {}
         for name, opt_d in scheme_opts_d.items():
             kw = {"help": opt_d["help"]}
             opt = Option(*opt_d["opts"], **kw)
             scheme_opts[name] = opt
 
-        # XXX: abstract away those, as it is copied from distutils
-        py_version = sys.version.split()[0]
-        scheme['py_version_short'] = py_version[0:3]
-
-        scheme['pkgname'] = package_options.name
-
         # Add custom path options (as defined in bento.info) to the path scheme
         for name, f in package_options.path_options.items():
-            scheme[name] = f.default_value
             scheme_opts[name] = \
                 Option('--%s' % f.name,
                        help='%s [%s]' % (f.description, f.default_value))
@@ -195,5 +203,4 @@ Usage: bentomaker configure [OPTIONS]"""
                         "--%s" % v.name,
                         help="%s [default=%s]" % (v.description, v.default_value))
                 p.add_option(flag_opts[name], "optional_features")
-
-        return scheme, flag_opts
+        return flag_opts
