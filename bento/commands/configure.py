@@ -121,25 +121,49 @@ Usage: bentomaker configure [OPTIONS]"""
 
     def __init__(self):
         Command.__init__(self)
-        self._setup_options_parser()
+        package_options = CachedPackage.get_options(BENTO_SCRIPT)
+        self.scheme = self._compute_scheme(package_options)
+        self.flags = package_options.flag_options.keys()
 
-    def _setup_options_parser(self, custom_options=None):
+        self._setup_options_parser(package_options)
+
+    def _setup_options_parser(self, package_options):
         """Setup the command options parser, merging standard options as well
         as custom options defined in the bento.info file, if any.
         """
-        if custom_options is None:
-            custom_options = CachedPackage.get_options(BENTO_SCRIPT)
+        scheme, scheme_opts_d = get_scheme(sys.platform)
+
         p = self.options_context
         p.add_group("build_customization", "Build customization")
         opt = Option("--use-distutils", help="Build extensions with distutils",
                      action="store_true")
         p.add_option(opt, "build_customization")
 
-        flag_opts = self._create_configure_options(custom_options)
-        scheme = self._add_configuration_options(custom_options)
+        # Create default path options
+        scheme_opts = {}
+        for name, opt_d in scheme_opts_d.items():
+            kw = {"help": opt_d["help"]}
+            opt = Option(*opt_d["opts"], **kw)
+            scheme_opts[name] = opt
 
-        self.scheme = scheme
-        self.flags = flag_opts.keys()
+        # Add custom path options (as defined in bento.info) to the path scheme
+        for name, f in package_options.path_options.items():
+            scheme_opts[name] = \
+                Option('--%s' % f.name,
+                       help='%s [%s]' % (f.description, f.default_value))
+
+        p.add_group("installation_options", "Installation fine tuning")
+        for opt in scheme_opts.values():
+            p.add_option(opt, "installation_options")
+
+        flag_opts = {}
+        if package_options.flag_options:
+            flags_group = p.add_group("optional_features", "Optional features")
+            for name, v in package_options.flag_options.items():
+                flag_opts[name] = Option(
+                        "--%s" % v.name,
+                        help="%s [default=%s]" % (v.description, v.default_value))
+                p.add_option(flag_opts[name], "optional_features")
 
     def run(self, ctx):
         args = ctx.get_command_arguments()
@@ -155,7 +179,7 @@ Usage: bentomaker configure [OPTIONS]"""
         s = _ConfigureState(BENTO_SCRIPT, ctx.pkg, self.scheme, flag_vals, {})
         s.dump()
 
-    def _add_configuration_options(self, package_options):
+    def _compute_scheme(self, package_options):
         """Add the path and flags-related options as defined in the script file
         to the command.
 
@@ -173,34 +197,3 @@ Usage: bentomaker configure [OPTIONS]"""
         for name, f in package_options.path_options.items():
             scheme[name] = f.default_value
         return scheme
-
-    def _create_configure_options(self, package_options):
-        scheme, scheme_opts_d = get_scheme(sys.platform)
-
-        # Create default path options
-        scheme_opts = {}
-        for name, opt_d in scheme_opts_d.items():
-            kw = {"help": opt_d["help"]}
-            opt = Option(*opt_d["opts"], **kw)
-            scheme_opts[name] = opt
-
-        # Add custom path options (as defined in bento.info) to the path scheme
-        for name, f in package_options.path_options.items():
-            scheme_opts[name] = \
-                Option('--%s' % f.name,
-                       help='%s [%s]' % (f.description, f.default_value))
-
-        p = self.options_context
-        p.add_group("installation_options", "Installation fine tuning")
-        for opt in scheme_opts.values():
-            p.add_option(opt, "installation_options")
-
-        flag_opts = {}
-        if package_options.flag_options:
-            flags_group = p.add_group("optional_features", "Optional features")
-            for name, v in package_options.flag_options.items():
-                flag_opts[name] = Option(
-                        "--%s" % v.name,
-                        help="%s [default=%s]" % (v.description, v.default_value))
-                p.add_option(flag_opts[name], "optional_features")
-        return flag_opts
