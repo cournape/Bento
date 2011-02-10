@@ -1,3 +1,5 @@
+import optparse
+
 from bento.core.package import \
         PackageDescription
 from bento.conv import \
@@ -15,7 +17,7 @@ Purpose: generate PKG-INFO file
 Usage:   bentomaker build_pkg_info [OPTIONS]"""
     short_descr = "generate PKG-INFO file."
     common_options = Command.common_options + [
-        {"opts": ["-o", "--output"], "dest": "output", "help": "Output file for PKG-INFO"},
+        optparse.Option("-o", "--output", dest="output", help="Output file for PKG-INFO"),
     ]
 
     def run(self, ctx):
