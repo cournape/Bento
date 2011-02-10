@@ -122,7 +122,7 @@ Usage: bentomaker configure [OPTIONS]"""
     def __init__(self):
         Command.__init__(self)
         package_options = CachedPackage.get_options(BENTO_SCRIPT)
-        self.scheme = self._compute_scheme(package_options)
+        self.scheme = _compute_scheme(package_options)
         self.flags = package_options.flag_options.keys()
 
         self._setup_options_parser(package_options)
@@ -179,21 +179,20 @@ Usage: bentomaker configure [OPTIONS]"""
         s = _ConfigureState(BENTO_SCRIPT, ctx.pkg, self.scheme, flag_vals, {})
         s.dump()
 
-    def _compute_scheme(self, package_options):
-        """Add the path and flags-related options as defined in the script file
-        to the command.
+def _compute_scheme(package_options):
+    """Compute path and flags-related options as defined in the script file(s)
 
-        Parameters
-        ----------
-        package_options: PackageOptions
-        """
-        scheme, scheme_opts_d = get_scheme(sys.platform)
+    Parameters
+    ----------
+    package_options: PackageOptions
+    """
+    scheme, scheme_opts_d = get_scheme(sys.platform)
 
-        # XXX: abstract away those, as it is copied from distutils
-        py_version = sys.version.split()[0]
-        scheme['py_version_short'] = py_version[0:3]
-        scheme['pkgname'] = package_options.name
+    # XXX: abstract away those, as it is copied from distutils
+    py_version = sys.version.split()[0]
+    scheme['py_version_short'] = py_version[0:3]
+    scheme['pkgname'] = package_options.name
 
-        for name, f in package_options.path_options.items():
-            scheme[name] = f.default_value
-        return scheme
+    for name, f in package_options.path_options.items():
+        scheme[name] = f.default_value
+    return scheme
