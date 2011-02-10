@@ -206,4 +206,5 @@ class CommandRegistry(object):
                 return k
         raise ValueError("Unregistered class %r" % class_name)
 
+# FIXME: singleton
 COMMANDS_REGISTRY = CommandRegistry()
