@@ -52,6 +52,9 @@ from bento.commands.errors import \
 from bento.commands.dependency \
     import \
         CommandScheduler, CommandDataProvider
+from bento.commands.options \
+    import \
+        OptionsRegistry, OptionsContext
 
 from bento.commands.hooks \
     import \
@@ -77,6 +80,8 @@ CMD_SCHEDULER.set_before(InstallCommand, BuildCommand)
 CMD_DATA_DUMP = os.path.join(BUILD_DIR, "cmd_data.db")
 CMD_DATA_STORE = CommandDataProvider.from_file(CMD_DATA_DUMP)
 
+OPTIONS_REGISTRY = OptionsRegistry()
+
 #================================
 #   Create the command line UI
 #================================
@@ -95,12 +100,26 @@ def register_commands():
     COMMANDS_REGISTRY.register_command("parse", ParseCommand, public=False)
     COMMANDS_REGISTRY.register_command("detect_type", DetectTypeCommand, public=False)
  
+def register_options():
+    for cmd_name in COMMANDS_REGISTRY.get_command_names():
+        context = OptionsContext()
+        cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
+        for option in cmd_klass.common_options:
+            context.add_option(option)
+        OPTIONS_REGISTRY.register_command(cmd_name, context)
+
 def register_command_contexts():
     CONTEXT_REGISTRY.set_default(CmdContext)
     if not CONTEXT_REGISTRY.is_registered("configure"):
         CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
     if not CONTEXT_REGISTRY.is_registered("build"):
         CONTEXT_REGISTRY.register("build", BuildYakuContext)
+
+# All the global state/registration stuff goes here
+def register_stuff():
+    register_commands()
+    register_options()
+    register_command_contexts()
 
 def set_main():
     # Some commands work without a bento description file (convert, help)
@@ -171,8 +190,7 @@ def parse_global_options(argv):
     return ret
 
 def _main(popts):
-    register_commands()
-    register_command_contexts()
+    register_stuff()
 
     if popts["show_version"]:
         print bento.__version__
