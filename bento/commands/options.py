@@ -50,6 +50,9 @@ class OptionsRegistry(object):
         else:
             self._contexts[name] = options_context
 
+    def is_registered(self, cmd_name):
+        return cmd_name in self._contexts
+
     def get_options(self, name):
         options_context = self._contexts.get(name, None)
         if options_context is None:

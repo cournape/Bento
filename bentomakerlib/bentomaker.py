@@ -100,13 +100,12 @@ def register_commands():
     COMMANDS_REGISTRY.register_command("parse", ParseCommand, public=False)
     COMMANDS_REGISTRY.register_command("detect_type", DetectTypeCommand, public=False)
  
-def register_options():
-    for cmd_name in COMMANDS_REGISTRY.get_command_names():
-        context = OptionsContext()
-        cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
-        for option in cmd_klass.common_options:
-            context.add_option(option)
-        OPTIONS_REGISTRY.register_command(cmd_name, context)
+def register_options(cmd_name):
+    context = OptionsContext()
+    cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
+    for option in cmd_klass.common_options:
+        context.add_option(option)
+    OPTIONS_REGISTRY.register_command(cmd_name, context)
 
 def register_command_contexts():
     CONTEXT_REGISTRY.set_default(CmdContext)
@@ -118,7 +117,8 @@ def register_command_contexts():
 # All the global state/registration stuff goes here
 def register_stuff():
     register_commands()
-    register_options()
+    for cmd_name in COMMANDS_REGISTRY.get_command_names():
+        register_options(cmd_name)
     register_command_contexts()
 
     def _big_ugly_hack():
@@ -169,6 +169,11 @@ def _wrapped_main(popts):
     mods = set_main()
     for mod in mods:
         mod.startup()
+    # FIXME: this registered options for new commands registered in hook. It
+    # should be made all in one place (hook and non-hook)
+    for cmd_name in COMMANDS_REGISTRY.get_command_names():
+        if not OPTIONS_REGISTRY.is_registered(cmd_name):
+            register_options(cmd_name)
 
     try:
         return _main(popts)
