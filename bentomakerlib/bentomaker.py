@@ -164,6 +164,8 @@ def main(argv=None):
         _main(popts)
 
 def _wrapped_main(popts):
+    register_stuff()
+
     mods = set_main()
     for mod in mods:
         mod.startup()
@@ -199,8 +201,6 @@ def parse_global_options(argv):
     return ret
 
 def _main(popts):
-    register_stuff()
-
     if popts["show_version"]:
         print bento.__version__
         return 0
@@ -255,13 +255,10 @@ def run_dependencies(cmd_klass, top, pkg):
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, top, pkg)
 
-def is_help_only(cmd_klass, cmd_argv):
-    cmd = cmd_klass()
-    o, a = cmd.options_context.parser.parse_args(cmd_argv)
-    if o.help:
-        return True
-    else:
-        return False
+def is_help_only(cmd_name, cmd_argv):
+    p = OPTIONS_REGISTRY.get_options(cmd_name)
+    o, a = p.parser.parse_args(cmd_argv)
+    return o.help is True
 
 def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)
@@ -280,7 +277,7 @@ def run_cmd(cmd_name, cmd_opts):
         raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
 
     pkg = _get_package_with_user_flags(cmd_name, cmd_opts)
-    if is_help_only(cmd_klass, cmd_opts):
+    if is_help_only(cmd_name, cmd_opts):
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
     else:
