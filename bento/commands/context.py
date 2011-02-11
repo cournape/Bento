@@ -55,13 +55,11 @@ class CmdContext(object):
         self.cmd = cmd
 
         self.options_context = options_context
-        ## FIXME: ugly hack to get help option - think about option handling
-        ## interaction between bentomaker and bento commands
-        #if cmd.parser is not None:
-        #    o, a = cmd.parser.parse_args(cmd_argv)
-        #    self.help = o.help
-        #else:
-        self.help = False
+        o, a = options_context.parser.parse_args(cmd_argv)
+        if o.help:
+            self.help = True
+        else:
+            self.help = False
 
         self.cmd_argv = cmd_argv
         self.top_node = top_node
