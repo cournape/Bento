@@ -1,5 +1,6 @@
 #! /usr/bin/env python
-import time
+#import demandimport
+#demandimport.enable()
 import sys
 import os
 import getopt
@@ -133,15 +134,6 @@ def register_stuff():
         register_options(cmd_name)
     register_command_contexts()
 
-    def _big_ugly_hack():
-        # FIXME: huge ugly hack - we need to specify once and for all when the
-        # package info is parsed and available, so that we can define options
-        # and co for commands
-        from bento.commands.configure import _setup_options_parser
-        package_options = __get_package_options()
-        _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
-    _big_ugly_hack()
-
 def set_main():
     # Some commands work without a bento description file (convert, help)
     if not os.path.exists(BENTO_SCRIPT):
@@ -170,13 +162,22 @@ def main(argv=None):
         argv = sys.argv[1:]
     popts = parse_global_options(argv)
     cmd_name = popts["cmd_name"]
+
+    register_stuff()
     if cmd_name and cmd_name not in ["convert"] or not cmd_name:
         _wrapped_main(popts)
     else:
         _main(popts)
 
 def _wrapped_main(popts):
-    register_stuff()
+    def _big_ugly_hack():
+        # FIXME: huge ugly hack - we need to specify once and for all when the
+        # package info is parsed and available, so that we can define options
+        # and co for commands
+        from bento.commands.configure import _setup_options_parser
+        package_options = __get_package_options()
+        _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
+    _big_ugly_hack()
 
     mods = set_main()
     for mod in mods:
