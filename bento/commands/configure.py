@@ -163,11 +163,12 @@ Usage: bentomaker configure [OPTIONS]"""
         self.scheme = _compute_scheme(package_options)
         self.flags = package_options.flag_options.keys()
 
-        _setup_options_parser(self.options_context, package_options)
-
     def run(self, ctx):
         args = ctx.get_command_arguments()
-        o, a = self._setup_parser(args)
+        o, a = ctx.options_context.parser.parse_args(args)
+        if o.help:
+            ctx.options_context.parser.print_help()
+            return
 
         venv_prefix = virtualenv_prefix()
         if venv_prefix is not None:

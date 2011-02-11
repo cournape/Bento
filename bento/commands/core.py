@@ -99,15 +99,10 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
 
         if not cmd_name in COMMANDS_REGISTRY.get_command_names():
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
-        cmd_class = COMMANDS_REGISTRY.get_command(cmd_name)
-        cmd = cmd_class()
-
-        parser = OptionParser(usage='', add_help_option=False)
-        for o in cmd.options:
-            parser.add_option(o)
-        print cmd_class.long_descr
-        print ""
-        parser.print_help()
+        else:
+            options_context = ctx.options_registry.get_options(cmd_name)
+            p = options_context.parser
+            p.print_help()
 
 def fill_string(s, minlen):
     if len(s) < minlen:

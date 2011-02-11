@@ -61,7 +61,8 @@ from bento.commands.hooks \
         get_pre_hooks, get_post_hooks, get_command_override, create_hook_module
 from bento.commands.context \
     import \
-        CmdContext, BuildYakuContext, ConfigureYakuContext, CONTEXT_REGISTRY
+        CmdContext, BuildYakuContext, ConfigureYakuContext, CONTEXT_REGISTRY, \
+        HelpContext
 import bento.core.errors
 
 if os.environ.get("BENTOMAKER_DEBUG", "0") != "0":
@@ -113,6 +114,8 @@ def register_command_contexts():
         CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
     if not CONTEXT_REGISTRY.is_registered("build"):
         CONTEXT_REGISTRY.register("build", BuildYakuContext)
+    if not CONTEXT_REGISTRY.is_registered("help"):
+        CONTEXT_REGISTRY.register("help", HelpContext)
 
 # All the global state/registration stuff goes here
 def register_stuff():
@@ -271,10 +274,21 @@ def run_cmd(cmd_name, cmd_opts):
 
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
     # XXX: fix this special casing
-    if cmd_name in ["help", "convert"]:
+    if cmd_name == "help":
+        help = HelpCommand()
+        options_ctx = OPTIONS_REGISTRY.get_options("help")
+        ctx_klass = CONTEXT_REGISTRY.get("help")
+        context = ctx_klass(help, cmd_opts, options_ctx, None, top)
+        # XXX: hack for help command to get option context for any command
+        # without making help depends on bentomakerlib
+        context.options_registry = OPTIONS_REGISTRY
+        help.run(context)
+        return
+    elif cmd_name in ["convert"]:
         cmd = cmd_klass()
+        options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-        ctx = ctx_klass(cmd, cmd_opts, None, top)
+        ctx = ctx_klass(cmd, cmd_opts, options_ctx, None, top)
         cmd.run(ctx)
         return
 
@@ -298,7 +312,8 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
     cmd = cmd_klass()
-    ctx = ctx_klass(cmd, cmd_opts, pkg, top)
+    options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
+    ctx = ctx_klass(cmd, cmd_opts, options_ctx, pkg, top)
     if get_command_override(cmd_name):
         cmd_funcs = get_command_override(cmd_name)
     else:

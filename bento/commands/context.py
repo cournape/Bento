@@ -50,9 +50,11 @@ class ContextRegistry(object):
             return context
 
 class CmdContext(object):
-    def __init__(self, cmd, cmd_argv, pkg, top_node):
+    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
         self.pkg = pkg
         self.cmd = cmd
+
+        self.options_context = options_context
         ## FIXME: ugly hack to get help option - think about option handling
         ## interaction between bentomaker and bento commands
         #if cmd.parser is not None:
@@ -93,9 +95,12 @@ class CmdContext(object):
     def store(self):
         pass
 
+class HelpContext(CmdContext):
+    pass
+
 class ConfigureContext(CmdContext):
-    def __init__(self, cmd, cmd_argv, pkg, top_node):
-        CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
+    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
+        CmdContext.__init__(self, cmd, cmd_argv, options_context, pkg, top_node)
 
     def setup(self):
         pass
@@ -109,8 +114,8 @@ class DistutilsConfigureContext(ConfigureContext):
     pass
 
 class ConfigureYakuContext(ConfigureContext):
-    def __init__(self, cmd, cmd_argv, pkg, top_node):
-        super(ConfigureYakuContext, self).__init__(cmd, cmd_argv, pkg, top_node)
+    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
+        super(ConfigureYakuContext, self).__init__(cmd, cmd_argv, options_context, pkg, top_node)
         self.yaku_configure_ctx = yaku.context.get_cfg()
 
     def setup(self):
@@ -126,8 +131,8 @@ class ConfigureYakuContext(ConfigureContext):
         self.yaku_configure_ctx.store()
 
 class BuildContext(CmdContext):
-    def __init__(self, cmd, cmd_argv, pkg, top_node):
-        CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
+    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
+        CmdContext.__init__(self, cmd, cmd_argv, options_context, pkg, top_node)
         self._extensions_callback = {}
         self._clibraries_callback = {}
         self._clibrary_envs = {}
@@ -183,8 +188,8 @@ class DistutilsBuildContext(BuildContext):
         return build_compiled_libraries
 
 class BuildYakuContext(BuildContext):
-    def __init__(self, cmd, cmd_argv, pkg, top_node):
-        super(BuildYakuContext, self).__init__(cmd, cmd_argv, pkg, top_node)
+    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
+        super(BuildYakuContext, self).__init__(cmd, cmd_argv, options_context, pkg, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
 
     def store(self):
