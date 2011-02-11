@@ -1,4 +1,8 @@
-import copy
+import cPickle
+
+def __copy(d):
+    # Faster than deepcopy - ideally remove the need for deepcopy altogether
+    return cPickle.loads(cPickle.dumps(d, protocol=2))
 
 class Node(object):
     def __init__(self, tp, children=None, value=None):
@@ -74,4 +78,4 @@ def ast_walk(root, dispatcher, debug=False):
     # FIXME: we need to copy the dict because the dispatcher modify the dict in
     # place ATM, and we call this often. This is very expensive, and should be
     # removed as it has a huge cost in starting time (~30 % in hot case)
-    return _walker(copy.deepcopy(root))
+    return _walker(__copy(root))
