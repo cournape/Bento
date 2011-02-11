@@ -159,11 +159,13 @@ Usage: bentomaker configure [OPTIONS]"""
 
     def __init__(self):
         Command.__init__(self)
-        package_options = CachedPackage.get_options(BENTO_SCRIPT)
+
+    def _setup_flags_and_scheme(self, package_options):
         self.scheme = _compute_scheme(package_options)
         self.flags = package_options.flag_options.keys()
 
     def run(self, ctx):
+        self._setup_flags_and_scheme(ctx.package_options)
         args = ctx.get_command_arguments()
         o, a = ctx.options_context.parser.parse_args(args)
         if o.help:

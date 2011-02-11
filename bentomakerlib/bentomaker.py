@@ -83,6 +83,15 @@ CMD_DATA_STORE = CommandDataProvider.from_file(CMD_DATA_DUMP)
 
 OPTIONS_REGISTRY = OptionsRegistry()
 
+__PACKAGE_OPTIONS = None
+def __get_package_options():
+    global __PACKAGE_OPTIONS
+    if __PACKAGE_OPTIONS:
+        return __PACKAGE_OPTIONS
+    else:
+        __PACKAGE_OPTIONS = CachedPackage.get_options(BENTO_SCRIPT)
+        return __PACKAGE_OPTIONS
+
 #================================
 #   Create the command line UI
 #================================
@@ -129,7 +138,7 @@ def register_stuff():
         # package info is parsed and available, so that we can define options
         # and co for commands
         from bento.commands.configure import _setup_options_parser
-        package_options = CachedPackage.get_options(BENTO_SCRIPT)
+        package_options = __get_package_options()
         _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
     _big_ugly_hack()
 
@@ -234,9 +243,8 @@ def _main(popts):
         else:
             run_cmd(cmd_name, cmd_opts)
 
-def _get_package_with_user_flags(cmd_name, cmd_opts):
+def _get_package_with_user_flags(cmd_name, cmd_opts, package_options):
     from bento.commands.configure import _get_flag_values
-    package_options = CachedPackage.get_options(BENTO_SCRIPT)
 
     p = OPTIONS_REGISTRY.get_options(cmd_name)
     o, a = p.parser.parse_args(cmd_opts)
@@ -295,7 +303,8 @@ def run_cmd(cmd_name, cmd_opts):
     if not os.path.exists(BENTO_SCRIPT):
         raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
 
-    pkg = _get_package_with_user_flags(cmd_name, cmd_opts)
+    package_options = __get_package_options()
+    pkg = _get_package_with_user_flags(cmd_name, cmd_opts, package_options)
     if is_help_only(cmd_name, cmd_opts):
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
@@ -314,6 +323,9 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
     cmd = cmd_klass()
     options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
     ctx = ctx_klass(cmd, cmd_opts, options_ctx, pkg, top)
+    # FIXME: hack to pass package_options to configure command - most likely
+    # this needs to be known in option context ?
+    ctx.package_options = __get_package_options()
     if get_command_override(cmd_name):
         cmd_funcs = get_command_override(cmd_name)
     else:
