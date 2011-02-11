@@ -121,6 +121,15 @@ def register_stuff():
     register_options()
     register_command_contexts()
 
+    def _big_ugly_hack():
+        # FIXME: huge ugly hack - we need to specify once and for all when the
+        # package info is parsed and available, so that we can define options
+        # and co for commands
+        from bento.commands.configure import _setup_options_parser
+        package_options = CachedPackage.get_options(BENTO_SCRIPT)
+        _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
+    _big_ugly_hack()
+
 def set_main():
     # Some commands work without a bento description file (convert, help)
     if not os.path.exists(BENTO_SCRIPT):
@@ -218,12 +227,13 @@ def _main(popts):
             run_cmd(cmd_name, cmd_opts)
 
 def _get_package_with_user_flags(cmd_name, cmd_opts):
-    if cmd_name == "configure":
-        from bento.commands.configure import get_flag_values
-        cmd = COMMANDS_REGISTRY.get_command(cmd_name)()
-        flag_values = get_flag_values(cmd, cmd_opts)
-    else:
-        flag_values = None
+    from bento.commands.configure import _get_flag_values
+    package_options = CachedPackage.get_options(BENTO_SCRIPT)
+
+    p = OPTIONS_REGISTRY.get_options(cmd_name)
+    o, a = p.parser.parse_args(cmd_opts)
+    flag_values = _get_flag_values(package_options.flag_options.keys(), o)
+
     return CachedPackage.get_package(BENTO_SCRIPT, flag_values)
 
 def _get_subpackage(pkg, top, local_node):
