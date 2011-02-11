@@ -161,7 +161,7 @@ def main(argv=None):
         argv = sys.argv[1:]
     popts = parse_global_options(argv)
     cmd_name = popts["cmd_name"]
-    if cmd_name and cmd_name not in ["convert"]:
+    if cmd_name and cmd_name not in ["convert"] or not cmd_name:
         _wrapped_main(popts)
     else:
         _main(popts)
@@ -219,7 +219,7 @@ def _main(popts):
 
     if popts["show_usage"]:
         cmd = COMMANDS_REGISTRY.get_command('help')()
-        cmd.run(CmdContext(cmd, [], None, None))
+        cmd.run(CmdContext(cmd, [], OPTIONS_REGISTRY.get_options('help'), None, None))
         return 0
 
     cmd_name = popts["cmd_name"]
