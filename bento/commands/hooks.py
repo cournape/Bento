@@ -97,7 +97,7 @@ pre_sdist = _make_hook_decorator("sdist", "pre")
 def override(f):
     override_command(f.__name__, f)
 
-def dummy_startup():
+def dummy_startup(ctx):
     pass
 
 def dummy_shutdown():
