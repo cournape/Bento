@@ -11,8 +11,11 @@ import optparse
 #   - should help hiding command implementation detail from hooks and high
 #   level tools such as bentomaker (close coupling at the moment)
 class OptionsContext(object):
-    def __init__(self):
-        self.parser = optparse.OptionParser(add_help_option=False)
+    def __init__(self, usage=None):
+        kw = {"add_help_option": False}
+        if usage is not None:
+            kw["usage"] = usage
+        self.parser = optparse.OptionParser(**kw)
         self._groups = {}
         self._is_setup = False
 

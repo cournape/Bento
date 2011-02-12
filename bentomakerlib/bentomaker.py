@@ -112,8 +112,9 @@ def register_commands():
     COMMANDS_REGISTRY.register_command("detect_type", DetectTypeCommand, public=False)
  
 def register_options(cmd_name):
-    context = OptionsContext()
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
+    usage = cmd_klass.long_descr.splitlines()[1]
+    context = OptionsContext(usage=usage)
     for option in cmd_klass.common_options:
         context.add_option(option)
     OPTIONS_REGISTRY.register_command(cmd_name, context)
