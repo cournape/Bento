@@ -28,14 +28,19 @@ Release 0.0.5
 
 0.0.5 goals:
 
-    - Fix package + parser cache mess
     - clean up command / bentomaker interaction:
         - clean API for command context, add command context registration
         - add API for option handling in command (customization in bscript)
-    - add an option to hooks to avoid running during help
+    - start acceptance test suite with a couple of projects: sphinx, jinja,
+      twisted. Goal is to get exact same install state as with
+      distutils/setuptools
+    - add simple command API to define new commands in one function
     - specify commands dependencies with after/before
+    - Fix package + parser cache mess
+    - add an option to hooks to avoid running during help
     - egg <-> wininst lossless conversion (on windows)
     - specify hook mechanism: document contexts + command flow in bento
+    - add compatibility code for distutils
 
 Post 0.0.5
 ----------
