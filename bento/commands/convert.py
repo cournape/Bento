@@ -105,6 +105,7 @@ def monkey_patch(type, filename):
 
         class build_py_recorder(_build_py):
             def run(self):
+                _build_py.run(self)
                 # package_data: data files which correspond to packages (and
                 # are installed)
 
