@@ -18,6 +18,12 @@ from bento.core.subpackage \
 from bento.commands.configure \
     import \
         _ConfigureState
+from bento.commands.errors \
+    import \
+        UsageException
+from bento.commands._config \
+    import \
+        SCRIPT_NAME
 from bento._config \
     import \
         ARGS_CHECKSUM_DB_FILE, CONFIGURED_STATE_DUMP
@@ -49,15 +55,28 @@ class ContextRegistry(object):
         else:
             return context
 
+class GlobalContext(object):
+    def __init__(self, commands_registry, contexts_registry, options_registry):
+        self._commands_registry = commands_registry
+        self._contexts_registry = contexts_registry
+        self._options_registry = options_registry
+
+    def register_command(self, name, klass):
+        self._commands_registry.register_command(name, klass)
+
+    def add_option(self, cmd_name, option, group=None):
+        ctx = self._options_registry.get_options(cmd_name)
+        ctx.add_option(option, group)
+
 class CmdContext(object):
-    def __init__(self, cmd, cmd_argv, pkg, top_node):
+    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
         self.pkg = pkg
         self.cmd = cmd
-        # FIXME: ugly hack to get help option - think about option handling
-        # interaction between bentomaker and bento commands
-        if cmd.parser is not None:
-            o, a = cmd.parser.parse_args(cmd_argv)
-            self.help = o.help
+
+        self.options_context = options_context
+        o, a = options_context.parser.parse_args(cmd_argv)
+        if o.help:
+            self.help = True
         else:
             self.help = False
 
@@ -93,9 +112,12 @@ class CmdContext(object):
     def store(self):
         pass
 
+class HelpContext(CmdContext):
+    pass
+
 class ConfigureContext(CmdContext):
-    def __init__(self, cmd, cmd_argv, pkg, top_node):
-        CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
+    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
+        CmdContext.__init__(self, cmd, cmd_argv, options_context, pkg, top_node)
 
     def setup(self):
         pass
@@ -109,8 +131,8 @@ class DistutilsConfigureContext(ConfigureContext):
     pass
 
 class ConfigureYakuContext(ConfigureContext):
-    def __init__(self, cmd, cmd_argv, pkg, top_node):
-        super(ConfigureYakuContext, self).__init__(cmd, cmd_argv, pkg, top_node)
+    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
+        super(ConfigureYakuContext, self).__init__(cmd, cmd_argv, options_context, pkg, top_node)
         self.yaku_configure_ctx = yaku.context.get_cfg()
 
     def setup(self):
@@ -126,8 +148,8 @@ class ConfigureYakuContext(ConfigureContext):
         self.yaku_configure_ctx.store()
 
 class BuildContext(CmdContext):
-    def __init__(self, cmd, cmd_argv, pkg, top_node):
-        CmdContext.__init__(self, cmd, cmd_argv, pkg, top_node)
+    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
+        CmdContext.__init__(self, cmd, cmd_argv, options_context, pkg, top_node)
         self._extensions_callback = {}
         self._clibraries_callback = {}
         self._clibrary_envs = {}
@@ -183,8 +205,8 @@ class DistutilsBuildContext(BuildContext):
         return build_compiled_libraries
 
 class BuildYakuContext(BuildContext):
-    def __init__(self, cmd, cmd_argv, pkg, top_node):
-        super(BuildYakuContext, self).__init__(cmd, cmd_argv, pkg, top_node)
+    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
+        super(BuildYakuContext, self).__init__(cmd, cmd_argv, options_context, pkg, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
 
     def store(self):

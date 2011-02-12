@@ -32,9 +32,11 @@ Usage:   bentomaker sdist [OPTIONS]."""
         self.topdir = None
 
     def run(self, ctx):
-        o, a = self.parser.parse_args(ctx.get_command_arguments())
+        argv = ctx.get_command_arguments()
+        p = ctx.options_context.parser
+        o, a =  p.parse_args(argv)
         if o.help:
-            self.parser.print_help()
+            p.print_help()
             return
 
         filename = BENTO_SCRIPT

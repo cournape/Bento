@@ -1,3 +1,9 @@
+import cPickle
+
+def __copy(d):
+    # Faster than deepcopy - ideally remove the need for deepcopy altogether
+    return cPickle.loads(cPickle.dumps(d, protocol=2))
+
 class Node(object):
     def __init__(self, tp, children=None, value=None):
         self.type = tp
@@ -56,21 +62,20 @@ def ast_walk(root, dispatcher, debug=False):
         defines the action for each node type.
     """
     def _walker(par):
-        # We use a new node walked_tree to avoid modifying par
-        # in-place. Creating new node is much faster than doing a
-        # deepcopy of root
-        walked_tree = Node(par.type, value=par.value)
         children = []
         for c in par.children:
             children.append(_walker(c))
 
-        walked_tree.children = [c for c in children if c is not None]
+        par.children = [c for c in children if c is not None]
         try:
-            func = dispatcher.action_dict[walked_tree.type]
-            return func(walked_tree)
+            func = dispatcher.action_dict[par.type]
+            return func(par)
         except KeyError:
             if debug:
                 print "no action for type %s" % par.type
             return par
 
-    return _walker(root)
+    # FIXME: we need to copy the dict because the dispatcher modify the dict in
+    # place ATM, and we call this often. This is very expensive, and should be
+    # removed as it has a huge cost in starting time (~30 % in hot case)
+    return _walker(__copy(root))

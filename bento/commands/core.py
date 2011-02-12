@@ -3,7 +3,7 @@ import copy
 
 from optparse \
     import \
-        Option, OptionGroup
+        Option, OptionGroup, OptionParser
 
 import bento
 
@@ -15,7 +15,7 @@ from bento.core.package_cache \
         CachedPackage
 from bento.commands.options \
     import \
-        OptionParser
+        OptionsContext
 
 from bento.commands._config \
     import \
@@ -40,26 +40,6 @@ Usage: command's usage (default description)
                              help="Show this message and exits.",
                              action="store_true")]
 
-    def __init__(self):
-        self.parser = None
-        self.options = self.__class__.common_options[:]
-
-    def _create_parser(self):
-        if self.parser is None:
-            self.parser = OptionParser(self.long_descr.splitlines()[1])
-
-    def reset_parser(self):
-        self.parser = None
-        self._create_parser()
-
-    def setup_options_parser(self, package_options):
-        self._create_parser()
-        try:
-            for o in self.options:
-                self.parser.add_option(o)
-        except getopt.GetoptError, e:
-            raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
-
     def run(self, ctx):
         raise NotImplementedError("run method should be implemented by command classes.")
 
@@ -73,7 +53,12 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
     short_descr = "gives help on a given topic or command."
     def run(self, ctx):
         cmd_args = ctx.get_command_arguments()
-        if len(cmd_args) < 1:
+        p = ctx.options_context.parser
+        o, a = p.parse_args(cmd_args)
+        if o.help:
+            p.print_help()
+            return
+        if len(a) < 1:
             print get_simple_usage()
             return
 
@@ -91,35 +76,16 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             help_args = _args
             cmd_name = cmd_args[0]
 
-        # XXX: overkill as we don't support any options for now
-        try:
-            parser = OptionParser()
-            for o in self.options:
-                parser.add_option(o)
-            parser.parse_args(help_args)
-        except OptionError, e:
-            raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
-
         if cmd_name == "commands":
             print get_usage()
             return
 
         if not cmd_name in COMMANDS_REGISTRY.get_command_names():
             raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
-        cmd_class = COMMANDS_REGISTRY.get_command(cmd_name)
-        cmd = cmd_class()
-
-        # XXX: think more about how to deal with command options which require
-        # to parse bento.info
-        package_options = CachedPackage.get_options(BENTO_SCRIPT)
-        cmd.setup_options_parser(package_options)
-
-        parser = OptionParser(usage='')
-        for o in cmd.options:
-            parser.add_option(o)
-        print cmd_class.long_descr
-        print ""
-        parser.print_help()
+        else:
+            options_context = ctx.options_registry.get_options(cmd_name)
+            p = options_context.parser
+            p.print_help()
 
 def fill_string(s, minlen):
     if len(s) < minlen:
@@ -218,4 +184,5 @@ class CommandRegistry(object):
                 return k
         raise ValueError("Unregistered class %r" % class_name)
 
+# FIXME: singleton
 COMMANDS_REGISTRY = CommandRegistry()

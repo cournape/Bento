@@ -90,24 +90,66 @@ def set_scheme_options(scheme, options):
     if options.prefix is not None and options.exec_prefix is None:
         scheme["eprefix"] = scheme["prefix"]
 
-def set_flag_options(flag_opts, options):
-    """Set flag variables given in options in flag dictionary."""
-    # FIXME: fix this mess
-    flag_vals = {}
-    for k in flag_opts:
-        opt_name = "with_" + k
-        if hasattr(options, opt_name):
-            val = getattr(options, opt_name)
-            if val:
-                if val.lower() in ["true", "yes"]:
-                    flag_vals[k] = True
-                elif val.lower() in ["false", "no"]:
-                    flag_vals[k] = False
-                else:
-                    msg = """Error: %s: option %s expects a true or false argument"""
-                    raise UsageException(msg % (SCRIPT_NAME, "--with-%s" % k))
+def get_flag_values(cmd, cmd_argv):
+    """Return flag values from the command instance and its arguments.
 
-    return flag_vals
+    Assumes cmd is an instance of Configure."""
+    o, a = cmd.options_context.parser.parse_args(cmd_argv)
+    flag_values = _get_flag_values(cmd.flags, o)
+    return flag_values
+
+def _get_flag_values(flag_names, options):
+    """Return flag values as defined by the options."""
+    flag_values = {}
+    for option_name in flag_names:
+        flag_value = getattr(options, option_name, None)
+        if flag_value is not None:
+            if flag_value.lower() in ["true", "yes"]:
+                flag_values[option_name] = True
+            elif flag_value.lower() in ["false", "no"]:
+                flag_values[option_name] = False
+            else:
+                msg = """Error: %s: option %s expects a true or false argument"""
+                raise UsageException(msg % (SCRIPT_NAME, "--%s" % option_name))
+    return flag_values
+
+def _setup_options_parser(options_context, package_options):
+    """Setup the command options parser, merging standard options as well
+    as custom options defined in the bento.info file, if any.
+    """
+    scheme, scheme_opts_d = get_scheme(sys.platform)
+
+    p = options_context
+    p.add_group("build_customization", "Build customization")
+    opt = Option("--use-distutils", help="Build extensions with distutils",
+                 action="store_true")
+    p.add_option(opt, "build_customization")
+
+    # Create default path options
+    scheme_opts = {}
+    for name, opt_d in scheme_opts_d.items():
+        kw = {"help": opt_d["help"]}
+        opt = Option(*opt_d["opts"], **kw)
+        scheme_opts[name] = opt
+
+    # Add custom path options (as defined in bento.info) to the path scheme
+    for name, f in package_options.path_options.items():
+        scheme_opts[name] = \
+            Option('--%s' % f.name,
+                   help='%s [%s]' % (f.description, f.default_value))
+
+    p.add_group("installation_options", "Installation fine tuning")
+    for opt in scheme_opts.values():
+        p.add_option(opt, "installation_options")
+
+    flag_opts = {}
+    if package_options.flag_options:
+        flags_group = p.add_group("optional_features", "Optional features")
+        for name, v in package_options.flag_options.items():
+            flag_opts[name] = Option(
+                    "--%s" % v.name,
+                    help="%s [default=%s]" % (v.description, v.default_value))
+            p.add_option(flag_opts[name], "optional_features")
 
 class ConfigureCommand(Command):
     long_descr = """\
@@ -115,132 +157,45 @@ Purpose: configure the project
 Usage: bentomaker configure [OPTIONS]"""
     short_descr = "configure the project."
 
-    @classmethod
-    def has_run(self):
-        return os.path.exists(CONFIGURED_STATE_DUMP)
-
-    @classmethod
-    def up_to_date(self):
-        if os.path.exists(CHECKSUM_DB_FILE):
-            return not CachedPackage.has_changed(CHECKSUM_DB_FILE)
-        else:
-            return False
-
     def __init__(self):
         Command.__init__(self)
-        self._user_opt_groups = {}
-        def _dummy(self, o, a):
-            pass
-        self.option_callback = _dummy
-        self.user_data = {}
 
-        # As the configure command line handling is customized from
-        # the script file (flags, paths variables), we cannot just
-        # call set_options_parser, and we set it up manually instead
-        self.reset_parser()
-        for opt in self.options:
-            self.parser.add_option(opt)
-
-    def setup_options_parser(self, custom_options):
-        #Command.setup_options_parser(self, custom_options)
-        self._setup_options_parser(custom_options)
-
-    def _setup_options_parser(self, custom_options):
-        """Setup the command options parser, merging standard options as well
-        as custom options defined in the bento.info file, if any.
-        """
-        self.add_user_group("build_customization", "Build customization")
-        opt = Option("--use-distutils", help="Build extensions with distutils",
-                     action="store_true")
-        self.add_user_option(opt, "build_customization")
-
-        scheme, flag_opts = self.add_configuration_options(custom_options)
-        self.scheme = scheme
-        self.flag_opts = flag_opts
-
-    def add_user_option(self, opt, group_name=None):
-        #self.opts.append(opt)
-        if group_name is not None:
-            self.options.append(opt)
-            self._user_opt_groups[group_name].add_option(opt)
-        else:
-            self.parser.add_option(opt)
-
-    def add_user_group(self, name, title):
-        grp = OptionGroup(self.parser, title)
-        self._user_opt_groups[name] = grp
-        self.parser.add_option_group(grp)
-
-    def add_option_callback(self, func):
-        self.option_callback = func
+    def _setup_flags_and_scheme(self, package_options):
+        self.scheme = _compute_scheme(package_options)
+        self.flags = package_options.flag_options.keys()
 
     def run(self, ctx):
+        self._setup_flags_and_scheme(ctx.package_options)
         args = ctx.get_command_arguments()
-        o, a = self.parser.parse_args(args)
+        o, a = ctx.options_context.parser.parse_args(args)
         if o.help:
-            self.parser.print_help()
-            ctx.help = True
+            ctx.options_context.parser.print_help()
             return
-        if o.use_distutils:
-            self.user_data["use_distutils"] = True
-        else:
-            self.user_data["use_distutils"] = False
-
-        self.option_callback(self, o, a)
 
         venv_prefix = virtualenv_prefix()
         if venv_prefix is not None:
             self.scheme["prefix"] = self.scheme["eprefix"] = venv_prefix
         set_scheme_options(self.scheme, o)
-        flag_vals = set_flag_options(self.flag_opts, o)
+        flag_vals = _get_flag_values(self.flags, o)
 
         ctx.setup()
-        s = _ConfigureState(BENTO_SCRIPT, ctx.pkg, self.scheme, flag_vals,
-                            self.user_data)
+        s = _ConfigureState(BENTO_SCRIPT, ctx.pkg, self.scheme, flag_vals, {})
         s.dump()
 
-    def add_configuration_options(self, package_options):
-        """Add the path and flags-related options as defined in the script file
-        to the command.
+def _compute_scheme(package_options):
+    """Compute path and flags-related options as defined in the script file(s)
 
-        Parameters
-        ----------
-        package_options: PackageOptions
-        """
-        scheme, scheme_opts_d = get_scheme(sys.platform)
+    Parameters
+    ----------
+    package_options: PackageOptions
+    """
+    scheme, scheme_opts_d = get_scheme(sys.platform)
 
-        scheme_opts = {}
-        for name, opt_d in scheme_opts_d.items():
-            kw = {"help": opt_d["help"]}
-            opt = Option(*opt_d["opts"], **kw)
-            scheme_opts[name] = opt
+    # XXX: abstract away those, as it is copied from distutils
+    py_version = sys.version.split()[0]
+    scheme['py_version_short'] = py_version[0:3]
+    scheme['pkgname'] = package_options.name
 
-        # XXX: abstract away those, as it is copied from distutils
-        py_version = sys.version.split()[0]
-        scheme['py_version_short'] = py_version[0:3]
-
-        scheme['pkgname'] = package_options.name
-
-        # Add custom path options (as defined in bento.info) to the path scheme
-        for name, f in package_options.path_options.items():
-            scheme[name] = f.default_value
-            scheme_opts[name] = \
-                Option('--%s' % f.name,
-                       help='%s [%s]' % (f.description, f.default_value))
-
-        install_group = self.parser.add_option_group("Installation fine tuning")
-        for opt in scheme_opts.values():
-            self.options.append(opt)
-            install_group.add_option(opt)
-
-        flag_opts = {}
-        if package_options.flag_options:
-            flags_group = self.parser.add_option_group("Optional features")
-            for name, v in package_options.flag_options.items():
-                flag_opts[name] = Option(
-                        "--with-%s" % v.name,
-                        help="%s [default=%s]" % (v.description, v.default_value))
-                self.options.append(flag_opts[name])
-                flags_group.add_option(flag_opts[name])
-
-        return scheme, flag_opts
+    for name, f in package_options.path_options.items():
+        scheme[name] = f.default_value
+    return scheme

@@ -5,88 +5,67 @@ bento and bento subcommands, as well as help message
 formatting."""
 import optparse
 
-from bento.commands.errors \
+from optparse \
     import \
-        UsageException
-from bento.commands._config \
-    import \
-        SCRIPT_NAME
+        Option
 
-# What is required for command handling
-# =====================================
-#
-# Command usage string
-# --------------------
-#
-#    Purpose: one line
-#    Usage: command subcommand ARG_TYPE
-#
-#    Options:
-#      short,long  help
-#
-#    Description:
-#      paragraph (in rest eventually)
-#
-#    See also
-#
-# Type of options
-# ---------------
-#
-# What's needed:
-#   - grouping options together
-#   - general options vs command-specific options ?
-#   - options common to every command
-#   - arguments: necessary (with default ?) | optionals
+# Goal of separate options context:
+#   - separate options handling from commands themselves (simplify commands)
+#   - easier to add options from hook files
+#   - should help hiding command implementation detail from hooks and high
+#   level tools such as bentomaker (close coupling at the moment)
+class OptionsContext(object):
+    def __init__(self, usage=None):
+        kw = {"add_help_option": False}
+        if usage is not None:
+            kw["usage"] = usage
+        self.parser = optparse.OptionParser(**kw)
+        self._groups = {}
+        self._is_setup = False
 
-class Option(object):
-    def __init__(self, name, help='', tp=None, short_name=None):
-        self.name = name
-        self.help = help
-        self.tp = tp
-        self.short_name = short_name
+    def setup(self, package_options):
+        self.add_group("build_customization", "Build customization")
+        opt = optparse.Option("--use-distutils", help="Build extensions with distutils",
+                              action="store_true")
+        self.add_option(opt, "build_customization")
 
-    def is_flag(self):
-        return self.tp is None
+        self._is_setup = True
 
-    def long_name_repr(self):
-        return "--%s" % self.name
-
-    def short_name_repr(self):
-        if self.short_name:
-            return "-%s" % self.short_name
-
-    def shortest_repr(self):
-        if self.short_name:
-            return self.short_name_repr()
-        return self.long_name_repr()
-
-class Argument(object):
-    """Command line argument representation."""
-    @classmethod
-    def from_string(cls, s):
-        return cls(s[:-1], s[-1])
-
-    def __init__(self, name, tp=None):
-        self.name = name
-        if tp is None or tp == "":
-            self.tp = ""
-        elif tp in ["?", "*"]:
-            self.tp = tp
+    def add_option(self, option, group=None):
+        if group is None:
+            self.parser.add_option(option)
         else:
-            raise ValueError("Gne ?")
+            if group in self._groups:
+                self._groups[group].add_option(option)
+            else:
+                raise ValueError("Unknown option group %r" % group)
 
-    def is_optional(self):
-        return self.tp in ["?", "*"]
+    def has_group(self, group):
+        return group in self._groups
 
-class OptionParser(optparse.OptionParser):
-    def __init__(self, description=None, usage=None):
-        optparse.OptionParser.__init__(self, description=description,
-                add_help_option=False, usage=usage)
-        self._opts = []
+    def add_group(self, name, title):
+        grp = optparse.OptionGroup(self.parser, title)
+        self._groups[name] = grp
+        self.parser.add_option_group(grp)
 
-    def add_option(self, opt):
-        self._opts.append(opt)
-        optparse.OptionParser.add_option(self, opt)
+class OptionsRegistry(object):
+    """Registry for command -> option context"""
+    def __init__(self):
+        # command line name -> context *instance*
+        self._contexts = {}
 
-    def error(self, msg):
-        raise UsageException("%s: ERROR: %s" % (SCRIPT_NAME, msg))
+    def register_command(self, name, options_context):
+        if name in self._contexts:
+            raise ValueError("options context for command %r already registered !" % name)
+        else:
+            self._contexts[name] = options_context
+
+    def is_registered(self, cmd_name):
+        return cmd_name in self._contexts
+
+    def get_options(self, name):
+        options_context = self._contexts.get(name, None)
+        if options_context is None:
+            raise ValueError("No options context registered for name %r" % name)
+        else:
+            return options_context

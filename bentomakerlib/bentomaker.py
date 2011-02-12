@@ -1,5 +1,6 @@
 #! /usr/bin/env python
-import time
+#import demandimport
+#demandimport.enable()
 import sys
 import os
 import getopt
@@ -52,13 +53,17 @@ from bento.commands.errors import \
 from bento.commands.dependency \
     import \
         CommandScheduler, CommandDataProvider
+from bento.commands.options \
+    import \
+        OptionsRegistry, OptionsContext
 
 from bento.commands.hooks \
     import \
         get_pre_hooks, get_post_hooks, get_command_override, create_hook_module
 from bento.commands.context \
     import \
-        CmdContext, BuildYakuContext, ConfigureYakuContext, CONTEXT_REGISTRY
+        CmdContext, BuildYakuContext, ConfigureYakuContext, CONTEXT_REGISTRY, \
+        HelpContext, GlobalContext
 import bento.core.errors
 
 if os.environ.get("BENTOMAKER_DEBUG", "0") != "0":
@@ -76,6 +81,17 @@ CMD_SCHEDULER.set_before(InstallCommand, BuildCommand)
 
 CMD_DATA_DUMP = os.path.join(BUILD_DIR, "cmd_data.db")
 CMD_DATA_STORE = CommandDataProvider.from_file(CMD_DATA_DUMP)
+
+OPTIONS_REGISTRY = OptionsRegistry()
+
+__PACKAGE_OPTIONS = None
+def __get_package_options():
+    global __PACKAGE_OPTIONS
+    if __PACKAGE_OPTIONS:
+        return __PACKAGE_OPTIONS
+    else:
+        __PACKAGE_OPTIONS = CachedPackage.get_options(BENTO_SCRIPT)
+        return __PACKAGE_OPTIONS
 
 #================================
 #   Create the command line UI
@@ -95,12 +111,29 @@ def register_commands():
     COMMANDS_REGISTRY.register_command("parse", ParseCommand, public=False)
     COMMANDS_REGISTRY.register_command("detect_type", DetectTypeCommand, public=False)
  
+def register_options(cmd_name):
+    cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
+    usage = cmd_klass.long_descr.splitlines()[1]
+    context = OptionsContext(usage=usage)
+    for option in cmd_klass.common_options:
+        context.add_option(option)
+    OPTIONS_REGISTRY.register_command(cmd_name, context)
+
 def register_command_contexts():
     CONTEXT_REGISTRY.set_default(CmdContext)
     if not CONTEXT_REGISTRY.is_registered("configure"):
         CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
     if not CONTEXT_REGISTRY.is_registered("build"):
         CONTEXT_REGISTRY.register("build", BuildYakuContext)
+    if not CONTEXT_REGISTRY.is_registered("help"):
+        CONTEXT_REGISTRY.register("help", HelpContext)
+
+# All the global state/registration stuff goes here
+def register_stuff():
+    register_commands()
+    for cmd_name in COMMANDS_REGISTRY.get_command_names():
+        register_options(cmd_name)
+    register_command_contexts()
 
 def set_main():
     # Some commands work without a bento description file (convert, help)
@@ -130,15 +163,33 @@ def main(argv=None):
         argv = sys.argv[1:]
     popts = parse_global_options(argv)
     cmd_name = popts["cmd_name"]
-    if cmd_name and cmd_name not in ["convert"]:
+
+    register_stuff()
+    if cmd_name and cmd_name not in ["convert"] or not cmd_name:
         _wrapped_main(popts)
     else:
         _main(popts)
 
 def _wrapped_main(popts):
+    def _big_ugly_hack():
+        # FIXME: huge ugly hack - we need to specify once and for all when the
+        # package info is parsed and available, so that we can define options
+        # and co for commands
+        from bento.commands.configure import _setup_options_parser
+        package_options = __get_package_options()
+        _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
+    _big_ugly_hack()
+
+    global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY, OPTIONS_REGISTRY)
+
     mods = set_main()
     for mod in mods:
-        mod.startup()
+        mod.startup(global_context)
+    # FIXME: this registered options for new commands registered in hook. It
+    # should be made all in one place (hook and non-hook)
+    for cmd_name in COMMANDS_REGISTRY.get_command_names():
+        if not OPTIONS_REGISTRY.is_registered(cmd_name):
+            register_options(cmd_name)
 
     try:
         return _main(popts)
@@ -171,9 +222,6 @@ def parse_global_options(argv):
     return ret
 
 def _main(popts):
-    register_commands()
-    register_command_contexts()
-
     if popts["show_version"]:
         print bento.__version__
         return 0
@@ -184,7 +232,7 @@ def _main(popts):
 
     if popts["show_usage"]:
         cmd = COMMANDS_REGISTRY.get_command('help')()
-        cmd.run(CmdContext(cmd, [], None, None))
+        cmd.run(CmdContext(cmd, [], OPTIONS_REGISTRY.get_options('help'), None, None))
         return 0
 
     cmd_name = popts["cmd_name"]
@@ -199,19 +247,12 @@ def _main(popts):
         else:
             run_cmd(cmd_name, cmd_opts)
 
-def _get_package_with_user_flags(cmd_name, cmd_opts):
-    cmd = COMMANDS_REGISTRY.get_command(cmd_name)()
+def _get_package_with_user_flags(cmd_name, cmd_opts, package_options):
+    from bento.commands.configure import _get_flag_values
 
-    package_options = CachedPackage.get_options(BENTO_SCRIPT)
-    cmd.setup_options_parser(package_options)
-
-    if cmd_name == "configure":
-        # FIXME: this whole dance to get the user-given flag values is insane
-        from bento.commands.configure import set_flag_options
-        o, a = cmd.parser.parse_args(cmd_opts)
-        flag_values = set_flag_options(cmd.flag_opts, o)
-    else:
-        flag_values = None
+    p = OPTIONS_REGISTRY.get_options(cmd_name)
+    o, a = p.parser.parse_args(cmd_opts)
+    flag_values = _get_flag_values(package_options.flag_options.keys(), o)
 
     return CachedPackage.get_package(BENTO_SCRIPT, flag_values)
 
@@ -234,15 +275,10 @@ def run_dependencies(cmd_klass, top, pkg):
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, top, pkg)
 
-def is_help_only(cmd_klass, cmd_argv):
-    cmd = cmd_klass()
-    package_options = CachedPackage.get_options(BENTO_SCRIPT)
-    cmd.setup_options_parser(package_options)
-    o, a = cmd.parser.parse_args(cmd_argv)
-    if o.help:
-        return True
-    else:
-        return False
+def is_help_only(cmd_name, cmd_argv):
+    p = OPTIONS_REGISTRY.get_options(cmd_name)
+    o, a = p.parser.parse_args(cmd_argv)
+    return o.help is True
 
 def run_cmd(cmd_name, cmd_opts):
     root = bento.core.node.Node("", None)
@@ -250,19 +286,30 @@ def run_cmd(cmd_name, cmd_opts):
 
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
     # XXX: fix this special casing
-    if cmd_name in ["help", "convert"]:
+    if cmd_name == "help":
+        help = HelpCommand()
+        options_ctx = OPTIONS_REGISTRY.get_options("help")
+        ctx_klass = CONTEXT_REGISTRY.get("help")
+        context = ctx_klass(help, cmd_opts, options_ctx, None, top)
+        # XXX: hack for help command to get option context for any command
+        # without making help depends on bentomakerlib
+        context.options_registry = OPTIONS_REGISTRY
+        help.run(context)
+        return
+    elif cmd_name in ["convert"]:
         cmd = cmd_klass()
+        options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-        ctx = ctx_klass(cmd, cmd_opts, None, top)
-        cmd.setup_options_parser(None)
+        ctx = ctx_klass(cmd, cmd_opts, options_ctx, None, top)
         cmd.run(ctx)
         return
 
     if not os.path.exists(BENTO_SCRIPT):
         raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
 
-    pkg = _get_package_with_user_flags(cmd_name, cmd_opts)
-    if is_help_only(cmd_klass, cmd_opts):
+    package_options = __get_package_options()
+    pkg = _get_package_with_user_flags(cmd_name, cmd_opts, package_options)
+    if is_help_only(cmd_name, cmd_opts):
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
     else:
@@ -278,9 +325,11 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
     cmd = cmd_klass()
-    cmd.setup_options_parser(CachedPackage.get_options(BENTO_SCRIPT))
-
-    ctx = ctx_klass(cmd, cmd_opts, pkg, top)
+    options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
+    ctx = ctx_klass(cmd, cmd_opts, options_ctx, pkg, top)
+    # FIXME: hack to pass package_options to configure command - most likely
+    # this needs to be known in option context ?
+    ctx.package_options = __get_package_options()
     if get_command_override(cmd_name):
         cmd_funcs = get_command_override(cmd_name)
     else:
