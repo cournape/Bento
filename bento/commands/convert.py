@@ -406,13 +406,15 @@ def combine_groups(data_files):
     ret = {}
     for e in data_files:
         # FIXME: install policies should not be handled here
-        # FIXME: find the cases when entries' length are 2 vs 3
+        # FIXME: find the cases when entries' length are 2 vs 3 vs 4
         if len(e) == 2:
             target = posjoin("$sitedir", e[0])
             sources = e[1]
         elif len(e) == 3:
             target = posjoin("$prefix", e[1])
             sources = e[2]
+        else:
+            raise NotImplementedError("data files with >3 components not handled yet")
 
         for s in sources:
             srcdir = os.path.dirname(s)
