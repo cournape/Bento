@@ -18,6 +18,12 @@ from bento.core.subpackage \
 from bento.commands.configure \
     import \
         _ConfigureState
+from bento.commands.errors \
+    import \
+        UsageException
+from bento.commands._config \
+    import \
+        SCRIPT_NAME
 from bento._config \
     import \
         ARGS_CHECKSUM_DB_FILE, CONFIGURED_STATE_DUMP

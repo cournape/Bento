@@ -167,8 +167,12 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
                dest="setup_args")]
 
     def run(self, ctx):
-        opts = ctx.get_command_arguments()
-        o, a = self._setup_parser(opts)
+        argv = ctx.get_command_arguments()
+        p = ctx.options_context.parser
+        o, a = p.parse_args(argv)
+        if o.help:
+            p.print_help()
+            return
         if len(a) < 1:
             filename = "setup.py"
         else:

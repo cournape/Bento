@@ -40,19 +40,6 @@ Usage: command's usage (default description)
                              help="Show this message and exits.",
                              action="store_true")]
 
-    def __init__(self):
-        self.options = self.__class__.common_options[:]
-        self.options_context = OptionsContext()
-        for o in self.options:
-            self.options_context.parser.add_option(o)
-
-    def _setup_parser(self, cmd_argv):
-        p = self.options_context.parser
-        o, a = p.parse_args(cmd_argv)
-        if o.help:
-            p.print_help()
-        return o, a
-
     def run(self, ctx):
         raise NotImplementedError("run method should be implemented by command classes.")
 

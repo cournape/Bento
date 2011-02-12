@@ -21,7 +21,12 @@ Usage:   bentomaker build_pkg_info [OPTIONS]"""
     ]
 
     def run(self, ctx):
-        o, a = self._setup_parser(ctx.get_command_arguments())
+        argv = ctx.get_command_arguments()
+        p = ctx.options_context.parser
+        o, a = p.parse_args(argv)
+        if o.help:
+            p.print_help()
+            return
         if len(a) < 1:
             raise UsageException("%s: error: %s subcommand require an argument" \
                     % (SCRIPT_NAME, "parse"))

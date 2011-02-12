@@ -20,8 +20,12 @@ Usage:   bentomaker detect_type [OPTIONS]."""
         optparse.Option("-v", "--verbose", help="verbose run", action="store_true")]
 
     def run(self, ctx):
-        opts = ctx.get_command_arguments()
-        o, a = self._setup_parser(opts)
+        argv = ctx.get_command_arguments()
+        p = ctx.options_context.parser
+        o, a = p.parse_args(argv)
+        if o.help:
+            p.print_help()
+            return
 
         log = StringIO.StringIO()
         pprint("PINK",
