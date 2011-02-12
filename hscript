@@ -6,7 +6,7 @@ from bento.commands.errors \
         CommandExecutionFailure
 from bento.commands.core \
     import \
-        Command, COMMANDS_REGISTRY
+        Command
 from bento.core.utils \
     import \
         pprint
@@ -29,5 +29,5 @@ class TestCommand(Command):
         finally:
             os.chdir(saved)
 
-def startup():
-    COMMANDS_REGISTRY.register_command("test", TestCommand)
+def startup(context):
+    context.register_command("test", TestCommand)

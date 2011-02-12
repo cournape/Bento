@@ -63,7 +63,7 @@ from bento.commands.hooks \
 from bento.commands.context \
     import \
         CmdContext, BuildYakuContext, ConfigureYakuContext, CONTEXT_REGISTRY, \
-        HelpContext
+        HelpContext, GlobalContext
 import bento.core.errors
 
 if os.environ.get("BENTOMAKER_DEBUG", "0") != "0":
@@ -180,9 +180,11 @@ def _wrapped_main(popts):
         _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
     _big_ugly_hack()
 
+    global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY, OPTIONS_REGISTRY)
+
     mods = set_main()
     for mod in mods:
-        mod.startup()
+        mod.startup(global_context)
     # FIXME: this registered options for new commands registered in hook. It
     # should be made all in one place (hook and non-hook)
     for cmd_name in COMMANDS_REGISTRY.get_command_names():

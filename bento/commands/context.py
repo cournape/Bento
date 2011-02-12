@@ -55,6 +55,19 @@ class ContextRegistry(object):
         else:
             return context
 
+class GlobalContext(object):
+    def __init__(self, commands_registry, contexts_registry, options_registry):
+        self._commands_registry = commands_registry
+        self._contexts_registry = contexts_registry
+        self._options_registry = options_registry
+
+    def register_command(self, name, klass):
+        self._commands_registry.register_command(name, klass)
+
+    def add_option(self, cmd_name, option, group=None):
+        ctx = self._options_registry.get_options(cmd_name)
+        ctx.add_option(option, group)
+
 class CmdContext(object):
     def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
         self.pkg = pkg

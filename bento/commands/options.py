@@ -5,6 +5,10 @@ bento and bento subcommands, as well as help message
 formatting."""
 import optparse
 
+from optparse \
+    import \
+        Option
+
 # Goal of separate options context:
 #   - separate options handling from commands themselves (simplify commands)
 #   - easier to add options from hook files
@@ -35,6 +39,9 @@ class OptionsContext(object):
                 self._groups[group].add_option(option)
             else:
                 raise ValueError("Unknown option group %r" % group)
+
+    def has_group(self, group):
+        return group in self._groups
 
     def add_group(self, name, title):
         grp = optparse.OptionGroup(self.parser, title)
