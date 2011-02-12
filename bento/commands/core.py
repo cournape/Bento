@@ -53,7 +53,12 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
     short_descr = "gives help on a given topic or command."
     def run(self, ctx):
         cmd_args = ctx.get_command_arguments()
-        if len(cmd_args) < 1:
+        p = ctx.options_context.parser
+        o, a = p.parse_args(cmd_args)
+        if o.help:
+            p.print_help()
+            return
+        if len(a) < 1:
             print get_simple_usage()
             return
 
@@ -70,15 +75,6 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
                 _args.append(cmd_args.pop(0))
             help_args = _args
             cmd_name = cmd_args[0]
-
-        # XXX: overkill as we don't support any options for now
-        try:
-            parser = OptionParser(add_help_option=False)
-            for o in self.options:
-                parser.add_option(o)
-            parser.parse_args(help_args)
-        except OptionError, e:
-            raise UsageException("%s: error: %s for help subcommand" % (SCRIPT_NAME, e))
 
         if cmd_name == "commands":
             print get_usage()
