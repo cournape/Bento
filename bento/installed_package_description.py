@@ -133,16 +133,13 @@ class InstalledPkgDescription(object):
 
     @classmethod
     def __from_data(cls, data):
-        def _encode_kw(d):
-            return dict([(k.encode(), v) for k, v in d.items()])
-
-        meta_vars = _encode_kw(data["meta"])
+        meta_vars = data["meta"]
         #variables = data["variables"]
         install_paths = data.get("install_paths", None)
 
         executables = {}
         for name, executable in data["executables"].items():
-            executables[name] = Executable.from_parse_dict(_encode_kw(executable))
+            executables[name] = Executable.from_parse_dict(executable)
 
         file_sections = {}
 
