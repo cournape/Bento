@@ -19,7 +19,7 @@ def generate_version_py(filename):
             s = subprocess.Popen(["git", "rev-parse", "HEAD"],
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             out = s.communicate()[0]
-            GIT_REVISION = out.strip()
+            GIT_REVISION = out.decode().strip()
         else:
             GIT_REVISION = ""
     except WindowsError:
