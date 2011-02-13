@@ -120,7 +120,9 @@ def monkey_patch(type, filename):
                 # extra_data
                 LIVE_OBJECTS["extra_data"] = get_data_files()
 
+                # Those are directly created from setup data_files argument
                 LIVE_OBJECTS["dist_data_files"] = self.distribution.data_files
+                # those are created from package_data stuff
                 LIVE_OBJECTS["data_files"] = self.data_files
 
         cmdclass["build_py"] = build_py_recorder
@@ -321,6 +323,11 @@ def build_pkg(dist, live_objects, top_node):
                 name = "%s_data" % pkg_name.replace(".", "_")
                 target_dir = os.path.join("$sitedir", pkg_name.replace(".", os.sep))
                 pkg.data_files[name] = DataFiles(name, files, target_dir, source_dir)
+
+    if dist.scripts:
+        name = "%s_scripts" % pkg.name
+        target_dir = "$eprefix"
+        pkg.data_files[name] = DataFiles(name, dist.scripts, target_dir, ".")
 
     # numpy.distutils bug: packages are appended twice to the Distribution
     # instance, so we prune the list here
