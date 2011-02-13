@@ -84,7 +84,7 @@ class _CachedPackageImpl(object):
             ensure_dir(db_location)
             self._reset()
         else:
-            fid = open(db_location)
+            fid = open(db_location, "rb")
             try:
                 self.db = cPickle.load(fid)
                 if not self._has_valid_magic(self.db):
@@ -102,7 +102,7 @@ class _CachedPackageImpl(object):
         if self.db.has_key("bentos_checksums"):
             r_checksums = cPickle.loads(self.db["bentos_checksums"])
             for f in r_checksums:
-                checksum = md5(open(f).read()).hexdigest()
+                checksum = md5(open(f, "rb").read()).hexdigest()
                 if checksum != r_checksums[f]:
                     return True
             return False
@@ -156,7 +156,7 @@ class _CachedPackageImpl(object):
         try:
             checksums = cPickle.load(fid)
             for f, checksum in checksums.items():
-                if checksum != md5(open(f).read()).hexdigest():
+                if checksum != md5(open(f, "rb").read()).hexdigest():
                     return True
             return False
         finally:
@@ -188,7 +188,7 @@ def _create_objects_no_cached(filename, user_flags, db):
         pkg, files = _raw_to_pkg(raw, user_flags, filename)
         options = _raw_to_options(raw)
 
-        checksums = [md5(open(f).read()).hexdigest() for f in files]
+        checksums = [md5(open(f, "rb").read()).hexdigest() for f in files]
         db["bentos_checksums"] = cPickle.dumps(dict(zip(files, checksums)))
         db["package_description"] = cPickle.dumps(pkg)
         db["user_flags"] = cPickle.dumps(user_flags)
