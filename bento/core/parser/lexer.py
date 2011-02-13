@@ -475,8 +475,8 @@ def scan_field_id(token, state, stream, internal):
 
     queue = [candidate]
     queue.append(stream.next())
-    next = stream.next()
-    return queue, next, state
+    nxt = stream.next()
+    return queue, nxt, state
 
 def tokenize_conditional(stream, token):
     ret = []
@@ -485,13 +485,13 @@ def tokenize_conditional(stream, token):
     ret.append(token)
 
     queue = []
-    next = stream.peek()
-    if not next.type in ["COLON", "NEWLINE"]:
-        while next.type not in ["COLON", "NEWLINE"]:
-            if next.type not in ["WS"]:
-                queue.append(next)
-            next = stream.next()
-        queue.append(next)
+    nxt = stream.peek()
+    if not nxt.type in ["COLON", "NEWLINE"]:
+        while nxt.type not in ["COLON", "NEWLINE"]:
+            if nxt.type not in ["WS"]:
+                queue.append(nxt)
+            nxt = stream.next()
+        queue.append(nxt)
 
     for q in queue:
         if q.value in CONDITIONAL_ID.keys():
@@ -566,8 +566,8 @@ def post_process(stream):
 def _skip_ws(tok, stream, state, internal):
     while tok.type  in ["NEWLINE", "WS"]:
         if tok.type == "NEWLINE" and len(internal.words_stack) == 0:
-            next = stream.peek()
-            if not next.type == "INDENT":
+            nxt = stream.peek()
+            if not nxt.type == "INDENT":
                 state = "SCANNING_FIELD_ID"
             else:
                 tok = stream.next()
