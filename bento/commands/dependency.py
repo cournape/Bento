@@ -11,16 +11,22 @@ class PickledStore(object):
     """Simple class to store/retrieve data from a pickled file."""
     @classmethod
     def from_dump(cls, filename):
-        with open(filename, "rb") as fid:
+        fid = open(filename, "rb")
+        try:
             data = load(fid)
+        finally:
+            fid.close()
 
         inst = cls()
         inst._data = data
         return inst
 
     def store(self, filename):
-        with open(filename, "wb") as fid:
+        fid = open(filename, "wb")
+        try:
             dump(self._data, fid)
+        finally:
+            fid.close()
 
 def _invert_dependencies(deps):
     """Given a dictionary of edge -> dependencies representing a DAG, "invert"
