@@ -14,7 +14,7 @@ from bento.core.package \
         PackageDescription
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
+        InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg, iter_files
 
 import bento.tests.bentos
 
@@ -41,14 +41,18 @@ class TestInstalledSection(unittest.TestCase):
 
         nose.tools.assert_equal(r_section.files, section.files)
 
+def create_simple_ipkg_args():
+    files = ["scripts/foo.py", "scripts/bar.py"]
+    section = InstalledSection.from_source_target_directories("pythonfiles",
+                    "section1", "source", "target", files)
+    sections = {"pythonfiles": {"section1": section}}
+
+    meta = ipkg_meta_from_pkg(SPHINX_META_PKG)
+    return meta, sections
+
 class TestIPKG(unittest.TestCase):
     def setUp(self):
-        files = ["scripts/foo.py", "scripts/bar.py"]
-        section = InstalledSection.from_source_target_directories("pythonfiles",
-                        "section1", "source", "target", files)
-        self.sections = {"pythonfiles": {"section1": section}}
-
-        self.meta = ipkg_meta_from_pkg(SPHINX_META_PKG)
+        self.meta, self.sections = create_simple_ipkg_args()
 
     def test_simple_create(self):
         ipkg = InstalledPkgDescription(self.sections, self.meta, {})
@@ -67,3 +71,15 @@ class TestIPKG(unittest.TestCase):
         s = f.getvalue()
         
         self.assertEqual(json.loads(r_s), json.loads(s))
+
+class TestIterFiles(unittest.TestCase):
+    def setUp(self):
+        self.meta, self.sections = create_simple_ipkg_args()
+
+    def test_simple(self):
+        ipkg = InstalledPkgDescription(self.sections, self.meta, {})
+        sections = ipkg.resolve_paths()
+        res = sorted([(kind, source, target) for kind, source, target in iter_files(sections)])
+        ref = [("pythonfiles", "source/scripts/bar.py", "target/scripts/bar.py"),
+               ("pythonfiles", "source/scripts/foo.py", "target/scripts/foo.py")]
+        self.assertEqual(res, ref)
