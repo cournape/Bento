@@ -34,3 +34,8 @@ else:
     from zipfile \
         import \
             ZipFile, ZIP_DEFLATED
+
+if sys.version_info < (2, 6, 0):
+    import simplejson as json
+else:
+    import json

@@ -4,10 +4,7 @@ import copy
 import StringIO
 import warnings
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+from bento.compat.api import json
 
 from bento.core.platforms import \
     get_scheme

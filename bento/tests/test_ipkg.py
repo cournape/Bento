@@ -5,7 +5,7 @@ from cStringIO \
     import \
         StringIO
 
-import simplejson as json
+from bento.compat.api import json
 
 import nose.tools
 
