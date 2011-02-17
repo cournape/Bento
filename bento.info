@@ -45,11 +45,14 @@ ExtraSourceFiles:
     setup.py,
     setup_common.py,
     bootstrap.py,
-    bento/tests/parsing/functionals/*.py,
-    bento/tests/parsing/functionals/*.info,
-    bento/tests/parsing/*.py,
-    bento/tests/pkgdescr/*.py,
-    bento/tests/*.py
+    bento/core/tests/parsing/functionals/*.py,
+    bento/core/tests/parsing/functionals/*.info,
+    bento/core/tests/parsing/*.py,
+    bento/core/tests/pkgdescr/*.py,
+    bento/core/tests/*.py,
+    bento/tests/*.py,
+    bento/tests/bentos/*.py,
+    bento/tests/bentos/*.info
 
 Library:
     Packages:
