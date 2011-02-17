@@ -50,6 +50,7 @@ class CythonBuilder(yaku.tools.Builder):
             raise yaku.errors.ToolNotFound()
         ctx.env["CYTHON_CPPPATH"] = []
         ctx.env["CYTHON"] = [sys.executable, "-m", "cython"]
+        ctx.env["ENV"]["PYTHONPATH"] = os.environ["PYTHONPATH"]
 
 def detect(ctx):
     if find_program("cython") is None:
