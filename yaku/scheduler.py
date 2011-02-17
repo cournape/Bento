@@ -26,9 +26,11 @@ class SerialRunner(object):
         pass
 
     def run(self):
-        ordered_tasks = order_tasks(self.task_manager.tasks)
-        for t in ordered_tasks:
-            run_task(self.ctx, t)
+        grp = self.task_manager.next_set()
+        while grp:
+            for task in grp:
+                run_task(self.ctx, task)
+            grp = self.task_manager.next_set()
 
 class ParallelRunner(object):
     def __init__(self, ctx, task_manager, maxjobs=1):

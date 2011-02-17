@@ -41,6 +41,8 @@ def task_factory(name):
 base = _TaskFakeMetaclass('__task_base', (object,), {})
 
 class _Task(object):
+    before = []
+    after = []
     def __init__(self, outputs, inputs, func=None, deps=None):
         if isinstance(inputs, basestring):
             self.inputs = [inputs]
