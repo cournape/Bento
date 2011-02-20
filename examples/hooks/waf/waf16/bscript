@@ -16,6 +16,7 @@ if os.environ.has_key("WAFDIR"):
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
 else:
     WAFDIR = os.path.join(os.getcwd(), "waflib")
+WAF_TOP = os.path.join(WAFDIR, os.pardir)
 
 WAF_CONFIG_LOG = 'config.log'
 
@@ -48,10 +49,7 @@ def _init():
     from waflib import Build
 
     Logs.init_log()
-    opts = OptionsContext()
-    opts.parse_args([])
-    opts.load("compiler_c")
-    Options.options.check_c_compiler = "gcc"
+
     class FakeModule(object):
         pass
     Context.g_module = FakeModule
@@ -61,6 +59,12 @@ def _init():
 
     Context.top_dir = os.getcwd()
     Context.out_dir = os.path.join(os.getcwd(), "build")
+    Context.waf_dir = WAF_TOP
+
+    opts = OptionsContext()
+    opts.parse_args([])
+    opts.load("compiler_c")
+    Options.options.check_c_compiler = "gcc"
 
 def _init_configure(ctx):
     _init()
