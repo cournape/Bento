@@ -64,6 +64,9 @@ class GlobalContext(object):
     def register_command(self, name, klass):
         self._commands_registry.register_command(name, klass)
 
+    def register_context(self, name, klass):
+        self._contexts_registry.register(name, klass)
+
     def add_option(self, cmd_name, option, group=None):
         ctx = self._options_registry.get_options(cmd_name)
         ctx.add_option(option, group)
