@@ -25,7 +25,7 @@ Classifiers:
     Operating System :: Unix,
     Operating System :: MacOS
 ConfigPy: bento/__config_py.py
-HookFile: hscript
+HookFile: bscript
 
 Flag: bundling
     Description: whether to install bundled modules or not
