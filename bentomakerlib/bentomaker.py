@@ -143,10 +143,10 @@ def main(argv=None):
     popts = parse_global_options(argv)
     cmd_name = popts["cmd_name"]
 
-    register_stuff()
     if cmd_name and cmd_name not in ["convert"] or not cmd_name:
         _wrapped_main(popts)
     else:
+        register_stuff()
         _main(popts)
 
 def _wrapped_main(popts):
@@ -157,13 +157,15 @@ def _wrapped_main(popts):
         from bento.commands.configure import _setup_options_parser
         package_options = __get_package_options()
         _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
-    _big_ugly_hack()
 
     global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY, OPTIONS_REGISTRY)
-
     mods = set_main()
     for mod in mods:
         mod.startup(global_context)
+
+    register_stuff()
+    _big_ugly_hack()
+
     # FIXME: this registered options for new commands registered in hook. It
     # should be made all in one place (hook and non-hook)
     for cmd_name in COMMANDS_REGISTRY.get_command_names():
