@@ -7,7 +7,7 @@ from bento.commands.hooks \
         pre_configure, pre_build, override, post_configure, post_build
 from bento.commands.context \
     import \
-        CONTEXT_REGISTRY, ConfigureContext, BuildContext
+        ConfigureContext, BuildContext
 from bento.installed_package_description \
     import \
         InstalledSection
@@ -163,6 +163,6 @@ class WafBuildContext(BuildContext):
             return {}
         return builder
 
-def startup():
-    CONTEXT_REGISTRY.register("configure", WafConfigureContext)
-    CONTEXT_REGISTRY.register("build", WafBuildContext)
+def startup(context):
+    context.register_context("configure", WafConfigureContext)
+    context.register_context("build", WafBuildContext)
