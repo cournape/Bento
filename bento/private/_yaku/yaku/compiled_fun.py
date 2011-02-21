@@ -13,7 +13,7 @@ def f(task):
     wd = getattr(task, 'cwd', None)
     p = env.get_flat
     cmd = \'\'\' %s \'\'\' % s
-    return task.exec_command(cmd, cwd=wd)
+    return task.exec_command(cmd, cwd=wd, env=env['ENV'])
 '''
 
 COMPILE_TEMPLATE_NOSHELL = '''
@@ -27,7 +27,7 @@ def f(task):
 	lst = []
 	%s
 	lst = [x for x in lst if x]
-	return task.exec_command(lst, cwd=wd)
+	return task.exec_command(lst, cwd=wd, env=env['ENV'])
 '''
 
 

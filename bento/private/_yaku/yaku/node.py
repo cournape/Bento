@@ -125,7 +125,7 @@ class Node(object):
 
     def listdir(self):
         "list the directory contents"
-        return Utils.listdir(self.abspath())
+        return os.listdir(self.abspath())
 
     def mkdir(self):
         "write a directory for the node"

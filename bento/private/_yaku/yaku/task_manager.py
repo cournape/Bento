@@ -42,8 +42,8 @@ def hash_task(t):
     # FIXME: ext_in and ext_out should not be computed from the files
     ext_in = [os.path.splitext(s.name)[1] for s in t.inputs]
     ext_out = [os.path.splitext(s.name)[1] for s in t.outputs]
-    ext_t = tuple(ext_in + ext_out)
-    return hash((t.__class__.__name__, ext_t))
+    tup = tuple(ext_in + ext_out + t.before + t.after)
+    return hash((t.__class__.__name__, tup))
 
 class TaskManager(object):
     def __init__(self, tasks):
@@ -67,12 +67,17 @@ class TaskManager(object):
             for j in xrange(i + 1, max):
                 t2 = self.groups[keys[j]][0]
 
-                # add the constraints based on the comparisons
-                val = self.compare_exts(t1, t2)
-                if val > 0:
-                    self.set_order(keys[i], keys[j])
-                elif val < 0:
+                if t2.__class__.__name__ in t1.before:
                     self.set_order(keys[j], keys[i])
+                elif t1.__class__.__name__ in t2.before:
+                    self.set_order(keys[i], keys[j])
+                else:
+                    # add the constraints based on the comparisons
+                    val = self.compare_exts(t1, t2)
+                    if val > 0:
+                        self.set_order(keys[i], keys[j])
+                    elif val < 0:
+                        self.set_order(keys[j], keys[i])
 
     def make_groups(self):
         # XXX: we assume tasks with same input/output suffix can run
