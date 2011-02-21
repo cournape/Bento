@@ -70,3 +70,5 @@ class Test2to3Command(Command):
 def startup(context):
     context.register_command("test", TestCommand)
     context.register_command("test_2to3", Test2to3Command)
+
+    context.set_before("test_2to3", "configure")
