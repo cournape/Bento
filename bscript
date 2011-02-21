@@ -2,6 +2,12 @@ import os
 import sys
 import subprocess
 
+from bento.commands.hooks \
+    import \
+        pre_configure
+from bento.core.package \
+    import \
+        file_list
 from bento.commands.errors \
     import \
         CommandExecutionFailure
@@ -11,6 +17,13 @@ from bento.commands.core \
 from bento.core.utils \
     import \
         pprint
+
+import yaku.context
+import yaku.scheduler
+
+@pre_configure()
+def pconfigure(ctx):
+    ctx.yaku_configure_ctx.load_tool("python_2to3")
 
 class TestCommand(Command):
     def run(self, opts):
@@ -26,5 +39,34 @@ class TestCommand(Command):
         else:
             print stderr
 
+class Test2to3Command(Command):
+    def run(self, ctx):
+        bld = yaku.context.get_bld()
+        builder = bld.builders["python_2to3"]
+
+        builder.env["2TO3_EXCLUDE_LIST"] = [
+            os.path.join("bento", "private", "_ply", "ply", f) for f in \
+            os.listdir(os.path.join("bento", "private", "_ply", "ply")) 
+            if f.endswith(".py")]
+
+        files = file_list(ctx.pkg, bld.src_root)
+        builder.convert("bento_2to3", files)
+
+        try:
+            yaku.scheduler.run_tasks(bld)
+        finally:
+            bld.store()
+
+        saved = os.getcwd()
+        try:
+            os.chdir("build/py3k")
+            p = subprocess.Popen(["/Users/david/.local/bin/nosetests-3.1", "bento"],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = p.communicate()
+            print stderr
+        finally:
+            os.chdir(saved)
+
 def startup(context):
     context.register_command("test", TestCommand)
+    context.register_command("test_2to3", Test2to3Command)
