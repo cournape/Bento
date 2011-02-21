@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 
 from bento.commands.errors \
     import \
@@ -16,18 +17,14 @@ class TestCommand(Command):
         pprint('BLUE', "Running test command....")
         saved = os.getcwd()
 
-        os.chdir("bento/tests")
-        try:
-            from nose.core import main
-            try:
-                main(argv=sys.argv[:1])
-            except SystemExit, e:
-                if e.code:
-                    msg = "Command test failed (nose threw a SystemExit" \
-                          "(code=True))"
-                    raise CommandExecutionFailure(msg)
-        finally:
-            os.chdir(saved)
+        cmd = ["nosetests", "-s", "-v", "bento"]
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+        if p.returncode != 0:
+            print stderr
+            return p.returncode
+        else:
+            print stderr
 
 def startup(context):
     context.register_command("test", TestCommand)
