@@ -46,24 +46,22 @@ def _invert_dependencies(deps):
 class CommandScheduler(object):
     def __init__(self):
         self.before = defaultdict(list)
-        self.klasses = {}
+        self.command_names = {}
 
-    def _register(self, klass):
-        if not klass.__name__ in self.klasses:
-            self.klasses[klass.__name__] = klass
+    def _register(self, command_name):
+        if not command_name in self.command_names:
+            self.command_names[command_name] = command_name
 
-    def set_before(self, klass, klass_prev):
-        """Set klass_prev to be run before klass"""
-        self._register(klass)
-        self._register(klass_prev)
-        klass_name = klass.__name__
-        klass_prev_name = klass_prev.__name__
-        if not klass_prev_name in self.before[klass_name]:
-            self.before[klass_name].append(klass_prev_name)
+    def set_before(self, command_name, command_name_prev):
+        """Set command_name_prev to be run before command_name"""
+        self._register(command_name)
+        self._register(command_name_prev)
+        if not command_name_prev in self.before[command_name]:
+            self.before[command_name].append(command_name_prev)
 
-    def set_after(self, klass, klass_next):
-        """Set klass_next to be run after klass"""
-        return self.set_before(klass_next, klass)
+    def set_after(self, command_name, command_name_next):
+        """Set command_name_next to be run after command_name"""
+        return self.set_before(command_name_next, command_name)
 
     def order(self, target):
         # XXX: cycle detection missing !
@@ -87,8 +85,8 @@ class CommandScheduler(object):
                         _visit(m, stack_visited)
                 out.append(n)
             stack_visited.pop(n)
-        _visit(target.__name__, {})
-        return [self.klasses[o] for o in out[:-1]]
+        _visit(target, {})
+        return [self.command_names[o] for o in out[:-1]]
 
 # Instance of this class record, persist and retrieve data on a per command
 # basis, to reuse them between runs. Anything refered in Command.external_deps

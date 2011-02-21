@@ -53,10 +53,10 @@ else:
 SCRIPT_NAME = 'bentomaker'
 
 CMD_SCHEDULER = CommandScheduler()
-CMD_SCHEDULER.set_before(BuildCommand, ConfigureCommand)
-CMD_SCHEDULER.set_before(BuildEggCommand, BuildCommand)
-CMD_SCHEDULER.set_before(BuildWininstCommand, BuildCommand)
-CMD_SCHEDULER.set_before(InstallCommand, BuildCommand)
+CMD_SCHEDULER.set_before("build", "configure")
+CMD_SCHEDULER.set_before("build_egg", "build")
+CMD_SCHEDULER.set_before("build_wininst", "build")
+CMD_SCHEDULER.set_before("install", "build")
 
 CMD_DATA_DUMP = os.path.join(BUILD_DIR, "cmd_data.db")
 CMD_DATA_STORE = CommandDataProvider.from_file(CMD_DATA_DUMP)
@@ -158,7 +158,8 @@ def _wrapped_main(popts):
         package_options = __get_package_options()
         _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
 
-    global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY, OPTIONS_REGISTRY)
+    global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY,
+                                   OPTIONS_REGISTRY, CMD_SCHEDULER)
     mods = set_main()
     for mod in mods:
         mod.startup(global_context)
@@ -248,10 +249,10 @@ def _get_subpackage(pkg, top, local_node):
         else:
             return None
 
-def run_dependencies(cmd_klass, top, pkg):
-    deps = CMD_SCHEDULER.order(cmd_klass)
-    for cmd_klass in deps:
-        cmd_name = COMMANDS_REGISTRY.get_command_name(cmd_klass)
+def run_dependencies(cmd_name, top, pkg):
+    deps = CMD_SCHEDULER.order(cmd_name)
+    for cmd_name in deps:
+        cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
         cmd_argv = CMD_DATA_STORE.get_argv(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, top, pkg)
@@ -294,7 +295,7 @@ def run_cmd(cmd_name, cmd_opts):
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
     else:
-        run_dependencies(cmd_klass, top, pkg)
+        run_dependencies(cmd_name, top, pkg)
 
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
