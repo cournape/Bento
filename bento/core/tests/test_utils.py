@@ -9,7 +9,7 @@ from nose.tools import \
     assert_equal
 
 from bento.core.utils import \
-    validate_glob_pattern, expand_glob, subst_vars
+    validate_glob_pattern, expand_glob, subst_vars, to_camel_case
 
 class TestParseGlob(unittest.TestCase):
     def test_invalid(self):
@@ -59,3 +59,9 @@ def test_subst_vars_escaped():
          'datadir': '$datarootdir'}
     assert_equal(subst_vars('$datadir', d), '/usr/local/share')
     assert_equal(subst_vars('$$datadir', d), '$datadir')
+
+def test_to_camel_case():
+    d = [("foo", "Foo"), ("foo_bar", "FooBar"), ("_foo_bar", "_FooBar"), ("__fubar", "__Fubar"),
+         ("_fubar_", "_Fubar_")]
+    for lower, camel in d:
+        assert_equal(to_camel_case(lower), camel)

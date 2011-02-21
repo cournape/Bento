@@ -428,3 +428,34 @@ def virtualenv_prefix():
             if os.path.exists(venv_path):
                 return p
     return None
+
+def to_camel_case(s):
+    """Transform a string to camel case convention."""
+    if len(s) < 1:
+        return ""
+    else:
+        # XXX: could most likely be simpler with regex ?
+        ret = []
+        if s[0].isalpha():
+            ret.append(s[0].upper())
+            i = 1
+        elif s[0] == "_":
+            i = 0
+            while i < len(s) and s[i] == "_":
+                ret.append(s[i])
+                i += 1
+            if i < len(s) and s[i].isalpha():
+                ret.append(s[i].upper())
+                i += 1
+        else:
+            i = 0
+        while i < len(s):
+            c = s[i]
+            if c == "_" and i < len(s) - 1 and s[i+1].isalpha():
+                print "YO", i
+                ret.append(s[i+1].upper())
+                i += 1
+            else:
+                ret.append(c)
+            i += 1
+        return "".join(ret)
