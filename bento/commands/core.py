@@ -170,7 +170,8 @@ def command(bypass_help=True):
         else:
             run = lambda self, ctx: f(ctx)
         klass.run = run
-        klass.long_descr = f.__doc__
+        if f.__doc__:
+            klass.long_descr = f.__doc__
     return _dec
 
 class CommandRegistry(object):
