@@ -452,7 +452,6 @@ def to_camel_case(s):
         while i < len(s):
             c = s[i]
             if c == "_" and i < len(s) - 1 and s[i+1].isalpha():
-                print "YO", i
                 ret.append(s[i+1].upper())
                 i += 1
             else:
