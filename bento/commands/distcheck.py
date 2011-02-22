@@ -30,11 +30,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
     short_descr = "check that sdist output is buildable."
     def run(self, ctx):
         pprint('BLUE', "Distcheck...")
-        bentomaker_script = os.path.abspath(sys.argv[0])
-        if sys.platform == "win32":
-            bentomaker_script = [sys.executable, bentomaker_script]
-        else:
-            bentomaker_script = [bentomaker_script]
+        bentomaker_script = [sys.executable, "-m", "bentomakerlib.bentomaker"]
 
         pprint('PINK', "\t-> Running sdist...")
         sdist = COMMANDS_REGISTRY.get_command("sdist")()
