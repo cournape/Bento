@@ -39,8 +39,12 @@ Currently, the only way to interact with bento is bentomaker, a
 command-line interface to bento. It is used to build, install and test
 packages from the command line::
 
-    bentomaker configure
-    bentomaker build
+    bentomaker install
+
+This will automatically run the configure and build commands for you. You can
+run them explicitely if you to customized installation, e.g.::
+
+    bentomaker configure --prefix=/blabla
     bentomaker install
 
 You can also build eggs, source tarballs and windows installers
@@ -117,11 +121,21 @@ Say our fubar software has one manpage fubar.1::
 We need to add the following to bento.info::
 
     DataFiles: manpage
-        TargetDir: /usr/man/man1
+        TargetDir: $mandir
         Files: fubar/fubar.1
 
-This will install the file fubar/fubar.1 into /usr/man/man1 (as
-/usr/man/man1/fubar/fubar.1)
+This will install the file fubar/fubar.1 into $mandir (as
+$mandir/fubar/fubar.1). $mandir is expanded by bento to a sensible default on
+every support platform, and can be customized at configuration time. You can of
+course hardcode the install directory, e.g.::
+
+    DataFiles: manpage
+        TargetDir: /usr/share/man/man1
+        Files: fubar/fubar.1
+
+but this is generally not recommended as it is not portable, makes native
+packaging more difficult. Bento has a simple mechanism so that you can add your
+own paths.
 
 Extra source files
 ------------------
@@ -170,6 +184,10 @@ and not like::
     Library:
         CompiledLibrary: foo
             Sources: foo.c
+
+Note that it is currently not possible to link an extension against such a
+compiled library purely from the bento.info file: you need to use the hook
+mechanism.
 
 Adding executables
 ==================
