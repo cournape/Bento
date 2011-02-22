@@ -40,12 +40,16 @@ Bento includes bentomaker, a command-line interface to configure, build and
 install simple packages. Its interface is similar to autotools::
 
     bentomaker configure --prefix=somedirectory
-    bentomaker build
     bentomaker install
 
 If you are fine with default configuration values, you can install in one step::
 
     bentomaker install
+
+You can check where bento install files with the --list-files option (in which
+case bento does not install anything)::
+
+    bentomaker install --list-files
 
 Bentomaker contains a basic help facility, which list existing commands,
 etc...::
