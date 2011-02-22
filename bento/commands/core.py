@@ -10,6 +10,9 @@ import bento
 from bento._config \
     import \
         BENTO_SCRIPT
+from bento.core.utils \
+    import \
+        to_camel_case
 from bento.core.package_cache \
     import \
         CachedPackage
@@ -143,6 +146,32 @@ def get_usage():
     for header, hlp in commands:
         ret.append(fill_string(header, minlen) + hlp)
     return "\n".join(ret)
+
+# Decorator to create a new command class from a simple function
+def command(bypass_help=True):
+    def _dec(f):
+        klass_name = "%sCommand" % to_camel_case(f.__name__)
+
+        class _CmdFakeMetaclass(type):
+            def __init__(cls, name, bases, d):
+                super(_CmdFakeMetaclass, cls).__init__(name, bases, d)
+                name = cls.__name__
+
+        klass = _CmdFakeMetaclass(klass_name, (Command,), {})
+
+        COMMANDS_REGISTRY.register_command(f.__name__, klass)
+        if bypass_help:
+            def run(self, ctx):
+                o, a = ctx.options_context.parser.parse_args(ctx.get_command_arguments())
+                if o.help:
+                    ctx.options_context.parser.print_help()
+                    return
+                return f(ctx)
+        else:
+            run = lambda self, ctx: f(ctx)
+        klass.run = run
+        klass.long_descr = f.__doc__
+    return _dec
 
 class CommandRegistry(object):
     def __init__(self):

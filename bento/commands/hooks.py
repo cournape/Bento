@@ -4,6 +4,9 @@ import sys
 from bento.compat \
     import \
         inspect as compat_inspect
+from bento.commands.core \
+    import \
+        command
 
 __HOOK_REGISTRY = {}
 __PRE_HOOK_REGISTRY = {}
