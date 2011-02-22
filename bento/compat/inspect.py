@@ -380,10 +380,10 @@ def getmodulename(path):
 def getsourcefile(object):
     """Return the Python source file an object was defined in, if it exists."""
     filename = getfile(object)
-    if string.lower(filename[-4:]) in ['.pyc', '.pyo']:
+    if filename[-4:].lower() in ['.pyc', '.pyo']:
         filename = filename[:-4] + '.py'
     for suffix, mode, kind in imp.get_suffixes():
-        if 'b' in mode and string.lower(filename[-len(suffix):]) == suffix:
+        if 'b' in mode and filename[-len(suffix):].lower() == suffix:
             # Looks like a binary file.  We want to only return a text file.
             return None
     if os.path.exists(filename):
