@@ -140,7 +140,7 @@ class Node(object):
         if self.name:
             try:
                 os.mkdir(self.abspath())
-            except OSError as e:
+            except OSError:
                 pass
 
             if not os.path.isdir(self.abspath()):

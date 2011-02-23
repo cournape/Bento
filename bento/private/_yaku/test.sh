@@ -20,12 +20,14 @@ ntests3=0
 old_PYTHONPATH=$PYTHONPATH
 PYTHONPATH=$PWD:$PYTHONPATH
 
+PYTHON2=python2
+
 for i in $tests; do
 	echo "======== TESTING $i ============="
 	f=`basename $i`;
 	d=`dirname $i`;
 	rm -rf $d/build;
-	(cd $d && python $f);
+	(cd $d && $PYTHON2 $f);
 	if test $? -ne 0; then
 		nerrors=`expr $nerrors + 1`;
 	fi
