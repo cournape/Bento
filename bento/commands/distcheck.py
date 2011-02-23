@@ -3,9 +3,11 @@ import sys
 import shutil
 import tarfile
 
+import subprocess
+
 from bento.compat.api \
     import \
-        check_call, CalledProcessError, rename
+        rename
 
 from bento.commands.errors \
     import \
@@ -54,23 +56,35 @@ Usage:   bentomaker distcheck [OPTIONS]."""
             tarball.extractall()
             os.chdir(tardir)
 
+            def _call(cmd):
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = p.communicate()
+                stdout = stdout.strip()
+                stderr = stderr.strip()
+                if stdout:
+                    print stdout.decode()
+                if stderr:
+                    print stderr.decode()
+                if p.returncode != 0:
+                    raise CalledProcessError("error executing cmd %r" % cmd)
+
             pprint('PINK', "\t-> Configuring from sdist...")
-            check_call(bentomaker_script + ["configure", "--prefix=%s" % os.path.abspath("tmp")])
+            _call(bentomaker_script + ["configure", "--prefix=%s" % os.path.abspath("tmp")])
 
             pprint('PINK', "\t-> Building from sdist...")
-            check_call(bentomaker_script + ["build", "-i"])
+            _call(bentomaker_script + ["build", "-i"])
 
             pprint('PINK', "\t-> Building egg from sdist...")
-            check_call(bentomaker_script + ["build_egg"])
+            _call(bentomaker_script + ["build_egg"])
 
             if sys.platform == "win32":
                 pprint('PINK', "\t-> Building wininst from sdist...")
-                check_call(bentomaker_script + ["build_wininst"])
+                _call(bentomaker_script + ["build_wininst"])
 
             if "test" in COMMANDS_REGISTRY.get_command_names():
                 pprint('PINK', "\t-> Testing from sdist...")
                 try:
-                    check_call(bentomaker_script + ["test"])
+                    _call(bentomaker_script + ["test"])
                 except CalledProcessError, e:
                     raise CommandExecutionFailure(
                             "test command failed")
