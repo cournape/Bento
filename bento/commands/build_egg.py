@@ -1,7 +1,8 @@
 import os
+import warnings
 
 from bento.private.bytecode import \
-        bcompile
+        bcompile, PyCompileError
 from bento.core.utils import \
         pprint, ensure_dir
 from bento.core import \
@@ -70,7 +71,12 @@ def build_egg(ipkg, source_root=".", path=None):
         pprint("PINK", "Byte-compiling ...")
         for kind, source, target in iter_files(file_sections):
             if kind in ["pythonfiles"]:
-                zid.writestr("%sc" % target, bcompile(source))
+                try:
+                    bytecode = bcompile(source)
+                except PyCompileError, e:
+                    warnings.warn("Error byte-compiling %r" % source)
+                else:
+                    zid.writestr("%sc" % target, bcompile(source))
     finally:
         zid.close()
 

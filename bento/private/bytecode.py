@@ -48,10 +48,11 @@ if sys.version_info[0] < 3:
         finally:
             f.close()
 else:
-    from io import BytesIO
+    import io
+    import py_compile
 
-    def bcompile(file, cfile=None, dfile=None, doraise=False):
-        encoding = read_encoding(file, "utf-8")
+    def _bcompile(file, cfile=None, dfile=None, doraise=False):
+        encoding = py_compile.read_encoding(file, "utf-8")
         f = open(file, 'U', encoding=encoding)
         try:
             timestamp = int(os.fstat(f.fileno()).st_mtime)
@@ -81,3 +82,6 @@ else:
             return fc.getvalue()
         finally:
             fc.close()
+
+    def bcompile(file):
+        return _bcompile(file, doraise=True)
