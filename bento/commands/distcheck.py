@@ -7,7 +7,7 @@ import subprocess
 
 from bento.compat.api \
     import \
-        rename
+        rename, CalledProcessError
 
 from bento.commands.errors \
     import \
@@ -66,7 +66,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                 if stderr:
                     print stderr.decode()
                 if p.returncode != 0:
-                    raise CalledProcessError("error executing cmd %r" % cmd)
+                    raise CalledProcessError(p.returncode, cmd)
 
             pprint('PINK', "\t-> Configuring from sdist...")
             _call(bentomaker_script + ["configure", "--prefix=%s" % os.path.abspath("tmp")])
