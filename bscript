@@ -25,11 +25,13 @@ import yaku.scheduler
 def pconfigure(ctx):
     ctx.yaku_configure_ctx.load_tool("python_2to3")
 
+PY3K_BUILD = os.path.join("build", "py3k")
+
 @command()
-def test_2to3(ctx):
+def run_2to3(ctx):
     """\
-Purpose: run 2to3 on bento and test the convertion.
-Usage: bentomaker test_2to3 [OPTIONS]"""
+Purpose: run 2to3 on bento.
+Usage: bentomaker run_2to3 [OPTIONS]"""
     bld = yaku.context.get_bld()
     builder = bld.builders["python_2to3"]
 
@@ -46,15 +48,15 @@ Usage: bentomaker test_2to3 [OPTIONS]"""
     finally:
         bld.store()
 
-    saved = os.getcwd()
-    try:
-        os.chdir("build/py3k")
-        p = subprocess.Popen(["/Users/david/.local/bin/nosetests-3.1", "bento"],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
-        print stderr
-    finally:
-        os.chdir(saved)
+    msg = """\
+python 3 version of bento is now available in build/py3k. You can install bento
+for python 3 as follows:
+
+    python3 -m bentomakerlib.bentomaker configure # add custom options here
+    python3 -m bentomakerlib.bentomaker install
+
+"""
+    pprint('BLUE', msg)
 
 class TestCommand(Command):
     def run(self, opts):
@@ -73,4 +75,4 @@ class TestCommand(Command):
 def startup(context):
     context.register_command("test", TestCommand)
 
-    context.set_before("test_2to3", "configure")
+    context.set_before("run_2to3", "configure")
