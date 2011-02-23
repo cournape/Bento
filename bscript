@@ -61,16 +61,17 @@ for python 3 as follows:
 class TestCommand(Command):
     def run(self, opts):
         pprint('BLUE', "Running test command....")
-        saved = os.getcwd()
 
-        cmd = ["nosetests", "-s", "-v", "bento"]
+        cmd = ["nosetests-%s" % ".".join([str(i) for i in sys.version_info[:2]])]
+        cmd.extend(["-s", "-v", "bento"])
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         if p.returncode != 0:
-            print stderr
+            print(stderr.decode())
             return p.returncode
         else:
-            print stderr
+            for stream in [stdout, stderr]:
+                print(stream.decode())
 
 def startup(context):
     context.register_command("test", TestCommand)
