@@ -4,6 +4,7 @@ import re
 import glob
 import shutil
 import errno
+import subprocess
 
 try:
     from hashlib import md5
@@ -469,3 +470,24 @@ def fix_kw(kw):
     """Make sure the given dictionary may be used as a kw dict independently on
     the python version and encoding of kw's keys."""
     return dict([(str(k), v) for k, v in kw.iteritems()])
+
+def test_program_run(cmd, **kw):
+    """Test whether the given command can work.
+
+    Notes
+    -----
+    Arguments are the same as subprocess.Popen, except for stdout/stderr
+    defaults (to PIPE)
+    """
+    for stream in ["stdout", "stderr"]:
+        if not stream in kw:
+            kw[stream] = subprocess.PIPE
+    try:
+        p = subprocess.Popen(cmd, **kw)
+        p.wait()
+        return p.returncode == 0
+    except OSError, e:
+        if e.errno == 2:
+            return False
+        else:
+            raise
