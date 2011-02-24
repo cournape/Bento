@@ -32,8 +32,6 @@ Usage:   bentomaker distcheck [OPTIONS]."""
     short_descr = "check that sdist output is buildable."
     def run(self, ctx):
         pprint('BLUE', "Distcheck...")
-        bentomaker_script = [sys.executable, "-m", "bentomakerlib.bentomaker"]
-
         pprint('PINK', "\t-> Running sdist...")
         sdist = COMMANDS_REGISTRY.get_command("sdist")()
         sdist.run(ctx)
@@ -67,6 +65,9 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                     print stderr.decode()
                 if p.returncode != 0:
                     raise CalledProcessError(p.returncode, cmd)
+
+            _call([sys.executable, "bootstrap.py"])
+            bentomaker_script = [os.path.abspath("bentomaker")]
 
             pprint('PINK', "\t-> Configuring from sdist...")
             _call(bentomaker_script + ["configure", "--prefix=%s" % os.path.abspath("tmp")])
