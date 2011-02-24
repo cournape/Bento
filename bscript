@@ -16,7 +16,7 @@ from bento.commands.core \
         Command, Option
 from bento.core.utils \
     import \
-        pprint
+        pprint, test_program_run
 
 import yaku.context
 import yaku.scheduler
@@ -104,6 +104,9 @@ class TestCommand(Command):
         pprint('BLUE', "Running test command....")
 
         cmd = ["nosetests-%s" % ".".join([str(i) for i in sys.version_info[:2]])]
+        if not test_program_run(cmd + ["-h"]):
+            raise CommandExecutionFailure(
+                    "program %r not found - needed to test bento !" % cmd[0])
         cmd.extend(["-s", "-v", "bento"])
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
