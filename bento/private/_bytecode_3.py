@@ -15,7 +15,7 @@ def _bcompile(file, cfile=None, dfile=None, doraise=False):
     try:
         codeobject = builtins.compile(codestring, dfile or file,'exec')
     except Exception as err:
-        py_exc = PyCompileError(err.__class__, err, dfile or file)
+        py_exc = py_compile.PyCompileError(err.__class__, err, dfile or file)
         if doraise:
             raise py_exc
         else:

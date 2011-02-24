@@ -5,11 +5,14 @@ import sys
 # Unfortunately, there is no way that I know of to write the bytecode into a
 # string to be used by ZipFile (using compiler is way too slow). Also, the
 # py_compile code has not changed much for 10 years.
+from py_compile \
+    import \
+        PyCompileError
 if sys.version_info[0] < 3:
     from _bytecode_2 \
         import \
-            bcompile, PyCompileError
+            bcompile
 else:
     from _bytecode_3 \
         import \
-            bcompile, PyCompileError
+            bcompile
