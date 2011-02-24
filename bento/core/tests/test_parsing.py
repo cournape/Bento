@@ -75,9 +75,9 @@ Path: foo
         self._test_simple(opts)
 
     def test_simple_from_file(self):
-        fid, filename = tempfile.mkstemp(suffix=".info")
+        fid, filename = tempfile.mkstemp(suffix=".info", text=True)
         try:
-            os.write(fid, self.simple_text)
+            os.write(fid, self.simple_text.encode())
             opts = PackageOptions.from_file(filename)
             self._test_simple(opts)
         finally:
