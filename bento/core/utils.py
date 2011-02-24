@@ -458,3 +458,14 @@ def to_camel_case(s):
                 ret.append(c)
             i += 1
         return "".join(ret)
+
+
+# We sometimes use keys from json dictionary as key word arguments. This may
+# not work because python2.5 and below requires arguments to be string and not
+# unicode while json may decode stuff as unicode, or alternatively encoding as
+# ascii does not work in python3 which requires string (==unicode) there. Or
+# maybe I just don't understand how this works...
+def fix_kw(kw):
+    """Make sure the given dictionary may be used as a kw dict independently on
+    the python version and encoding of kw's keys."""
+    return dict([(str(k), v) for k, v in kw.iteritems()])

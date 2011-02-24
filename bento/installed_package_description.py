@@ -9,7 +9,7 @@ from bento.compat.api import json
 from bento.core.platforms import \
     get_scheme
 from bento.core.utils import \
-    subst_vars, normalize_path, unnormalize_path, same_content
+    subst_vars, normalize_path, unnormalize_path, same_content, fix_kw
 from bento.core.pkg_objects import \
     Executable
 
@@ -130,13 +130,13 @@ class InstalledPkgDescription(object):
 
     @classmethod
     def __from_data(cls, data):
-        meta_vars = data["meta"]
+        meta_vars = fix_kw(data["meta"])
         #variables = data["variables"]
         install_paths = data.get("install_paths", None)
 
         executables = {}
         for name, executable in data["executables"].items():
-            executables[name] = Executable.from_parse_dict(executable)
+            executables[name] = Executable.from_parse_dict(fix_kw(executable))
 
         file_sections = {}
 
