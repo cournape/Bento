@@ -25,7 +25,7 @@ import yaku.scheduler
 def pconfigure(ctx):
     try:
         ctx.yaku_configure_ctx.load_tool("python_2to3")
-    except ImportError, e:
+    except ImportError:
         pass
 
 PY3K_BUILD = os.path.join("build", "py3k")
