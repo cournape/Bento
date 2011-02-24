@@ -1,11 +1,12 @@
 import os
 
-from collections \
-    import \
-        defaultdict
 from cPickle \
     import \
         dump, load
+
+from bento.compat.api \
+    import \
+        defaultdict
 
 class PickledStore(object):
     """Simple class to store/retrieve data from a pickled file."""

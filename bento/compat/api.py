@@ -39,3 +39,12 @@ if sys.version_info < (2, 6, 0):
     import simplejson as json
 else:
     import json
+
+try:
+    from collections \
+        import \
+            defaultdict
+except ImportError:
+    from bento.compat._collections \
+        import \
+            defaultdict
