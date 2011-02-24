@@ -1,8 +1,9 @@
 import os
 import sys
-
+import builtins
 import io
 import py_compile
+import marshal
 
 if sys.version_info[:2] < (3, 2):
     def _bcompile(file, cfile=None, dfile=None, doraise=False):
@@ -28,11 +29,11 @@ if sys.version_info[:2] < (3, 2):
         fc = io.BytesIO()
         try:
             fc.write(b'\0\0\0\0')
-            wr_long(fc, timestamp)
+            py_compile.wr_long(fc, timestamp)
             marshal.dump(codeobject, fc)
             fc.flush()
             fc.seek(0, 0)
-            fc.write(MAGIC)
+            fc.write(py_compile.MAGIC)
             return fc.getvalue()
         finally:
             fc.close()
@@ -72,7 +73,7 @@ else:
             marshal.dump(codeobject, fc)
             fc.flush()
             fc.seek(0, 0)
-            fc.write(MAGIC)
+            fc.write(py_compile.MAGIC)
             return fc.getvalue()
         finally:
             fc.close()
