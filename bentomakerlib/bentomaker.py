@@ -155,8 +155,16 @@ def _wrapped_main(popts):
         # package info is parsed and available, so that we can define options
         # and co for commands
         from bento.commands.configure import _setup_options_parser
-        package_options = __get_package_options()
-        _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
+        # FIXME: logic to handle codepaths which work without a bento.info
+        # should be put in one place
+        if os.path.exists(BENTO_SCRIPT):
+            package_options = __get_package_options()
+            _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
+        else:
+            import warnings
+            warnings.warn("No %r file in current directory - not all options "
+                          "will be displayed" % BENTO_SCRIPT)
+            return
 
     global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY,
                                    OPTIONS_REGISTRY, CMD_SCHEDULER)
