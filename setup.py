@@ -17,10 +17,16 @@ from setuptools.command.install \
 from distutils.core \
     import \
         setup
+from distutils.filelist \
+    import \
+        FileList
 
 from bento.core \
     import \
         PackageDescription
+from bento.distutils.commands.sdist \
+    import \
+        sdist
 
 from setup_common \
     import \
@@ -87,7 +93,7 @@ PACKAGE_DATA = {
     'entry_points': {
         'console_scripts': ['bentomaker=bentomakerlib.bentomaker:noexc_main']
     },
-    'cmdclass': {"install": install}
+    'cmdclass': {"install": install, 'sdist': sdist}
 }
 
 if __name__ == '__main__':
