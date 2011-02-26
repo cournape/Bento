@@ -37,8 +37,6 @@ elif sys.platform == 'win32':
 class Node(object):
     __slots__ = ('name', 'sig', 'children', 'parent', 'cache_abspath', 'cache_isdir')
     def __init__(self, name, parent):
-        import inspect
-        #print inspect.stack()[3], name, parent
         self.name = name
         self.parent = parent
 
