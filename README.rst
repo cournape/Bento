@@ -1,5 +1,9 @@
-A pythonic, no-nonsense packaging tool for python software. Packaging is as
-simple as writing a bento.info file with a file which looks as follows::
+Bento is an alternative to distutils-based packaging tools such as distutils,
+setuptools or distribute. Bento focus on reproducibility, extensibility and
+simplicity (in that order).
+
+Packaging is as simple as writing a bento.info file with a file which looks as
+follows::
 
     Name: Foo
     Author: John Doe
@@ -10,34 +14,41 @@ simple as writing a bento.info file with a file which looks as follows::
 The package is then installed with bentomaker, the command line interface to
 bento::
 
-    bentomaker configure
-    bentomaker build
     bentomaker install
 
 The main features of bento are:
 
-    * Static package description which can be queried without running any
-      python code
-    * Support for arbitrary installation scheme (ala autoconf, with sensible
-      defaults on Windows)
-    * Simple and flexible data files installation description: you can tell
-      bento to install any file anywhere, without the need to harcode any
-      installation path in the package description.
-    * Hooks to complement or override commands. Hooks provide access to most
-      key data of the package, to enable powerful customization. A proof of
-      concept overriding the build command to build C extensions with waf is
-      provided.
-    * Dependencies between commands is not harcoded in the command themselves,
-      but are specified externally in a directed acyclic graph. This will
-      enable customization of commands without typical hacks seen in distutils
-      and its successor, where you need to monkey patch things just to make
-      your command run in the right order.
+    * Supports python from 2.4 (including 3.x)
+    * Package description in a simple, indentation-based format. Supports most
+      distutils/setuptools metadata as well as packages and extensions.
+      Recursive support for deeply-nested packages.
+    * Convert command to convert (simple) distutils/setuptools/distribute-based
+      packages to bento format
+    * Designed with reproducibility in mind: re-running the same command twice
+      should produce the same result (idempotency)
+    * Easy to customize install paths from the command line, with sensible
+      defaults on every platform
+    * Preliminary support for windows installers (.exe) and eggs.
+    * Pluggable facility to build C extensions: simple one by
+      default, but adding support for tools like waf or scons is possible
+      (proof of concept for waf already implemented).
 
 But bento does more:
 
+    * Designed as a library from the ground up, with a focus on robustness and
+      extensibility:
+
+        * new commands can be inserted before/after an existing one without
+          modifying the latter (no monkey-patching needed)
+        * easy to add command line options to existing commands
+        * each command has a pre/post hook
+        * API designed such as commands need to know very little from each other.
+        * Moving toward a node-based architecture for robust file location
+          (waf-based design)
+
     * Easily bundable, one-file distribution to avoid extra-dependencies when
-      using bento. You only need to add one file to your source tarball !
-    * Automatic conversion from setup.py to bento format
+      using bento. You only need to add one file to your sources, no need for
+      your users to install anything.
     * Basic support for console scripts ala setuptools
     * Preliminary support for building eggs and windows installers
     * Dependency-based extension builders (source content change is
@@ -46,7 +57,7 @@ But bento does more:
     * Low-level interface to the included build tool to override/change any
       compilation parameter (compilation flag, compiler, etc...)
     * Optionally generate a python module with all installation paths to avoid
-      relying on __file__ to retrieve resources.
+      relying on __file__ to retrieve resources
 
 The goals of bento are simplicity and extensibility. There should be only one
 way to package simple packages (ideally, relying only on the bento.info
@@ -58,24 +69,17 @@ python packages.
 Planned features:
 
     * Support for msi and Mac OS X .mpkg
+    * To help transition from distutils-based infrastructure, a compatibility layer
+      around setup.py will be available. It will then possible to use a
+      bento-based package with pip install and pypi
     * Reliable conversion between packaging formats on the platforms where it
       makes sense (egg <-> wininst, mpkg <-> egg, etc...)
     * Provide API to enable Linux distributors to write simple extensions for
       packaging bento-packages as they see fit
-    * Distutils compatibility mode, driven by the bento.info file
-    * Protocol to integrate with real build tools like scons, waf or
-      make
     * Infrastructure for a correctly designed package index, using
       well-known packaging practices instead of the broken easy_install + pypi
       model (easy mirroring, enforced metadata, indexing to enable
       querying-before-installing, reliable install, etc...).
-
-Code-wise, bento has the following advantages:
-
-    * Clear separation of intent between package description, configuration,
-      build and installation
-    * No dependency on distutils or setuptools code, with a focus on
-      using standard python idioms
 
 Bento discussion happen on NumPy Mailing list, and development is on
 `github`_. Bugs should be reported on bento `issue-tracker`_. Online
@@ -103,7 +107,16 @@ Bento may be installed the usual way from setup.py::
 Alternatively, there is a bootstrap script so that bento can install itself::
 
     python bootstrap.py # create the bentomaker[.exe] script/executable 
-    ./bentomaker configure && ./bentomaker build && ./bentomaker install
+    ./bentomaker install
+
+To install bento for python 3::
+
+    python bootstrap.py # this should be run under a supported python 2.x version
+    ./bentomaker run_2to3
+    # Not mandatory: sanity check of the converted code
+    ./bentomaker test_py3k
+
+and follows the given instructions.
 
 Quick starting guide for packaging with bento
 -----------------------------------------------
