@@ -5,6 +5,8 @@ Released on .... This is mostly a stabilization of features implemented so far,
 with some code refactoring to enable easier customization of the build process.
 Main features:
 
+    - All python versions from 2.4 up to 3.1 now pass the test suite (3.2 will
+      follow once the distribute issue with 3.2 is fixed)
     - If run under a virtual environment (virtualenv), bento will install the
       package inside the virtualenvironment by default
     - When a command depends on other commands, those are now automatically
