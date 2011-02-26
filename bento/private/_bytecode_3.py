@@ -39,6 +39,8 @@ if sys.version_info[:2] < (3, 2):
             fc.close()
 else:
     import tokenize
+    import imp
+    import errno
     def _bcompile(file, cfile=None, dfile=None, doraise=False, optimize=-1):
         with tokenize.open(file) as f:
             try:
@@ -69,7 +71,7 @@ else:
         fc = io.BytesIO()
         try:
             fc.write(b'\0\0\0\0')
-            wr_long(fc, timestamp)
+            py_compile.wr_long(fc, timestamp)
             marshal.dump(codeobject, fc)
             fc.flush()
             fc.seek(0, 0)
