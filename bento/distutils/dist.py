@@ -37,3 +37,6 @@ class BentoDistribution(Distribution):
 
         self.root_node = Node("", None)
         self.top_node = self.root_node.find_dir(os.getcwd())
+
+    def has_data_files(self):
+        return len(self.pkg.data_files) > 0        
