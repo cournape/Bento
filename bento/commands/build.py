@@ -11,6 +11,9 @@ from bento._config \
 from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries, get_packages
+from bento.core.pkg_objects \
+    import \
+        DataFiles
 
 from bento.commands.core \
     import \
@@ -164,9 +167,11 @@ def build_data_files(pkg):
     ret = {}
     # Get data files
     for name, data_section in pkg.data_files.items():
-        data_section.files = data_section.resolve_glob()
-        data_section.source_dir = os.path.join("$_srcrootdir", data_section.source_dir)
-        ret[name] = InstalledSection.from_data_files(name, data_section)
+        files = data_section.resolve_glob()
+        source_dir = os.path.join("$_srcrootdir", data_section.source_dir)
+        new_data_section = DataFiles(data_section.name, files,
+                                     data_section.target_dir, source_dir)
+        ret[name] = InstalledSection.from_data_files(name, new_data_section)
 
     return ret
 
