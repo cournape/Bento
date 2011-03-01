@@ -34,11 +34,15 @@ from bento.distutils.commands.install_lib \
 from bento.distutils.commands.install_data \
     import \
         install_data
-from bento.distutils.commands.bdist_egg \
-    import \
-        bdist_egg
-_BENTO_MONKEYED_CLASSES = {"bdist_egg": bdist_egg, "build": build,
-    "install_data": install_data, "install_lib": install_lib, "sdist": sdist}
+
+_BENTO_MONKEYED_CLASSES = {"build": build, "install_data": install_data,
+                           "install_lib": install_lib, "sdist": sdist}
+
+if _is_setuptools_activated():
+    from bento.distutils.commands.bdist_egg \
+        import \
+            bdist_egg
+    _BENTO_MONKEYED_CLASSES["bdist_egg"] = bdist_egg
 
 def _setup_cmd_classes(attrs):
     cmdclass = attrs.get("cmdclass", {})

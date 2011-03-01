@@ -8,7 +8,8 @@ if _is_setuptools_activated():
         import \
             bdist_egg as old_bdist_egg
 else:
-    pass
+    raise ValueError("You cannot use bdist_egg without setuptools enabled first")
+
 from bento._config \
     import \
         IPKG_PATH
