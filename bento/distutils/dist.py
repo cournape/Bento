@@ -12,6 +12,9 @@ else:
         import \
             Distribution
 
+from bento.conv \
+    import \
+        pkg_to_distutils_meta
 from bento.core.node \
     import \
         Node
@@ -19,11 +22,50 @@ from bento.core.package \
     import \
         PackageDescription
 
-class BentoDistribution(Distribution):
-    def __init__(self, *a, **kw):
-        Distribution.__init__(self, *a, **kw)
+from bento.distutils.commands.sdist \
+    import \
+        sdist
+from bento.distutils.commands.build \
+    import \
+        build
+from bento.distutils.commands.install_lib \
+    import \
+        install_lib
+from bento.distutils.commands.install_data \
+    import \
+        install_data
+from bento.distutils.commands.bdist_egg \
+    import \
+        bdist_egg
+_BENTO_MONKEYED_CLASSES = {"bdist_egg": bdist_egg, "build": build,
+    "install_data": install_data, "install_lib": install_lib, "sdist": sdist}
 
-        self.pkg = PackageDescription.from_file("bento.info")
+def _setup_cmd_classes(attrs):
+    cmdclass = attrs.get("cmdclass", {})
+    for klass in _BENTO_MONKEYED_CLASSES:
+        if not klass in cmdclass:
+            cmdclass[klass] = _BENTO_MONKEYED_CLASSES[klass]
+    attrs["cmdclass"] = cmdclass
+    return attrs
+
+class BentoDistribution(Distribution):
+    def __init__(self, attrs=None):
+        if attrs is None:
+            attrs = {}
+
+        if not "bento_info" in attrs:
+            bento_info = "bento.info"
+        else:
+            bento_info = attrs["bento.info"]
+        self.pkg = PackageDescription.from_file(bento_info)
+
+        attrs = _setup_cmd_classes(attrs)
+
+        d = pkg_to_distutils_meta(self.pkg)
+        attrs.update(d)
+
+        Distribution.__init__(self, attrs)
+
         self.packages = self.pkg.packages
         self.py_modules = self.pkg.py_modules
         if hasattr(self, "entry_points"):
@@ -40,3 +82,13 @@ class BentoDistribution(Distribution):
 
     def has_data_files(self):
         return len(self.pkg.data_files) > 0        
+
+# Install it throughout the distutils
+_MODULES = []
+if _is_setuptools_activated():
+    import setuptools.dist
+    _MODULES.append(setuptools.dist)
+import distutils.dist, distutils.core, distutils.cmd
+_MODULES.extend([distutils.dist, distutils.core, distutils.cmd])
+for module in _MODULES:
+    module.Distribution = BentoDistribution
