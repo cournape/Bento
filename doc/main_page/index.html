@@ -14,7 +14,7 @@
 			<h1><a href="./">Bento</a></h1>
 			<p id="subtitle"><strong>The pythonic packaging solution</strong></p>
 		</div>
-		<div id="informations"> 
+		<div id="informations">
 		<ul> 
 			<li> 
 				<div class="group row"> 
@@ -43,6 +43,8 @@ Library:
 <pre><code><span style="color: #e3d796;">$</span> bentomaker configure
 <span style="color: #e3d796;">$</span> bentomaker build
 <span style="color: #e3d796;">$</span> bentomaker install
+<span style="color: #AD5818;"># Or more simply</span>
+<span style="color: #e3d796;">$</span> bentomaker install
 </code></pre>
 					</div> 
 				</div> 
@@ -57,6 +59,12 @@ Library:
 # file that you can include in your project</span>
 <span style="color: #e3d796;">$</span> python tools/createdist.py
 Created self-contained script 'bentomaker' in ...
+</code></pre>
+<pre><code><span style="color: #AD5818;"># You can now simply add the generated
+# bentomaker file into your source distribution</span>
+<span style="color: #e3d796;">$</span> cp bentomaker $my_source_tree
+<span style="color: #e3d796;">$</span> cd $my_source_tree
+<span style="color: #e3d796;">$</span> ./bentomaker ...
 </code></pre>
 					</div> 
 				</div> 
@@ -104,10 +112,10 @@ ExtraSourceFiles:
 						bento.info file.</p>
 				
 					</div> 
-					<div class="col-2"> 
+					<div class="col-2">
 <pre><code>Datafiles: pdf-doc
     TargetDir: $pdfdoc
-    Files: main.pdf</code></pre> 
+    Files: main.pdf</code></pre>
 <pre><code><span style="color: #e3d796;">$</span> bentomaker configure --pdfdoc=/usr/pdfdoc</code></pre> 
 					</div> 
 				</div> 
@@ -118,7 +126,10 @@ ExtraSourceFiles:
 						<p>If your package uses setup.py, you can convert it to bento format using the convert command</p> 
 					</div> 
 					<div class="col-2"> 
-<pre><code><span style="color: #e3d796;">$</span> bentomaker convert</code></pre> 
+<pre><code><span style="color: #AD5818;"># Run this in a project containing a setup.py</span>
+<span style="color: #e3d796;">$</span> bentomaker convert</code></pre>
+<pre><code><span style="color: #AD5818;"># You now have a bento.info file</span>
+<span style="color: #e3d796;">$</span> bentomaker configure ...</code></pre>
 					</div> 
 				</div> 
 			</li> 
