@@ -113,3 +113,37 @@ could modify the generated file as follows::
         if os(win32):
             InstallRequires:
                 pywin32
+
+Adding bento-based setup.py for compatibility with pip, etc...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Although nothing fundamentally prevents bento to work under installers such as
+pip, pip currently does not know anything about bento. To help transition,
+bento has a distutils compatibility layer. A setup.py as simple as::
+
+    import setuptools
+    import bento.distutils
+
+    from setuptools import setup
+
+    if __name__ == '__main__':
+        setup()
+
+will enable commands such as::
+
+    python setup.py install
+    python setup.py sdist
+
+to work as expected, taking all the package information from bento.info file.
+
+Note:: obviously, this mode will not enable all the features offered by bento.
+If it were possible, bento would not have been written in the first place.
+Nevertheless, the following commands should work relatively well as long as you
+don't have hooks:
+
+    * sdist
+    * bdist_egg
+    * install
+
+This should be enough for pip install foo or easy_install foo to work for a
+bento-based package.
