@@ -94,6 +94,7 @@ class CmdContext(object):
 
         self.cmd_argv = cmd_argv
         self.top_node = top_node
+        self.build_root = top_node.make_node("build")
 
         self._configured_state = None
 

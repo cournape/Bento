@@ -11,6 +11,9 @@ from bento._config \
 from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries, get_packages
+from bento.core.pkg_objects \
+    import \
+        DataFiles
 
 from bento.commands.core \
     import \
@@ -83,7 +86,7 @@ Usage:   bentomaker build [OPTIONS]."""
                 build_packages
 
         def build_config_py(pkg):
-            return _build_config_py(pkg, ctx.get_paths_scheme())
+            return _build_config_py(pkg, ctx.get_paths_scheme(), ctx.top_node, ctx.build_root)
         self.section_writer.sections_callbacks["bentofiles"] = \
                 build_config_py
         self.section_writer.update_sections(ctx.pkg)
@@ -139,23 +142,26 @@ def _build_python_files(pkg, top_node):
 
     return {"library": py_section}
 
-def _build_config_py(pkg, paths):
+def _build_config_py(pkg, paths, src_root, build_root):
     if pkg.config_py is not None:
-        tmp_config = os.path.join(BUILD_DIR, "__tmp_config.py")
-        fid = open(tmp_config, "w")
+        tmp_config_node = build_root.make_node(os.path.join(pkg.name, "__tmp_config.py"))
+        p = tmp_config_node.parent
+        p.mkdir()
+
+        fid = open(tmp_config_node.abspath(), "w")
         try:
             for name, value in paths.items():
                 fid.write('%s = "%s"\n' % (name.upper(), subst_vars(value, paths)))
         finally:
             fid.close()
-        target = os.path.join(os.path.dirname(tmp_config),
-                              pkg.config_py)
-        ensure_dir(target)
-        rename(tmp_config, target)
+        target = build_root.make_node(pkg.config_py)
+        target.parent.mkdir()
+        rename(tmp_config_node.abspath(), target.abspath())
 
         section = InstalledSection.from_source_target_directories("bentofiles", "config",
-                os.path.join("$_srcrootdir", BUILD_DIR),
-                "$sitedir", [pkg.config_py])
+                os.path.join("$_srcrootdir", target.parent.path_from(src_root)),
+                os.path.join("$sitedir", os.path.dirname(pkg.config_py)),
+                [os.path.basename(pkg.config_py)])
         return {"bentofiles": section}
     else:
         return {}
@@ -164,9 +170,11 @@ def build_data_files(pkg):
     ret = {}
     # Get data files
     for name, data_section in pkg.data_files.items():
-        data_section.files = data_section.resolve_glob()
-        data_section.source_dir = os.path.join("$_srcrootdir", data_section.source_dir)
-        ret[name] = InstalledSection.from_data_files(name, data_section)
+        files = data_section.resolve_glob()
+        source_dir = os.path.join("$_srcrootdir", data_section.source_dir)
+        new_data_section = DataFiles(data_section.name, files,
+                                     data_section.target_dir, source_dir)
+        ret[name] = InstalledSection.from_data_files(name, new_data_section)
 
     return ret
 
