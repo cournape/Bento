@@ -1,4 +1,5 @@
 #! /bin/sh
+set -e
 MASTER_REPO=$PWD/../bento-git
 GH_PAGES_REPO=$PWD
 MASTER_BRANCH=master
