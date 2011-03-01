@@ -17,10 +17,24 @@ _PKG_TO_DIST = {
         "py_modules": lambda pkg: [v for v  in pkg.py_modules],
 }
 
-for k in ["name", "version", "summary", "url", "author",
-          "author_email", "maintainer", "maintainer_email",
-          "license", "description", "download_url"]:
-    _PKG_TO_DIST[k] = lambda pkg: getattr(pkg, k)
+_META_PKG_TO_DIST = {}
+def _setup():
+    for k in ["name", "version", "summary", "url", "author",
+              "author_email", "maintainer", "maintainer_email",
+              "license", "description", "download_url"]:
+        def _f(attr):
+            return lambda pkg: getattr(pkg, attr)
+        _META_PKG_TO_DIST[k] = _f(k)
+_setup()
+_PKG_TO_DIST.update(_META_PKG_TO_DIST)
+
+def pkg_to_distutils_meta(pkg):
+    """Obtain meta data information from pkg into a dictionary which may be
+    used directly as an argument for setup function in distutils."""
+    d = {}
+    for k, v in _META_PKG_TO_DIST.items():
+        d[k] = v(pkg)
+    return d
 
 def pkg_to_distutils(pkg):
     """Convert PackageDescription instance to a dict which may be used
