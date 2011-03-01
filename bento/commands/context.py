@@ -94,7 +94,6 @@ class CmdContext(object):
 
         self.cmd_argv = cmd_argv
         self.top_node = top_node
-        self.build_root = top_node.make_node("build")
 
         self._configured_state = None
 
@@ -128,7 +127,12 @@ class CmdContext(object):
 class HelpContext(CmdContext):
     pass
 
-class ConfigureContext(CmdContext):
+class _ContextWithBuildDirectory(CmdContext):
+    def __init__(self, *a, **kw):
+        CmdContext.__init__(self, *a, **kw)
+        self.build_root = self.top_node.make_node("build")
+
+class ConfigureContext(_ContextWithBuildDirectory):
     def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
         CmdContext.__init__(self, cmd, cmd_argv, options_context, pkg, top_node)
 
@@ -160,7 +164,7 @@ class ConfigureYakuContext(ConfigureContext):
         super(ConfigureYakuContext, self).store()
         self.yaku_configure_ctx.store()
 
-class BuildContext(CmdContext):
+class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
         CmdContext.__init__(self, cmd, cmd_argv, options_context, pkg, top_node)
         self._extensions_callback = {}
