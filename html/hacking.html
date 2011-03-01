@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,21 +7,22 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Design document &mdash; Bento v0.0.4-git83e01993f8 documentation</title>
+    <title>Design document &mdash; Bento vdev-nobuilt-gitdev-nobuil documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.4-git83e01993f8',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     'dev-nobuilt-gitdev-nobuil',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.4-git83e01993f8 documentation" href="index.html" /> 
+    <link rel="top" title="Bento vdev-nobuilt-gitdev-nobuil documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -28,41 +31,43 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#">Design document</a><ul>
-<li><a class="reference external" href="#commands-protocol">Commands &#8220;protocol&#8221;</a></li>
-<li><a class="reference external" href="#build-manifest-and-building-installers">Build manifest and building installers</a><ul>
-<li><a class="reference external" href="#installers-conversion">Installers conversion</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Design document</a><ul>
+<li><a class="reference internal" href="#commands-protocol">Commands &#8220;protocol&#8221;</a></li>
+<li><a class="reference internal" href="#build-manifest-and-building-installers">Build manifest and building installers</a><ul>
+<li><a class="reference internal" href="#format-internals">Format internals</a></li>
+<li><a class="reference internal" href="#advantages">Advantages</a></li>
+<li><a class="reference internal" href="#installers-conversion">Installers conversion</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/hacking.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/hacking.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -101,11 +106,37 @@ configured, every command has access to all options.</p>
 </div>
 <div class="section" id="build-manifest-and-building-installers">
 <h2>Build manifest and building installers<a class="headerlink" href="#build-manifest-and-building-installers" title="Permalink to this headline">¶</a></h2>
-<p>Bento uses a slightly unusal process to install the bits of your
-package. Instead of copying directly the files to the desired
-location, the install process is driven by a build manifest. This
-build manifest is produced by the build command. It contains a
-description of files per category as well as metadata.</p>
+<p>Bento uses a slightly unusal process to install the bits of your package.
+Instead of copying directly the files to the desired location, the install
+process is driven by a build manifest. This build manifest is produced by the
+build command. It contains a description of files per category as well as a few
+metadata. The syntax is based of JSON so that it can easily be parsed from any
+language and in most environments (local machine, browser, etc...).</p>
+<div class="section" id="format-internals">
+<h3>Format internals<a class="headerlink" href="#format-internals" title="Permalink to this headline">¶</a></h3>
+<p>The main sections is a list of json &#8216;dicts&#8217;, e.g.:</p>
+<div class="highlight-python"><pre>"files": [
+    ["bentomaker", "bentomaker-2.6"],
+    ["bentomaker", "bentomaker"],
+],
+"name": "bentomaker",
+"category": "executables",
+"source_dir": "build/scripts-2.6",
+"target_dir": "$bindir"</pre>
+</div>
+<p>The files variable is a list of tuples (source, target). This is interpreted as
+installing the file build/scripts-2.6/bentomaker into $bindir/bentomaker-2.6
+and into $bindir/bentomaker. The category variable may be used to customize
+installation/packaging behavior (and later to extend the build manifest for
+installation hook).</p>
+<p>A key point of the format is to specify source_dir and target_dir outside the
+source/destination, so that they may be modified when the build manifest is
+read depending on the usages. In particular, since eggs and windows installers
+produced by bento include the build manifest, this may be used to losslessly
+convert between installer formats.</p>
+</div>
+<div class="section" id="advantages">
+<h3>Advantages<a class="headerlink" href="#advantages" title="Permalink to this headline">¶</a></h3>
 <p>The built bits and the build manifest are enough to install the
 software to arbitrary location, so that the install process does not
 need to know anything about the build process.  Conversely, as long as
@@ -121,6 +152,7 @@ relatively to abstract paths, and those paths are resolved when
 building the installers.</p>
 <p>WARNING: the build manifest will most likely need to be changed in
 backward incompatible ways, including the API to access it.</p>
+</div>
 <div class="section" id="installers-conversion">
 <h3>Installers conversion<a class="headerlink" href="#installers-conversion" title="Permalink to this headline">¶</a></h3>
 <p>The build manifest is intended to be included in each produced
@@ -145,12 +177,12 @@ service, which will contain a database of installed software.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+        &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
 </html>

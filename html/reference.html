@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,21 +7,22 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>User guide &mdash; Bento v0.0.4-git83e01993f8 documentation</title>
+    <title>User guide &mdash; Bento vdev-nobuilt-gitdev-nobuil documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.4-git83e01993f8',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     'dev-nobuilt-gitdev-nobuil',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.4-git83e01993f8 documentation" href="index.html" />
+    <link rel="top" title="Bento vdev-nobuilt-gitdev-nobuil documentation" href="index.html" />
     <link rel="next" title="FAQ" href="faq.html" />
     <link rel="prev" title="Features" href="features.html" /> 
   </head>
@@ -36,54 +39,54 @@
         <li class="right" >
           <a href="features.html" title="Features"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#">User guide</a><ul>
-<li><a class="reference external" href="#package-description">Package description</a><ul>
-<li><a class="reference external" href="#introduction">Introduction</a><ul>
-<li><a class="reference external" href="#package-metadata">Package metadata</a></li>
-<li><a class="reference external" href="#library-section">Library section</a></li>
-<li><a class="reference external" href="#executable-section">Executable section</a></li>
-<li><a class="reference external" href="#user-options-declaration">User-options declaration</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">User guide</a><ul>
+<li><a class="reference internal" href="#package-description">Package description</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li><a class="reference internal" href="#package-metadata">Package metadata</a></li>
+<li><a class="reference internal" href="#library-section">Library section</a></li>
+<li><a class="reference internal" href="#executable-section">Executable section</a></li>
+<li><a class="reference internal" href="#user-options-declaration">User-options declaration</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#pure-python-packages">Pure python packages</a></li>
-<li><a class="reference external" href="#packages-containing-c-extensions">Packages containing C extensions</a></li>
-<li><a class="reference external" href="#packages-with-data-files">Packages with data files</a><ul>
-<li><a class="reference external" href="#extra-source-files">Extra source files</a></li>
-<li><a class="reference external" href="#installed-data-files">Installed data files</a><ul>
-<li><a class="reference external" href="#srcdir-field">Srcdir field</a></li>
-<li><a class="reference external" href="#named-data-files-section">Named data files section</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference external" href="#conditionals">Conditionals</a></li>
-<li><a class="reference external" href="#adding-custom-options">Adding custom options</a><ul>
-<li><a class="reference external" href="#path-option">Path option</a></li>
-<li><a class="reference external" href="#flag-option">Flag option</a></li>
+<li><a class="reference internal" href="#pure-python-packages">Pure python packages</a></li>
+<li><a class="reference internal" href="#packages-containing-c-extensions">Packages containing C extensions</a></li>
+<li><a class="reference internal" href="#packages-with-data-files">Packages with data files</a><ul>
+<li><a class="reference internal" href="#extra-source-files">Extra source files</a></li>
+<li><a class="reference internal" href="#installed-data-files">Installed data files</a><ul>
+<li><a class="reference internal" href="#srcdir-field">Srcdir field</a></li>
+<li><a class="reference internal" href="#named-data-files-section">Named data files section</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference external" href="#bentomaker-the-command-line-interface-to-bento">Bentomaker, the command line interface to bento</a><ul>
-<li><a class="reference external" href="#id1">Introduction</a></li>
-<li><a class="reference external" href="#available-commands">Available commands</a><ul>
-<li><a class="reference external" href="#configure">configure</a></li>
-<li><a class="reference external" href="#build">build</a></li>
-<li><a class="reference external" href="#install">install</a></li>
-<li><a class="reference external" href="#build-egg">build_egg</a></li>
-<li><a class="reference external" href="#sdist">sdist</a></li>
-<li><a class="reference external" href="#convert">convert</a></li>
+<li><a class="reference internal" href="#conditionals">Conditionals</a></li>
+<li><a class="reference internal" href="#adding-custom-options">Adding custom options</a><ul>
+<li><a class="reference internal" href="#path-option">Path option</a></li>
+<li><a class="reference internal" href="#flag-option">Flag option</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#implementation-details">Implementation details</a><ul>
-<li><a class="reference external" href="#build-manifest">Build manifest</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bentomaker-the-command-line-interface-to-bento">Bentomaker, the command line interface to bento</a><ul>
+<li><a class="reference internal" href="#id1">Introduction</a></li>
+<li><a class="reference internal" href="#available-commands">Available commands</a><ul>
+<li><a class="reference internal" href="#configure">configure</a></li>
+<li><a class="reference internal" href="#build">build</a></li>
+<li><a class="reference internal" href="#install">install</a></li>
+<li><a class="reference internal" href="#build-egg">build_egg</a></li>
+<li><a class="reference internal" href="#sdist">sdist</a></li>
+<li><a class="reference internal" href="#convert">convert</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation-details">Implementation details</a><ul>
+<li><a class="reference internal" href="#build-manifest">Build manifest</a></li>
 </ul>
 </li>
 </ul>
@@ -92,30 +95,30 @@
 </li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="features.html"
-                                  title="previous chapter">Features</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="faq.html"
-                                  title="next chapter">FAQ</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/reference.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="features.html"
+                        title="previous chapter">Features</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="faq.html"
+                        title="next chapter">FAQ</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/reference.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -124,8 +127,10 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <ul class="simple">
+  <div class="toctree-wrapper compound">
+<ul class="simple">
 </ul>
+</div>
 <div class="section" id="user-guide">
 <h1>User guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="package-description">
@@ -489,12 +494,12 @@ accurately.</p>
         <li class="right" >
           <a href="features.html" title="Features"
              >previous</a> |</li>
-        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+        &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
 </html>

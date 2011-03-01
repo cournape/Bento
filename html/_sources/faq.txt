@@ -195,3 +195,20 @@ The following features are being implemented as well:
       wanted (egg, wininst, msi, etc...). The format is optimized for
       installation
     - Reliable uninstallation
+
+Does bento support virtualenv ?
+===============================
+
+Depending on your definition of support, yes. If you run inside a virtualenv,
+the following::
+
+    bentomaker configure
+    bentomaker install
+
+will install the package inside the virtual environment (i.e. the same default
+as when the setup.py uses setuptools). If you customized the prefix at
+configure stage, it will of course not take into account the virtual
+environment::
+
+    bentomaker configure --prefix=/usr/local
+    bentomaker install

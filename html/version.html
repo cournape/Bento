@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,21 +7,22 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Version 0.0.4 &mdash; Bento v0.0.4-git83e01993f8 documentation</title>
+    <title>Version 0.0.5 &mdash; Bento vdev-nobuilt-gitdev-nobuil documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.4-git83e01993f8',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     'dev-nobuilt-gitdev-nobuil',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.4-git83e01993f8 documentation" href="index.html" /> 
+    <link rel="top" title="Bento vdev-nobuilt-gitdev-nobuil documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -28,44 +31,48 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#">Version 0.0.4</a></li>
-<li><a class="reference external" href="#version-0-0-3">Version 0.0.3</a><ul>
-<li><a class="reference external" href="#toydist-renamed-to-bento">Toydist renamed to bento</a></li>
-<li><a class="reference external" href="#hook-mechanism">Hook mechanism</a></li>
-<li><a class="reference external" href="#yaku-build-mini-framework">Yaku, build mini-framework</a></li>
-<li><a class="reference external" href="#one-file-distribution">One file distribution</a></li>
-<li><a class="reference external" href="#improved-command-line-interface">Improved command line interface</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Version 0.0.5</a><ul>
+<li><a class="reference internal" href="#internals">Internals</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#version-0-0-2">Version 0.0.2</a></li>
-<li><a class="reference external" href="#version-0-0-1">Version 0.0.1</a></li>
+<li><a class="reference internal" href="#version-0-0-4">Version 0.0.4</a></li>
+<li><a class="reference internal" href="#version-0-0-3">Version 0.0.3</a><ul>
+<li><a class="reference internal" href="#toydist-renamed-to-bento">Toydist renamed to bento</a></li>
+<li><a class="reference internal" href="#hook-mechanism">Hook mechanism</a></li>
+<li><a class="reference internal" href="#yaku-build-mini-framework">Yaku, build mini-framework</a></li>
+<li><a class="reference internal" href="#one-file-distribution">One file distribution</a></li>
+<li><a class="reference internal" href="#improved-command-line-interface">Improved command line interface</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-0-2">Version 0.0.2</a></li>
+<li><a class="reference internal" href="#version-0-0-1">Version 0.0.1</a></li>
 </ul>
 
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/version.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/version.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -74,7 +81,57 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="version-0-0-4">
+  <div class="section" id="version-0-0-5">
+<h1>Version 0.0.5<a class="headerlink" href="#version-0-0-5" title="Permalink to this headline">¶</a></h1>
+<p>Released on .... This is mostly a stabilization of features implemented so far,
+with some code refactoring to enable easier customization of the build process.
+Main features:</p>
+<blockquote>
+<ul>
+<li><p class="first">All python versions from 2.4 up to 3.1 now pass the test suite (3.2 will
+follow once the distribute issue with 3.2 is fixed)</p>
+</li>
+<li><p class="first">If run under a virtual environment (virtualenv), bento will install the
+package inside the virtualenvironment by default</p>
+</li>
+<li><p class="first">When a command depends on other commands, those are now automatically
+run, e.g.:</p>
+<div class="highlight-python"><pre>bentomaker build_egg # automatically run configure and build</pre>
+</div>
+</li>
+<li><p class="first">Update to last yaku, which contains a lot of improvements (too many to
+list here)</p>
+</li>
+<li><p class="first">Add &#8211;list-files option to install command to list files to be installed</p>
+</li>
+<li><p class="first">Add &#8211;transaction option to install to produce a &#8220;transaction log&#8221;. The
+transaction log will enable rollback (a first step towards reliable
+uninstall).</p>
+</li>
+<li><p class="first">Internal changes to enable easier change of build tool (a waf-based
+example for simple extensions is available for waf 1.6.x)</p>
+</li>
+<li><p class="first">Added experimental distutils compatibility layer so that one can write a
+setup.py which will pick up all information from bento.info. This enables
+projects using bento to still be able to use tools such as pip.</p>
+</li>
+</ul>
+</blockquote>
+<div class="section" id="internals">
+<h2>Internals<a class="headerlink" href="#internals" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<ul class="simple">
+<li>Commands are now registered to a single global command registry</li>
+<li>Commands are now run with a command-specific context, which can be
+extended for further customization (e.g. waf support in the build stage).</li>
+<li>Command dependency is now handled dynamically: order is set outside
+command class definition, and order resolution is done at runtime with a
+simple topological sort on the dependency order.</li>
+</ul>
+</blockquote>
+</div>
+</div>
+<div class="section" id="version-0-0-4">
 <h1>Version 0.0.4<a class="headerlink" href="#version-0-0-4" title="Permalink to this headline">¶</a></h1>
 <p>Released on 9th October 2010. Main features:</p>
 <blockquote>
@@ -190,12 +247,12 @@ most of their implementation</li>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+        &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
 </html>

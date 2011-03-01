@@ -33,11 +33,41 @@ configured, every command has access to all options.
 Build manifest and building installers
 --------------------------------------
 
-Bento uses a slightly unusal process to install the bits of your
-package. Instead of copying directly the files to the desired
-location, the install process is driven by a build manifest. This
-build manifest is produced by the build command. It contains a
-description of files per category as well as metadata.
+Bento uses a slightly unusal process to install the bits of your package.
+Instead of copying directly the files to the desired location, the install
+process is driven by a build manifest. This build manifest is produced by the
+build command. It contains a description of files per category as well as a few
+metadata. The syntax is based of JSON so that it can easily be parsed from any
+language and in most environments (local machine, browser, etc...).
+
+Format internals
+~~~~~~~~~~~~~~~~
+
+The main sections is a list of json 'dicts', e.g.::
+
+    "files": [
+        ["bentomaker", "bentomaker-2.6"],
+        ["bentomaker", "bentomaker"],
+    ],
+    "name": "bentomaker",
+    "category": "executables",
+    "source_dir": "build/scripts-2.6",
+    "target_dir": "$bindir"
+
+The files variable is a list of tuples (source, target). This is interpreted as
+installing the file build/scripts-2.6/bentomaker into $bindir/bentomaker-2.6
+and into $bindir/bentomaker. The category variable may be used to customize
+installation/packaging behavior (and later to extend the build manifest for
+installation hook).
+
+A key point of the format is to specify source_dir and target_dir outside the
+source/destination, so that they may be modified when the build manifest is
+read depending on the usages. In particular, since eggs and windows installers
+produced by bento include the build manifest, this may be used to losslessly
+convert between installer formats.
+
+Advantages
+~~~~~~~~~~
 
 The built bits and the build manifest are enough to install the
 software to arbitrary location, so that the install process does not

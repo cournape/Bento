@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,21 +7,22 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Overview &mdash; Bento v0.0.4-git83e01993f8 documentation</title>
+    <title>Overview &mdash; Bento vdev-nobuilt-gitdev-nobuil documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.4-git83e01993f8',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     'dev-nobuilt-gitdev-nobuil',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.4-git83e01993f8 documentation" href="index.html" />
+    <link rel="top" title="Bento vdev-nobuilt-gitdev-nobuil documentation" href="index.html" />
     <link rel="next" title="Features" href="features.html" />
     <link rel="prev" title="Bento: an no-nonsense packaging tool for python" href="index.html" /> 
   </head>
@@ -36,48 +39,49 @@
         <li class="right" >
           <a href="index.html" title="Bento: an no-nonsense packaging tool for python"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#">Overview</a><ul>
-<li><a class="reference external" href="#simple-example">Simple example</a><ul>
-<li><a class="reference external" href="#from-scratch">From scratch</a></li>
-<li><a class="reference external" href="#building-and-installing">Building and installing</a></li>
-<li><a class="reference external" href="#from-existing-setup-py">From existing setup.py</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#simple-example">Simple example</a><ul>
+<li><a class="reference internal" href="#from-scratch">From scratch</a></li>
+<li><a class="reference internal" href="#building-and-installing">Building and installing</a></li>
+<li><a class="reference internal" href="#from-existing-setup-py">From existing setup.py</a></li>
+<li><a class="reference internal" href="#adding-bento-based-setup-py-for-compatibility-with-pip-etc">Adding bento-based setup.py for compatibility with pip, etc...</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="index.html"
-                                  title="previous chapter">Bento: an no-nonsense packaging tool for python</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="features.html"
-                                  title="next chapter">Features</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/overview.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Bento: an no-nonsense packaging tool for python</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="features.html"
+                        title="next chapter">Features</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/overview.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -120,26 +124,29 @@ character will cause an error when used at the beginning of a line).</p>
 <p>Bento includes bentomaker, a command-line interface to configure, build and
 install simple packages. Its interface is similar to autotools:</p>
 <div class="highlight-python"><pre>bentomaker configure --prefix=somedirectory
-bentomaker build
 bentomaker install</pre>
 </div>
-<p>In addition, the following subcommands are available:</p>
-<div class="highlight-python"><pre>bentomaker sdist</pre>
+<p>If you are fine with default configuration values, you can install in one step:</p>
+<div class="highlight-python"><pre>bentomaker install</pre>
 </div>
-<p>to build a source distribution and:</p>
-<div class="highlight-python"><pre>bentomaker build_egg</pre>
+<p>You can check where bento install files with the &#8211;list-files option (in which
+case bento does not install anything):</p>
+<div class="highlight-python"><pre>bentomaker install --list-files</pre>
 </div>
-<p>to build an egg. Building an egg requires to run configure and build first -
-this is not done automatically (yet).</p>
+<p>Bentomaker contains a basic help facility, which list existing commands,
+etc...:</p>
+<div class="highlight-python"><pre>bentomaker help commands # list commands</pre>
+</div>
 </div>
 <div class="section" id="from-existing-setup-py">
 <h3>From existing setup.py<a class="headerlink" href="#from-existing-setup-py" title="Permalink to this headline">¶</a></h3>
 <p>Bentomaker has an experimental convert command to convert an existing setup.py:</p>
 <div class="highlight-python"><pre>bentomaker convert</pre>
 </div>
-<p>If successfull, it will write a file named bento.info. The convert command
-is inherently fragile, because it has to hook into distutils/setuptools
-internals.</p>
+<p>If successfull, it will write a file named bento.info. The convert command is
+inherently fragile, because it has to hook into distutils/setuptools internals.
+The more setup.py relies on distutils extensions, the less likely the convert
+command will be successful</p>
 <p>Note: because the convert command does not parse the setup.py, but runs it
 instead, it only handles package description as defined by one run of setup.py.
 For example, bento convert cannot automatically handle the following
@@ -183,6 +190,39 @@ Library:
             pywin32</pre>
 </div>
 </div>
+<div class="section" id="adding-bento-based-setup-py-for-compatibility-with-pip-etc">
+<h3>Adding bento-based setup.py for compatibility with pip, etc...<a class="headerlink" href="#adding-bento-based-setup-py-for-compatibility-with-pip-etc" title="Permalink to this headline">¶</a></h3>
+<p>Although nothing fundamentally prevents bento to work under installers such as
+pip, pip currently does not know anything about bento. To help transition,
+bento has a distutils compatibility layer. A setup.py as simple as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">setuptools</span>
+<span class="kn">import</span> <span class="nn">bento.distutils</span>
+
+<span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">setup</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>will enable commands such as:</p>
+<div class="highlight-python"><pre>python setup.py install
+python setup.py sdist</pre>
+</div>
+<p>to work as expected, taking all the package information from bento.info file.</p>
+<p>Note:: obviously, this mode will not enable all the features offered by bento.
+If it were possible, bento would not have been written in the first place.
+Nevertheless, the following commands should work relatively well as long as you
+don&#8217;t have hooks:</p>
+<blockquote>
+<ul class="simple">
+<li>sdist</li>
+<li>bdist_egg</li>
+<li>install</li>
+</ul>
+</blockquote>
+<p>This should be enough for pip install foo or easy_install foo to work for a
+bento-based package.</p>
+</div>
 </div>
 </div>
 
@@ -204,12 +244,12 @@ Library:
         <li class="right" >
           <a href="index.html" title="Bento: an no-nonsense packaging tool for python"
              >previous</a> |</li>
-        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+        &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
 </html>

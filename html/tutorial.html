@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,21 +7,22 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial &mdash; Bento v0.0.4-git83e01993f8 documentation</title>
+    <title>Tutorial &mdash; Bento vdev-nobuilt-gitdev-nobuil documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.4-git83e01993f8',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     'dev-nobuilt-gitdev-nobuil',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.4-git83e01993f8 documentation" href="index.html" /> 
+    <link rel="top" title="Bento vdev-nobuilt-gitdev-nobuil documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -28,50 +31,50 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#">Tutorial</a><ul>
-<li><a class="reference external" href="#packaging-a-python-module">Packaging a python module</a><ul>
-<li><a class="reference external" href="#bentomaker">Bentomaker</a></li>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#packaging-a-python-module">Packaging a python module</a><ul>
+<li><a class="reference internal" href="#bentomaker">Bentomaker</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#adding-packages">Adding packages</a></li>
-<li><a class="reference external" href="#adding-data-files">Adding data files</a><ul>
-<li><a class="reference external" href="#installed-vs-non-installed-files">Installed vs non-installed files</a></li>
-<li><a class="reference external" href="#installed-data-files-datafiles-section">Installed data files: DataFiles section</a></li>
-<li><a class="reference external" href="#extra-source-files">Extra source files</a></li>
+<li><a class="reference internal" href="#adding-packages">Adding packages</a></li>
+<li><a class="reference internal" href="#adding-data-files">Adding data files</a><ul>
+<li><a class="reference internal" href="#installed-vs-non-installed-files">Installed vs non-installed files</a></li>
+<li><a class="reference internal" href="#installed-data-files-datafiles-section">Installed data files: DataFiles section</a></li>
+<li><a class="reference internal" href="#extra-source-files">Extra source files</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#adding-extensions">Adding extensions</a></li>
-<li><a class="reference external" href="#adding-compiled-libraries">Adding compiled libraries</a></li>
-<li><a class="reference external" href="#adding-executables">Adding executables</a></li>
+<li><a class="reference internal" href="#adding-extensions">Adding extensions</a></li>
+<li><a class="reference internal" href="#adding-compiled-libraries">Adding compiled libraries</a></li>
+<li><a class="reference internal" href="#adding-executables">Adding executables</a></li>
 </ul>
 </li>
 </ul>
 
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/tutorial.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tutorial.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -113,8 +116,11 @@ syntax errors). The bento.info is located just next to your hello.py:</p>
 <p>Currently, the only way to interact with bento is bentomaker, a
 command-line interface to bento. It is used to build, install and test
 packages from the command line:</p>
-<div class="highlight-python"><pre>bentomaker configure
-bentomaker build
+<div class="highlight-python"><pre>bentomaker install</pre>
+</div>
+<p>This will automatically run the configure and build commands for you. You can
+run them explicitely if you to customized installation, e.g.:</p>
+<div class="highlight-python"><pre>bentomaker configure --prefix=/blabla
 bentomaker install</pre>
 </div>
 <p>You can also build eggs, source tarballs and windows installers
@@ -179,11 +185,20 @@ whereas data files are installed and needed to use the software.</p>
 </div>
 <p>We need to add the following to bento.info:</p>
 <div class="highlight-python"><pre>DataFiles: manpage
-    TargetDir: /usr/man/man1
+    TargetDir: $mandir
     Files: fubar/fubar.1</pre>
 </div>
-<p>This will install the file fubar/fubar.1 into /usr/man/man1 (as
-/usr/man/man1/fubar/fubar.1)</p>
+<p>This will install the file fubar/fubar.1 into $mandir (as
+$mandir/fubar/fubar.1). $mandir is expanded by bento to a sensible default on
+every support platform, and can be customized at configuration time. You can of
+course hardcode the install directory, e.g.:</p>
+<div class="highlight-python"><pre>DataFiles: manpage
+    TargetDir: /usr/share/man/man1
+    Files: fubar/fubar.1</pre>
+</div>
+<p>but this is generally not recommended as it is not portable, makes native
+packaging more difficult. Bento has a simple mechanism so that you can add your
+own paths.</p>
 </div>
 <div class="section" id="extra-source-files">
 <h3>Extra source files<a class="headerlink" href="#extra-source-files" title="Permalink to this headline">¶</a></h3>
@@ -228,6 +243,9 @@ Library:
     CompiledLibrary: foo
         Sources: foo.c</pre>
 </div>
+<p>Note that it is currently not possible to link an extension against such a
+compiled library purely from the bento.info file: you need to use the hook
+mechanism.</p>
 </div>
 <div class="section" id="adding-executables">
 <h2>Adding executables<a class="headerlink" href="#adding-executables" title="Permalink to this headline">¶</a></h2>
@@ -261,12 +279,12 @@ user at the configure stage).</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="index.html">Bento v0.0.4-git83e01993f8 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2010, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.6.
+        &copy; Copyright 2010, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
 </html>
