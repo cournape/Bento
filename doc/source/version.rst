@@ -22,6 +22,9 @@ Main features:
       uninstall). 
     - Internal changes to enable easier change of build tool (a waf-based
       example for simple extensions is available for waf 1.6.x)
+    - Added experimental distutils compatibility layer so that one can write a
+      setup.py which will pick up all information from bento.info. This enables
+      projects using bento to still be able to use tools such as pip.
 
 Internals
 ---------
