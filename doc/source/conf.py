@@ -35,11 +35,11 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'contents'
 
 # General information about the project.
 project = u'Bento'
-copyright = u'2010, David Cournapeau'
+copyright = u'2009-2011, David Cournapeau'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
