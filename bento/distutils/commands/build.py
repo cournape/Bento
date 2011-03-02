@@ -24,30 +24,34 @@ class build(old_build):
     def finalize_options(self):
         old_build.finalize_options(self)
 
+    def _get_install_scheme(self, pkg):
+        install = self.get_finalized_command("install")
+
+        # FIXME: this should be centralized with other scheme-related stuff
+        scheme = get_scheme(sys.platform)[0]
+        scheme["pkgname"] = pkg.name
+        py_version = sys.version.split()[0]
+        scheme["py_version_short"] = py_version[:3]
+        if hasattr(install, "install_dir"):
+            scheme["sitedir"] = install.install_dir
+        scheme["prefix"] = scheme["eprefix"] = install.install_base
+
+        return scheme
+
     def run(self):
         dist = self.distribution
 
         build_root = dist.top_node.make_node(self.build_base)
         section_writer = SectionWriter()
 
+        scheme = self._get_install_scheme(dist.pkg)
+
         def build_packages(pkg):
             from bento.commands.build import _build_python_files
             return _build_python_files(dist.pkg, dist.top_node)
-
         def build_config_py(pkg):
-            install = self.get_finalized_command("install")
-            # FIXME: this should be centralized with other scheme-related stuff
-            scheme = get_scheme(sys.platform)[0]
-            scheme["pkgname"] = pkg.name
-            py_version = sys.version.split()[0]
-            scheme["py_version_short"] = py_version[:3]
-            if hasattr(install, "install_dir"):
-                scheme["sitedir"] = install.install_dir
-            # end of scheme hackish stuff
-
             return _build_config_py(pkg, scheme, dist.top_node, build_root)
         section_writer.sections_callbacks["pythonfiles"] = build_packages
-
         section_writer.sections_callbacks["bentofiles"] = build_config_py
 
         section_writer.update_sections(dist.pkg)
