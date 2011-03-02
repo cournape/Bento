@@ -38,3 +38,4 @@ class install_data(old_install_data):
         for kind, source, target in iter_files(file_sections):
             if kind in ["datafiles"]:
                 copy_installer(source, target, kind)
+                self.outfiles.append(target)

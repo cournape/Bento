@@ -29,6 +29,7 @@ from bento.commands.install \
 class install_lib(old_install_lib):
     def __init__(self, *a, **kw):
         old_install_lib.__init__(self, *a, **kw)
+        self.outfiles = []
 
     def initialize_options(self):
         old_install_lib.initialize_options(self)
@@ -46,3 +47,7 @@ class install_lib(old_install_lib):
         for kind, source, target in iter_files(file_sections):
             if kind in ["pythonfiles", "bentofiles"]:
                 copy_installer(source, target, kind)
+                self.outfiles.append(target)
+
+    def get_outputs(self):
+        return self.outfiles
