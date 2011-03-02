@@ -217,7 +217,7 @@ everytime you execute bentomaker. Assuming the following bento.info file::
 
 the hook file will look like::
 
-    def startup():
+    def startup(context):
         print "Yummy bento"
 
 As its name suggests, the startup method is executed before running any
