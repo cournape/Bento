@@ -166,7 +166,7 @@ class ConfigureYakuContext(ConfigureContext):
 
 class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
-        CmdContext.__init__(self, cmd, cmd_argv, options_context, pkg, top_node)
+        super(BuildContext, self).__init__(cmd, cmd_argv, options_context, pkg, top_node)
         self._extensions_callback = {}
         self._clibraries_callback = {}
         self._clibrary_envs = {}
