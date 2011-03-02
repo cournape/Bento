@@ -1,7 +1,10 @@
-Design document
-===============
+Design notes
+============
 
 .. Version: 0.0.3
+
+This is not really readable at the moment, mostly some personal notes about
+current internal design.
 
 Bento is currently split into two parts: a core API to parse the
 package description into a simple object API, and a commands library

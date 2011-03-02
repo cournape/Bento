@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Design document &mdash; Bento vdev-nobuilt-gitdev-nobuil documentation</title>
+    <title>Design notes &mdash; Bento vdev-nobuilt-gitdev-nobuil documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -22,23 +22,41 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento vdev-nobuilt-gitdev-nobuil documentation" href="index.html" /> 
+    <link rel="top" title="Bento vdev-nobuilt-gitdev-nobuil documentation" href="index.html" />
+    <link rel="next" title="FAQ" href="faq.html" />
+    <link rel="prev" title="How to contribute" href="contribute.html" />
+ 
+<style type="text/css">
+  table.right { float: right; margin-left: 20px; }
+  table.right td { border: 1px solid #ccc; }
+</style>
+
   </head>
   <body>
+
     <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="faq.html" title="FAQ"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="contribute.html" title="How to contribute"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Bento home</a>&nbsp;|&nbsp;</li>
+        <li><a href="contents.html">Documentation</a>
+          &raquo;</li>
+ 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Design document</a><ul>
+<li><a class="reference internal" href="#">Design notes</a><ul>
 <li><a class="reference internal" href="#commands-protocol">Commands &#8220;protocol&#8221;</a></li>
 <li><a class="reference internal" href="#build-manifest-and-building-installers">Build manifest and building installers</a><ul>
 <li><a class="reference internal" href="#format-internals">Format internals</a></li>
@@ -50,6 +68,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="contribute.html"
+                        title="previous chapter">How to contribute</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="faq.html"
+                        title="next chapter">FAQ</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/hacking.txt"
@@ -76,8 +100,10 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="design-document">
-<h1>Design document<a class="headerlink" href="#design-document" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="design-notes">
+<h1>Design notes<a class="headerlink" href="#design-notes" title="Permalink to this headline">¶</a></h1>
+<p>This is not really readable at the moment, mostly some personal notes about
+current internal design.</p>
 <p>Bento is currently split into two parts: a core API to parse the
 package description into a simple object API, and a commands library
 which gives a command line interface to bento.</p>
@@ -177,11 +203,20 @@ service, which will contain a database of installed software.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="faq.html" title="FAQ"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="contribute.html" title="How to contribute"
+             >previous</a> |</li>
+        <li><a href="index.html">Bento home</a>&nbsp;|&nbsp;</li>
+        <li><a href="contents.html">Documentation</a>
+          &raquo;</li>
+ 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, David Cournapeau.
+        &copy; Copyright 2009-2011, David Cournapeau.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>

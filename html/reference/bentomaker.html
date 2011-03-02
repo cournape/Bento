@@ -1,0 +1,209 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Bentomaker, the command line interface to bento &mdash; Bento vdev-nobuilt-gitdev-nobuil documentation</title>
+    <link rel="stylesheet" href="../static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'dev-nobuilt-gitdev-nobuil',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <link rel="top" title="Bento vdev-nobuilt-gitdev-nobuil documentation" href="../index.html" />
+    <link rel="up" title="Reference" href="index.html" />
+    <link rel="next" title="Transition from existing python packaging infrastructure" href="../transition.html" />
+    <link rel="prev" title="bento.info format reference" href="bento_format.html" />
+ 
+<style type="text/css">
+  table.right { float: right; margin-left: 20px; }
+  table.right td { border: 1px solid #ccc; }
+</style>
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../transition.html" title="Transition from existing python packaging infrastructure"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="bento_format.html" title="bento.info format reference"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Bento home</a>&nbsp;|&nbsp;</li>
+        <li><a href="../contents.html">Documentation</a>
+          &raquo;</li>
+
+          <li><a href="index.html" accesskey="U">Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Bentomaker, the command line interface to bento</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#available-commands">Available commands</a><ul>
+<li><a class="reference internal" href="#configure">configure</a></li>
+<li><a class="reference internal" href="#build">build</a></li>
+<li><a class="reference internal" href="#install">install</a></li>
+<li><a class="reference internal" href="#build-egg">build_egg</a></li>
+<li><a class="reference internal" href="#sdist">sdist</a></li>
+<li><a class="reference internal" href="#convert">convert</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bento_format.html"
+                        title="previous chapter">bento.info format reference</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../transition.html"
+                        title="next chapter">Transition from existing python packaging infrastructure</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/reference/bentomaker.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="bentomaker-the-command-line-interface-to-bento">
+<h1>Bentomaker, the command line interface to bento<a class="headerlink" href="#bentomaker-the-command-line-interface-to-bento" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Bentomaker is a simple python package which uses bento API to configure, build
+and install packages. A simple install with bentomaker looks like this:</p>
+<div class="highlight-python"><pre>bentomaker configure --prefix=/home/david/local
+bentomaker build
+bentomaker install</pre>
+</div>
+<p>Or more simply:</p>
+<div class="highlight-python"><pre>bentomaker configure --prefix=/home/david/local
+bentomaker install</pre>
+</div>
+<p>bentomaker commands know which other command they depend on, and are
+automatically run if necessary.</p>
+<p>Bentomaker has a basic help facility:</p>
+<div class="highlight-python"><pre>bentomaker help</pre>
+</div>
+<p>will list all available commands. Once the project is configured, every
+installation path and user customization is set up, and cannot be changed
+(except by reconfiguring the package, of course).</p>
+</div>
+<div class="section" id="available-commands">
+<h2>Available commands<a class="headerlink" href="#available-commands" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="configure">
+<h3>configure<a class="headerlink" href="#configure" title="Permalink to this headline">¶</a></h3>
+<p>This command must be run before any build/install command. It is similar to
+the well-known configure script from autoconf. Every customizable option is
+available from the command help:</p>
+<div class="highlight-python"><pre>bentomaker configure -h</pre>
+</div>
+<p>If the configure command is not run explicitely, it will automatically be run
+by any subsequent command.</p>
+</div>
+<div class="section" id="build">
+<h3>build<a class="headerlink" href="#build" title="Permalink to this headline">¶</a></h3>
+<p>This simply builds the package. For pure-python packages, it does almost
+nothing, except producing a <a href="#id1"><span class="problematic" id="id2">`Build manifest`_</span></a>. For packages with C extensions,
+the C extensions are built.</p>
+</div>
+<div class="section" id="install">
+<h3>install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="build-egg">
+<h3>build_egg<a class="headerlink" href="#build-egg" title="Permalink to this headline">¶</a></h3>
+<p>This command builds an egg from the package description. It currently requires
+that configure and build commands have been run.</p>
+<p><em>This is experimental - although I intend to produce eggs which are as backward
+compatible as possible with existing tools (in particular enstaller, and
+hopefully virtualenv and buildout), eggs are implementation defined, and depend
+a lot on distutils idiosyncraties.</em></p>
+</div>
+<div class="section" id="sdist">
+<h3>sdist<a class="headerlink" href="#sdist" title="Permalink to this headline">¶</a></h3>
+<p>This simply produces a source tarball. Currently, only .tar.gz is supported.</p>
+</div>
+<div class="section" id="convert">
+<h3>convert<a class="headerlink" href="#convert" title="Permalink to this headline">¶</a></h3>
+<p>This converts a package built from distutils, setuptools or numpy.distutils:</p>
+<div class="highlight-python"><pre>bentomaker convert</pre>
+</div>
+<p>If successful, it will produce a bento.info file.</p>
+<p><em>This is experimental, and may not work. Also, it cannot convert every package
+accurately, as it is based on inspecting setup.py&#8217;s execution</em>. Nevertheless,
+it can already convert simple, but non trivial packages such as sphinx pretty
+accurately.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../transition.html" title="Transition from existing python packaging infrastructure"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="bento_format.html" title="bento.info format reference"
+             >previous</a> |</li>
+        <li><a href="../index.html">Bento home</a>&nbsp;|&nbsp;</li>
+        <li><a href="../contents.html">Documentation</a>
+          &raquo;</li>
+
+          <li><a href="index.html" >Reference</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2011, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
+    </div>
+  </body>
+</html>

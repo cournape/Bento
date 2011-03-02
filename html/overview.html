@@ -23,10 +23,17 @@
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="Bento vdev-nobuilt-gitdev-nobuil documentation" href="index.html" />
-    <link rel="next" title="Features" href="features.html" />
-    <link rel="prev" title="Bento: an no-nonsense packaging tool for python" href="index.html" /> 
+    <link rel="next" title="Installing bento" href="install.html" />
+    <link rel="prev" title="Bento documentation contents" href="contents.html" />
+ 
+<style type="text/css">
+  table.right { float: right; margin-left: 20px; }
+  table.right td { border: 1px solid #ccc; }
+</style>
+
   </head>
   <body>
+
     <div class="related">
       <h3>Navigation</h3>
       <ul>
@@ -34,24 +41,26 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="features.html" title="Features"
+          <a href="install.html" title="Installing bento"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Bento: an no-nonsense packaging tool for python"
+          <a href="contents.html" title="Bento documentation contents"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento home</a>&nbsp;|&nbsp;</li>
+        <li><a href="contents.html">Documentation</a>
+          &raquo;</li>
+ 
       </ul>
     </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#simple-example">Simple example</a><ul>
 <li><a class="reference internal" href="#from-scratch">From scratch</a></li>
 <li><a class="reference internal" href="#building-and-installing">Building and installing</a></li>
-<li><a class="reference internal" href="#from-existing-setup-py">From existing setup.py</a></li>
-<li><a class="reference internal" href="#adding-bento-based-setup-py-for-compatibility-with-pip-etc">Adding bento-based setup.py for compatibility with pip, etc...</a></li>
+<li><a class="reference internal" href="#from-existing-setup-py-convertion-from-distutils-based-projects">From existing setup.py (convertion from distutils-based projects)</a></li>
 </ul>
 </li>
 </ul>
@@ -59,11 +68,11 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Bento: an no-nonsense packaging tool for python</a></p>
+  <p class="topless"><a href="contents.html"
+                        title="previous chapter">Bento documentation contents</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="features.html"
-                        title="next chapter">Features</a></p>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">Installing bento</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/overview.txt"
@@ -92,12 +101,21 @@
             
   <div class="section" id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
-<p>Bento is based on a declarative package description, which is parsed by the
-different build tools to do the actual work. There are currently two ways to
-create such a package description: by writing it from scratch, or by converting
-an existing setup.py.</p>
+<p>Bento aims at simplifying the packaging of python softwares, both from the user
+and developer point of view. Bento packages are described by a bento.info file,
+which is parsed by the different build tools to do the actual work. Currently,
+the main user interface to bento is bentomaker, a command line tool to build,
+install and query bento packages.</p>
+<p>There are currently two ways to create bento packages : by writing a bento.info
+file from scratch, or by converting an existing setup.py.</p>
 <div class="section" id="simple-example">
 <h2>Simple example<a class="headerlink" href="#simple-example" title="Permalink to this headline">¶</a></h2>
+<p>Those examples assume you have already a usable bentomaker in your PATH, either
+through bento installation or by using the one-file bentomaker bundle. If you
+can execute:</p>
+<div class="highlight-python"><pre>bentomaker help</pre>
+</div>
+<p>successfully, you should be able to go on.</p>
 <div class="section" id="from-scratch">
 <h3>From scratch<a class="headerlink" href="#from-scratch" title="Permalink to this headline">¶</a></h3>
 <p>Bento packages are created from a bento.info file, which describes
@@ -121,16 +139,17 @@ character will cause an error when used at the beginning of a line).</p>
 </div>
 <div class="section" id="building-and-installing">
 <h3>Building and installing<a class="headerlink" href="#building-and-installing" title="Permalink to this headline">¶</a></h3>
-<p>Bento includes bentomaker, a command-line interface to configure, build and
-install simple packages. Its interface is similar to autotools:</p>
+<p>You use bentomaker to build and install bento packages.  Its interface is
+similar to autotools:</p>
 <div class="highlight-python"><pre>bentomaker configure --prefix=somedirectory
 bentomaker install</pre>
 </div>
 <p>If you are fine with default configuration values, you can install in one step:</p>
 <div class="highlight-python"><pre>bentomaker install</pre>
 </div>
-<p>You can check where bento install files with the &#8211;list-files option (in which
-case bento does not install anything):</p>
+<p>bentomaker will automatically determine which commands need to be re-run.  You
+can check where bento install files with the &#8211;list-files option (in which case
+bento does not install anything):</p>
 <div class="highlight-python"><pre>bentomaker install --list-files</pre>
 </div>
 <p>Bentomaker contains a basic help facility, which list existing commands,
@@ -138,90 +157,15 @@ etc...:</p>
 <div class="highlight-python"><pre>bentomaker help commands # list commands</pre>
 </div>
 </div>
-<div class="section" id="from-existing-setup-py">
-<h3>From existing setup.py<a class="headerlink" href="#from-existing-setup-py" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="from-existing-setup-py-convertion-from-distutils-based-projects">
+<h3>From existing setup.py (convertion from distutils-based projects)<a class="headerlink" href="#from-existing-setup-py-convertion-from-distutils-based-projects" title="Permalink to this headline">¶</a></h3>
 <p>Bentomaker has an experimental convert command to convert an existing setup.py:</p>
 <div class="highlight-python"><pre>bentomaker convert</pre>
 </div>
-<p>If successfull, it will write a file named bento.info. The convert command is
-inherently fragile, because it has to hook into distutils/setuptools internals.
-The more setup.py relies on distutils extensions, the less likely the convert
-command will be successful</p>
-<p>Note: because the convert command does not parse the setup.py, but runs it
-instead, it only handles package description as defined by one run of setup.py.
-For example, bento convert cannot automatically handle the following
-setup.py:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span>
-
-<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&quot;win32&quot;</span><span class="p">:</span>
-    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;sphinx&quot;</span><span class="p">,</span> <span class="s">&quot;pywin32&quot;</span><span class="p">]</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;sphinx&quot;</span><span class="p">]</span>
-
-<span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="n">install_requires</span><span class="o">=</span><span class="n">requires</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>If run on windows, the generated bento.info will be:</p>
-<div class="highlight-python"><pre>Name: foo
-
-Library:
-    InstallRequires:
-        pywin32,
-        sphinx</pre>
-</div>
-<p>and:</p>
-<div class="highlight-python"><pre>Name: foo
-
-Library:
-    InstallRequires:
-        sphinx</pre>
-</div>
-<p>otherwise.</p>
-<p>Note:: bento syntax supports simple conditional, so after conversion, you
-could modify the generated file as follows:</p>
-<div class="highlight-python"><pre>Name: foo
-
-Library:
-    InstallRequires:
-        sphinx
-    if os(win32):
-        InstallRequires:
-            pywin32</pre>
-</div>
-</div>
-<div class="section" id="adding-bento-based-setup-py-for-compatibility-with-pip-etc">
-<h3>Adding bento-based setup.py for compatibility with pip, etc...<a class="headerlink" href="#adding-bento-based-setup-py-for-compatibility-with-pip-etc" title="Permalink to this headline">¶</a></h3>
-<p>Although nothing fundamentally prevents bento to work under installers such as
-pip, pip currently does not know anything about bento. To help transition,
-bento has a distutils compatibility layer. A setup.py as simple as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">setuptools</span>
-<span class="kn">import</span> <span class="nn">bento.distutils</span>
-
-<span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span>
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">setup</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>will enable commands such as:</p>
-<div class="highlight-python"><pre>python setup.py install
-python setup.py sdist</pre>
-</div>
-<p>to work as expected, taking all the package information from bento.info file.</p>
-<p>Note:: obviously, this mode will not enable all the features offered by bento.
-If it were possible, bento would not have been written in the first place.
-Nevertheless, the following commands should work relatively well as long as you
-don&#8217;t have hooks:</p>
-<blockquote>
-<ul class="simple">
-<li>sdist</li>
-<li>bdist_egg</li>
-<li>install</li>
-</ul>
-</blockquote>
-<p>This should be enough for pip install foo or easy_install foo to work for a
-bento-based package.</p>
+<p>If successfull, it will write a bento.info file whose content is derived from
+your setup.py. The convert command is inherently fragile, because it has to
+hook into distutils/setuptools internals. Nevertheless, it has been used
+succesfully to convert packages such as Sphinx or Jinja.</p>
 </div>
 </div>
 </div>
@@ -239,16 +183,19 @@ bento-based package.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="features.html" title="Features"
+          <a href="install.html" title="Installing bento"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Bento: an no-nonsense packaging tool for python"
+          <a href="contents.html" title="Bento documentation contents"
              >previous</a> |</li>
-        <li><a href="index.html">Bento vdev-nobuilt-gitdev-nobuil documentation</a> &raquo;</li> 
+        <li><a href="index.html">Bento home</a>&nbsp;|&nbsp;</li>
+        <li><a href="contents.html">Documentation</a>
+          &raquo;</li>
+ 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, David Cournapeau.
+        &copy; Copyright 2009-2011, David Cournapeau.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
     </div>
   </body>
