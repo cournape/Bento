@@ -10,6 +10,7 @@ Bento documentation contents
    install
    tutorial
    guides
+   reference/index
    transition
    contribute
    hacking

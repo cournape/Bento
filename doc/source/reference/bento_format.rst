@@ -1,21 +1,15 @@
-.. toctree::
-   :maxdepth: 2
-
-==========
-User guide
-==========
-
--------------------
-Package description
--------------------
+---------------------------
+bento.info format reference
+---------------------------
 
 Introduction
 ============
 
-The package description is a text file, by default named bento.info. Its
-syntax is indentation-based, and lines starting with `#` are ignored (comments).
+The package description is a text file, by default named bento.info. Its syntax
+is indentation-based. It does not support yet commenting, and is currently
+limited to ASCII.
 
-A typical .info file contains the following information:
+A typical .info file is structured as follows:
 
     * The package metadata (name, version, etc...)
     * Optionally, it may contain addition user-customizable options such as
@@ -30,10 +24,13 @@ A typical .info file contains the following information:
 Each section consists of field:value pairs:
 
     * Both fields and values are case-sensitive.
-    * Tab characters for indentation are not supported.
+    * Indentation has to be in spaces, tab characters for indentation are not
+      supported. Besides this constraints, rules for indentation should follow
+      python's own rule (arbitrary number of spaces for a given indentation
+      level).
 
 Package metadata
-----------------
+================
 
 Almost every metadata supported in distutils/setuptools is supported in bento
 file format. For a simple package containing one module hello, the
@@ -51,17 +48,87 @@ bento.info metadata definition would look like::
     AuthorEmail: john@doe.org
     License: BSD
 
+Different fields have different values: they generally consist of either a word
+(string sequence without a space), a line (a sequence of words without a
+newline) or multiple lines (Description field only).
+
+Note:: the bento lexer is ad-hoc and not well specified at this stage. It was
+conceived to handle values in the reStructuredText format, but doing so
+prevents desired flexibility of the bento.info format itself, or would be too
+complex to support. Before 1.0, bento.info format may change so that fields in
+reStructuredText need to be put in a separate file, e.g.::
+
+    DescriptionFromFile: README.rst
+
+If you are reading this and actually nothing something about parsing and get a
+better idea, I am opened to suggestions !
+
+Name
+----
+
+Format::
+
+    Name: ASCII_TOKEN
+
+Name of the software being packaged. Its value should contain only
+alpha-numeric characters.
+
+Version
+-------
+
+Format::
+
+    Version: VERSION_TOKEN
+
+VERSION_TOKEN format is not enforced yet
+
+Summary
+-------
+
+Format::
+
+    Description: WORDS
+
+One or more space separated words
+
+Url
+---
+
+Author
+------
+
+Author email
+------------
+
+Maintainer
+----------
+
+Maintainer email
+----------------
+
+License
+-------
+
+Description
+-----------
+
+Platforms
+---------
+
+Classifiers
+-----------
+
+User-customizable flags
+=======================
+
 Library section
----------------
+===============
 
 Executable section
-------------------
-
-User-options declaration
-------------------------
+==================
 
 Pure python packages
-====================
+--------------------
 
 Assuming a package with the following layout::
 
@@ -283,93 +350,3 @@ A new flag option may be added::
 
 Bentomaker automatically adds an --octavedir option (with help taken from the
 description), and $octavedir may be used inside the .info file.
-
------------------------------------------------
-Bentomaker, the command line interface to bento
------------------------------------------------
-
-Introduction
-============
-
-Bentomaker is a simple python package which uses bento API to configure, build
-and install packages. A simple install with bentomaker looks like this::
-
-    bentomaker configure --prefix=/home/david/local
-    bentomaker build
-    bentomaker install
-
-Bentomaker has a basic help facility::
-
-    bentomaker help
-
-will list all available commands. Once the project is configured, every
-installation path and user customization is set up, and cannot be changed
-(except by reconfiguring the package, of course). Bentomaker is still in its
-infancy, and quite limited:
-
-    - it will complain when you try to install without having run build first (it
-      will not automatically run build for you).
-    - Both build and install commands are simplistic: no dependency checking is
-      done (everything is rebuilt everytime you run build, every install
-      installs everything), everything is built in sources, etc...
-    - As a starting point, building C extensions is still done through distutils
-
-Available commands
-==================
-
-configure
----------
-
-This command must be run before any build/install command. It is similar to
-the well-known configure script from autoconf. Every customizable option is
-available from the command help::
-
-    bentomaker configure -h
-
-build
------
-
-This simply builds the package. For pure-python packages, it does almost
-nothing, except producing a `Build manifest`_. For packages with C extensions,
-the C extensions are built (through distutils ATM).
-
-install
--------
-
-build_egg
----------
-
-This command builds an egg from the package description. It currently requires
-that configure and build commands have been run.
-
-*This is experimental - although I intend to produce eggs which are as backward
-compatible as possible with existing tools (in particular enstaller, and
-hopefully virtualenv and buildout), eggs are implementation defined, and depend
-a lot on distutils idiosyncraties.*
-
-sdist
------
-
-This simply produces a source tarball. Currently, only .tar.gz is supported.
-
-convert
--------
-
-This converts a package built from distutils, setuptools or numpy.distutils::
-
-    bentomaker convert
-
-If successful, it will produce a bento.info file.
-
-*This is experimental, and may not work. Also, it cannot convert every package
-accurately, as it is based on inspecting setup.py's execution*. Nevertheless,
-it can already convert simple, but non trivial packages such as sphinx pretty
-accurately.
-
-Implementation details
-======================
-
-Build manifest
---------------
-
-.. _sphinx: http://sphinx.pocoo.org
