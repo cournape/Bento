@@ -32,9 +32,9 @@ Each section consists of field:value pairs:
 Package metadata
 ================
 
-Almost every metadata supported in distutils/setuptools is supported in bento
-file format. For a simple package containing one module hello, the
-bento.info metadata definition would look like::
+Bento supports most metadata defined in the PEP 241 and 314.  For a simple
+package containing one module hello, the bento.info metadata definition would
+look like::
 
     Name: hello
     Version: 0.0.1
@@ -51,6 +51,9 @@ bento.info metadata definition would look like::
 Different fields have different values: they generally consist of either a word
 (string sequence without a space), a line (a sequence of words without a
 newline) or multiple lines (Description field only).
+
+Note:: while most metadata defined in the PEP-241 and PEP-314 are supported
+syntax-wise, their semantics are not always implemented already.
 
 Note:: the bento lexer is ad-hoc and not well specified at this stage. It was
 conceived to handle values in the reStructuredText format, but doing so
@@ -303,6 +306,39 @@ is ok, but::
             *.3
 
 is not.
+
+Available path variables
+------------------------
+
+By default, bento defines the following path variables:
+
+    * prefix: install architecture-independent files
+    * eprefix: install architecture-dependent files
+    * bindir: user executables
+    * sbindir: system admin executables
+    * libexecdir: program executables
+    * sysconfdir: read-only single-machine data
+    * sharedstatedir: modifiable architecture-independent data
+    * localstatedir: modifiable single-machine data
+    * libdir: object code libraries
+    * includedir: C header files
+    * oldincludedir: C header files for non-gcc
+    * datarootdir: read-only arch.-independent data root
+    * datadir: read-only architecture-independent data
+    * infodir: info documentation
+    * localedir: locale-dependent data
+    * mandir: man documentation
+    * docdir: documentation root
+    * htmldir: html documentation
+    * dvidir: dvi documentation
+    * pdfdir: pdf documentation
+    * psdir: ps documentation
+
+While some of those path semantics don't make sense on some platforms such as
+windows, they are defined everywhere with defaults, to ensure a consistent
+interface across platforms. They are also defined to to get a 1-to-1
+correpondance with the autoconf conventions, which are familiar to most
+packagers on open source OS and system administrators.
 
 Conditionals
 ============

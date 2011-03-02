@@ -2,29 +2,8 @@
 Guides
 ======
 
-Metadata
-========
-
-Bento supports most metadata defined in the PEP 241 and 314::
-
-    Name: foo
-    Version: 0.0.1
-    Summary: a few words
-    Description: you can
-        use multiple lines here
-    Url: http://example.com
-    DownloadUrl: http://example.com
-    Author: John Doe
-    AuthorEmail: john@doe.com
-    Maintainer: John Doe
-    MaintainerEmail: john@doe.com
-    License: BSD
-    Platforms: darwin, win32
-    InstallRequires: foo
-    BuildRequires: bar
-
-Customizable installation paths
-===============================
+Specifiying data files
+======================
 
 Most packages have some files besides pure code: configuration, data
 files, documentation, etc... When those files need to be installed,
@@ -44,7 +23,7 @@ Flexible install scheme
 
 Hardcoding the target directory as above is not flexibe. The user may
 want to install manpages somewhere else. Bento defines a set of
-variable paths which are customizable, with platform-specific
+variable paths which are customizable from bentomaker, with platform-specific
 defaults. For manpages, the variable is mandir::
 
     DataFiles: manpage
@@ -77,7 +56,16 @@ $mandir/fubar/fubar.1.
 Custom data paths
 -----------------
 
-TODO
+While the default list should cover most package needs, it is sometimes useful
+to define custom path variable::
+
+    Path: foo
+        Description: foo directory
+        Default: $datadir/foo
+
+Bentomaker will automatically add the --foodir option, and $foo will be
+expanded to the customized value (or $datadir/foo by default). The description
+will be used as a description in the help message.
 
 Retrieving data files at runtime
 ================================
@@ -140,9 +128,12 @@ you can access "foo.dat" as follows in your package::
 
     data = os.path.join(PKGDATADIR, "foo.dat")
 
+This will point to the right location independently on $pkgdatadir value. The
+try/except is useful to support cases where the package has not been installed
+(e.g. when bentomaker configure has not run yet).
+
 Recursive package description
 =============================
-
 
 If you have a package with a lot of python subpackages which require
 custom configurations, doing everything in one bento.info file is
