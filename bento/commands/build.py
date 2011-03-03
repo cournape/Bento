@@ -154,8 +154,10 @@ def _build_config_py(pkg, paths, src_root, build_root):
 
         fid = open(tmp_config_node.abspath(), "w")
         try:
-            for name, value in paths.items():
-                fid.write('%s = "%s"\n' % (name.upper(), subst_vars(value, paths)))
+            keys = sorted(paths.keys())
+            n = max([len(k) for k in keys]) + 2
+            for name, value in sorted(paths.items()):
+                fid.write('%s = "%s"\n' % (name.upper().ljust(n), subst_vars(value, paths)))
         finally:
             fid.close()
         target = build_root.make_node(pkg.config_py)
