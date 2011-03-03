@@ -64,7 +64,7 @@ reStructuredText need to be put in a separate file, e.g.::
     DescriptionFromFile: README.rst
 
 If you are reading this and actually know something about parsing and have a
-better idea to support inline reST, I am opened to suggestions !
+better idea to support inline reST, I am open to suggestions !
 
 Name
 ----
