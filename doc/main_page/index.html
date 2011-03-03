@@ -21,7 +21,7 @@
 				<div class="group row"> 
 					<div class="col-1"> 
 						<p>With bento, packages metadata are described in an easy to read bento.info file.<p>
-						<p>The <a href="html/reference/bento_format">syntax</a> is indentation-based, as python.</p> 
+						<p>The <a href="html/reference/bento_format.html">syntax</a> is indentation-based, as python.</p> 
 			<!--
 			<div class="button"> 
 			<p><a href="http://cournape.github.com/Bento/html/reference/bento_format">bento.into syntax</a></p> 
@@ -42,7 +42,7 @@ Library:
 			<li> 
 				<div class="group row"> 
 					<div class="col-1"> 
-						<p>Bento packages are currently installed using <a href="html/reference/bentomaker">bentomaker</a>, the command line interface to bento.</p> 
+						<p>Bento packages are currently installed using <a href="html/reference/bentomaker.html">bentomaker</a>, the command line interface to bento.</p> 
 					</div> 
 					<div class="col-2"> 
 <pre><code><span style="color: #e3d796;">$</span> bentomaker configure
@@ -93,7 +93,7 @@ Created self-contained script 'bentomaker' in ...
 			<li> 
 				<div class="group row"> 
 					<div class="col-1"> 
-						<p>One simple way to include data files (installed) and extra distribution files (not installed)</p> 
+						<p>One simple way to <a href="html/tutorial.html#installed-data-files-datafiles-section">include data files</a> (installed) and <a href="html/tutorial.html#extra-source-files">extra distribution files</a> (not installed)</p> 
 					</div> 
 					<div class="col-2"> 
 <pre><code>Datafiles: pdf-doc
@@ -103,6 +103,16 @@ Created self-contained script 'bentomaker' in ...
 ExtraSourceFiles:
     doc/source/index.rst
     </code></pre> 
+					</div> 
+				</div> 
+			</li> 
+			<li> 
+				<div class="group row"> 
+					<div class="col-1"> 
+						<p>Retrieving package data location at runtime indenpendently of their install path is as simple as <a href="html/guides.html#retrieving-data-files-at-runtime">importing a variable</a></p> 
+					</div> 
+					<div class="col-2"> 
+<pre><code>from yourpackage.__bento_config import DATADIR </code></pre>
 					</div> 
 				</div> 
 			</li> 
