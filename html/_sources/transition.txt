@@ -2,8 +2,49 @@
 Transition from existing python packaging infrastructure
 ========================================================
 
+Even if you are convinced than bento is more appropriate for your needs than
+current distutils-based tools, there is a significant hurdle to transition to a
+new infrastructure for your package. First, you need to convert your package,
+but you also potentially loose goodies such a putting your package on pypi, or
+being installable through tools such as pip or easy_install.
+
+Ideally, such tools would become pluggable so that they can be made aware of
+new packaging formats, but in the mean-time, the practical approach of bento is
+to "emulate" distutils just enough to make them work with the most useful bits
+of the current python packaging infrastructure, and to provide tools to convert
+existing setup.py to the bento format.
+
 Converting distutils-based packages
 ===================================
+
+The bentomaker command-line tool has a convert command which should be run at
+the top of your source tree (the directory containing your top setup.py).
+Because the convert command works by running the setup.py, you need to make
+sure you can run the setup.py. To convert your package, just do::
+
+    bentomaker convert
+
+If successfull, this will write a bento.info file whose content has been pulled
+of the convert command analysis (it will not overwrite an existing one). It
+first tries to determine whether your setup.py uses setuptools or not, and then
+run it with mocked distutils objects for the actual conversion.  Since the
+convert command works by inserting various hooks into distutils internals, it
+is inherently fragile. 
+
+It will definitely not work in the following cases:
+
+    * you use the package_dir feature: bento does not support the feature at all.
+    * you have your own distutils extensions (setuptools and numpy.distutils
+      are somehow handled, though, and other common distutils extensions may be
+      added as well).
+
+It should support the following features:
+
+    * All the distutils metadata
+    * Some setuptools metadata (like require or console scripts)
+    * module, packages and extensions
+    * data files as specified in data_files
+    * source files in MANIFEST[.in]
 
 Note:: because the convert command does not parse the setup.py, but runs it
 instead, it only handles package description as defined by this one run of

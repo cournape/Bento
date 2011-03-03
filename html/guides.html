@@ -57,8 +57,7 @@
   <h3><a href="contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Guides</a><ul>
-<li><a class="reference internal" href="#metadata">Metadata</a></li>
-<li><a class="reference internal" href="#customizable-installation-paths">Customizable installation paths</a><ul>
+<li><a class="reference internal" href="#specifiying-data-files">Specifiying data files</a><ul>
 <li><a class="reference internal" href="#flexible-install-scheme">Flexible install scheme</a></li>
 <li><a class="reference internal" href="#custom-data-paths">Custom data paths</a></li>
 </ul>
@@ -118,28 +117,8 @@
             
   <div class="section" id="guides">
 <h1>Guides<a class="headerlink" href="#guides" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="metadata">
-<h2>Metadata<a class="headerlink" href="#metadata" title="Permalink to this headline">¶</a></h2>
-<p>Bento supports most metadata defined in the PEP 241 and 314:</p>
-<div class="highlight-python"><pre>Name: foo
-Version: 0.0.1
-Summary: a few words
-Description: you can
-    use multiple lines here
-Url: http://example.com
-DownloadUrl: http://example.com
-Author: John Doe
-AuthorEmail: john@doe.com
-Maintainer: John Doe
-MaintainerEmail: john@doe.com
-License: BSD
-Platforms: darwin, win32
-InstallRequires: foo
-BuildRequires: bar</pre>
-</div>
-</div>
-<div class="section" id="customizable-installation-paths">
-<h2>Customizable installation paths<a class="headerlink" href="#customizable-installation-paths" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="specifiying-data-files">
+<h2>Specifiying data files<a class="headerlink" href="#specifiying-data-files" title="Permalink to this headline">¶</a></h2>
 <p>Most packages have some files besides pure code: configuration, data
 files, documentation, etc... When those files need to be installed,
 you should use DataFiles sections. Each such section has two mandatory
@@ -155,7 +134,7 @@ and which files are specific to this section:</p>
 <h3>Flexible install scheme<a class="headerlink" href="#flexible-install-scheme" title="Permalink to this headline">¶</a></h3>
 <p>Hardcoding the target directory as above is not flexibe. The user may
 want to install manpages somewhere else. Bento defines a set of
-variable paths which are customizable, with platform-specific
+variable paths which are customizable from bentomaker, with platform-specific
 defaults. For manpages, the variable is mandir:</p>
 <div class="highlight-python"><pre>DataFiles: manpage
     TargetDir: $mandir/man1
@@ -183,7 +162,15 @@ $mandir/fubar/fubar.1.</p>
 </div>
 <div class="section" id="custom-data-paths">
 <h3>Custom data paths<a class="headerlink" href="#custom-data-paths" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<p>While the default list should cover most package needs, it is sometimes useful
+to define custom path variable:</p>
+<div class="highlight-python"><pre>Path: foo
+    Description: foo directory
+    Default: $datadir/foo</pre>
+</div>
+<p>Bentomaker will automatically add the &#8211;foodir option, and $foo will be
+expanded to the customized value (or $datadir/foo by default). The description
+will be used as a description in the help message.</p>
 </div>
 </div>
 <div class="section" id="retrieving-data-files-at-runtime">
@@ -212,6 +199,14 @@ unix).  The file looks as follows:</p>
 </div>
 <p>to that you can import every path variable with its expanded value in your
 package:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">foo.__bento_config</span> <span class="kn">import</span> <span class="n">DOCDIR</span><span class="p">,</span> <span class="n">SHAREDSTATEDIR</span>
+</pre></div>
+</div>
+<p>As the generated python module is a simple python file with pair values, it is
+easy to modify it if desired (for debugging, etc...), and understandable by any
+python programmer.</p>
+<p>If you need to support the case where the package has not been built yet, you
+can do as follows:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">foo.__bento_config</span> <span class="kn">import</span> <span class="n">DOCDIR</span><span class="p">,</span> <span class="n">SHAREDSTATEDIR</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -220,6 +215,8 @@ package:</p>
     <span class="n">DOCDIR</span> <span class="o">=</span> <span class="o">...</span>
 </pre></div>
 </div>
+<p>This is not done by default as it is not possible to know the right default
+value.</p>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
 <p>Assuming the following bento file:</p>
@@ -242,6 +239,7 @@ ConfigPy: foo/__bento_config.py</pre>
 <span class="n">data</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PKGDATADIR</span><span class="p">,</span> <span class="s">&quot;foo.dat&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>This will point to the right location independently on $pkgdatadir value.</p>
 </div>
 </div>
 <div class="section" id="recursive-package-description">
@@ -319,7 +317,7 @@ everytime you execute bentomaker. Assuming the following bento.info file:</p>
 HookFile: bscript</pre>
 </div>
 <p>the hook file will look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">startup</span><span class="p">():</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">startup</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
     <span class="k">print</span> <span class="s">&quot;Yummy bento&quot;</span>
 </pre></div>
 </div>

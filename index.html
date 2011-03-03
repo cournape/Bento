@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- CSS and general layout strongly inspired by homebrew mainpage-->
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
 <head>
 	<title>Bento, a pythonic packaging solution for python software</title>
@@ -15,14 +16,19 @@
 			<p id="subtitle"><strong>The pythonic packaging solution</strong></p>
 		</div>
 		<div id="informations">
-		<ul> 
-			<li> 
-				<div class="group row"> 
-					<div class="col-1"> 
+		<ul>
+			<li>
+				<div class="group row">
+					<div class="col-1">
 						<p>With bento, packages metadata are described in an easy to read bento.info file.<p>
-						<p>The syntax is indentation-based, as python.</p> 
-					</div> 
-					<div class="col-2"> 
+						<p>The <a href="html/reference/bento_format.html">syntax</a> is indentation-based, as python.</p>
+						<p>Bento aims at supporting all python versions from 2.4 to 3.x</p>
+			<!--
+			<div class="button">
+			<p><a href="http://cournape.github.com/Bento/html/reference/bento_format">bento.into syntax</a></p>
+			</div>-->
+					</div>
+					<div class="col-2">
 <pre><code>Name: foo
 Version: 0.1
 Description:
@@ -31,30 +37,30 @@ Description:
 Library:
     Packages:
 	foo, foo.core</code></pre>
-					</div> 
-				</div> 
-			</li> 
-			<li> 
-				<div class="group row"> 
-					<div class="col-1"> 
-						<p>Bento packages are currently installed using bentomaker, the command line interface to bento.</p> 
-					</div> 
-					<div class="col-2"> 
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
+						<p>Bento packages are currently installed using <a href="html/reference/bentomaker.html">bentomaker</a>, the command line interface to bento.</p>
+					</div>
+					<div class="col-2">
 <pre><code><span style="color: #e3d796;">$</span> bentomaker configure
 <span style="color: #e3d796;">$</span> bentomaker build
 <span style="color: #e3d796;">$</span> bentomaker install
 <span style="color: #AD5818;"># Or more simply</span>
 <span style="color: #e3d796;">$</span> bentomaker install
 </code></pre>
-					</div> 
-				</div> 
-			</li> 
-			<li> 
-				<div class="group row"> 
-					<div class="col-1"> 
-						<p>To avoid adding dependencies to your package, bento may be distributed as a single file.</p> 
-					</div> 
-					<div class="col-2"> 
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
+						<p>To avoid addtional dependencies to your package, bento may be distributed as a <a href="html/singlefile.html">single file</a>.</p>
+					</div>
+					<div class="col-2">
 <pre><code><span style="color: #AD5818;"># This will create a self-contained bentomaker
 # file that you can include in your project</span>
 <span style="color: #e3d796;">$</span> python tools/createdist.py
@@ -66,78 +72,104 @@ Created self-contained script 'bentomaker' in ...
 <span style="color: #e3d796;">$</span> cd $my_source_tree
 <span style="color: #e3d796;">$</span> ./bentomaker ...
 </code></pre>
-					</div> 
-				</div> 
-			</li> 
-			<li> 
-				<div class="group row"> 
-					<div class="col-1"> 
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
 					<p>Bentomaker
 					also supports building source
 					distributions, windows installers and
 					preliminary support for eggs.</p>
-					</div> 
-					<div class="col-2"> 
+					</div>
+					<div class="col-2">
 <pre><code><span style="color: #e3d796;">$</span> bentomaker sdist
 <span style="color: #e3d796;">$</span> bentomaker build_wininst
 <span style="color: #e3d796;">$</span> bentomaker build_egg
 </code></pre>
-					</div> 
-				</div> 
-			</li> 
-			<li> 
-				<div class="group row"> 
-					<div class="col-1"> 
-						<p>One simple way to include data files (installed) and extra distribution files (not installed)</p> 
-					</div> 
-					<div class="col-2"> 
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
+						<p>One simple way to <a href="html/tutorial.html#installed-data-files-datafiles-section">include data files</a> (installed) and <a href="html/tutorial.html#extra-source-files">extra distribution files</a> (not installed)</p>
+					</div>
+					<div class="col-2">
 <pre><code>Datafiles: pdf-doc
     TargetDir: /usr/local/share/doc/foo
     Files: main.pdf
 
 ExtraSourceFiles:
     doc/source/index.rst
-    </code></pre> 
-					</div> 
-				</div> 
-			</li> 
-			<li> 
-				<div class="group row"> 
-					<div class="col-1"> 
+    </code></pre>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
+						<p>Retrieving package data location at runtime indenpendently of their install path is as simple as <a href="html/guides.html#retrieving-data-files-at-runtime">importing a variable</a></p>
+					</div>
+					<div class="col-2">
+<pre><code>from yourpackage.__bento_config import DATADIR </code></pre>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
 						<p>Bento aims at making packagers' life easier.
-						
+
 						Paths may be customized at
 						configuration stage, and those
 						paths may be used inside the
 						bento.info file.</p>
-				
-					</div> 
+
+					</div>
 					<div class="col-2">
 <pre><code>Datafiles: pdf-doc
     TargetDir: $pdfdoc
     Files: main.pdf</code></pre>
-<pre><code><span style="color: #e3d796;">$</span> bentomaker configure --pdfdoc=/usr/pdfdoc</code></pre> 
-					</div> 
-				</div> 
-			</li> 
-			<li> 
-				<div class="group row"> 
-					<div class="col-1"> 
-						<p>If your package uses setup.py, you can convert it to bento format using the convert command</p> 
-					</div> 
-					<div class="col-2"> 
+<pre><code><span style="color: #e3d796;">$</span> bentomaker configure --pdfdoc=/usr/pdfdoc</code></pre>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
+						<p>If your package uses distutils/setuptools/distribute, you can <a href="html/transition.html">convert your setup.py</a> to bento format using the convert command</p>
+					</div>
+					<div class="col-2">
 <pre><code><span style="color: #AD5818;"># Run this in a project containing a setup.py</span>
 <span style="color: #e3d796;">$</span> bentomaker convert</code></pre>
 <pre><code><span style="color: #AD5818;"># You now have a bento.info file</span>
 <span style="color: #e3d796;">$</span> bentomaker configure ...</code></pre>
-					</div> 
-				</div> 
-			</li> 
-			<li> 
-				<div class="group row"> 
-					<div class="col-1"> 
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
+						<p>Even better, bento has a <a href="html/transition.html">distutils compatibiliy layer</a> so that you can write a simple setup.py which works under pip or easy_install.</p>
+					</div>
+					<div class="col-2">
+<pre><code>import setuptools
+import bento.distutils
+from setuptools import setup
+setup()
+</code></pre>
+<pre><code><span style="color: #e3d796;">$</span> easy_install your-bento-generated-tarball
+<span style="color: #e3d796;">$</span> pip your-bento-generated-tarball</code></pre>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
 						<p>Developing complex packages with C code is now more pleasant thanks to automatic dependency tracking.</p>
-						
+
 						<p>By default, bentomaker
 						builds C extensions using yaku,
 						which automatically rebuild
@@ -146,8 +178,8 @@ ExtraSourceFiles:
 						change.</p>
 
 						<p>It builds C extensions in parallel, too</p>
-					</div> 
-					<div class="col-2"> 
+					</div>
+					<div class="col-2">
 <pre><code><span style="color: #e3d796;">$</span> bentomaker build
 <span style="color: #b1d0ca">PYCC	foo.o</span>
 <span style="color: #b1d0ca">PYCC	bar.o</span>
@@ -156,33 +188,33 @@ ExtraSourceFiles:
 <span style="color: #e3d796;">$</span> bentomaker build
 <span style="color: #b1d0ca">PYCC	foo.o</span> # Only foo is rebuilt
 <span style="color: #b1d0ca">PYLINK	foo.so</span>
-</code></pre> 
-					</div> 
-				</div> 
-			</li> 
-			<li> 
-				<div class="group row"> 
-					<div class="col-1"> 
+</code></pre>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
 					<p>Bento is designed from the ground up
 					to be extensible, and cleanly separate
 					configuration, build, installation and
 					packaging.</p>
-					
+
 					<p>You want to use waf or scons
 					to build C extensions? You want to add
 					support for building debian packages?
 					Bento aims at making those tasks not
 					only possible but easy and robust.</p>
-					</div> 
-				</div> 
-			</li> 
-			<li> 
-			<div class="row group button button-large" style="border-bottom: none;"> 
-			<p><a href="http://cournape.github.com/Bento/html">Take me to Bento documentation</a></p> 
-			</div> 
-			</li> 
-		</ul> 
+					</div>
+				</div>
+			</li>
+			<li>
+			<div class="row group button button-large" style="border-bottom: none;">
+			<p><a href="html/index.html">Take me to Bento documentation</a></p>
+			</div>
+			</li>
+		</ul>
 	</div>
-	<a href="http://github.com/cournape/Bento"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub" /></a> 
+	<a href="http://github.com/cournape/Bento"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub" /></a>
 </body>
 </html>

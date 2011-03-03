@@ -89,6 +89,7 @@
 <li><a class="reference internal" href="#named-data-files-section">Named data files section</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#available-path-variables">Available path variables</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#conditionals">Conditionals</a></li>
@@ -167,9 +168,9 @@ level).</li>
 </div>
 <div class="section" id="package-metadata">
 <h2>Package metadata<a class="headerlink" href="#package-metadata" title="Permalink to this headline">¶</a></h2>
-<p>Almost every metadata supported in distutils/setuptools is supported in bento
-file format. For a simple package containing one module hello, the
-bento.info metadata definition would look like:</p>
+<p>Bento supports most metadata defined in the PEP 241 and 314.  For a simple
+package containing one module hello, the bento.info metadata definition would
+look like:</p>
 <div class="highlight-python"><pre>Name: hello
 Version: 0.0.1
 Summary: A one-line description of the distribution
@@ -185,6 +186,8 @@ License: BSD</pre>
 <p>Different fields have different values: they generally consist of either a word
 (string sequence without a space), a line (a sequence of words without a
 newline) or multiple lines (Description field only).</p>
+<p>Note:: while most metadata defined in the PEP-241 and PEP-314 are supported
+syntax-wise, their semantics are not always implemented already.</p>
 <p>Note:: the bento lexer is ad-hoc and not well specified at this stage. It was
 conceived to handle values in the reStructuredText format, but doing so
 prevents desired flexibility of the bento.info format itself, or would be too
@@ -193,7 +196,7 @@ reStructuredText need to be put in a separate file, e.g.:</p>
 <div class="highlight-python"><pre>DescriptionFromFile: README.rst</pre>
 </div>
 <p>If you are reading this and actually know something about parsing and have a
-better idea to support inline reST, I am opened to suggestions !</p>
+better idea to support inline reST, I am open to suggestions !</p>
 <div class="section" id="name">
 <h3>Name<a class="headerlink" href="#name" title="Permalink to this headline">¶</a></h3>
 <p>Format:</p>
@@ -413,6 +416,40 @@ DataFiles:
 </div>
 <p>is not.</p>
 </div>
+</div>
+<div class="section" id="available-path-variables">
+<h3>Available path variables<a class="headerlink" href="#available-path-variables" title="Permalink to this headline">¶</a></h3>
+<p>By default, bento defines the following path variables:</p>
+<blockquote>
+<ul class="simple">
+<li>prefix: install architecture-independent files</li>
+<li>eprefix: install architecture-dependent files</li>
+<li>bindir: user executables</li>
+<li>sbindir: system admin executables</li>
+<li>libexecdir: program executables</li>
+<li>sysconfdir: read-only single-machine data</li>
+<li>sharedstatedir: modifiable architecture-independent data</li>
+<li>localstatedir: modifiable single-machine data</li>
+<li>libdir: object code libraries</li>
+<li>includedir: C header files</li>
+<li>oldincludedir: C header files for non-gcc</li>
+<li>datarootdir: read-only arch.-independent data root</li>
+<li>datadir: read-only architecture-independent data</li>
+<li>infodir: info documentation</li>
+<li>localedir: locale-dependent data</li>
+<li>mandir: man documentation</li>
+<li>docdir: documentation root</li>
+<li>htmldir: html documentation</li>
+<li>dvidir: dvi documentation</li>
+<li>pdfdir: pdf documentation</li>
+<li>psdir: ps documentation</li>
+</ul>
+</blockquote>
+<p>While some of those path semantics don&#8217;t make sense on some platforms such as
+windows, they are defined everywhere with defaults, to ensure a consistent
+interface across platforms. They are also defined to to get a 1-to-1
+correpondance with the autoconf conventions, which are familiar to most
+packagers on open source OS and system administrators.</p>
 </div>
 </div>
 <div class="section" id="conditionals">

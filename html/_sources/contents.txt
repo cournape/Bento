@@ -11,6 +11,7 @@ Bento documentation contents
    tutorial
    guides
    reference/index
+   singlefile
    transition
    contribute
    hacking
