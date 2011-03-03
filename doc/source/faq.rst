@@ -212,3 +212,23 @@ environment::
 
     bentomaker configure --prefix=/usr/local
     bentomaker install
+
+Why shouldn't I use bento ?
+===========================
+
+While I believe bento to be significantly better than other existing solutions,
+bento has some significant disadvantages as well that you need to be aware of:
+
+    * Still mostly a one-man show. However, once bento reaches a satisfying
+      level, it will likely be used as a replacement to distutils for numpy and
+      scipy, and hopefully beyond
+    * Relatively weak testing: bento has a test suite with average coverage
+      (~50-60 %). Some parts like the bento.info parser reach near full
+      coverage, other parts such as bentomaker are lower than 50 %. Bento is
+      consistently tested on mac os x and linux on python 2.6, and regularly
+      tested on windows, though.
+    * Weak documentation: hopefully, this is getting better.
+    * Mediocre code quality: I focused on the general architecture and
+      low-coupling which are the main issues I had with distutils, but at a
+      lower level, a lot of code leaves to be desired (style inconsistencies,
+      etc...). As for testing, some parts are pretty good, other are damn awful.
