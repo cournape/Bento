@@ -138,13 +138,29 @@ ExtraSourceFiles:
 			<li>
 				<div class="group row">
 					<div class="col-1">
-						<p>If your package uses setup.py, you can convert it to bento format using the convert command</p>
+						<p>If your package uses distutils/setuptools/distribute, you can <a href="html/transition.html">convert your setup.py</a> to bento format using the convert command</p>
 					</div>
 					<div class="col-2">
 <pre><code><span style="color: #AD5818;"># Run this in a project containing a setup.py</span>
 <span style="color: #e3d796;">$</span> bentomaker convert</code></pre>
 <pre><code><span style="color: #AD5818;"># You now have a bento.info file</span>
 <span style="color: #e3d796;">$</span> bentomaker configure ...</code></pre>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
+						<p>Even better, bento has a <a href="html/transition.html">distutils compatibiliy layer</a> so that you can write a simple setup.py which works under pip or easy_install.</p>
+					</div>
+					<div class="col-2">
+<pre><code>import setuptools
+import bento.distutils
+from setuptools import setup
+setup()
+</code></pre>
+<pre><code><span style="color: #e3d796;">$</span> easy_install your-bento-generated-tarball
+<span style="color: #e3d796;">$</span> pip your-bento-generated-tarball</code></pre>
 					</div>
 				</div>
 			</li>
