@@ -97,12 +97,24 @@ unix).  The file looks as follows::
 to that you can import every path variable with its expanded value in your
 package::
 
+    from foo.__bento_config import DOCDIR, SHAREDSTATEDIR
+
+As the generated python module is a simple python file with pair values, it is
+easy to modify it if desired (for debugging, etc...), and understandable by any
+python programmer.
+
+If you need to support the case where the package has not been built yet, you
+can do as follows::
+
     try:
         from foo.__bento_config import DOCDIR, SHAREDSTATEDIR
     except ImportError:
         # Default values (so that the package may be imported/used without
         # being built)
         DOCDIR = ...
+
+This is not done by default as it is not possible to know the right default
+value.
 
 Example
 -------
@@ -128,9 +140,7 @@ you can access "foo.dat" as follows in your package::
 
     data = os.path.join(PKGDATADIR, "foo.dat")
 
-This will point to the right location independently on $pkgdatadir value. The
-try/except is useful to support cases where the package has not been installed
-(e.g. when bentomaker configure has not run yet).
+This will point to the right location independently on $pkgdatadir value.
 
 Recursive package description
 =============================
