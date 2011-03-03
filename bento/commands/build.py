@@ -1,9 +1,11 @@
 import os
 import sys
 
-from bento.core.utils import \
+from bento.core.utils \
+    import \
         find_package, OrderedDict, subst_vars, rename, ensure_dir
-from bento.installed_package_description import \
+from bento.installed_package_description \
+    import \
         InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
 from bento._config \
     import \
@@ -24,9 +26,11 @@ from bento.commands \
 from bento.commands \
     import \
         build_yaku
-from bento.commands.core import \
+from bento.commands.core \
+    import \
         Command
-from bento.commands.script_utils import \
+from bento.commands.script_utils \
+    import \
         create_posix_script, create_win32_script
 
 class BuildCommand(Command):
