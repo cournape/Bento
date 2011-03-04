@@ -18,7 +18,7 @@ bento::
 
 The main features of bento are:
 
-    * Supports python from 2.4 (including 3.x)
+    * Supports all python versions >= 2.4 (including 3.x)
     * Package description in a simple, indentation-based format. Supports most
       distutils/setuptools metadata as well as packages and extensions.
       Recursive support for deeply-nested packages.
