@@ -48,3 +48,12 @@ except ImportError:
     from bento.compat._collections \
         import \
             defaultdict
+
+if sys.version_info < (2, 6, 0):
+    from bento.compat._tempfile \
+        import \
+            NamedTemporaryFile
+else:
+    from tempfile \
+        import \
+            NamedTemporaryFile
