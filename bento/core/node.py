@@ -6,8 +6,7 @@ absolute paths. This is also more reliable than samepath and relpath, and quite
 efficient.
 
 Ripped off from waf (v 1.6), by Thomas Nagy. The cool design is his, bugs most
-certainly mine :) We removed everything useless for bento (including bld/src
-directory stuff, etc...)
+certainly mine :) We removed a few things which are not useful for bento.
 """
 import os, shutil, re, sys
 
@@ -42,7 +41,7 @@ class Node(object):
 
         if parent:
             if name in parent.children:
-                raise Errors.WafError('node %s exists in the parent files %r already' % (name, parent))
+                raise ValueError('node %s exists in the parent files %r already' % (name, parent))
             parent.children[name] = self
 
     def __setstate__(self, data):
@@ -306,3 +305,110 @@ class Node(object):
         except OSError:
             return None
         return node
+
+class NodeWithBuild(Node):
+    """
+    Never create directly, use create_root_with_source_tree function.
+    """
+    def __init__(self, name, parent):
+        super(NodeWithBuild, self).__init__(name, parent)
+        # We keep waf naming convention for the members here
+        self.srcnode = self.__class__.source_node
+        self.bldnode = self.__class__.build_node
+
+    def is_src(self):
+        """
+        True if the node is below the source directory
+        note: !is_src does not imply is_bld()
+
+        :rtype: bool
+        """
+        cur = self
+        x = id(self.srcnode)
+        y = id(self.bldnode)
+        while cur.parent:
+            if id(cur) == y:
+                return False
+            if id(cur) == x:
+                return True
+            cur = cur.parent
+        return False
+
+    def is_bld(self):
+        """
+        True if the node is below the build directory
+        note: !is_bld does not imply is_src
+
+        :rtype: bool
+        """
+        cur = self
+        y = id(self.bldnode)
+        while cur.parent:
+            if id(cur) == y:
+                return True
+            cur = cur.parent
+        return False
+
+    def get_src(self):
+        """
+        Return the equivalent src node (or self if not possible)
+
+        :rtype: :py:class:`waflib.Node.Node`
+        """
+        cur = self
+        x = id(self.srcnode)
+        y = id(self.bldnode)
+        lst = []
+        while cur.parent:
+            if id(cur) == y:
+                lst.reverse()
+                return self.srcnode.make_node(lst)
+            if id(cur) == x:
+                return self
+            lst.append(cur.name)
+            cur = cur.parent
+        return self
+
+    def get_bld(self):
+        """
+        Return the equivalent bld node (or self if not possible)
+
+        :rtype: :py:class:`waflib.Node.Node`
+        """
+        cur = self
+        x = id(self.srcnode)
+        y = id(self.bldnode)
+        lst = []
+        while cur.parent:
+            if id(cur) == y:
+                return self
+            if id(cur) == x:
+                lst.reverse()
+                return self.bldnode.make_node(lst)
+            lst.append(cur.name)
+            cur = cur.parent
+        return self
+
+    def bldpath(self):
+        "Path seen from the build directory default/src/foo.cpp"
+        return self.path_from(self.bldnode)
+
+    def srcpath(self):
+        "Path seen from the source directory ../src/foo.cpp"
+        return self.path_from(self.srcnode)
+
+def create_root_with_source_tree(source_path, build_path):
+    NodeWithBuild.source_node = None
+    NodeWithBuild.build_node = None
+
+    root = NodeWithBuild("root", "")
+    top = root.make_node(source_path)
+    build = top.make_node(build_path)
+
+    NodeWithBuild.source_node = top
+    NodeWithBuild.build_node = build
+    for node in [root, top, build]:
+        node.srcnode = top
+        node.bldnode = build
+
+    return root
