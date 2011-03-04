@@ -50,6 +50,7 @@ ExtraSourceFiles:
     bento/core/tests/parsing/*.py,
     bento/core/tests/pkgdescr/*.py,
     bento/core/tests/*.py,
+    bento/compat/tests/*.py,
     bento/tests/*.py,
     bento/tests/bentos/*.py,
     bento/tests/bentos/*.info
