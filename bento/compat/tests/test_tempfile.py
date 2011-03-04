@@ -11,6 +11,12 @@ from bento.compat.api \
 # Finicky: to make sure we test our NamedTemporaryFile and not something else...
 tempfile.NamedTemporaryFile = NamedTemporaryFile
 
+def _bytes(s):
+    if sys.version_info[0] < 3:
+        return s
+    else:
+        return bytes(s.encode("ascii"))
+
 # Code below copied verbatim from python 2.6.4 test_tempfile.py file
 class TC(unittest.TestCase):
 
@@ -74,7 +80,7 @@ class test_NamedTemporaryFile(TC):
         dir = tempfile.mkdtemp()
         try:
             f = tempfile.NamedTemporaryFile(dir=dir)
-            f.write('blat')
+            f.write(_bytes('blat'))
             f.close()
             self.failIf(os.path.exists(f.name),
                         "NamedTemporaryFile %s exists after close" % f.name)
@@ -88,7 +94,7 @@ class test_NamedTemporaryFile(TC):
         try:
             f = tempfile.NamedTemporaryFile(dir=dir, delete=False)
             tmp = f.name
-            f.write('blat')
+            f.write(_bytes('blat'))
             f.close()
             self.failUnless(os.path.exists(f.name),
                         "NamedTemporaryFile %s missing after close" % f.name)
@@ -100,7 +106,7 @@ class test_NamedTemporaryFile(TC):
     def test_multiple_close(self):
         # A NamedTemporaryFile can be closed many times without error
         f = tempfile.NamedTemporaryFile()
-        f.write('abc\n')
+        f.write(_bytes('abc\n'))
         f.close()
         try:
             f.close()
