@@ -20,7 +20,7 @@ ntests3=0
 old_PYTHONPATH=$PYTHONPATH
 PYTHONPATH=$PWD:$PYTHONPATH
 
-PYTHON2=python2
+PYTHON2=python2.6
 
 for i in $tests; do
 	echo "======== TESTING $i ============="
