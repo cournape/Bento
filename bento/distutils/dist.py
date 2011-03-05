@@ -17,7 +17,7 @@ from bento.conv \
         pkg_to_distutils_meta
 from bento.core.node \
     import \
-        Node
+        create_root_with_source_tree
 from bento.core.package \
     import \
         PackageDescription
@@ -81,8 +81,10 @@ class BentoDistribution(Distribution):
             else:
                 self.entry_points["console_scripts"] = console_scripts
 
-        self.root_node = Node("", None)
-        self.top_node = self.root_node.find_dir(os.getcwd())
+        source_root = os.getcwd()
+        build_root = os.path.join(source_root, "build")
+        self.root = create_root_with_source_tree(source_root, build_root)
+        self.top_node = self.root.srcnode
 
     def has_data_files(self):
         return len(self.pkg.data_files) > 0        

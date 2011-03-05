@@ -40,8 +40,8 @@ class build(old_build):
 
     def run(self):
         dist = self.distribution
+        dist.top_node.bldnode.mkdir()
 
-        build_root = dist.top_node.make_node(self.build_base)
         section_writer = SectionWriter()
 
         scheme = self._get_install_scheme(dist.pkg)
