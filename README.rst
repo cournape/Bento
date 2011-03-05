@@ -85,8 +85,8 @@ Bento discussion happen on NumPy Mailing list, and development is on
 `github`_. Bugs should be reported on bento `issue-tracker`_. Online
 `documentation`_ is available on github as well.
 
-BENTO IS IN (VERY) EARLY STAGES: ANY PRODUCTION USAGE IS STRONGLY DISCOURAGED
-AT THIS POINT.
+BENTO IS IN EARLY STAGES: WHILE IT IS USABLE, IT MAY STILL SIGNIFICANTLY CHANGE
+in BACKWARD INCOMPATIBLE WAYS.
 
 Nevertheless, bento is already capable of building numpy and scipy on some
 platforms, with less code and more flexibility than the current distutils-based
