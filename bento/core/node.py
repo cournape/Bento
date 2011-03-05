@@ -10,6 +10,10 @@ certainly mine :) We removed a few things which are not useful for bento.
 """
 import os, shutil, re, sys
 
+from bento.compat.api \
+    import \
+        rename
+
 def split_path(path):
     return path.split('/')
 
@@ -89,6 +93,11 @@ class Node(object):
         finally:
             if f:
                 f.close()
+
+    def safe_write(self, data, flags='w'):
+        tmp = self.parent.make_node([self.name + ".tmp"])
+        tmp.write(data, flags)
+        rename(tmp.abspath(), self.abspath())
 
     def chmod(self, val):
         "change file/dir permissions"
