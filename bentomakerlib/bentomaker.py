@@ -271,8 +271,11 @@ def is_help_only(cmd_name, cmd_argv):
     return o.help is True
 
 def run_cmd(cmd_name, cmd_opts):
-    root = bento.core.node.Node("", None)
-    top = root.find_dir(os.getcwd())
+    source_root = os.getcwd()
+    build_root = os.path.join(os.getcwd(), "build")
+
+    root = bento.core.node.create_root_with_source_tree(source_root, build_root)
+    top = root.srcnode
 
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
     # XXX: fix this special casing

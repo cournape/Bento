@@ -398,12 +398,15 @@ class NodeWithBuild(Node):
         return self.path_from(self.srcnode)
 
 def create_root_with_source_tree(source_path, build_path):
+    """
+    Both source_path and build_path should be absolute paths
+    """
     NodeWithBuild.source_node = None
     NodeWithBuild.build_node = None
 
     root = NodeWithBuild("", None)
     top = root.make_node(source_path)
-    build = top.make_node(build_path)
+    build = root.make_node(build_path)
 
     NodeWithBuild.source_node = top
     NodeWithBuild.build_node = build
