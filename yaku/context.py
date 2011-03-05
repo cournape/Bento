@@ -243,7 +243,9 @@ def get_cfg():
     env["VERBOSE"] = False
     if "-v" in sys.argv:
         env["VERBOSE"] = True
-    env["ENV"] = {}
+    # Keep this as is - we do want a dictionary for 'serialization', and python
+    # 3 os.environ is an object instead of a dict
+    env["ENV"] = dict([(k, v) for k, v in os.environ.items()])
 
     srcnode, bldnode = create_top_nodes(
             os.path.abspath(os.getcwd()),
