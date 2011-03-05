@@ -86,11 +86,7 @@ Bento discussion happen on NumPy Mailing list, and development is on
 `documentation`_ is available on github as well.
 
 BENTO IS IN EARLY STAGES: WHILE IT IS USABLE, IT MAY STILL SIGNIFICANTLY CHANGE
-in BACKWARD INCOMPATIBLE WAYS.
-
-Nevertheless, bento is already capable of building numpy and scipy on some
-platforms, with less code and more flexibility than the current distutils-based
-extensions.
+IN BACKWARD INCOMPATIBLE WAYS.
 
 .. _github: http://github.com/cournape/bento.git
 .. _issue-tracker: http://github.com/cournape/bento/issues
