@@ -90,7 +90,7 @@ Usage:   bentomaker build [OPTIONS]."""
                 build_packages
 
         def build_config_py(pkg):
-            return _build_config_py(pkg, ctx.get_paths_scheme(), ctx.top_node, ctx.build_root)
+            return _build_config_py(pkg.config_py, ctx.get_paths_scheme(), ctx.top_node)
         self.section_writer.sections_callbacks["bentofiles"] = \
                 build_config_py
         self.section_writer.update_sections(ctx.pkg)
@@ -146,28 +146,25 @@ def _build_python_files(pkg, top_node):
 
     return {"library": py_section}
 
-def _build_config_py(pkg, paths, src_root, build_root):
-    if pkg.config_py is not None:
-        tmp_config_node = build_root.make_node(os.path.join(pkg.name, "__tmp_config.py"))
-        p = tmp_config_node.parent
-        p.mkdir()
+def _config_content(paths):
+    keys = sorted(paths.keys())
+    n = max([len(k) for k in keys]) + 2
+    content = []
+    for name, value in sorted(paths.items()):
+        content.append('%s = "%s"' % (name.upper().ljust(n), subst_vars(value, paths)))
+    return "\n".join(content)
 
-        fid = open(tmp_config_node.abspath(), "w")
-        try:
-            keys = sorted(paths.keys())
-            n = max([len(k) for k in keys]) + 2
-            for name, value in sorted(paths.items()):
-                fid.write('%s = "%s"\n' % (name.upper().ljust(n), subst_vars(value, paths)))
-        finally:
-            fid.close()
-        target = build_root.make_node(pkg.config_py)
-        target.parent.mkdir()
-        rename(tmp_config_node.abspath(), target.abspath())
+def _build_config_py(target, paths, top_node):
+    if target is not None:
+        content = _config_content(paths)
+        target_node = top_node.bldnode.make_node(target)
+        target_node.parent.mkdir()
+        target_node.safe_write(content)
 
         section = InstalledSection.from_source_target_directories("bentofiles", "config",
-                os.path.join("$_srcrootdir", target.parent.path_from(src_root)),
-                os.path.join("$sitedir", os.path.dirname(pkg.config_py)),
-                [os.path.basename(pkg.config_py)])
+                os.path.join("$_srcrootdir", os.path.dirname(target_node.srcpath())),
+                os.path.join("$sitedir", os.path.dirname(target)),
+                [os.path.basename(target)])
         return {"bentofiles": section}
     else:
         return {}

@@ -50,7 +50,7 @@ class build(old_build):
             from bento.commands.build import _build_python_files
             return _build_python_files(dist.pkg, dist.top_node)
         def build_config_py(pkg):
-            return _build_config_py(pkg, scheme, dist.top_node, build_root)
+            return _build_config_py(pkg.config_py, scheme, dist.top_node)
         section_writer.sections_callbacks["pythonfiles"] = build_packages
         section_writer.sections_callbacks["bentofiles"] = build_config_py
 
