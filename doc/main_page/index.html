@@ -110,16 +110,6 @@ ExtraSourceFiles:
 			<li>
 				<div class="group row">
 					<div class="col-1">
-						<p>Retrieving package data location at runtime indenpendently of their install path is as simple as <a href="html/guides.html#retrieving-data-files-at-runtime">importing a variable</a></p>
-					</div>
-					<div class="col-2">
-<pre><code>from yourpackage.__bento_config import DATADIR </code></pre>
-					</div>
-				</div>
-			</li>
-			<li>
-				<div class="group row">
-					<div class="col-1">
 						<p>Bento aims at making packagers' life easier.
 
 						Paths may be customized at
@@ -133,6 +123,16 @@ ExtraSourceFiles:
     TargetDir: $pdfdoc
     Files: main.pdf</code></pre>
 <pre><code><span style="color: #e3d796;">$</span> bentomaker configure --pdfdoc=/usr/pdfdoc</code></pre>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
+						<p>Retrieving package data location at runtime indenpendently of their install path is as simple as <a href="html/guides.html#retrieving-data-files-at-runtime">importing a variable</a></p>
+					</div>
+					<div class="col-2">
+<pre><code>from yourpackage.__bento_config import PDFDOC </code></pre>
 					</div>
 				</div>
 			</li>
