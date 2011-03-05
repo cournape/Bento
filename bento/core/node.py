@@ -401,7 +401,7 @@ def create_root_with_source_tree(source_path, build_path):
     NodeWithBuild.source_node = None
     NodeWithBuild.build_node = None
 
-    root = NodeWithBuild("root", "")
+    root = NodeWithBuild("", None)
     top = root.make_node(source_path)
     build = top.make_node(build_path)
 
