@@ -20,11 +20,11 @@ def get_root():
 
 class TestNode(unittest.TestCase):
     def setUp(self):
-        self.root = Node("root", "")
+        self.root = Node("", None)
         self.cur = self.root.make_node(os.getcwd())
 
     def test_scratch_creation(self):
-        root = Node("root", "")
+        root = Node("", None)
         assert_equal(root.abspath(), get_root())
 
     def test_find_node(self):
