@@ -74,7 +74,7 @@ class Node(object):
 
     def __copy__(self):
         "nodes are not supposed to be copied"
-        raise Errors.WafError('nodes are not supposed to be copied')
+        raise NotImplementedError('nodes are not supposed to be copied')
 
     def read(self, flags='r'):
         "get the contents, assuming the node is a file"
@@ -146,11 +146,11 @@ class Node(object):
         if self.name:
             try:
                 os.mkdir(self.abspath())
-            except OSError, e:
+            except OSError:
                 pass
 
             if not os.path.isdir(self.abspath()):
-                raise Errors.WafError('%s is not a directory' % self)
+                raise IOError('%s is not a directory' % self)
 
             try:
                 self.children
