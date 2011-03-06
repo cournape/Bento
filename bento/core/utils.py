@@ -484,7 +484,7 @@ def test_program_run(cmd, **kw):
             kw[stream] = subprocess.PIPE
     try:
         p = subprocess.Popen(cmd, **kw)
-        p.wait()
+        p.communicate()
         return p.returncode == 0
     except OSError, e:
         if e.errno == 2:
