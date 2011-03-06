@@ -80,6 +80,6 @@ class TestIterFiles(unittest.TestCase):
         ipkg = InstalledPkgDescription(self.sections, self.meta, {})
         sections = ipkg.resolve_paths()
         res = sorted([(kind, source, target) for kind, source, target in iter_files(sections)])
-        ref = [("pythonfiles", "source/scripts/bar.py", "target/scripts/bar.py"),
-               ("pythonfiles", "source/scripts/foo.py", "target/scripts/foo.py")]
+        ref = [("pythonfiles", os.path.join("source", "scripts", "bar.py"), os.path.join("target", "scripts", "bar.py")),
+               ("pythonfiles", os.path.join("source", "scripts", "foo.py"), os.path.join("target", "scripts", "foo.py"))]
         self.assertEqual(res, ref)
