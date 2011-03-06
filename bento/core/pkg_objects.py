@@ -1,7 +1,7 @@
 from bento.core.parse_utils import \
     comma_list_split
 from bento.core.utils import \
-    expand_glob
+    expand_glob, normalize_path
 
 class FlagOption(object):
     def __init__(self, name, default_value, description=None):
@@ -107,7 +107,7 @@ class Extension(object):
 
     def __init__(self, name, sources, include_dirs=None):
         self.name = name
-        self.sources = sources
+        self.sources = [normalize_path(p) for p in sources]
         if include_dirs is None:
             self.include_dirs = []
         else:
@@ -124,7 +124,7 @@ class CompiledLibrary(object):
 
     def __init__(self, name, sources, include_dirs=None):
         self.name = name
-        self.sources = sources
+        self.sources = [normalize_path(p) for p in sources]
         if include_dirs is None:
             self.include_dirs = []
         else:
