@@ -103,7 +103,12 @@ class TestCommand(Command):
     def run(self, opts):
         pprint('BLUE', "Running test command....")
 
-        cmd = ["nosetests-%s" % ".".join([str(i) for i in sys.version_info[:2]])]
+        if sys.platform == "win32":
+            suffix = ".exe"
+        else:
+            suffix = ""
+
+        cmd = ["nosetests-%s%s" % (".".join([str(i) for i in sys.version_info[:2]]), suffix)]
         if not test_program_run(cmd + ["-h"]):
             raise CommandExecutionFailure(
                     "program %r not found - needed to test bento !" % cmd[0])
