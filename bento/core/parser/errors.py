@@ -12,11 +12,6 @@ class ParseError(Exception):
         if self.filename is None:
             return Exception.__str__(self)
         else:
-            #msg = "%(file)s: Syntax error\n" \
-            #      "%(file)s:%(lineno)d Token(%(type)s, %(value)r)" % \
-            #      {"file": self.filename, "lineno": self.lineno,
-            #       "type": self.tp, "value": self.value}
-            #return msg
             msg = '  File "%(file)s", line %(lineno)d\n' \
                   % {"file": self.filename, "lineno": self.lineno}
             f = open(self.filename)
@@ -25,7 +20,6 @@ class ParseError(Exception):
                 cnt = f.read()
                 lines = cnt.splitlines()
                 linepos = sum([(len(l)+1) for l in lines[:self.lineno-1]])
-                line = lines[self.lineno-1]
                 msg += "%s\n" % lines[self.lineno-1]
                 pos = self.token.lexpos
                 msg += " " * (pos - linepos) + "^\n"

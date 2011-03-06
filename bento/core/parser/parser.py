@@ -1,9 +1,9 @@
 from ply \
-    import lex, yacc
+    import yacc
 
 from bento.core.parser.lexer \
     import \
-        MyLexer, tokens
+        MyLexer, tokens as _tokens
 
 from bento._config \
     import \
@@ -14,6 +14,9 @@ from bento.core.parser.nodes \
 from bento.core.parser.errors \
     import \
         ParseError
+
+# Do not remove: this is used by PLY
+tokens = _tokens
 
 class Parser(object):
     def __init__(self, lexer=None):

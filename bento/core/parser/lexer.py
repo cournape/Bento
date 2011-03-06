@@ -1,5 +1,3 @@
-import os
-
 from ply.lex \
     import \
         LexToken, lex
@@ -338,11 +336,6 @@ def _new_token(type, token):
     tok.lexpos = token.lexpos
     return tok
 
-def scanning_field_id(token, stream, stack):
-    if token.value in META_FIELDS_ID.keys():
-        pass
-    return token, state
-
 _FIELD_TYPE_TO_STATE = {
     "WORD": "SCANNING_WORD_FIELD",
     "WORDS": "SCANNING_WORDS_FIELD",
@@ -376,7 +369,7 @@ def multiline_tokenizer(token, state, stream, internal):
         stack.append(token)
         queue.insert(0, token)
     elif token.type == "DEDENT":
-        prev = stack.pop(0)
+        stack.pop(0)
         if len(stack) < 1:
             state = "SCANNING_FIELD_ID"
         queue.insert(0, token)
@@ -433,7 +426,7 @@ def words_tokenizer(token, state, stream, internal):
         if token.type == "INDENT":
             words_stack.append(token)
         elif token.type == "DEDENT":
-            prev = words_stack.pop(0)
+            words_stack.pop(0)
             if len(words_stack) < 1:
                 state = "SCANNING_FIELD_ID"
                 internal.words_stack = []

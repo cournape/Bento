@@ -4,3 +4,6 @@ from bento.core.parser.misc \
 from bento.core.parser.errors \
     import \
         ParseError
+
+__all__ = ["raw_parse", "build_ast_from_data", "build_ast_from_raw_dict",
+           "ParseError"]

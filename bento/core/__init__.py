@@ -1,6 +1,11 @@
-from bento.core.package import \
+from bento.core.package \
+    import \
         PackageDescription
-from bento.core.meta import \
+from bento.core.meta \
+    import \
         PackageMetadata
-from bento.core.options import \
+from bento.core.options \
+    import \
         PackageOptions
+
+__all__ = ["PackageDescription", "PackageMetadata", "PackageOptions"]
