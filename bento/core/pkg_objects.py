@@ -123,7 +123,7 @@ class CompiledLibrary(object):
         return cls(**d)
 
     def __init__(self, name, sources, include_dirs=None):
-        self.name = name
+        self.name = normalize_path(name)
         self.sources = [normalize_path(p) for p in sources]
         if include_dirs is None:
             self.include_dirs = []

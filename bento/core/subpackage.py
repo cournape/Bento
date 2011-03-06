@@ -2,7 +2,7 @@ import os
 
 from bento.core.utils \
     import \
-        resolve_glob
+        resolve_glob, normalize_path
 from bento.core.pkg_objects \
     import \
         Extension, CompiledLibrary
@@ -121,7 +121,7 @@ def flatten_subpackage_compiled_libraries(spkg, top_node):
         include_dirs = [
                 local_node.find_node(d).path_from(top_node) \
                 for d in clib.include_dirs]
-        full_name = os.path.join(spkg.rdir, name)
+        full_name = normalize_path(os.path.join(spkg.rdir, name))
         ret[full_name] = CompiledLibrary(full_name, sources, include_dirs)
     return ret
 
