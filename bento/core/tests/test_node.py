@@ -30,7 +30,7 @@ class TestNode(unittest.TestCase):
     def test_find_node(self):
         node_abspath = os.path.normpath(self.cur.abspath())
         r_node_abspath = os.path.abspath(os.getcwd())
-        assert_true(os.path.samefile(node_abspath, r_node_abspath))
+        assert_true(node_abspath, r_node_abspath)
 
 class TestNodeWithBuild(unittest.TestCase):
     def setUp(self):
