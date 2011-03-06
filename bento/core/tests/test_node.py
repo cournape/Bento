@@ -13,8 +13,7 @@ from bento.core.node \
 def get_root():
     # FIXME: not exactly...
     if sys.platform == "win32":
-        drive = os.path.splitdrive(os.getcwd())[0]
-        return drive
+        return ""
     else:
         return "/"
 
