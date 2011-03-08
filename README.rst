@@ -81,9 +81,10 @@ Planned features:
       model (easy mirroring, enforced metadata, indexing to enable
       querying-before-installing, reliable install, etc...).
 
-Bento discussions happen on NumPy Mailing list, and development is on
-`github`_. Bugs should be reported on bento `issue-tracker`_. Online
-`documentation`_ is available on github as well.
+Bento discussions happen on the bento Mailing list (bento@librelist.com,
+archive on `bento-ml`_), and development is on `github`_. Bugs should be
+reported on bento `issue-tracker`_. Online `documentation`_ is available on
+github as well.
 
 BENTO IS IN EARLY STAGES: WHILE IT IS USABLE, IT MAY STILL SIGNIFICANTLY CHANGE
 IN BACKWARD INCOMPATIBLE WAYS.
@@ -91,6 +92,7 @@ IN BACKWARD INCOMPATIBLE WAYS.
 .. _github: http://github.com/cournape/bento.git
 .. _issue-tracker: http://github.com/cournape/bento/issues
 .. _documentation: http://cournape.github.com/bento
+.. _bento-ml: http://librelist.com/browser/bento
 
 Installing bento
 ------------------
