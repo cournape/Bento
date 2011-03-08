@@ -81,7 +81,7 @@ Planned features:
       model (easy mirroring, enforced metadata, indexing to enable
       querying-before-installing, reliable install, etc...).
 
-Bento discussion happen on NumPy Mailing list, and development is on
+Bento discussions happen on NumPy Mailing list, and development is on
 `github`_. Bugs should be reported on bento `issue-tracker`_. Online
 `documentation`_ is available on github as well.
 
