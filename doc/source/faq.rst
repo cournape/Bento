@@ -224,11 +224,24 @@ bento has some significant disadvantages as well that you need to be aware of:
       scipy, and hopefully beyond
     * Relatively weak testing: bento has a test suite with average coverage
       (~50-60 %). Some parts like the bento.info parser reach near full
-      coverage, other parts such as bentomaker are lower than 50 %. Bento is
-      consistently tested on mac os x and linux on python 2.6, and regularly
-      tested on windows, though.
+      coverage, other parts such as bentomaker are lower than 50 %.
+      Bento is mainly developed on mac os x and linux on python 2.6, so those
+      should rarely break. Bento test suite also run on a continuous
+      integration system for every python version from 2.4 to 3.1 on a linux
+      vm, and I sometimes check that things work on windows as well.
     * Weak documentation: hopefully, this is getting better.
     * Mediocre code quality: I focused on the general architecture and
       low-coupling which are the main issues I had with distutils, but at a
       lower level, a lot of code leaves to be desired (style inconsistencies,
       etc...). As for testing, some parts are pretty good, other are damn awful.
+
+Is bento API stable ?
+=====================
+
+As the current version suggest, no. As long as you only use the bento.info file
+(no hook), you should be pretty safe - I don't expect the bento.info file to
+change in any significant backward-incompatible way.
+
+However, the API to be used inside hook files leaves a lot to be desired, and
+will change in backward incompatible ways before the first alpha. The good side
+is that you can complain about the API and get it fixed until then.
