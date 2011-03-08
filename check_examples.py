@@ -8,7 +8,7 @@ for root, d, files in os.walk("examples"):
             tests.append(root)
 
 def test_package(d):
-    for bcmd in [["configure"], ["build"]]:
+    for bcmd in [["configure"], ["build"], ["install", "--list-files"]]:
         cmd = [bentomaker] + bcmd
         p = subprocess.Popen(cmd, cwd=test, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         p.wait()
