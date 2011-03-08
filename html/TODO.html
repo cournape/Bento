@@ -104,7 +104,7 @@
 alternative to distutils.</p>
 <p>TODO:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>add msi support</li>
 <li>add proper egg support</li>
 <li>namespace packages: how to deal with them (file description and runtime
@@ -118,7 +118,7 @@ support) ?</li>
 <li>integration with at least one real build tool (Scons or waf)</li>
 <li>handle reliable install/uninstall</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <dl class="docutils">
 <dt>Not well thought out yet:</dt>
 <dd><ul class="first last simple">
@@ -133,7 +133,7 @@ package), except multiple-version installs.</li>
 <h3>Release 0.0.5<a class="headerlink" href="#release-0-0-5" title="Permalink to this headline">¶</a></h3>
 <p>0.0.5 goals:</p>
 <blockquote>
-<ul>
+<div><ul>
 <li><dl class="first docutils">
 <dt>clean up command / bentomaker interaction:</dt>
 <dd><ul class="first last simple">
@@ -162,12 +162,12 @@ distutils/setuptools</p>
 <li><p class="first">add compatibility code for distutils</p>
 </li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="post-0-0-5">
 <h3>Post 0.0.5<a class="headerlink" href="#post-0-0-5" title="Permalink to this headline">¶</a></h3>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>dynamic version (e.g. svn version appended to the build, etc...)</li>
 <li>fixing yaku Parallel runner</li>
 <li>add basic distutils support</li>
@@ -176,7 +176,7 @@ distutils/setuptools</p>
 virtual proper) to bootstrap environment to install and test packages
 which cannot be tested without being installed)</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>Start working on scipi (nest ?). First proto could be purely static,
 file-based. An index easy to parse/update is all we need, really.</p>
 </div>
@@ -185,23 +185,23 @@ file-based. An index easy to parse/update is all we need, really.</p>
 <h2>Syntax and features of the package description file<a class="headerlink" href="#syntax-and-features-of-the-package-description-file" title="Permalink to this headline">¶</a></h2>
 <p>Missing features:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Versioning</li>
 <li>Multiple libraries</li>
 <li>Recursive declaration ?</li>
 <li>Options declaration besides boolean ?</li>
 <li>Unicode support</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="extending-the-simple-build">
 <h2>Extending the simple build<a class="headerlink" href="#extending-the-simple-build" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>this is yaku in the short term, maybe something like fbuild in the long
 term</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="install-reinstall-rebuild-clean-problem">
 <h2>Install-Reinstall-Rebuild-Clean problem<a class="headerlink" href="#install-reinstall-rebuild-clean-problem" title="Permalink to this headline">¶</a></h2>
@@ -212,26 +212,26 @@ in installers should be sufficient to get all the data, although it may not be
 very efficient.</p>
 <p>Fundamental problem: bento vs native packages. Possible solutions:</p>
 <blockquote>
-<dl class="docutils">
+<div><dl class="docutils">
 <dt>1 create a new local site-packages specific to bento, and only use</dt>
 <dd><p class="first">bento-enabled package for dependencies:</p>
 <blockquote class="last">
-<ul class="simple">
+<div><ul class="simple">
 <li>advantages: reliable, relatively simple</li>
 <li>disadvantages: invasive, requires all dependencies to be
 under bento (in particular numpy/scipy/matplotlib)</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </dd>
 </dl>
 <p>2 try to cope with existing, already installed packages.</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>advantages: no barrier of entry, gradual migration</li>
 <li>disadvantages: how to do it ?</li>
 </ul>
-</blockquote>
-</blockquote>
+</div></blockquote>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="scipi">
@@ -239,7 +239,7 @@ under bento (in particular numpy/scipy/matplotlib)</li>
 <p>Pypi does not work for the scientific community, so we need to replace it with
 our own stack. The goal is something like CRAN:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>publish a package from sdist with a cabal-like file to scipi</li>
 <li>the package would be automatically checked for metadata consistency,
 built (included documentation)</li>
@@ -247,16 +247,16 @@ built (included documentation)</li>
 given platform(s)</li>
 <li>scipi would have a simple web interface ala CRAN</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>Technical issues:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Simple server for published files (mirrored through rsync). Ideally,
 pure http-based file serving is enough</li>
 <li>Simple WEB-API to get metadata + files</li>
 <li>Look at HackageDB in details</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 </div>
 
@@ -283,7 +283,7 @@ pure http-based file serving is enough</li>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2011, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

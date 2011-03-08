@@ -68,6 +68,7 @@
 <li><a class="reference internal" href="#what-are-the-main-features-of-bento-compared-to-its-competitors">What are the main features of bento compared to its competitors</a></li>
 <li><a class="reference internal" href="#does-bento-support-virtualenv">Does bento support virtualenv ?</a></li>
 <li><a class="reference internal" href="#why-shouldn-t-i-use-bento">Why shouldn&#8217;t I use bento ?</a></li>
+<li><a class="reference internal" href="#is-bento-api-stable">Is bento API stable ?</a></li>
 </ul>
 </li>
 </ul>
@@ -138,7 +139,7 @@ scientific-specific Pypi easier.</p>
 <p>There is a general consensus at least in the scientific python community that
 distutils is deeply flawed:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>The design by commands does not make much sense. In distutils, each
 command has its own set of options, and getting the options from other
 commands is difficult, if not impossible. For example, the install paths
@@ -164,7 +165,7 @@ re-executed).</li>
 interface, numerous attributes are conditionally added on the fly
 depending on options, etc...</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>Overall, there is little to save in the current codebase. At least all of the
 command and ccompiler code must go away, and that&#8217;s already 2/3 of distutils
 code.  Given the relatively small size of distutils code, the only asset is its
@@ -188,7 +189,7 @@ need to be scrapped (at least the whole command and compiler business needs to
 be completely rewritten). There are also irreconcilable differences on some
 key points. In particular, we think the following features are essential:</p>
 <blockquote>
-<ol class="arabic simple">
+<div><ol class="arabic simple">
 <li>specified and versioned metadata formats, instead of implementation
 specific data</li>
 <li>enforced packaging policies (version, required metadata, etc...)</li>
@@ -197,7 +198,7 @@ of software to know the dependencies of a package)</li>
 <li>easy mirroring (ideally file based)</li>
 <li>simple implementations</li>
 </ol>
-</blockquote>
+</div></blockquote>
 <p>Although controversial in the python community, there is a large consensus
 within the scipy community on those points.  Some of them have been rejected by
 various distutils2 members (2, 3 and 4 in particular), and we are unwilling to
@@ -236,7 +237,7 @@ the build and installation.</p>
 <h2>Is bento based on existing tools ?<a class="headerlink" href="#is-bento-based-on-existing-tools" title="Permalink to this headline">¶</a></h2>
 <p>The main inspirations for bento&#8217;s current design are taken from:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li><a class="reference external" href="http://www.haskell.org/cabal">Cabal</a>, the packaging tool for Haskell: the bento file format is
 mainly an adaptation of Cabal to python.</li>
 <li><a class="reference external" href="http://sources.redhat.com/autobook/">Autoconf</a>, for the flexible install scheme, automake&#8217;s way of declaring
@@ -244,7 +245,7 @@ extra distribution files (data files).</li>
 <li><a class="reference external" href="http://rpm5.org/docs/api/specfile.html">RPM</a>, for the spec file format.</li>
 <li>Setuptools: exe-based script generation on windows, egg format</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="who-are-the-authors-of-bento">
 <h2>Who are the authors of bento ?<a class="headerlink" href="#who-are-the-authors-of-bento" title="Permalink to this headline">¶</a></h2>
@@ -318,22 +319,33 @@ bentomaker install</pre>
 <p>While I believe bento to be significantly better than other existing solutions,
 bento has some significant disadvantages as well that you need to be aware of:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Still mostly a one-man show. However, once bento reaches a satisfying
 level, it will likely be used as a replacement to distutils for numpy and
 scipy, and hopefully beyond</li>
 <li>Relatively weak testing: bento has a test suite with average coverage
 (~50-60 %). Some parts like the bento.info parser reach near full
-coverage, other parts such as bentomaker are lower than 50 %. Bento is
-consistently tested on mac os x and linux on python 2.6, and regularly
-tested on windows, though.</li>
+coverage, other parts such as bentomaker are lower than 50 %.
+Bento is mainly developed on mac os x and linux on python 2.6, so those
+should rarely break. Bento test suite also run on a continuous
+integration system for every python version from 2.4 to 3.1 on a linux
+vm, and I sometimes check that things work on windows as well.</li>
 <li>Weak documentation: hopefully, this is getting better.</li>
 <li>Mediocre code quality: I focused on the general architecture and
 low-coupling which are the main issues I had with distutils, but at a
 lower level, a lot of code leaves to be desired (style inconsistencies,
 etc...). As for testing, some parts are pretty good, other are damn awful.</li>
 </ul>
-</blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="is-bento-api-stable">
+<h2>Is bento API stable ?<a class="headerlink" href="#is-bento-api-stable" title="Permalink to this headline">¶</a></h2>
+<p>As the current version suggest, no. As long as you only use the bento.info file
+(no hook), you should be pretty safe - I don&#8217;t expect the bento.info file to
+change in any significant backward-incompatible way.</p>
+<p>However, the API to be used inside hook files leaves a lot to be desired, and
+will change in backward incompatible ways before the first alpha. The good side
+is that you can complain about the API and get it fixed until then.</p>
 </div>
 </div>
 
@@ -363,7 +375,7 @@ etc...). As for testing, some parts are pretty good, other are damn awful.</li>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2011, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

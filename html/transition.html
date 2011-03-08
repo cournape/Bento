@@ -123,23 +123,23 @@ convert command works by inserting various hooks into distutils internals, it
 is inherently fragile.</p>
 <p>It will definitely not work in the following cases:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>you use the package_dir feature: bento does not support the feature at all.</li>
 <li>you have your own distutils extensions (setuptools and numpy.distutils
 are somehow handled, though, and other common distutils extensions may be
 added as well).</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>It should support the following features:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>All the distutils metadata</li>
 <li>Some setuptools metadata (like require or console scripts)</li>
 <li>module, packages and extensions</li>
 <li>data files as specified in data_files</li>
 <li>source files in MANIFEST[.in]</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>Note:: because the convert command does not parse the setup.py, but runs it
 instead, it only handles package description as defined by this one run of
 setup.py. For example, bento convert cannot automatically handle the following
@@ -207,12 +207,12 @@ If it were possible, bento would not have been written in the first place.
 Nevertheless, the following commands should work relatively well as long as you
 don&#8217;t have hooks:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>sdist</li>
 <li>bdist_egg</li>
 <li>install</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>This should be enough for pip install foo or easy_install foo to work for a
 bento-based package.</p>
 </div>
@@ -244,7 +244,7 @@ bento-based package.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2011, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

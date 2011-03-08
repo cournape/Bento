@@ -293,7 +293,7 @@ the right to change things in fundamental ways.</em></p>
 <p>Although many typical python softwares can be entirely described in bento.info,
 complex packages may require a more advanced configuration, e.g.:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Conditionally define libraries depending on systems configuration
 (addition features if you have the C library libfoo, etc...)</li>
 <li>Define new bento commands</li>
@@ -305,7 +305,7 @@ etc...)</li>
 or even make).</li>
 <li>add new options to an existing command</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>Instead of cramming too many features in the bento.info, bento allows you to
 add one (or more) &#8220;hook&#8221; files, which are regular python modules, but under the
 control of bento.</p>
@@ -357,14 +357,14 @@ PackageDescription instance, and contains most package information.
 Metadata, extensions, path options, executables are all available,
 which enables the following:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>access package information to generate new &#8220;targets&#8221; (new types
 of binary installers)</li>
 <li>add extra source files whose location cannot be known at
 configure time</li>
 <li>add/remove/modify extensions, packages dynamically</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>For example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">bento.commands.hooks</span> <span class="kn">import</span> <span class="n">post_configure</span>
 
@@ -464,7 +464,7 @@ possible.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2011, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

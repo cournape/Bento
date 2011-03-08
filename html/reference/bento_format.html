@@ -143,7 +143,7 @@ is indentation-based. It does not support yet commenting, and is currently
 limited to ASCII.</p>
 <p>A typical .info file is structured as follows:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>The package metadata (name, version, etc...)</li>
 <li>Optionally, it may contain addition user-customizable options such as
 path or flags, whose exact value may be set at configure time.</li>
@@ -154,17 +154,17 @@ sections, to describe programs expected to be run from the command line
 or from a GUI. This is where distutils scripts and setuptools console
 scripts are defined.</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>Each section consists of field:value pairs:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Both fields and values are case-sensitive.</li>
 <li>Indentation has to be in spaces, tab characters for indentation are not
 supported. Besides this constraints, rules for indentation should follow
 python&#8217;s own rule (arbitrary number of spaces for a given indentation
 level).</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="package-metadata">
 <h2>Package metadata<a class="headerlink" href="#package-metadata" title="Permalink to this headline">¶</a></h2>
@@ -304,7 +304,7 @@ etc...) are supported yet.</p>
 <p>Adding data files in bento is easy. By data files, we mean any file other
 than C extension sources and python files. There are two kinds of data files in bento:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Installed data files: those are installed somewhere on the user system at
 installation time (distutils package_data and data_files, numpy.distutils
 add_data_files and add_data_dir).</li>
@@ -313,7 +313,7 @@ are not installed. As such, they only need to be included in the source
 tarball (distutils MANIFEST[.in] mechanism, automatic inclusion from the
 VCS in setuptools, etc...)</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <div class="section" id="extra-source-files">
 <h3>Extra source files<a class="headerlink" href="#extra-source-files" title="Permalink to this headline">¶</a></h3>
 <p>Extra source files are simply declared in the section ExtraSourceFiles (outside
@@ -421,7 +421,7 @@ DataFiles:
 <h3>Available path variables<a class="headerlink" href="#available-path-variables" title="Permalink to this headline">¶</a></h3>
 <p>By default, bento defines the following path variables:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>prefix: install architecture-independent files</li>
 <li>eprefix: install architecture-dependent files</li>
 <li>bindir: user executables</li>
@@ -444,7 +444,7 @@ DataFiles:
 <li>pdfdir: pdf documentation</li>
 <li>psdir: ps documentation</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>While some of those path semantics don&#8217;t make sense on some platforms such as
 windows, they are defined everywhere with defaults, to ensure a consistent
 interface across platforms. They are also defined to to get a 1-to-1
@@ -467,11 +467,11 @@ form of conditional. For example:</p>
 </div>
 <p>The following conditional forms are available:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>os(value): condition on the OS</li>
 <li>flag(value): user-defined flag, boolean</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="adding-custom-options">
 <h2>Adding custom options<a class="headerlink" href="#adding-custom-options" title="Permalink to this headline">¶</a></h2>
@@ -525,7 +525,7 @@ description), and $octavedir may be used inside the .info file.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2011, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

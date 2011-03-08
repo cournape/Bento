@@ -97,7 +97,7 @@
 with some code refactoring to enable easier customization of the build process.
 Main features:</p>
 <blockquote>
-<ul>
+<div><ul>
 <li><p class="first">All python versions from 2.4 up to 3.1 now pass the test suite (3.2 will
 follow once the distribute issue with 3.2 is fixed)</p>
 </li>
@@ -126,11 +126,11 @@ setup.py which will pick up all information from bento.info. This enables
 projects using bento to still be able to use tools such as pip.</p>
 </li>
 </ul>
-</blockquote>
+</div></blockquote>
 <div class="section" id="internals">
 <h2>Internals<a class="headerlink" href="#internals" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Commands are now registered to a single global command registry</li>
 <li>Commands are now run with a command-specific context, which can be
 extended for further customization (e.g. waf support in the build stage).</li>
@@ -138,14 +138,14 @@ extended for further customization (e.g. waf support in the build stage).</li>
 command class definition, and order resolution is done at runtime with a
 simple topological sort on the dependency order.</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="version-0-0-4">
 <h1>Version 0.0.4<a class="headerlink" href="#version-0-0-4" title="Permalink to this headline">¶</a></h1>
 <p>Released on 9th October 2010. Main features:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Add ConfigPy option to produce a simple config_py module. At the
 moment, this module may be used to access installed data at
 runtime without __file__ hack.</li>
@@ -159,13 +159,13 @@ ply/yaku/simplejson to ease packaging for OS vendors</li>
 build branches for both are available on <a class="reference external" href="http://github.com/cournape">http://github.com/cournape</a>
 (_bento_build branches)</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="version-0-0-3">
 <h1>Version 0.0.3<a class="headerlink" href="#version-0-0-3" title="Permalink to this headline">¶</a></h1>
 <p>Released on 2th July 2010. Main features:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Add hooks to customize arbitrary stages in bento</li>
 <li>Parallel and reliable build of C extensions through yaku build
 library.</li>
@@ -175,7 +175,7 @@ build with bento</li>
 <li>Improved documentation</li>
 <li>2.4 -&gt; 2.7 support</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <div class="section" id="toydist-renamed-to-bento">
 <h2>Toydist renamed to bento<a class="headerlink" href="#toydist-renamed-to-bento" title="Permalink to this headline">¶</a></h2>
 <p>Bento means lunchbox in Japanese. Bento are often well packaged, and
@@ -195,7 +195,7 @@ etc... the examples/hooks directory contains a few simple examples.</p>
 build extensions. Bento now uses yaku, a mini build framework. Yaku
 main features are:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>File content-based tracking: if a file content is changed, it is
 automatically rebuild</li>
 <li>Environment changes detection: if the compilation options
@@ -203,7 +203,7 @@ change, the files are automatically rebuilt</li>
 <li>Multiple jobs execution (experimental)</li>
 <li>Easily customizable</li>
 </ul>
-</blockquote>
+</div></blockquote>
 <p>It should noted that bento was conceived to be agnostic to the
 build system, and will remain so. In particular, projects with complex
 build issues are advised to use make, scons or waf. Future versions of
@@ -220,25 +220,25 @@ include windows binary installer support.</p>
 <h2>Improved command line interface<a class="headerlink" href="#improved-command-line-interface" title="Permalink to this headline">¶</a></h2>
 <p>Internal changes:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Lots of internal cleaning</li>
 <li>Replace hackish custom format by json for build manifest</li>
 <li>Heavily refactor installed package description API</li>
 <li>All the installers (install, egg and wininst buidlers) now share
 most of their implementation</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="version-0-0-2">
 <h1>Version 0.0.2<a class="headerlink" href="#version-0-0-2" title="Permalink to this headline">¶</a></h1>
 <p>Released on the 22th April 2010:</p>
 <blockquote>
-<ul class="simple">
+<div><ul class="simple">
 <li>Ply-based parser with (relatively) sane grammar</li>
 <li>Windows installers and eggs building support</li>
 </ul>
-</blockquote>
+</div></blockquote>
 </div>
 <div class="section" id="version-0-0-1">
 <h1>Version 0.0.1<a class="headerlink" href="#version-0-0-1" title="Permalink to this headline">¶</a></h1>
@@ -265,7 +265,7 @@ most of their implementation</li>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2011, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>
