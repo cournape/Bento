@@ -6,8 +6,8 @@ Description:
     Bento is a distribution tool for python packages, The goal are
     extensibility, flexibility, and easy interoperation with external tools.
     
-    Bento is still in infancy; discussions happen on the NumPy Mailing list
-    (http://mail.scipy.org/pipermail/numpy-discussion/).
+    Bento is still in infancy; discussions happen on the bento Mailing list:
+    bento@librelist.com
 Author: David Cournapeau
 AuthorEmail: cournape@gmail.com
 Maintainer: David Cournapeau
