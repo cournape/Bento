@@ -16,3 +16,6 @@ Library:
     Extension: _foo
         Sources:
             src/foo.c
+    CompiledLibrary: foolib
+        Sources:
+            src/foolib.c

@@ -189,7 +189,7 @@ class BuildContext(_ContextWithBuildDirectory):
     def register_clib_builder(self, clib_name, builder):
         relpos = self.local_node.path_from(self.top_node)
         full_name = os.path.join(relpos, clib_name)
-        self._clibraries_callback[full_name] = (builder, self.local_node)
+        self._clibraries_callback[full_name] = builder
 
     def register_environment(self, extension_name, env):
         full_name = self._compute_extension_name(extension_name)

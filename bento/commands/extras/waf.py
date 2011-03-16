@@ -151,41 +151,54 @@ class BuildWafContext(BuildContext):
                     bld.path = old_path
 
             bld.compile()
-            return build_installed_sections(bld)
+            return build_installed_sections(bld, "extensions",
+                                            lambda task_gen: "cshlib" in task_gen.features)
         return build_grandmaster
 
     def build_compiled_libraries_factory(self, *a, **kw):
         def builder(pkg):
+            def _default_builder(bld, library):
+                bld(features='c cstlib pyext', source=library.sources, target=library.name)
             bld = self.waf_context
-            libraries = pkg.compiled_libraries
+            libraries = []
+            for library in pkg.compiled_libraries.values():
+                local_node = self.top_node.find_dir(".")
+                libraries.append((library, local_node))
             for spkg in pkg.subpackages.values():
-                for lib in spkg.compiled_libraries.values():
-                    full_name = normalize_path(os.path.join(spkg.rdir, lib.name))
-                    libraries[full_name] = lib
-            for name, clib in libraries.items():
-                r = self._clibraries_callback.get(name, None)
-                if r is None:
-                    print "=" * 79
-                    print name
-                    print "WARNING: no callback for %s, default codepath not implemented yet" \
-                          % name
+                for library in spkg.compiled_libraries.values():
+                    local_node = self.top_node.find_dir(spkg.rdir)
+                    libraries.append((library, local_node))
+
+            for library, local_node in libraries:
+                if local_node != self.top_node:
+                    parent = local_node.path_from(self.top_node)
                 else:
-                    builder, local_node = r
-                    old_path = bld.path
-                    bld.path = old_path.find_dir(local_node.path_from(self.top_node))
-                    try:
-                        builder(bld, clib)
-                    finally:
-                        bld.path = old_path
+                    parent = ""
+                full_name = os.path.join(parent, library.name)
+                builder = self._clibraries_callback.get(full_name, _default_builder)
+
+                old_path = bld.path
+                bld.path = old_path.find_dir(local_node.path_from(self.top_node))
+                try:
+                    builder(bld, library)
+                finally:
+                    bld.path = old_path
+
             bld.compile()
-            return build_installed_sections(bld)
+            return build_installed_sections(bld, "compiled_libraries",
+                                            lambda task_gen: "cstlib" in task_gen.features)
         return builder
 
-def build_installed_sections(bld):
+# We need to fix build / section writing interaction so that InstalledSection
+# instances can be written after SectionWriter callback has been called. This
+# way that build_installed_section is called only once, and we don't need those
+# hacks to enable multiple build_install_sections calls over the same task
+# groups
+def build_installed_sections(bld, category, task_gen_filter):
     sections = {}
     for group in bld.groups:
         for task_gen in group:
-            if hasattr(task_gen, "link_task"):
+            if hasattr(task_gen, "link_task") and task_gen_filter(task_gen):
                 if task_gen.path != bld.srcnode:
                     pkg_dir = task_gen.path.srcpath()
                 else:
@@ -195,7 +208,7 @@ def build_installed_sections(bld):
                 target = os.path.join("$sitedir", pkg_dir)
                 files = [o.name for o in task_gen.link_task.outputs]
 
-                section = InstalledSection.from_source_target_directories("extensions", name,
+                section = InstalledSection.from_source_target_directories(category, name,
                                         source_dir, target, files)
                 sections[name] = section
     return sections
