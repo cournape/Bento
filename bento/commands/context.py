@@ -178,16 +178,8 @@ class BuildContext(_ContextWithBuildDirectory):
         _write_argv_checksum(checksum, "build")
 
     def _compute_extension_name(self, extension_name):
-        if self.local_node ==  self.top_node:
-            relpos = ""
-        else:
-            relpos = self.local_node.path_from(self.top_node)
-        extension = relpos.replace(os.path.pathsep, ".")
-        if extension:
-            full_name = extension + ".%s" % extension_name
-        else:
-            full_name = extension_name
-        return full_name
+        parent = self.local_node.path_from(self.top_node).split(os.path.sep)
+        return ".".join(parent + [extension_name])
 
     # XXX: none of those register_* really belong here
     def register_builder(self, extension_name, builder):
