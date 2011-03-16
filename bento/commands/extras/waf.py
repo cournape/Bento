@@ -115,39 +115,44 @@ class BuildWafContext(BuildContext):
         self.waf_context = waf_context
 
     def build_extensions_factory(self, *a, **kw):
-        def _builder(bld, extension):
-            bld(features='c cshlib pyext', source=extension.sources,
-                target=ext_name_to_path(extension.name))
-        def _full_name(extension, rdir):
-            local_node = self.top_node.find_dir(rdir)
-            parent = local_node.path_from(self.top_node).split(os.path.sep)
-            return ".".join(parent + [extension.name])
+        def _full_name(extension, local_node):
+            if local_node != self.top_node:
+                parent = local_node.path_from(self.top_node).split(os.path.sep)
+                return ".".join(parent + [extension.name])
+            else:
+                return extension.name
 
-        def builder(pkg):
+        def build_grandmaster(pkg):
+            def _default_builder(bld, extension):
+                bld(features='c cshlib pyext', source=extension.sources,
+                    target=extension.name)
+
             bld = self.waf_context
-            extensions = pkg.extensions
+
+            # Gather all extensions together with their local_node
+            extensions = []
+            for extension in pkg.extensions.values():
+                local_node = self.top_node.find_dir(".")
+                extensions.append((extension, local_node))
             for spkg in pkg.subpackages.values():
                 for extension in spkg.extensions.values():
-                    full_name = _full_name(extension, spkg.rdir)
-                    extensions[full_name] = extension
-            for name, extension in extensions.items():
-                r = self._extensions_callback.get(name, None)
-                if r is None:
-                    print "=" * 79
-                    print name
-                    print "WARNING: no callback for %s, default codepath not implemented yet" \
-                          % name
-                else:
-                    builder, local_node = r
-                    old_path = bld.path
-                    bld.path = old_path.find_dir(local_node.path_from(self.top_node))
-                    try:
-                        builder(bld, extension)
-                    finally:
-                        bld.path = old_path
+                    local_node = self.top_node.find_dir(spkg.rdir)
+                    extensions.append((extension, local_node))
+
+            for extension, local_node in extensions:
+                full_name = _full_name(extension, local_node)
+                builder = self._extensions_callback.get(full_name, _default_builder)
+
+                old_path = bld.path
+                bld.path = old_path.find_dir(local_node.path_from(self.top_node))
+                try:
+                    builder(bld, extension)
+                finally:
+                    bld.path = old_path
+
             bld.compile()
             return build_installed_sections(bld)
-        return builder
+        return build_grandmaster
 
     def build_compiled_libraries_factory(self, *a, **kw):
         def builder(pkg):
@@ -181,8 +186,11 @@ def build_installed_sections(bld):
     for group in bld.groups:
         for task_gen in group:
             if hasattr(task_gen, "link_task"):
-                name = task_gen.name.replace(os.sep, ".")
-                pkg_dir = os.path.dirname(task_gen.name)
+                if task_gen.path != bld.srcnode:
+                    pkg_dir = task_gen.path.srcpath()
+                else:
+                    pkg_dir = ""
+                name = task_gen.name
                 source_dir = task_gen.link_task.outputs[0].parent.path_from(bld.srcnode)
                 target = os.path.join("$sitedir", pkg_dir)
                 files = [o.name for o in task_gen.link_task.outputs]
