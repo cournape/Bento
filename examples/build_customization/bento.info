@@ -6,7 +6,8 @@ Recurse:
 
 HookFile:
     bscript,
-    top_module/bscript
+    top_module/bscript,
+    top_module/sub_module/bscript
 
 Library:
     Extension: _bar

@@ -1,3 +1,6 @@
+Recurse:
+    sub_module
+
 Library:
-    Extension: _foo
+    Extension: _fubar
         Sources: foomodule.c
