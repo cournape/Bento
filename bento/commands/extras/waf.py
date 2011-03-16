@@ -15,9 +15,6 @@ from waflib.Context \
 from waflib.Options \
     import \
         OptionsContext
-from waflib.Configure \
-    import \
-        ConfigurationContext
 from waflib import Options
 from waflib import Context
 from waflib import Logs
@@ -26,12 +23,12 @@ from waflib import Build
 from bento.commands.context \
     import \
         ConfigureContext, BuildContext
-from bento.core.subpackage \
-    import \
-        get_extensions
 from bento.installed_package_description \
     import \
         InstalledSection
+from bento.core.utils \
+    import \
+        normalize_path
 
 WAF_TOP = os.path.join(WAFDIR, os.pardir)
 
@@ -118,22 +115,65 @@ class BuildWafContext(BuildContext):
         self.waf_context = waf_context
 
     def build_extensions_factory(self, *a, **kw):
+        def _builder(bld, extension):
+            bld(features='c cshlib pyext', source=extension.sources,
+                target=ext_name_to_path(extension.name))
+        def _full_name(extension, rdir):
+            local_node = self.top_node.find_dir(rdir)
+            parent = local_node.path_from(self.top_node).split(os.path.sep)
+            return ".".join(parent + [extension.name])
+
         def builder(pkg):
             bld = self.waf_context
-            for name, extension in get_extensions(pkg, self.top_node).iteritems():
-                print ext_name_to_path(extension.name)
-                bld(features='c cshlib pyext', source=extension.sources,
-                    target=ext_name_to_path(extension.name))
+            extensions = pkg.extensions
+            for spkg in pkg.subpackages.values():
+                for extension in spkg.extensions.values():
+                    full_name = _full_name(extension, spkg.rdir)
+                    extensions[full_name] = extension
+            for name, extension in extensions.items():
+                r = self._extensions_callback.get(name, None)
+                if r is None:
+                    print "=" * 79
+                    print name
+                    print "WARNING: no callback for %s, default codepath not implemented yet" \
+                          % name
+                else:
+                    builder, local_node = r
+                    old_path = bld.path
+                    bld.path = old_path.find_dir(local_node.path_from(self.top_node))
+                    try:
+                        builder(bld, extension)
+                    finally:
+                        bld.path = old_path
             bld.compile()
             return build_installed_sections(bld)
         return builder
 
     def build_compiled_libraries_factory(self, *a, **kw):
         def builder(pkg):
-            if len(self.pkg.compiled_libraries) > 0:
-                raise NotImplementedError("waf mode for compiled " \
-                                          "libraries not yet implemented")
-            return {}
+            bld = self.waf_context
+            libraries = pkg.compiled_libraries
+            for spkg in pkg.subpackages.values():
+                for lib in spkg.compiled_libraries.values():
+                    full_name = normalize_path(os.path.join(spkg.rdir, lib.name))
+                    libraries[full_name] = lib
+            for name, clib in libraries.items():
+                r = self._clibraries_callback.get(name, None)
+                if r is None:
+                    print "=" * 79
+                    print name
+                    print "WARNING: no callback for %s, default codepath not implemented yet" \
+                          % name
+                else:
+                    builder, local_node = r
+                    old_path = bld.path
+                    bld.path = old_path.find_dir(local_node.path_from(self.top_node))
+                    try:
+                        builder(bld, clib)
+                    finally:
+                        bld.path = old_path
+            bld.compile()
+            return build_installed_sections(bld)
         return builder
 
 def build_installed_sections(bld):

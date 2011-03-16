@@ -184,12 +184,12 @@ class BuildContext(_ContextWithBuildDirectory):
     # XXX: none of those register_* really belong here
     def register_builder(self, extension_name, builder):
         full_name = self._compute_extension_name(extension_name)
-        self._extensions_callback[full_name] = builder
+        self._extensions_callback[full_name] = (builder, self.local_node)
 
     def register_clib_builder(self, clib_name, builder):
         relpos = self.local_node.path_from(self.top_node)
         full_name = os.path.join(relpos, clib_name)
-        self._clibraries_callback[full_name] = builder
+        self._clibraries_callback[full_name] = (builder, self.local_node)
 
     def register_environment(self, extension_name, env):
         full_name = self._compute_extension_name(extension_name)
