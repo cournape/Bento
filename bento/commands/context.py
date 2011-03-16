@@ -181,6 +181,9 @@ class BuildContext(_ContextWithBuildDirectory):
         parent = self.local_node.path_from(self.top_node).split(os.path.sep)
         return ".".join(parent + [extension_name])
 
+    def post_compile(self, section_writer):
+        pass
+
     # XXX: none of those register_* really belong here
     def register_builder(self, extension_name, builder):
         full_name = self._compute_extension_name(extension_name)

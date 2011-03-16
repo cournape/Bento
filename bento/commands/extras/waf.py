@@ -114,6 +114,29 @@ class BuildWafContext(BuildContext):
             waf_context.load_envs()
         self.waf_context = waf_context
 
+    def post_compile(self, section_writer):
+        bld = self.waf_context
+        bld.compile()
+        for group in bld.groups:
+            for task_gen in group:
+                if hasattr(task_gen, "link_task"):
+                    if task_gen.path != bld.srcnode:
+                        pkg_dir = task_gen.path.srcpath()
+                    else:
+                        pkg_dir = ""
+                    if "cstlib" in task_gen.features:
+                        category = "compiled_libraries"
+                    else:
+                        category = "extensions"
+                    name = task_gen.name
+                    source_dir = task_gen.link_task.outputs[0].parent.path_from(bld.srcnode)
+                    target = os.path.join("$sitedir", pkg_dir)
+                    files = [o.name for o in task_gen.link_task.outputs]
+
+                    section = InstalledSection.from_source_target_directories(category, name,
+                                            source_dir, target, files)
+                    section_writer.sections[category][name] = section
+
     def build_extensions_factory(self, *a, **kw):
         def _full_name(extension, local_node):
             if local_node != self.top_node:
@@ -150,9 +173,7 @@ class BuildWafContext(BuildContext):
                 finally:
                     bld.path = old_path
 
-            bld.compile()
-            return build_installed_sections(bld, "extensions",
-                                            lambda task_gen: "cshlib" in task_gen.features)
+            return {}
         return build_grandmaster
 
     def build_compiled_libraries_factory(self, *a, **kw):
@@ -184,9 +205,7 @@ class BuildWafContext(BuildContext):
                 finally:
                     bld.path = old_path
 
-            bld.compile()
-            return build_installed_sections(bld, "compiled_libraries",
-                                            lambda task_gen: "cstlib" in task_gen.features)
+            return {}
         return builder
 
 # We need to fix build / section writing interaction so that InstalledSection
