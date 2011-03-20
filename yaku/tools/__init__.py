@@ -7,7 +7,7 @@ from yaku._config \
         TOOLDIRS
 from yaku.task_manager \
     import \
-        CompiledTaskGen
+        CompiledTaskGen, TaskGen
 from yaku.errors \
     import \
         TaskRunFailure
@@ -39,8 +39,25 @@ class Builder(object):
         self.ctx = ctx
         self.env = copy.deepcopy(ctx.env)
 
+    def to_nodes(self, filenames):
+        # Convert source filenames to nodes
+        return [self.ctx.src_root.find_resource(s) for s in filenames]
+
     def configure(self):
         pass
+
+    def _task_gen_factory(self, name, target, sources, env):
+        sources = self.to_nodes(sources)
+
+        task_gen = TaskGen(name, self.ctx, sources, target)
+        task_gen.env = _merge_env(self.env, env)
+        tasks = task_gen.process()
+        for t in tasks:
+            t.env = task_gen.env
+        self.ctx.tasks.extend(tasks)
+
+        outputs = tasks[0].outputs[:]
+        return outputs
 
 def try_task_maker(conf, task_maker, name, body, headers, env=None):
     if headers:
