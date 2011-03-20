@@ -94,7 +94,7 @@ def _merge_env(_env, new_env):
     if new_env is not None:
         ret = copy.copy(_env)
         for k, v in new_env.items():
-            if hasattr(_env[k], "extend"):
+            if k in ret and hasattr(ret[k], "extend"):
                 old = copy.copy(_env[k])
                 old.extend(v)
                 ret[k] = old
