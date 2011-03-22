@@ -6,9 +6,12 @@ import tempfile
 from bento.core \
     import \
         PackageDescription
-from bento.commands.build_distutils \
+import bento.commands.build_distutils
+import bento.commands.build_yaku
+
+from yaku.context \
     import \
-        build_extensions
+        get_bld, get_cfg
 
 BENTO_INFO = """\
 Name: foo
@@ -42,7 +45,7 @@ init_bar(void)
 }
 """
 
-class TestBuild(unittest.TestCase):
+class _TestBuildSimpleExtension(unittest.TestCase):
     def setUp(self):
         self.save = None
         self.d = None
@@ -57,15 +60,25 @@ class TestBuild(unittest.TestCase):
         if self.d:
             shutil.rmtree(self.d)
 
-    def test_simple_extension(self):
+    def _test_simple_extension(self):
         for f, content in [("bento.info", BENTO_INFO), ("foo.c", FOO_C)]:
             fid = open(os.path.join(self.d, f), "w")
             try:
                 fid.write(content)
             finally:
                 fid.close()
-        pkg = PackageDescription.from_string(BENTO_INFO)
-        foo = build_extensions(pkg)
+        return PackageDescription.from_string(BENTO_INFO)
+
+class TestBuildDistutils(_TestBuildSimpleExtension):
+    def test_simple_extension(self):
+        pkg = self._test_simple_extension()
+        foo = bento.commands.build_distutils.build_extensions(pkg, use_numpy_distutils=False)
+        isection = foo["foo"]
+        self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
+
+    def test_simple_extension_with_numpy(self):
+        pkg = self._test_simple_extension()
+        foo = bento.commands.build_distutils.build_extensions(pkg, use_numpy_distutils=True)
         isection = foo["foo"]
         self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
@@ -76,4 +89,40 @@ class TestBuild(unittest.TestCase):
         finally:
             fid.close()
         pkg = PackageDescription.from_file("bento.info")
-        foo = build_extensions(pkg)
+        foo = bento.commands.build_distutils.build_extensions(pkg)
+
+class TestBuildYaku(_TestBuildSimpleExtension):
+    def setUp(self):
+        super(TestBuildYaku, self).setUp()
+
+        ctx = get_cfg()
+        ctx.use_tools(["ctasks", "pyext"])
+        ctx.store()
+
+        self.yaku_build = get_bld()
+
+    def _build_extensions(self, pkg):
+        return bento.commands.build_yaku.build_extensions(pkg.extensions,
+            self.yaku_build, {}, {})
+
+    def tearDown(self):
+        try:
+            self.yaku_build.store()
+        finally:
+            super(TestBuildYaku, self).tearDown()
+
+    def test_simple_extension(self):
+        pkg = self._test_simple_extension()
+
+        foo = self._build_extensions(pkg)
+        isection = foo["foo"]
+        self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
+
+    def test_no_extension(self):
+        fid = open(os.path.join(self.d, "bento.info"), "w")
+        try:
+            fid.write("Name: foo")
+        finally:
+            fid.close()
+        pkg = PackageDescription.from_file("bento.info")
+        self._build_extensions(pkg)

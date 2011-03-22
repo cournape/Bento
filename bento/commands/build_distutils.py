@@ -17,18 +17,9 @@ def toyext_to_distext(e):
     return DistExtension(e.name, sources=[s for s in e.sources],
                          include_dirs=[inc for inc in e.include_dirs])
 
-def build_extensions(pkg):
+def build_extensions(pkg, use_numpy_distutils=False):
     if not pkg.extensions:
         return {}
-
-    # XXX: import here because numpy import time slows down everything
-    # otherwise. This is ugly, but using numpy.distutils is temporary
-    # anyway
-    try:
-        import numpy
-        use_numpy_distutils = True
-    except ImportError:
-        use_numpy_distutils = False
 
     # FIXME: import done here to avoid clashing with monkey-patch as done by
     # the convert subcommand.

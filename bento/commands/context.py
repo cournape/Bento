@@ -213,7 +213,7 @@ class DistutilsBuildContext(BuildContext):
         from bento.commands.build_distutils \
             import \
                 build_extensions
-        return build_extensions
+        return lambda pkg: build_extensions(pkg, use_numpy_distutils=False)
 
     def build_compiled_libraries_factory(self, *a, **kw):
         from bento.commands.build_distutils \
