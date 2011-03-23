@@ -1,5 +1,3 @@
-from bento.core.parse_utils import \
-    comma_list_split
 from bento.core.utils import \
     expand_glob, normalize_path
 

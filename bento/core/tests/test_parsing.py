@@ -16,8 +16,6 @@ finally:
 
 from bento.core.pkg_objects import \
     PathOption, FlagOption, Executable, DataFiles
-from bento.core.parse_utils import \
-    CommaListLexer, comma_list_split
 from bento.core.options import \
     PackageOptions
 
