@@ -21,6 +21,12 @@ from bento.core.options import \
 
 from bento \
     import PackageDescription, static_representation
+from bento.compat.api \
+    import \
+        NamedTemporaryFile
+from bento.core.parser.errors \
+    import \
+        ParseError
 
 #old = sys.path[:]
 #try:
@@ -28,6 +34,19 @@ from bento \
 #    from simple_package import PKG, DESCR
 #finally:
 #    sys.path = old
+
+class TestParseError(unittest.TestCase):
+    def test_simple(self):
+        text = """\
+NName: foo
+"""
+        self.assertRaises(ParseError, lambda : PackageDescription.from_string(text))
+
+    def test_simple_filename(self):
+        f = NamedTemporaryFile(mode="w")
+        f.write("NName: foo")
+        f.flush()
+        self.assertRaises(ParseError, lambda : PackageDescription.from_file(f.name))
 
 class TestDataFiles(unittest.TestCase):
     def test_simple(self):
