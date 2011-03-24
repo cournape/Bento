@@ -9,8 +9,6 @@ from optparse \
 
 from bento.core.utils import \
         pprint, find_package
-from bento.core.parse_utils import \
-        comma_list_split
 from bento.core.package import \
         static_representation
 from bento.conv import \
