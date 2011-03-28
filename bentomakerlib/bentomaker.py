@@ -90,6 +90,12 @@ def register_commands():
     COMMANDS_REGISTRY.register_command("parse", ParseCommand, public=False)
     COMMANDS_REGISTRY.register_command("detect_type", DetectTypeCommand, public=False)
  
+    if sys.platform == "darwin":
+        import bento.commands.build_mpkg
+        COMMANDS_REGISTRY.register_command("build_mpkg",
+            bento.commands.build_mpkg.BuildMpkgCommand)
+        CMD_SCHEDULER.set_before("build_mpkg", "build")
+
 def register_options(cmd_name):
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
     usage = cmd_klass.long_descr.splitlines()[1]
