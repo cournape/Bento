@@ -58,6 +58,14 @@ class PackageMetadata(object):
     def from_ipkg(cls, ipkg):
         return cls(**ipkg.meta)
 
+    @classmethod
+    def from_package(cls, pkg):
+        kw = {}
+        for k in _METADATA_FIELDS:
+            if hasattr(pkg, k):
+                kw[k] = getattr(pkg, k)
+        return cls(**kw)
+
     def __init__(self, name, version=None, summary=None, url=None,
             author=None, author_email=None, maintainer=None,
             maintainer_email=None, license=None, description=None,
