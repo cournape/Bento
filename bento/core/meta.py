@@ -10,11 +10,7 @@ def _set_metadata(obj, name, version=None, summary=None, url=None,
         download_url=None, classifiers=None, top_levels=None):
     obj.name = name
 
-    if not version:
-        # Distutils default
-        obj.version = '0.0.0'
-    else:
-        obj.version = version
+    obj.version = version
 
     obj.summary = summary
     obj.url = url

@@ -6,7 +6,7 @@ from nose.tools import \
     assert_equal
 
 from bento import PackageDescription
-from bento.core.package import file_list
+from bento.core.package import file_list, static_representation
 from bento.core.meta import PackageMetadata
 from bento.core.pkg_objects import DataFiles
 from bento.core.node import Node
@@ -59,6 +59,24 @@ class TestPackage(unittest.TestCase):
         finally:
             clean_tree(files)
             os.rmdir(d)
+
+class TestStaticRepresentation(unittest.TestCase):
+    def test_simple_library(self):
+        bento_info = """\
+Name: foo
+
+Library:
+    Packages: foo
+"""
+        self._static_representation(bento_info)
+
+    def _static_representation(self, bento_info):
+        r_pkg = PackageDescription.from_string(bento_info)
+        # We recompute pkg to avoid dealing with stylistic difference between
+        # original and static_representation
+        pkg = PackageDescription.from_string(static_representation(r_pkg))
+
+        assert_equal(static_representation(pkg), static_representation(r_pkg))
 
 class TestPackageMetadata(unittest.TestCase):
     def test_ctor(self):
