@@ -3,6 +3,12 @@ import shutil
 import unittest
 import tempfile
 
+import nose
+
+from nose.plugins.skip \
+    import \
+        SkipTest
+
 from bento.core.node \
     import \
         create_root_with_source_tree
@@ -70,6 +76,28 @@ init_bar(void)
 }
 """
 
+def skipif(condition, msg=None):
+    def skip_decorator(f):
+        if callable(condition):
+            skip_func = condition
+        else:
+            skip_func = lambda : condition()
+
+        if skip_func():
+            def g(*a, **kw):
+                raise SkipTest()
+        else:
+            g = f
+        return nose.tools.make_decorator(f)(g)
+    return skip_decorator
+
+def has_numpy():
+    try:
+        import numpy
+        return True
+    except ImportError:
+        return False
+
 class _TestBuildSimpleExtension(unittest.TestCase):
     def setUp(self):
         self.save = None
@@ -101,6 +129,7 @@ class TestBuildDistutils(_TestBuildSimpleExtension):
         isection = foo["foo"]
         self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
+    @skipif(lambda : not has_numpy())
     def test_simple_extension_with_numpy(self):
         pkg = self._test_simple_extension()
         foo = bento.commands.build_distutils.build_extensions(pkg, use_numpy_distutils=True)
