@@ -161,7 +161,7 @@ def p_meta_license_stmt(p):
     p[0] = Node("license", value=p[3].value)
 
 def p_meta_platforms_stmt(p):
-    """meta_platforms_stmt : PLATFORMS_ID COLON anyword
+    """meta_platforms_stmt : PLATFORMS_ID COLON comma_list
     """
     p[0] = Node("platforms", value=p[3].value)
 

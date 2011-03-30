@@ -115,7 +115,7 @@ Node(type='stmt_list'):
         data = "Platforms: any"
         expected = """\
 Node(type='stmt_list'):
-    Node(type='platforms', value='any')"""
+    Node(type='platforms', value=['any'])"""
 
         self._test(data, expected)
 

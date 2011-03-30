@@ -61,6 +61,33 @@ class TestPackage(unittest.TestCase):
             os.rmdir(d)
 
 class TestStaticRepresentation(unittest.TestCase):
+    def test_metadata(self):
+        bento_info = """\
+Name: Sphinx
+Version: 0.6.3
+Summary: Python documentation generator
+Url: http://sphinx.pocoo.org/
+DownloadUrl: http://pypi.python.org/pypi/Sphinx
+Description: Some long description.
+Author: Georg Brandl
+AuthorEmail: georg@python.org
+Maintainer: Georg Brandl
+MaintainerEmail: georg@python.org
+License: BSD
+Platforms: any
+Classifiers:
+    Development Status :: 4 - Beta,
+    Environment :: Console,
+    Environment :: Web Environment,
+    Intended Audience :: Developers,
+    License :: OSI Approved :: BSD License,
+    Operating System :: OS Independent,
+    Programming Language :: Python,
+    Topic :: Documentation,
+    Topic :: Utilities
+"""
+        self._static_representation(bento_info)
+
     def test_simple_library(self):
         bento_info = """\
 Name: foo

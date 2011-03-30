@@ -238,7 +238,7 @@ ref = {'author': 'Georg Brandl',
  'path_options': {'gendatadir': {'default': '$sitedir',
                                  'description': 'Directory for dataFiles obtained from distutils conversion',
                                  'name': 'gendatadir'}},
- 'platforms': 'any',
+ 'platforms': ['any'],
  'summary': 'Python documentation generator',
  'url': 'http://sphinx.pocoo.org/',
  'version': '0.6.3'}

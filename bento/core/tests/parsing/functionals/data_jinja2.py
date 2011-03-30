@@ -218,7 +218,7 @@ ref = {'author': 'Armin Ronacher',
  'path_options': {'gendatadir': {'default': '$sitedir',
                                  'description': 'Directory for datafiles obtained from distutils conversion',
                                  'name': 'gendatadir'}},
- 'platforms': 'UNKNOWN',
+ 'platforms': ['UNKNOWN'],
  'summary': 'A small but fast and easy to use stand-alone template engine written in pure python.',
  'url': 'http://jinja.pocoo.org/',
  'version': '2.2.1'}
