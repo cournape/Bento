@@ -358,46 +358,6 @@ class NodeWithBuild(Node):
             cur = cur.parent
         return False
 
-    def get_src(self):
-        """
-        Return the equivalent src node (or self if not possible)
-
-        :rtype: :py:class:`waflib.Node.Node`
-        """
-        cur = self
-        x = id(self.srcnode)
-        y = id(self.bldnode)
-        lst = []
-        while cur.parent:
-            if id(cur) == y:
-                lst.reverse()
-                return self.srcnode.make_node(lst)
-            if id(cur) == x:
-                return self
-            lst.append(cur.name)
-            cur = cur.parent
-        return self
-
-    def get_bld(self):
-        """
-        Return the equivalent bld node (or self if not possible)
-
-        :rtype: :py:class:`waflib.Node.Node`
-        """
-        cur = self
-        x = id(self.srcnode)
-        y = id(self.bldnode)
-        lst = []
-        while cur.parent:
-            if id(cur) == y:
-                return self
-            if id(cur) == x:
-                lst.reverse()
-                return self.bldnode.make_node(lst)
-            lst.append(cur.name)
-            cur = cur.parent
-        return self
-
     def bldpath(self):
         "Path seen from the build directory default/src/foo.cpp"
         return self.path_from(self.bldnode)
