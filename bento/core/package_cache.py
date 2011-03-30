@@ -146,8 +146,9 @@ class _CachedPackageImpl(object):
     def write_checksums(cls, target=CHECKSUM_DB_FILE):
         def _writer(fd):
             cache = cls()
-            cPickle.dump(cPickle.loads(cache.db["bentos_checksums"]),
-                         fd)
+            if "bentos_checksums" in cache.db:
+                cPickle.dump(cPickle.loads(cache.db["bentos_checksums"]),
+                             fd)
         safe_write(target, _writer)
 
     @classmethod
