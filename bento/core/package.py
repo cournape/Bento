@@ -350,22 +350,23 @@ def static_representation(pkg, options={}):
             r.append('')
 
     # Fix indentation handling instead of hardcoding it
-    r.append("Library:")
+    if pkg.py_modules or pkg.packages or pkg.extensions:
+        r.append("Library:")
 
-    if pkg.install_requires:
-        indented_list("InstallRequires", pkg.install_requires, 2)
-    if pkg.py_modules:
-        indented_list("Modules", pkg.py_modules, 2)
-    if pkg.packages:
-        indented_list("Packages", pkg.packages, 2)
+        if pkg.install_requires:
+            indented_list("InstallRequires", pkg.install_requires, 2)
+        if pkg.py_modules:
+            indented_list("Modules", pkg.py_modules, 2)
+        if pkg.packages:
+            indented_list("Packages", pkg.packages, 2)
 
-    if pkg.extensions:
-        for name, ext in pkg.extensions.items():
-            r.append(' ' * indent_level + "Extension: %s" % name)
-            indented_list("Sources", ext.sources, 3)
-            if ext.include_dirs:
-                indented_list("IncludeDirs", ext.include_dirs, 3)
-    r.append("")
+        if pkg.extensions:
+            for name, ext in pkg.extensions.items():
+                r.append(' ' * indent_level + "Extension: %s" % name)
+                indented_list("Sources", ext.sources, 3)
+                if ext.include_dirs:
+                    indented_list("IncludeDirs", ext.include_dirs, 3)
+        r.append("")
 
     for name, value in pkg.executables.items():
         r.append("Executable: %s" % name)
