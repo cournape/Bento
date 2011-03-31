@@ -117,7 +117,7 @@ def build_pkg(pkg_info):
     build_description_plist(pkg_info)
 
 class PackageInfo(object):
-    def __init__(self, pkg_name, prefix, source_root, pkg_root, admin=True):
+    def __init__(self, pkg_name, prefix, source_root, pkg_root, admin=True, description=None, version=None):
         if admin:
             self.auth = u"AdminAuthorization"
         else:
@@ -131,10 +131,17 @@ class PackageInfo(object):
         self.pkg_root = pkg_root
 
         self.name = pkg_name
+        # FIXME: version handling -> use distutils2 version module
         self.version_info = (0, 0, 5, None)
-        self.version = ".".join([str(i) for i in self.version_info[:3]])
+        if version is None:
+            self.version = ""
+        else:
+            self.version = version
 
-        self.description = "Some description"
+        if description:
+            self.description = description
+        else:
+            self.description = ""
 
         self.contents = os.path.join(self.pkg_root, "Contents")
         self.resources = os.path.join(self.contents, "Resources")

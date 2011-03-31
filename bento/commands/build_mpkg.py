@@ -63,6 +63,10 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
         default_sitedir = default_scheme["sitedir"]
 
         ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
+        name = ipkg.meta["name"]
+        version = ipkg.meta["version"]
+        py_short = ".".join([str(i) for i in sys.version_info[:2]])
+        mpkg_name = "%s-%s-py%s.mpkg" % (name, version, py_short)
 
         categories = set()
         file_sections = ipkg.resolve_paths(".")
@@ -70,7 +74,7 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
             categories.add(kind)
 
         # Mpkg metadata
-        mpkg_root = os.path.join(os.getcwd(), "dist", "bento.mpkg")
+        mpkg_root = os.path.join(os.getcwd(), "dist", mpkg_name)
         mpkg_cdir = os.path.join(mpkg_root, "Contents")
         if os.path.exists(mpkg_root):
             shutil.rmtree(mpkg_root)
@@ -81,7 +85,11 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
         finally:
             f.close()
         mpkg_info = MetaPackageInfo.from_ipkg(ipkg)
-        mpkg_info.packages = ["bento-purelib.pkg", "bento-scripts.pkg", "bento-datafiles.pkg"]
+
+        purelib_pkg = "%s-purelib-%s-py%s.pkg" % (name, version, py_short)
+        scripts_pkg = "%s-scripts-%s-py%s.pkg" % (name, version, py_short)
+        datafiles_pkg = "%s-datafiles-%s-py%s.pkg" % (name, version, py_short)
+        mpkg_info.packages = [purelib_pkg, scripts_pkg, datafiles_pkg]
         make_mpkg_plist(mpkg_info, os.path.join(mpkg_cdir, "Info.plist"))
 
         mpkg_rdir = os.path.join(mpkg_root, "Contents", "Resources")
@@ -89,16 +97,16 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
         make_mpkg_description(mpkg_info, os.path.join(mpkg_rdir, "Description.plist"))
 
         # Package the stuff which ends up into site-packages
-        pkg_root = os.path.join(mpkg_root, "Contents", "Packages", "bento-purelib.pkg")
-        build_pkg_from_temp(ipkg, pkg_root, root, "/", ["pythonfiles"])
+        pkg_root = os.path.join(mpkg_root, "Contents", "Packages", purelib_pkg)
+        build_pkg_from_temp(ipkg, pkg_root, root, "/", ["pythonfiles"], "Pure Python modules and packages")
 
-        pkg_root = os.path.join(mpkg_root, "Contents", "Packages", "bento-scripts.pkg")
-        build_pkg_from_temp(ipkg, pkg_root, root, "/", ["executables"])
+        pkg_root = os.path.join(mpkg_root, "Contents", "Packages", scripts_pkg)
+        build_pkg_from_temp(ipkg, pkg_root, root, "/", ["executables"], "Scripts and binaries")
 
-        pkg_root = os.path.join(mpkg_root, "Contents", "Packages", "bento-datafiles.pkg")
-        build_pkg_from_temp(ipkg, pkg_root, root, "/", ["bentofiles", "datafiles"])
+        pkg_root = os.path.join(mpkg_root, "Contents", "Packages", datafiles_pkg)
+        build_pkg_from_temp(ipkg, pkg_root, root, "/", ["bentofiles", "datafiles"], "Data files")
 
-def build_pkg_from_temp(ipkg, pkg_root, root_node, install_root, categories):
+def build_pkg_from_temp(ipkg, pkg_root, root_node, install_root, categories, description=None):
     d = tempfile.mkdtemp()
     try:
         tmp_root = root_node.make_node(d)
@@ -112,8 +120,9 @@ def build_pkg_from_temp(ipkg, pkg_root, root_node, install_root, categories):
                     os.makedirs(os.path.dirname(target))
                 shutil.copy(source, target)
 
-        pkg_info = PackageInfo(pkg_name=ipkg.meta["name"],
-            prefix=install_root, source_root=d, pkg_root=pkg_root)
+        pkg_name = os.path.splitext(os.path.basename(pkg_root))[0]
+        pkg_info = PackageInfo(pkg_name=pkg_name,
+            prefix=install_root, source_root=d, pkg_root=pkg_root, description=description)
         build_pkg(pkg_info)
     finally:
         shutil.rmtree(d)
