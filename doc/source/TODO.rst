@@ -41,7 +41,10 @@ Release 0.0.6
         - Do command context really need command instance ?
         - Do we really need a singleton for command registry ?
         - Build contexts: extension-specific builder registration ?
+        - Add recurse hook for contexts (called before going into each subento)
     - Polish mpkg support
+    - Polish numpy + scipy waf+bento build
+    - Ideally, have a look at a few more packages
 
 Release 0.0.5
 -------------
