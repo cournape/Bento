@@ -110,6 +110,11 @@ class BuildWafContext(BuildContext):
 
         _init()
         waf_context = create_context("build")
+        o, a = options_context.parser.parse_args(cmd_argv)
+        if o.jobs:
+            waf_context.jobs = int(o.jobs)
+        else:
+            waf_context.jobs = 1
         waf_context.restore()
         if not waf_context.all_envs:
             waf_context.load_envs()
