@@ -58,6 +58,7 @@ def _init():
     Context.g_module.out = os.path.join(os.getcwd(), "build")
 
     Context.top_dir = os.getcwd()
+    Context.run_dir = os.getcwd()
     Context.out_dir = os.path.join(os.getcwd(), "build")
     Context.waf_dir = WAF_TOP
 
