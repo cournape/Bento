@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 
 if os.environ.has_key("WAFDIR"):
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
@@ -157,6 +158,15 @@ class BuildWafContext(BuildContext):
                     section = InstalledSection.from_source_target_directories(category, name,
                                             source_dir, target, files)
                     section_writer.sections[category][name] = section
+
+        if self.inplace:
+           for g in bld.groups:
+                for task_gen in g:
+                    if hasattr(task_gen, "link_task"):
+                        ltask = task_gen.link_task
+                        for output in ltask.outputs:
+                            if output.is_child_of(bld.bldnode):
+                                shutil.copy(output.abspath(), output.path_from(bld.bldnode))
 
     def build_extensions_factory(self, *a, **kw):
         def _full_name(extension, local_node):
