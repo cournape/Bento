@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 
 if os.environ.has_key("WAFDIR"):
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
@@ -15,9 +16,6 @@ from waflib.Context \
 from waflib.Options \
     import \
         OptionsContext
-from waflib.Configure \
-    import \
-        ConfigurationContext
 from waflib import Options
 from waflib import Context
 from waflib import Logs
@@ -26,12 +24,12 @@ from waflib import Build
 from bento.commands.context \
     import \
         ConfigureContext, BuildContext
-from bento.core.subpackage \
-    import \
-        get_extensions
 from bento.installed_package_description \
     import \
         InstalledSection
+from bento.core.utils \
+    import \
+        normalize_path
 
 WAF_TOP = os.path.join(WAFDIR, os.pardir)
 
@@ -61,6 +59,7 @@ def _init():
     Context.g_module.out = os.path.join(os.getcwd(), "build")
 
     Context.top_dir = os.getcwd()
+    Context.run_dir = os.getcwd()
     Context.out_dir = os.path.join(os.getcwd(), "build")
     Context.waf_dir = WAF_TOP
 
@@ -110,44 +109,156 @@ class BuildWafContext(BuildContext):
     def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
         super(BuildWafContext, self).__init__(cmd, cmd_argv, options_context, pkg, top_node)
 
+        o, a = options_context.parser.parse_args(cmd_argv)
+        if o.jobs:
+            jobs = int(o.jobs)
+        else:
+            jobs = 1
+        if o.verbose:
+            verbose = int(o.verbose)
+            zones = ["runner"]
+        else:
+            verbose = 0
+            zones = []
+
+        Logs.verbose = verbose
+        Logs.init_log()
+        if zones is None:
+            Logs.zones = []
+        else:
+            Logs.zones = zones
+
         _init()
         waf_context = create_context("build")
         waf_context.restore()
         if not waf_context.all_envs:
             waf_context.load_envs()
+        waf_context.jobs = jobs
         self.waf_context = waf_context
 
+    def post_compile(self, section_writer):
+        bld = self.waf_context
+        bld.compile()
+        for group in bld.groups:
+            for task_gen in group:
+                if hasattr(task_gen, "link_task"):
+                    if task_gen.path != bld.srcnode:
+                        pkg_dir = task_gen.path.srcpath()
+                    else:
+                        pkg_dir = ""
+                    if "cstlib" in task_gen.features:
+                        category = "compiled_libraries"
+                    else:
+                        category = "extensions"
+                    name = task_gen.name
+                    source_dir = task_gen.link_task.outputs[0].parent.path_from(bld.srcnode)
+                    target = os.path.join("$sitedir", pkg_dir)
+                    files = [o.name for o in task_gen.link_task.outputs]
+
+                    section = InstalledSection.from_source_target_directories(category, name,
+                                            source_dir, target, files)
+                    section_writer.sections[category][name] = section
+
+        if self.inplace:
+           for g in bld.groups:
+                for task_gen in g:
+                    if hasattr(task_gen, "link_task"):
+                        ltask = task_gen.link_task
+                        for output in ltask.outputs:
+                            if output.is_child_of(bld.bldnode):
+                                shutil.copy(output.abspath(), output.path_from(bld.bldnode))
+
     def build_extensions_factory(self, *a, **kw):
-        def builder(pkg):
-            bld = self.waf_context
-            for name, extension in get_extensions(pkg, self.top_node).iteritems():
-                print ext_name_to_path(extension.name)
+        def _full_name(extension, local_node):
+            if local_node != self.top_node:
+                parent = local_node.path_from(self.top_node).split(os.path.sep)
+                return ".".join(parent + [extension.name])
+            else:
+                return extension.name
+
+        def build_grandmaster(pkg):
+            def _default_builder(bld, extension):
                 bld(features='c cshlib pyext', source=extension.sources,
-                    target=ext_name_to_path(extension.name))
-            bld.compile()
-            return build_installed_sections(bld)
-        return builder
+                    target=extension.name)
+
+            bld = self.waf_context
+
+            # Gather all extensions together with their local_node
+            extensions = []
+            for extension in pkg.extensions.values():
+                local_node = self.top_node.find_dir(".")
+                extensions.append((extension, local_node))
+            for spkg in pkg.subpackages.values():
+                for extension in spkg.extensions.values():
+                    local_node = self.top_node.find_dir(spkg.rdir)
+                    extensions.append((extension, local_node))
+
+            for extension, local_node in extensions:
+                full_name = _full_name(extension, local_node)
+                builder = self._extensions_callback.get(full_name, _default_builder)
+
+                old_path = bld.path
+                bld.path = old_path.find_dir(local_node.path_from(self.top_node))
+                try:
+                    builder(bld, extension)
+                finally:
+                    bld.path = old_path
+
+            return {}
+        return build_grandmaster
 
     def build_compiled_libraries_factory(self, *a, **kw):
         def builder(pkg):
-            if len(self.pkg.compiled_libraries) > 0:
-                raise NotImplementedError("waf mode for compiled " \
-                                          "libraries not yet implemented")
+            def _default_builder(bld, library):
+                bld(features='c cstlib pyext', source=library.sources, target=library.name)
+            bld = self.waf_context
+            libraries = []
+            for library in pkg.compiled_libraries.values():
+                local_node = self.top_node.find_dir(".")
+                libraries.append((library, local_node))
+            for spkg in pkg.subpackages.values():
+                for library in spkg.compiled_libraries.values():
+                    local_node = self.top_node.find_dir(spkg.rdir)
+                    libraries.append((library, local_node))
+
+            for library, local_node in libraries:
+                if local_node != self.top_node:
+                    parent = local_node.path_from(self.top_node)
+                else:
+                    parent = ""
+                full_name = os.path.join(parent, library.name)
+                builder = self._clibraries_callback.get(full_name, _default_builder)
+
+                old_path = bld.path
+                bld.path = old_path.find_dir(local_node.path_from(self.top_node))
+                try:
+                    builder(bld, library)
+                finally:
+                    bld.path = old_path
+
             return {}
         return builder
 
-def build_installed_sections(bld):
+# We need to fix build / section writing interaction so that InstalledSection
+# instances can be written after SectionWriter callback has been called. This
+# way that build_installed_section is called only once, and we don't need those
+# hacks to enable multiple build_install_sections calls over the same task
+# groups
+def build_installed_sections(bld, category, task_gen_filter):
     sections = {}
     for group in bld.groups:
         for task_gen in group:
-            if hasattr(task_gen, "link_task"):
-                name = task_gen.name.replace(os.sep, ".")
-                pkg_dir = os.path.dirname(task_gen.name)
+            if hasattr(task_gen, "link_task") and task_gen_filter(task_gen):
+                if task_gen.path != bld.srcnode:
+                    pkg_dir = task_gen.path.srcpath()
+                else:
+                    pkg_dir = ""
+                name = task_gen.name
                 source_dir = task_gen.link_task.outputs[0].parent.path_from(bld.srcnode)
                 target = os.path.join("$sitedir", pkg_dir)
                 files = [o.name for o in task_gen.link_task.outputs]
 
-                section = InstalledSection.from_source_target_directories("extensions", name,
+                section = InstalledSection.from_source_target_directories(category, name,
                                         source_dir, target, files)
                 sections[name] = section
     return sections

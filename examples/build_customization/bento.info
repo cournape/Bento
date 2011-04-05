@@ -1,0 +1,21 @@
+Name: hello
+Version: 1.0
+
+Recurse:
+    top_module
+
+HookFile:
+    bscript,
+    top_module/bscript,
+    top_module/sub_module/bscript
+
+Library:
+    Extension: _bar
+        Sources:
+            src/hellomodule.c
+    Extension: _foo
+        Sources:
+            src/foo.c
+    CompiledLibrary: foolib
+        Sources:
+            src/foolib.c

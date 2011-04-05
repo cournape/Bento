@@ -94,6 +94,7 @@ Usage:   bentomaker build [OPTIONS]."""
         self.section_writer.sections_callbacks["bentofiles"] = \
                 build_config_py
         self.section_writer.update_sections(ctx.pkg)
+        ctx.post_compile(self.section_writer)
 
     def register_builder(self, extension_name, builder):
         """Register a builder to override the default builder for a

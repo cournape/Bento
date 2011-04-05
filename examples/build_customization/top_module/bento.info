@@ -1,0 +1,6 @@
+Recurse:
+    sub_module
+
+Library:
+    Extension: _fubar
+        Sources: foomodule.c
