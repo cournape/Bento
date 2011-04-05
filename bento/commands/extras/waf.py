@@ -108,16 +108,31 @@ class BuildWafContext(BuildContext):
     def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
         super(BuildWafContext, self).__init__(cmd, cmd_argv, options_context, pkg, top_node)
 
-        _init()
-        waf_context = create_context("build")
         o, a = options_context.parser.parse_args(cmd_argv)
         if o.jobs:
-            waf_context.jobs = int(o.jobs)
+            jobs = int(o.jobs)
         else:
-            waf_context.jobs = 1
+            jobs = 1
+        if o.verbose:
+            verbose = int(o.verbose)
+            zones = ["runner"]
+        else:
+            verbose = 0
+            zones = []
+
+        Logs.verbose = verbose
+        Logs.init_log()
+        if zones is None:
+            Logs.zones = []
+        else:
+            Logs.zones = zones
+
+        _init()
+        waf_context = create_context("build")
         waf_context.restore()
         if not waf_context.all_envs:
             waf_context.load_envs()
+        waf_context.jobs = jobs
         self.waf_context = waf_context
 
     def post_compile(self, section_writer):
