@@ -172,6 +172,12 @@ class BuildContext(_ContextWithBuildDirectory):
         self._clibrary_envs = {}
         self._extension_envs = {}
 
+        o, a = options_context.parser.parse_args(cmd_argv)
+        if o.inplace:
+            self.inplace = True
+        else:
+            self.inplace = False
+
     def store(self):
         CmdContext.store(self)
         checksum = _read_argv_checksum("configure")
