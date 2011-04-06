@@ -6,6 +6,10 @@ import glob
 from os.path import \
     join, split, splitext, dirname
 
+from yaku._config \
+    import \
+        _OUTPUT
+
 # Color handling for terminals (taken from waf)
 COLORS_LST = {
         'USE' : True,
@@ -24,7 +28,7 @@ COLORS_LST = {
 GOT_TTY = not os.environ.get('TERM', 'dumb') in ['dumb', 'emacs']
 if GOT_TTY:
     try:
-        GOT_TTY = sys.stderr.isatty()
+        GOT_TTY = _OUTPUT.isatty()
     except AttributeError:
         GOT_TTY = False
 if not GOT_TTY or 'NOCOLOR' in os.environ:
@@ -43,4 +47,4 @@ class foo(object):
 COLORS = foo()
 
 def pprint(color, str):
-    sys.stderr.write('%s%s%s\n' % (COLORS(color), str, COLORS('NORMAL')))
+    _OUTPUT.write('%s%s%s\n' % (COLORS(color), str, COLORS('NORMAL')))

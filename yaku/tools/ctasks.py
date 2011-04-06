@@ -25,6 +25,9 @@ from yaku.scheduler \
 from yaku.conf \
     import \
         with_conf_blddir
+from yaku._config \
+    import \
+        _OUTPUT
 import yaku.tools
 
 ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${APP_DEFINES} ${INCPATH} ${CC_TGT_F}${TGT[0].abspath()} ${CC_SRC_F}${SRC}", False)
@@ -282,17 +285,17 @@ class CCBuilder(yaku.tools.Builder):
             sys.path.insert(0, os.path.dirname(yaku.tools.__file__))
             try:
                 for cc_type in candidates:
-                    sys.stderr.write("Looking for %s (c compiler) ... " % cc_type)
+                    _OUTPUT.write("Looking for %s (c compiler) ... " % cc_type)
                     try:
                         mod = __import__(cc_type)
                         if mod.detect(ctx):
-                            sys.stderr.write("yes\n")
+                            _OUTPUT.write("yes\n")
                             ctx.env["cc_type"] = cc_type
                             detected = cc_type
                             break
                     except:
                         pass
-                    sys.stderr.write("no!\n")
+                    _OUTPUT.write("no!\n")
                 return detected
             finally:
                 sys.path.pop(0)

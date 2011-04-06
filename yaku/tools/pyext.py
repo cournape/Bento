@@ -44,6 +44,9 @@ from yaku.conf \
 from yaku.errors \
     import \
         TaskRunFailure
+from yaku._config \
+    import \
+        _OUTPUT
 import yaku.tools
 
 pylink, pylink_vars = compile_fun("pylink", "${PYEXT_SHLINK} ${PYEXT_LINK_TGT_F}${TGT[0].abspath()} ${PYEXT_LINK_SRC_F}${SRC} ${PYEXT_APP_LIBDIR} ${PYEXT_APP_LIBS} ${PYEXT_APP_FRAMEWORKS} ${PYEXT_SHLINKFLAGS}", False)
@@ -383,7 +386,7 @@ def _detect_cc_type(ctx, cc_cmd):
             pass
         return None
 
-    sys.stderr.write("Detecting CC type... ")
+    _OUTPUT.write("Detecting CC type... ")
     if sys.platform == "win32":
         for v in ["", "-v"]:
             cc_type = detect_type(v)
@@ -394,13 +397,13 @@ def _detect_cc_type(ctx, cc_cmd):
                 break
         if cc_type is None:
             cc_type = "cc"
-    sys.stderr.write("%s\n" % cc_type)
+    _OUTPUT.write("%s\n" % cc_type)
     return cc_type
 
 def get_distutils_cc_exec(ctx, compiler_type="default"):
     from distutils import ccompiler
 
-    sys.stderr.write("Detecting distutils CC exec ... ")
+    _OUTPUT.write("Detecting distutils CC exec ... ")
     if compiler_type == "default":
         compiler_type = \
                 distutils.ccompiler.get_default_compiler()
@@ -411,14 +414,14 @@ def get_distutils_cc_exec(ctx, compiler_type="default"):
         cc = [compiler.cc]
     else:
         cc = compiler.compiler_so
-    sys.stderr.write("%s\n" % " ".join(cc))
+    _OUTPUT.write("%s\n" % " ".join(cc))
     return cc
 
 def get_distutils_cxx_exec(ctx, compiler_type="default"):
     from distutils import ccompiler
     from distutils.sysconfig import customize_compiler
 
-    sys.stderr.write("Detecting distutils CXX exec ... ")
+    _OUTPUT.write("Detecting distutils CXX exec ... ")
     if compiler_type == "default":
         compiler_type = \
                 distutils.ccompiler.get_default_compiler()
@@ -430,7 +433,7 @@ def get_distutils_cxx_exec(ctx, compiler_type="default"):
     else:
         customize_compiler(compiler)
         cc = compiler.compiler_cxx
-    sys.stderr.write("%s\n" % " ".join(cc))
+    _OUTPUT.write("%s\n" % " ".join(cc))
     return cc
 
 def _setup_compiler(ctx, cc_type):
