@@ -40,7 +40,14 @@ class Builder(object):
         self.env = copy.deepcopy(ctx.env)
 
     def to_nodes(self, filenames):
-        # Convert source filenames to nodes
+        """Convert source filenames to nodes.
+
+        Parameters
+        ----------
+        :filenames: str|sequence, list of filenames. Automatically converted to a list
+            if filenames is a string"""
+        if isinstance(filenames, str):
+            filenames = [filenames]
         return [self.ctx.src_root.find_resource(s) for s in filenames]
 
     def configure(self):
