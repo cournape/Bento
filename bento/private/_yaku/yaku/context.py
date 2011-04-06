@@ -7,7 +7,8 @@ from cPickle \
 
 from yaku._config \
     import \
-        BUILD_DIR, DEFAULT_ENV, BUILD_CONFIG, BUILD_CACHE, CONFIG_CACHE, HOOK_DUMP
+        BUILD_DIR, DEFAULT_ENV, BUILD_CONFIG, BUILD_CACHE, CONFIG_CACHE, HOOK_DUMP, \
+        _OUTPUT
 from yaku.environment \
     import \
         Environment
@@ -122,12 +123,12 @@ class ConfigureContext(object):
             fid.close()
 
     def start_message(self, msg):
-        sys.stderr.write(msg + "... ")
+        _OUTPUT.write(msg + "... ")
         self.log.write("=" * 79 + "\n")
         self.log.write("%s\n" % msg)
 
     def end_message(self, msg):
-        sys.stderr.write("%s\n" % msg)
+        _OUTPUT.write("%s\n" % msg)
 
     def set_cmd_cache(self, task, cmd):
         self._cmd_cache[task.get_uid()] = cmd[:]

@@ -11,7 +11,8 @@ examples/fortran/fortran.py
 examples/node_example.py
 examples/override_ext.py
 examples/pyext_example.py
-examples/test_env.py"
+examples/test_env.py
+examples/subst_tool/example.py"
 
 nerrors=0
 ntests=0

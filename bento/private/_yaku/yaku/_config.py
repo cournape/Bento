@@ -2,6 +2,8 @@
 
 __file__, etc... are only allowed in this module.
 """
+import sys
+
 from os.path \
     import \
         join, abspath, dirname
@@ -17,3 +19,5 @@ HOOK_DUMP = join(BUILD_DIR, ".hooks.pck")
 
 CONFIG_CACHE = join(BUILD_DIR, ".config.pck")
 BUILD_CACHE = join(BUILD_DIR, ".build.pck")
+
+_OUTPUT = sys.stdout
