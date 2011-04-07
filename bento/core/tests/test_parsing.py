@@ -42,11 +42,31 @@ NName: foo
 """
         self.assertRaises(ParseError, lambda : PackageDescription.from_string(text))
 
+        try:
+            PackageDescription.from_string(text)
+            raise AssertionError("Should raise here !")
+        except ParseError, e:
+            self.assertEqual(str(e), "yacc: Syntax error at line 1, Token(WORD, 'NName')")
+
     def test_simple_filename(self):
         f = NamedTemporaryFile(mode="w")
         f.write("NName: foo")
         f.flush()
         self.assertRaises(ParseError, lambda : PackageDescription.from_file(f.name))
+
+    def test_error_string(self):
+        f = NamedTemporaryFile(mode="w")
+        f.write("NName: foo")
+        f.flush()
+        try:
+            PackageDescription.from_file(f.name)
+            raise AssertionError("Should raise here !")
+        except ParseError, e:
+            self.assertEqual(str(e), """\
+  File "%s", line 1
+NName: foo
+^
+Syntax error""" % f.name)
 
 class TestDataFiles(unittest.TestCase):
     def test_simple(self):
