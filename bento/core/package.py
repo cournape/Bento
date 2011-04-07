@@ -2,19 +2,20 @@ import os
 
 from copy \
     import \
-        deepcopy, copy
+        deepcopy
 
-import bento
-
-from bento.core.pkg_objects import \
+from bento.core.pkg_objects \
+    import \
         Extension, DataFiles, Executable, CompiledLibrary
-from bento.core.meta import \
+from bento.core.meta \
+    import \
         _set_metadata, _METADATA_FIELDS
-from bento.core.utils import \
+from bento.core.utils \
+    import \
         find_package, expand_glob, unnormalize_path
 from bento.core.parser.api \
     import \
-        build_ast_from_data, build_ast_from_raw_dict, raw_parse
+        build_ast_from_raw_dict, raw_parse
 from bento.compat.api \
     import \
         relpath
@@ -121,8 +122,8 @@ def raw_to_pkg_kw(raw_dict, user_flags, filename):
     kw["executables"] = executables
     kw["data_files"] = data_files
 
-    path_options = misc_d.pop("path_options")
-    flag_options = misc_d.pop("flag_options")
+    misc_d.pop("path_options")
+    misc_d.pop("flag_options")
 
     if misc_d.has_key("subento"):
         subentos = misc_d.pop("subento")
