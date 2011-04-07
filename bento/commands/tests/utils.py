@@ -9,12 +9,15 @@ from bento.core \
 from bento.commands.configure \
     import \
         ConfigureCommand, _setup_options_parser
+from bento.commands.build \
+    import \
+        BuildCommand
 from bento.commands.options \
     import \
         OptionsContext
 from bento.commands.context \
     import \
-        ConfigureYakuContext
+        ConfigureYakuContext, BuildYakuContext
 
 DUMMY_C = r"""\
 #include <Python.h>
@@ -63,6 +66,15 @@ def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext, 
     context.package_options = package_options
 
     return context, configure
+
+def prepare_build(top_node, pkg, context_klass=BuildYakuContext):
+    build = BuildCommand()
+    opts = OptionsContext()
+    for o in BuildCommand.common_options:
+        opts.add_option(o)
+
+    bld = context_klass(build, [], opts, pkg, top_node)
+    return bld, build
 
 def create_fake_package_from_bento_info(top_node, bento_info):
     from bento.core.package import raw_parse, raw_to_pkg_kw
