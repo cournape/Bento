@@ -1,6 +1,6 @@
 from bento.core.parser.api \
     import \
-        build_ast_from_data, raw_parse, build_ast_from_raw_dict
+        raw_parse, build_ast_from_raw_dict
 from bento.core.pkg_objects \
     import \
         PathOption, FlagOption
