@@ -40,7 +40,10 @@ init%(name)s(void)
 }
 """
 
-def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext):
+def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext, cmd_argv=None):
+    if cmd_argv is None:
+        cmd_argv = []
+
     # FIXME: this should be created in the configure context
     junk_node = top_node.make_node(BUILD_DIR)
     junk_node.mkdir()
@@ -52,10 +55,11 @@ def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext):
     opts = OptionsContext()
     for o in ConfigureCommand.common_options:
         opts.add_option(o)
-    context = context_klass(configure, [], opts, package, top_node)
 
     # FIXME: this emulates the big ugly hack inside bentomaker.
     _setup_options_parser(opts, package_options)
+
+    context = context_klass(configure, cmd_argv, opts, package, top_node)
     context.package_options = package_options
 
     return context, configure
