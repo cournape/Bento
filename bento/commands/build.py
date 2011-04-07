@@ -141,7 +141,7 @@ def _build_python_files(pkg, top_node):
         python_files.extend(find_package(p, top_node))
     for m in pkg.py_modules:
         node = top_node.find_node("%s.py" % m)
-        python_files.append(node.path_from(node))
+        python_files.append(node.path_from(top_node))
     py_section = InstalledSection.from_source_target_directories("pythonfiles", "library",
             "$_srcrootdir", "$sitedir", python_files)
 
