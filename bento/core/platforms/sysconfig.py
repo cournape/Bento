@@ -60,7 +60,8 @@ _SCHEME_OPTS = {
                        'in PREFIX [%s]'},
     'eprefix': {'opts': ['--exec-prefix'],
                'help': 'install architecture-dependent files '
-                       'in EPREFIX [%s]'},
+                       'in EPREFIX [%s]',
+                'dest': 'eprefix'},
     'bindir': {'opts': ['--bindir'],
                'help': 'user executables [%s]'},
     'sbindir': {'opts': ['--sbindir'],

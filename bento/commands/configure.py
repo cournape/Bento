@@ -87,7 +87,7 @@ def set_scheme_options(scheme, options):
                     raise UsageException(msg)
                 scheme[k] = val
     # XXX: define default somewhere and stick with it
-    if options.prefix is not None and options.exec_prefix is None:
+    if options.prefix is not None and options.eprefix is None:
         scheme["eprefix"] = scheme["prefix"]
 
 def get_flag_values(cmd, cmd_argv):
@@ -128,8 +128,8 @@ def _setup_options_parser(options_context, package_options):
     # Create default path options
     scheme_opts = {}
     for name, opt_d in scheme_opts_d.items():
-        kw = {"help": opt_d["help"]}
-        opt = Option(*opt_d["opts"], **kw)
+        o = opt_d.pop("opts")
+        opt = Option(*o, **opt_d)
         scheme_opts[name] = opt
 
     # Add custom path options (as defined in bento.info) to the path scheme
