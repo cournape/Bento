@@ -15,6 +15,13 @@ from optparse \
 #   - should help hiding command implementation detail from hooks and high
 #   level tools such as bentomaker (close coupling at the moment)
 class OptionsContext(object):
+    @classmethod
+    def from_command(cls, cmd):
+        ret = cls()
+        for o in cmd.common_options:
+            ret.add_option(o)
+        return ret
+
     def __init__(self, usage=None):
         kw = {"add_help_option": False}
         if usage is not None:

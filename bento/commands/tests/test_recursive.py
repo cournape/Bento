@@ -75,9 +75,7 @@ Library:
         conf.store()
 
         build = BuildCommand()
-        opts = OptionsContext()
-        for o in BuildCommand.common_options:
-            opts.add_option(o)
+        opts = OptionsContext.from_command(build)
 
         cmd_argv = []
         bld = BuildYakuContext(build, cmd_argv, opts, conf.pkg, top_node)

@@ -55,9 +55,7 @@ class TestBuildCommand(unittest.TestCase):
         build.shutdown(bld)
 
         install = InstallCommand()
-        opts = OptionsContext()
-        for o in InstallCommand.common_options:
-            opts.add_option(o)
+        opts = OptionsContext.from_command(install)
 
         inst = CmdContext(install, ["--list-files"], opts, conf.pkg, top_node)
         try:

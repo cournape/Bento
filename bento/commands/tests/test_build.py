@@ -203,9 +203,7 @@ class TestBuildCommand(unittest.TestCase):
         conf.store()
 
         build = BuildCommand()
-        opts = OptionsContext()
-        for o in BuildCommand.common_options:
-            opts.add_option(o)
+        opts = OptionsContext.from_command(build)
 
         bld = BuildYakuContext(build, [], opts, conf.pkg, top_node)
         build.run(bld)

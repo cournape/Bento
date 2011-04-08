@@ -61,9 +61,7 @@ def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext, 
     package_options = PackageOptions.from_string(bento_info)
 
     configure = ConfigureCommand()
-    opts = OptionsContext()
-    for o in ConfigureCommand.common_options:
-        opts.add_option(o)
+    opts = OptionsContext.from_command(configure)
 
     # FIXME: this emulates the big ugly hack inside bentomaker.
     _setup_options_parser(opts, package_options)
@@ -75,9 +73,7 @@ def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext, 
 
 def prepare_build(top_node, pkg, context_klass=BuildYakuContext):
     build = BuildCommand()
-    opts = OptionsContext()
-    for o in BuildCommand.common_options:
-        opts.add_option(o)
+    opts = OptionsContext.from_command(build)
 
     bld = context_klass(build, [], opts, pkg, top_node)
     return bld, build
