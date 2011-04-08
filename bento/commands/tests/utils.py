@@ -6,6 +6,12 @@ from bento._config \
 from bento.core \
     import \
         PackageDescription, PackageOptions
+from bento.core.pkg_objects \
+    import \
+        Extension, CompiledLibrary
+from bento.core.package \
+    import \
+        raw_parse, raw_to_pkg_kw, build_ast_from_raw_dict, PackageDescription
 from bento.commands.configure \
     import \
         ConfigureCommand, _setup_options_parser
@@ -89,6 +95,35 @@ def create_fake_package_from_bento_info(top_node, bento_info):
         kw["packages"] = _kw["packages"]
     return create_fake_package(top_node, **kw)
 
+def create_fake_package_from_bento_infos(top_node, bento_infos):
+    for loc, content in bento_infos.iteritems():
+        n = top_node.make_node(loc)
+        n.parent.mkdir()
+        n.write(content)
+
+    d = raw_parse(bento_infos["bento.info"])
+    _kw, files = raw_to_pkg_kw(d, {}, None)
+    subpackages = _kw.get("subpackages", {})
+
+    py_modules = _kw.get("py_modules", [])
+    if "extensions" in _kw:
+        extensions = _kw["extensions"].values()
+    else:
+        extensions = []
+    packages = _kw.get("packages", [])
+    for name, spkg in subpackages.iteritems():
+        n = top_node.search(name)
+        n.write(bento_infos[name])
+        d = n.parent
+        for py_module in spkg.py_modules:
+            m = d.make_node(py_module)
+            py_modules.append(m.path_from(top_node))
+
+        extensions.extend(flatten_extensions(top_node, spkg))
+        packages.extend(flatten_packages(top_node, spkg))
+
+    return create_fake_package(top_node, packages, py_modules, extensions)
+
 def create_fake_package(top_node, packages=None, modules=None, extensions=[]):
     if packages is None:
         packages = []
@@ -112,8 +147,30 @@ def create_fake_package(top_node, packages=None, modules=None, extensions=[]):
         main = extension.sources[0]
         n = top_node.make_node(main)
         n.parent.mkdir()
-        n.write(DUMMY_C % {"name": extension.name})
+        n.write(DUMMY_C % {"name": extension.name.split(".")[-1]})
         for s in extension.sources[1:]:
             n = top_node.make_node(s)
             n.write("")
+
+# FIXME: Those flatten extensions are almost redundant with the ones in
+# bento.core.subpackages. Here, we do not ensure that the nodes actually exist
+# on the fs (make_node vs find_node). But maybe we do not need to check file
+# existence in bento.core.subpackages either (do it at another layer)
+def flatten_extensions(top_node, subpackage):
+    ret = []
+
+    d = top_node.find_dir(subpackage.rdir)
+    root_name = ".".join(subpackage.rdir.split("/"))
+    for extension in subpackage.extensions.values():
+        sources = [d.make_node(s).path_from(top_node) for s in extension.sources]
+        full_name = root_name + ".%s" % extension.name
+        ret.append(Extension(full_name, sources))
+    return ret
+
+def flatten_packages(top_node, subpackage):
+    ret = {}
+
+    d = top_node.find_dir(subpackage.rdir)
+    parent_pkg = ".".join(subpackage.rdir.split("/"))
+    return ["%s.%s" % (parent_pkg, p) for p in subpackage.packages]
 

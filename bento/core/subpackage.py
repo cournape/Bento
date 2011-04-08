@@ -9,7 +9,7 @@ from bento.core.pkg_objects \
 
 class SubPackageDescription:
     def __init__(self, rdir, packages=None, extensions=None,
-                 compiled_libraries=None):
+                 compiled_libraries=None, py_modules=None):
         self.rdir = rdir
         if packages is None:
             self.packages = []
@@ -23,9 +23,14 @@ class SubPackageDescription:
             self.compiled_libraries = {}
         else:
             self.compiled_libraries = compiled_libraries
+        if py_modules is None:
+            self.py_modules = []
+        else:
+            self.py_modules = py_modules
 
     def __repr__(self):
         return repr({"packages": self.packages,
+                     "py_modules": self.py_modules,
                      "clibs": self.compiled_libraries,
                      "extensions": self.extensions})
 
