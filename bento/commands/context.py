@@ -135,6 +135,7 @@ class CmdContext(object):
         do nothing)
         """
         if local_node == self.top_node:
+            self.local_node = self.top_node
             return
         else:
             if not local_node.is_src():
@@ -150,7 +151,11 @@ class CmdContext(object):
             self.local_pkg = _get_sub_package()
 
     def post_recurse(self):
-        pass
+        # Setting those to None is not strictly necessary, but this makes
+        # things more consistent for debugging (context state exactly same
+        # before pre_recurse and after post_recurse
+        self.local_node = None
+        self.local_pkg = None
 
     def store(self):
         pass

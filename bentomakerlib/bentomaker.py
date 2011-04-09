@@ -333,29 +333,28 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
         cmd_funcs = [(cmd.run, top.abspath())]
 
     try:
-        def set_local_ctx(ctx, local_dir):
-            local_node = top.find_dir(relpath(local_dir, top.abspath()))
-            spkg = _get_subpackage(pkg, top, local_node)
-            ctx.local_dir = local_dir
-            ctx.local_node = local_node
-            ctx.top_node = top
-            ctx.local_pkg = spkg
-            ctx.pkg = pkg
+        def _run_hooks(hook_iter):
+            for hook, local_dir, help_bypass in hook_iter:
+                local_node = top.find_dir(relpath(local_dir, top.abspath()))
+                ctx.pre_recurse(local_node)
+                try:
+                    if not ctx.help and help_bypass:
+                        hook(ctx)
+                finally:
+                    ctx.post_recurse()
 
-        for hook, local_dir, help_bypass in get_pre_hooks(cmd_name):
-            if not ctx.help and help_bypass:
-                set_local_ctx(ctx, local_dir)
-                hook(ctx)
+        _run_hooks(get_pre_hooks(cmd_name))
 
         while cmd_funcs:
             cmd_func, local_dir = cmd_funcs.pop(0)
-            set_local_ctx(ctx, local_dir)
-            cmd_func(ctx)
+            local_node = top.find_dir(relpath(local_dir, top.abspath()))
+            ctx.pre_recurse(local_node)
+            try:
+                cmd_func(ctx)
+            finally:
+                ctx.post_recurse()
 
-        for hook, local_dir, help_bypass in get_post_hooks(cmd_name):
-            if not ctx.help and help_bypass:
-                set_local_ctx(ctx, local_dir)
-                hook(ctx)
+        _run_hooks(get_post_hooks(cmd_name))
 
         cmd.shutdown(ctx)
     finally:
