@@ -97,6 +97,18 @@ class ConfigureWafContext(ConfigureContext):
                 conf.env["CC"] = ["/usr/bin/gcc-4.0"]
             conf.store()
 
+        self._old_path = None
+
+    def pre_recurse(self, local_node):
+        ConfigureContext.pre_recurse(self, local_node)
+        self._old_path = self.waf_context.path
+        # Gymnastic to make a *waf* node from a *bento* node
+        self.waf_context.path = self.waf_context.path.make_node(self.local_node.path_from(self.top_node))
+
+    def post_recurse(self):
+        self.waf_context.path = self._old_path
+        ConfigureContext.post_recurse(self)
+
 def ext_name_to_path(name):
     """Convert extension name to path - the path does not include the
     file extension
