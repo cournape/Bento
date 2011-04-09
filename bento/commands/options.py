@@ -16,7 +16,7 @@ from optparse \
 #   level tools such as bentomaker (close coupling at the moment)
 class OptionsContext(object):
     @classmethod
-    def from_command(cls, cmd):
+    def from_command(cls, cmd, usage=None):
         ret = cls()
         for o in cmd.common_options:
             ret.add_option(o)

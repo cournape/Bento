@@ -99,9 +99,7 @@ def register_commands():
 def register_options(cmd_name):
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
     usage = cmd_klass.long_descr.splitlines()[1]
-    context = OptionsContext(usage=usage)
-    for option in cmd_klass.common_options:
-        context.add_option(option)
+    context = OptionsContext.from_command(cmd_klass, usage=usage)
     OPTIONS_REGISTRY.register_command(cmd_name, context)
 
 def register_command_contexts():
