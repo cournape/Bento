@@ -58,15 +58,15 @@ def get_registry_category(categorie):
 
 def get_pre_hooks(cmd_name):
     global __PRE_HOOK_REGISTRY
-    return __PRE_HOOK_REGISTRY.get(cmd_name, None)
+    return __PRE_HOOK_REGISTRY.get(cmd_name, [])
 
 def get_post_hooks(cmd_name):
     global __POST_HOOK_REGISTRY
-    return __POST_HOOK_REGISTRY.get(cmd_name, None)
+    return __POST_HOOK_REGISTRY.get(cmd_name, [])
 
 def get_command_override(cmd_name):
     global __COMMANDS_OVERRIDE
-    return __COMMANDS_OVERRIDE.get(cmd_name, None)
+    return __COMMANDS_OVERRIDE.get(cmd_name, [])
 
 def _make_hook_decorator(command_name, kind):
     name = "%s_%s" % (kind, command_name)

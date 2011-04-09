@@ -342,22 +342,20 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
             ctx.local_pkg = spkg
             ctx.pkg = pkg
 
-        if get_pre_hooks(cmd_name) is not None:
-            for hook, local_dir, help_bypass in get_pre_hooks(cmd_name):
-                if not ctx.help and help_bypass:
-                    set_local_ctx(ctx, local_dir)
-                    hook(ctx)
+        for hook, local_dir, help_bypass in get_pre_hooks(cmd_name):
+            if not ctx.help and help_bypass:
+                set_local_ctx(ctx, local_dir)
+                hook(ctx)
 
         while cmd_funcs:
             cmd_func, local_dir = cmd_funcs.pop(0)
             set_local_ctx(ctx, local_dir)
             cmd_func(ctx)
 
-        if get_post_hooks(cmd_name) is not None:
-            for hook, local_dir, help_bypass in get_post_hooks(cmd_name):
-                if not ctx.help and help_bypass:
-                    set_local_ctx(ctx, local_dir)
-                    hook(ctx)
+        for hook, local_dir, help_bypass in get_post_hooks(cmd_name):
+            if not ctx.help and help_bypass:
+                set_local_ctx(ctx, local_dir)
+                hook(ctx)
 
         cmd.shutdown(ctx)
     finally:
