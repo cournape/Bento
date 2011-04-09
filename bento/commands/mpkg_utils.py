@@ -96,8 +96,11 @@ def build_info_plist(pkg_info):
     write(d, pkg_info.info_plist)
 
 def build_pkg_info(pkg_info):
-    with open(pkg_info.pkg_info, "w") as fid:
+    fid = open(pkg_info.pkg_info, "w")
+    try:
         fid.write("pmkrpkg1")
+    finally:
+        fid.close()
 
 def build_description_plist(pkg_info):
     desc = common_description(pkg_info)
