@@ -15,9 +15,9 @@ from bento.core.node \
 from bento.commands.tests.utils \
     import \
         create_fake_package_from_bento_infos, prepare_configure
-#from bento.commands.configure \
-#    import \
-#        ConfigureCommand, _setup_options_parser
+from bento.commands.hooks \
+    import \
+        get_pre_hooks, create_hook_module, get_post_hooks
 from bento.commands.options \
     import \
         OptionsContext
@@ -80,3 +80,49 @@ Library:
         cmd_argv = []
         bld = BuildYakuContext(build, cmd_argv, opts, conf.pkg, top_node)
         build.run(bld)
+
+    def test_hook(self):
+        root = self.root
+        top_node = root.srcnode
+
+        bento_info = """\
+Name: foo
+
+HookFile:
+    bar/bscript
+
+Recurse:
+    bar
+"""
+        bento_info2 = """\
+Library:
+    Modules: fubar
+"""
+
+        bscript = """\
+from bento.commands import hooks
+@hooks.pre_configure()
+def configure(ctx):
+    py_modules = ctx.local_pkg.py_modules
+    ctx.local_node.make_node("test").write(str(py_modules))
+"""
+        bentos = {"bento.info": bento_info, os.path.join("bar", "bento.info"): bento_info2}
+        bscripts = {os.path.join("bar", "bscript"): bscript}
+        create_fake_package_from_bento_infos(top_node, bentos, bscripts)
+
+        conf, configure = prepare_configure(top_node, bento_info, ConfigureYakuContext)
+
+        hook = top_node.search("bar/bscript")
+        m = create_hook_module(hook.abspath())
+        for hook, local_dir, help_bypass in get_pre_hooks("configure"):
+            conf.pre_recurse(root.find_dir(local_dir))
+            try:
+                hook(conf)
+            finally:
+                conf.post_recurse()
+
+        test = top_node.search("bar/test")
+        if test:
+            self.failUnlessEqual(test.read(), "['fubar']")
+        else:
+            self.fail("test dummy not found")

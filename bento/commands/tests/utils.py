@@ -91,8 +91,14 @@ def create_fake_package_from_bento_info(top_node, bento_info):
         kw["packages"] = _kw["packages"]
     return create_fake_package(top_node, **kw)
 
-def create_fake_package_from_bento_infos(top_node, bento_infos):
+def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
+    if bscripts is None:
+        bscripts = {}
     for loc, content in bento_infos.iteritems():
+        n = top_node.make_node(loc)
+        n.parent.mkdir()
+        n.write(content)
+    for loc, content in bscripts.iteritems():
         n = top_node.make_node(loc)
         n.parent.mkdir()
         n.write(content)

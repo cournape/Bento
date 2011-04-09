@@ -97,6 +97,10 @@ class CmdContext(object):
 
         self._configured_state = None
 
+        # Recursive related members
+        self.local_node = None
+        self.local_pkg = None
+
     def get_command_arguments(self):
         return self.cmd_argv
 
@@ -120,6 +124,33 @@ class CmdContext(object):
     def get_paths_scheme(self):
         state = self._get_configured_state()
         return state.paths
+
+    def pre_recurse(self, local_node):
+        """
+        Note
+        ----
+        Every call to pre_recurse should be followed by a call to post_recurse.
+
+        Calling pre_recurse for the top hook node must work as well (but could
+        do nothing)
+        """
+        if local_node == self.top_node:
+            return
+        else:
+            if not local_node.is_src():
+                raise IOError("node %r is not in source tree !" % local_node.abspath())
+            self.local_node = local_node
+
+            def _get_sub_package():
+                k = local_node.find_node("bento.info").path_from(self.top_node)
+                if k is None:
+                    raise IOError("%r not found" % os.path.join(local_node.abspath(), "bento.info"))
+                else:
+                    return self.pkg.subpackages.get(k, None)
+            self.local_pkg = _get_sub_package()
+
+    def post_recurse(self):
+        pass
 
     def store(self):
         pass
