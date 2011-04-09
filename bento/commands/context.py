@@ -80,6 +80,17 @@ class GlobalContext(object):
         """Specify that command cmd_name_before should run after cmd_name."""
         self._scheduler.set_after(cmd_name, cmd_name_after)
 
+class DummyContextManager(object):
+    def __init__(self, pre, post):
+        self.pre = pre
+        self.post = post
+
+    def __enter__(self):
+        self.pre()
+
+    def __exit__(self, *a, **kw):
+        self.post()
+
 class CmdContext(object):
     def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
         self.pkg = pkg
@@ -124,6 +135,17 @@ class CmdContext(object):
     def get_paths_scheme(self):
         state = self._get_configured_state()
         return state.paths
+
+    def recurse_manager(self, local_node):
+        """
+        Return a dummy object to use for recurse if one wants to use context
+        manager. Example::
+
+            with context.recurse_manager(local_node):
+                func(context)
+        """
+        return DummyContextManager(lambda: self.pre_recurse(local_node),
+                                   lambda: self.post_recurse())
 
     def pre_recurse(self, local_node):
         """
