@@ -282,22 +282,16 @@ def run_cmd(cmd_name, cmd_opts):
     top = root.srcnode
 
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
-    # XXX: fix this special casing
-    if cmd_name == "help":
-        help = HelpCommand()
-        options_ctx = OPTIONS_REGISTRY.get_options("help")
-        ctx_klass = CONTEXT_REGISTRY.get("help")
-        context = ctx_klass(cmd_opts, options_ctx, None, top)
-        # XXX: hack for help command to get option context for any command
-        # without making help depends on bentomakerlib
-        context.options_registry = OPTIONS_REGISTRY
-        help.run(context)
-        return
-    elif cmd_name in ["convert"]:
+
+    # XXX: fix this special casing (commands which do not need a pkg instance)
+    if cmd_name in ["help", "convert"]:
         cmd = cmd_klass()
         options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-        ctx = ctx_klass(cmd, cmd_opts, options_ctx, None, top)
+        ctx = ctx_klass(cmd_opts, options_ctx, None, top)
+        # XXX: hack for help command to get option context for any command
+        # without making help depends on bentomakerlib
+        ctx.options_registry = OPTIONS_REGISTRY
         cmd.run(ctx)
         return
 
