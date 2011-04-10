@@ -50,7 +50,7 @@ class TestHelpCommand(unittest.TestCase):
         options = OptionsContext()
         for option in HelpCommand.common_options:
             options.add_option(option)
-        context = CmdContext(help, [], options, None, None)
+        context = CmdContext([], options, None, None)
 
         help.run(context)
 
@@ -59,7 +59,7 @@ class TestHelpCommand(unittest.TestCase):
         options = OptionsContext()
         for option in HelpCommand.common_options:
             options.add_option(option)
-        context = CmdContext(help, ["configure"], options, None, None)
+        context = CmdContext(["configure"], options, None, None)
         context.options_registry = self.options_registry
 
         help.run(context)

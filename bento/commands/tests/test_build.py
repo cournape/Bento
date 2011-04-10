@@ -205,5 +205,5 @@ class TestBuildCommand(unittest.TestCase):
         build = BuildCommand()
         opts = OptionsContext.from_command(build)
 
-        bld = BuildYakuContext(build, [], opts, conf.pkg, top_node)
+        bld = BuildYakuContext([], opts, conf.pkg, top_node)
         build.run(bld)

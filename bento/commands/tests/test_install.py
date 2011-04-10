@@ -57,7 +57,7 @@ class TestBuildCommand(unittest.TestCase):
         install = InstallCommand()
         opts = OptionsContext.from_command(install)
 
-        inst = CmdContext(install, ["--list-files"], opts, conf.pkg, top_node)
+        inst = CmdContext(["--list-files"], opts, conf.pkg, top_node)
         try:
             install.run(inst)
         finally:

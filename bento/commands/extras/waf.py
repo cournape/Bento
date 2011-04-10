@@ -69,8 +69,8 @@ def _init():
     Options.options.check_c_compiler = "gcc"
 
 class ConfigureWafContext(ConfigureContext):
-    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
-        super(ConfigureWafContext, self).__init__(cmd, cmd_argv, options_context, pkg, top_node)
+    def __init__(self, cmd_argv, options_context, pkg, top_node):
+        super(ConfigureWafContext, self).__init__(cmd_argv, options_context, pkg, top_node)
 
         _init()
         waf_context = create_context("configure")
@@ -118,8 +118,8 @@ def ext_name_to_path(name):
     return name.replace('.', os.path.sep)
 
 class BuildWafContext(BuildContext):
-    def __init__(self, cmd, cmd_argv, options_context, pkg, top_node):
-        super(BuildWafContext, self).__init__(cmd, cmd_argv, options_context, pkg, top_node)
+    def __init__(self, cmd_argv, options_context, pkg, top_node):
+        super(BuildWafContext, self).__init__(cmd_argv, options_context, pkg, top_node)
 
         o, a = options_context.parser.parse_args(cmd_argv)
         if o.jobs:
