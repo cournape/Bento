@@ -178,7 +178,10 @@ class CmdContext(object):
         self.local_node = None
         self.local_pkg = None
 
-    def store(self):
+    def init(self):
+        pass
+
+    def shutdown(self):
         pass
 
 class HelpContext(CmdContext):
@@ -196,8 +199,8 @@ class ConfigureContext(_ContextWithBuildDirectory):
     def setup(self):
         pass
 
-    def store(self):
-        CmdContext.store(self)
+    def shutdown(self):
+        CmdContext.shutdown(self)
         CachedPackage.write_checksums()
         _write_argv_checksum(_argv_checksum(sys.argv), "configure")
 
@@ -217,8 +220,8 @@ class ConfigureYakuContext(ConfigureContext):
         if extensions or libraries:
             yaku_ctx.use_tools(["ctasks", "pyext"])
 
-    def store(self):
-        super(ConfigureYakuContext, self).store()
+    def shutdown(self):
+        super(ConfigureYakuContext, self).shutdown()
         self.yaku_configure_ctx.store()
 
 class BuildContext(_ContextWithBuildDirectory):
@@ -235,8 +238,8 @@ class BuildContext(_ContextWithBuildDirectory):
         else:
             self.inplace = False
 
-    def store(self):
-        CmdContext.store(self)
+    def shutdown(self):
+        CmdContext.shutdown(self)
         checksum = _read_argv_checksum("configure")
         _write_argv_checksum(checksum, "build")
 
@@ -284,8 +287,8 @@ class BuildYakuContext(BuildContext):
         super(BuildYakuContext, self).__init__(cmd_argv, options_context, pkg, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
 
-    def store(self):
-        super(BuildYakuContext, self).store()
+    def shutdown(self):
+        super(BuildYakuContext, self).shutdown()
         self.yaku_build_ctx.store()
 
     def build_extensions_factory(self, *a, **kw):

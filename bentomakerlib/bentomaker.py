@@ -352,7 +352,7 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
 
         cmd.shutdown(ctx)
     finally:
-        ctx.store()
+        ctx.shutdown()
 
 def noexc_main(argv=None):
     def _print_debug():

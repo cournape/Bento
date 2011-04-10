@@ -48,7 +48,7 @@ class TestBuildCommand(unittest.TestCase):
 
         conf, configure = prepare_configure(top_node, bento_info, ConfigureYakuContext, cmd_argv)
         configure.run(conf)
-        conf.store()
+        conf.shutdown()
 
         bld, build = prepare_build(top_node, conf.pkg)
         build.run(bld)

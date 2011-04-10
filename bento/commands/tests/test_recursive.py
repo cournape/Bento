@@ -72,7 +72,7 @@ Library:
 
         conf, configure = prepare_configure(top_node, bento_info, ConfigureYakuContext)
         configure.run(conf)
-        conf.store()
+        conf.shutdown()
 
         build = BuildCommand()
         opts = OptionsContext.from_command(build)

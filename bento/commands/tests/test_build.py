@@ -200,7 +200,7 @@ class TestBuildCommand(unittest.TestCase):
         create_fake_package_from_bento_info(top_node, BENTO_INFO)
         conf, configure = prepare_configure(top_node, BENTO_INFO, ConfigureYakuContext)
         configure.run(conf)
-        conf.store()
+        conf.shutdown()
 
         build = BuildCommand()
         opts = OptionsContext.from_command(build)
