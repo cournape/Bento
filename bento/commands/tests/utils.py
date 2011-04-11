@@ -57,6 +57,8 @@ def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext, 
     junk_node = top_node.make_node(BUILD_DIR)
     junk_node.mkdir()
 
+    top_node.make_node("bento.info").safe_write(bento_info)
+
     package = PackageDescription.from_string(bento_info)
     package_options = PackageOptions.from_string(bento_info)
 

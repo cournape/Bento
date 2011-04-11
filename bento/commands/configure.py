@@ -34,9 +34,8 @@ from bento.commands.errors \
 import yaku.context
 
 class _ConfigureState(object):
-    def __init__(self, filename, pkg, paths=None, flags=None,
-                 user_data=None):
-        self.filename = filename
+    def __init__(self, bento_script, pkg, paths=None, flags=None, user_data=None):
+        self.filename = bento_script.name
         self.pkg = pkg
 
         if flags is None:
@@ -54,20 +53,15 @@ class _ConfigureState(object):
         else:
             self.user_data = user_data
 
-    def dump(self, filename=CONFIGURED_STATE_DUMP):
+    def dump(self, node):
         # Write into tmp file and atomtically rename the file to avoid
         # corruption
-        f = open(filename + ".tmp", 'wb')
-        try:
-            s = dumps(self)
-            f.write(s)
-        finally:
-            f.close()
-        rename(filename + ".tmp", filename)
+        node.parent.mkdir()
+        node.write(dumps(self))
 
     @classmethod
-    def from_dump(cls, filename=CONFIGURED_STATE_DUMP):
-        f = open(filename, 'rb')
+    def from_dump(cls, node):
+        f = open(node.abspath(), 'rb')
         try:
             s = f.read()
             return loads(s)
@@ -165,6 +159,11 @@ Usage: bentomaker configure [OPTIONS]"""
         self.flags = package_options.flag_options.keys()
 
     def run(self, ctx):
+        top_node = ctx.top_node
+        bento_script = top_node.find_node(BENTO_SCRIPT)
+        if bento_script is None:
+            raise IOError("%s not found ?" % BENTO_SCRIPT)
+
         self._setup_flags_and_scheme(ctx.package_options)
         args = ctx.get_command_arguments()
         o, a = ctx.options_context.parser.parse_args(args)
@@ -179,8 +178,10 @@ Usage: bentomaker configure [OPTIONS]"""
         flag_vals = _get_flag_values(self.flags, o)
 
         ctx.setup()
-        s = _ConfigureState(BENTO_SCRIPT, ctx.pkg, self.scheme, flag_vals, {})
-        s.dump()
+        s = _ConfigureState(bento_script, ctx.pkg, self.scheme, flag_vals, {})
+
+        dump_node = top_node.bldnode.make_node(CONFIGURED_STATE_DUMP)
+        s.dump(dump_node)
 
 def _compute_scheme(package_options):
     """Compute path and flags-related options as defined in the script file(s)

@@ -116,11 +116,12 @@ class CmdContext(object):
 
     def _get_configured_state(self):
         if self._configured_state is None:
-            if not os.path.exists(CONFIGURED_STATE_DUMP):
+            dump_node = self.top_node.bldnode.find_node(CONFIGURED_STATE_DUMP)
+            if dump_node is None:
                 raise UsageException(
                        "You need to run %s configure before building" % SCRIPT_NAME)
-
-            self._configured_state = _ConfigureState.from_dump(CONFIGURED_STATE_DUMP)
+            else:
+                self._configured_state = _ConfigureState.from_dump(dump_node)
         return self._configured_state
 
     def get_package(self):

@@ -27,9 +27,16 @@ _PICKLED_PARSETAB = os.path.join(DATA_DIR, "parsetab")
 _OPTIMIZE_LEX = 0
 _DEBUG_YACC = 0
 
+_BUILD_DIR = "build"
 # Use subdist bento to avoid clashing with distutils ATM
-BUILD_DIR = "build/bento"
-CONFIGURED_STATE_DUMP = os.path.join(BUILD_DIR, ".config.bin")
+_SUB_BUILD_DIR = "bento"
+BUILD_DIR = os.path.join(_BUILD_DIR, _SUB_BUILD_DIR)
+
+# FIXME: we are progressively converting everything to node, meaning paths here
+# will be relatively to the build directory. Path defined from BUILD_DIR are
+# the ones which use API not node-compliant yet, the ones defined from
+# _SUB_BUILD_DIR already are
+CONFIGURED_STATE_DUMP = os.path.join(_SUB_BUILD_DIR, ".config.bin")
 PKG_CACHE = os.path.join(BUILD_DIR, ".pkg.cache")
 DB_FILE = os.path.join(BUILD_DIR, "cache.db")
 CHECKSUM_DB_FILE = os.path.join(BUILD_DIR, "checksums.db")
