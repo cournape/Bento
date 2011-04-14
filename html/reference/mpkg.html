@@ -1,0 +1,134 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Pkg format &mdash; Bento v0.0.5-gita6b250de00 documentation</title>
+    <link rel="stylesheet" href="../static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.5-gita6b250de00',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <link rel="top" title="Bento v0.0.5-gita6b250de00 documentation" href="../index.html" />
+ 
+<style type="text/css">
+  table.right { float: right; margin-left: 20px; }
+  table.right td { border: 1px solid #ccc; }
+</style>
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Bento home</a>&nbsp;|&nbsp;</li>
+        <li><a href="../contents.html">Documentation</a>
+          &raquo;</li>
+ 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/reference/mpkg.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <p>This is a few notes from reverse-engineering the pkg and mpkg format from Apple.</p>
+<div class="section" id="pkg-format">
+<h1>Pkg format<a class="headerlink" href="#pkg-format" title="Permalink to this headline">¶</a></h1>
+<p>This is a directory. For a simple set of files, this looks as follows:</p>
+<div class="highlight-python"><pre>Contents/
+    Archive.bom
+    Archive.pax.gz
+    Info.plist
+    PkgInfo
+    Resources/
+        en.lproj/
+            Description.plist
+        package_version</pre>
+</div>
+<p>Description of those files:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Archive.bom: bill-of-materials, made through the binary mkbom:</p>
+<div class="highlight-python"><pre>mkbom source_directory Archive.bom</pre>
+</div>
+</li>
+<li><p class="first">Archive.pax.gz: pax archive of the files, made with pax + cpio:</p>
+<div class="highlight-python"><pre>pax  -w -f dest -x cpio -z .</pre>
+</div>
+</li>
+<li><p class="first">Info.plist: XML file, supported through plistlib (part of python stdlib since ?)</p>
+</li>
+<li><p class="first">PkgInfo: text file with fixed content:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pmkrpkg1</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Bento home</a>&nbsp;|&nbsp;</li>
+        <li><a href="../contents.html">Documentation</a>
+          &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2011, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

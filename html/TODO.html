@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>TODO &mdash; Bento v0.0.5-gitd9c8ad8449 documentation</title>
+    <title>TODO &mdash; Bento v0.0.5-gita6b250de00 documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.5-gitd9c8ad8449',
+        VERSION:     '0.0.5-gita6b250de00',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.5-gitd9c8ad8449 documentation" href="index.html" />
+    <link rel="top" title="Bento v0.0.5-gita6b250de00 documentation" href="index.html" />
     <link rel="prev" title="FAQ" href="faq.html" />
  
 <style type="text/css">
@@ -54,6 +54,7 @@
   <ul>
 <li><a class="reference internal" href="#">TODO</a><ul>
 <li><a class="reference internal" href="#milestone">Milestone</a><ul>
+<li><a class="reference internal" href="#release-0-0-6">Release 0.0.6</a></li>
 <li><a class="reference internal" href="#release-0-0-5">Release 0.0.5</a></li>
 <li><a class="reference internal" href="#post-0-0-5">Post 0.0.5</a></li>
 </ul>
@@ -109,7 +110,6 @@ alternative to distutils.</p>
 <li>add proper egg support</li>
 <li>namespace packages: how to deal with them (file description and runtime
 support) ?</li>
-<li>add mpkg support</li>
 <li>port stdeb to bento</li>
 <li>specify hook mechanism</li>
 <li>test command support</li>
@@ -129,6 +129,46 @@ package), except multiple-version installs.</li>
 </dl>
 <div class="section" id="milestone">
 <h2>Milestone<a class="headerlink" href="#milestone" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="release-0-0-6">
+<h3>Release 0.0.6<a class="headerlink" href="#release-0-0-6" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul>
+<li><p class="first">Fix package + parser cache mess</p>
+</li>
+<li><p class="first">Acceptance tests ?</p>
+</li>
+<li><dl class="first docutils">
+<dt>Rethink API for installing</dt>
+<dd><ul class="first last simple">
+<li>Register new categories ?</li>
+<li>How to make sure everything is handled correctly by specialized
+installers/packagers ? (e.g. declaring new category in bscript, which
+should automatically be handled by msi/mpkg/etc... without the
+bscript writer to be even aware of it)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Rethink API for contexts:</dt>
+<dd><ul class="first last simple">
+<li>Do command context really need command instance ?</li>
+<li>Do we really need a singleton for command registry ?</li>
+<li>Build contexts: extension-specific builder registration ?</li>
+<li>Add recurse hook for contexts (called before going into each subento)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Polish mpkg support</p>
+</li>
+<li><p class="first">Polish numpy + scipy waf+bento build</p>
+</li>
+<li><p class="first">Ideally, have a look at a few more packages</p>
+</li>
+</ul>
+</div></blockquote>
+</div>
 <div class="section" id="release-0-0-5">
 <h3>Release 0.0.5<a class="headerlink" href="#release-0-0-5" title="Permalink to this headline">¶</a></h3>
 <p>0.0.5 goals:</p>

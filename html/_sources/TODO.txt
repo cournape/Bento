@@ -11,7 +11,6 @@ TODO:
     - add proper egg support
     - namespace packages: how to deal with them (file description and runtime
       support) ?
-    - add mpkg support
     - port stdeb to bento
     - specify hook mechanism
     - test command support
@@ -26,6 +25,26 @@ Not well thought out yet:
 
 Milestone
 =========
+
+Release 0.0.6
+-------------
+
+    - Fix package + parser cache mess
+    - Acceptance tests ?
+    - Rethink API for installing
+        - Register new categories ?
+        - How to make sure everything is handled correctly by specialized
+          installers/packagers ? (e.g. declaring new category in bscript, which
+          should automatically be handled by msi/mpkg/etc... without the
+          bscript writer to be even aware of it)
+    - Rethink API for contexts:
+        - Do command context really need command instance ?
+        - Do we really need a singleton for command registry ?
+        - Build contexts: extension-specific builder registration ?
+        - Add recurse hook for contexts (called before going into each subento)
+    - Polish mpkg support
+    - Polish numpy + scipy waf+bento build
+    - Ideally, have a look at a few more packages
 
 Release 0.0.5
 -------------

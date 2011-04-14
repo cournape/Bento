@@ -1,3 +1,16 @@
+Version 0.0.6
+=============
+
+Released on .
+Main features:
+
+    - Preliminary support for .mpkg (Mac OS X native packaging)
+
+Internals
+---------
+
+    - Significantly better code coverage of bento.commands
+
 Version 0.0.5
 =============
 
