@@ -123,27 +123,18 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         return PackageDescription.from_string(BENTO_INFO_WITH_EXT)
 
 class TestBuildDistutils(_TestBuildSimpleExtension):
+    def setUp(self):
+        from bento.commands.build_distutils import DistutilsBuilder
+        _TestBuildSimpleExtension.setUp(self)
+        self._distutils_builder = DistutilsBuilder()
+
     def test_simple_extension(self):
         pkg = self._test_simple_extension()
-        foo = bento.commands.build_distutils.build_extensions(pkg, use_numpy_distutils=False)
-        isection = foo["foo"]
-        self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
-    @skipif(lambda : not has_numpy())
-    def test_simple_extension_with_numpy(self):
-        pkg = self._test_simple_extension()
-        foo = bento.commands.build_distutils.build_extensions(pkg, use_numpy_distutils=True)
-        isection = foo["foo"]
-        self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
+        for extension in pkg.extensions.values():
+            isection = self._distutils_builder.build_extension(extension)
+            self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
-    def test_no_extension(self):
-        fid = open(os.path.join(self.d, "bento.info"), "w")
-        try:
-            fid.write("Name: foo")
-        finally:
-            fid.close()
-        pkg = PackageDescription.from_file("bento.info")
-        foo = bento.commands.build_distutils.build_extensions(pkg)
 
 class TestBuildYaku(_TestBuildSimpleExtension):
     def setUp(self):

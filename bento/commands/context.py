@@ -1,5 +1,7 @@
 import os
 import sys
+import copy
+import collections
 import cPickle
 
 try:
@@ -272,6 +274,7 @@ class BuildContext(_ContextWithBuildDirectory):
 
 class DistutilsBuildContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
+        from bento.commands.build_distutils import DistutilsBuilder
         super(DistutilsBuildContext, self).__init__(cmd_argv, options_context, pkg, top_node)
 
         o, a = options_context.parser.parse_args(cmd_argv)
@@ -286,26 +289,32 @@ class DistutilsBuildContext(BuildContext):
         self.verbose = verbose
         self.jobs = jobs
 
-    def build_extensions_factory(self, *a, **kw):
-        from bento.commands.build_distutils \
-            import \
-                build_extensions
-        return lambda pkg: build_extensions(pkg, use_numpy_distutils=False)
+        self._distutils_builder = DistutilsBuilder(verbosity=self.verbose)
 
-    def build_compiled_libraries_factory(self, *a, **kw):
-        from bento.commands.build_distutils \
-            import \
-                build_compiled_libraries
-        return build_compiled_libraries
+        self._extensions = copy.deepcopy(self.pkg.extensions)
+        self._compiled_libraries = copy.deepcopy(self.pkg.compiled_libraries)
+
+        def build_extension(extension):
+            return self._distutils_builder.build_extension(extension)
+
+        def build_compiled_library(library):
+            return self._distutils_builder.build_compiled_library(library)
+
+        self._extension_callbacks = collections.defaultdict(lambda : build_extension)
+        self._compiled_library_callbacks = collections.defaultdict(lambda : build_compiled_library)
 
     def post_compile(self, section_writer):
         sections = section_writer.sections
+        sections["extensions"] = {}
+        sections["compiled_libraries"] = {}
 
-        builder = self.build_extensions_factory(self.inplace, self.verbose, self.jobs)
-        sections["extensions"] = builder(self.pkg)
+        for name, extension in self._extensions.iteritems():
+            builder = self._extension_callbacks[name]
+            sections["extensions"][name] = builder(extension)
 
-        builder = self.build_compiled_libraries_factory(self.inplace, self.verbose, self.jobs)
-        sections["compiled_libraries"] = builder(self.pkg)
+        for name, compiled_library in self._compiled_libraries.iteritems():
+            builder = self._compiled_library_callbacks[name]
+            sections["compiled_libraries"][name] = builder(compiled_library)
 
 class BuildYakuContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
