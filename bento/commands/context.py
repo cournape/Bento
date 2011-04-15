@@ -249,7 +249,7 @@ class BuildContext(_ContextWithBuildDirectory):
         return ".".join(parent + [extension_name])
 
     def post_compile(self, section_writer):
-        pass
+        raise NotImplementedError()
 
     # XXX: none of those register_* really belong here
     def register_builder(self, extension_name, builder):
@@ -271,6 +271,21 @@ class BuildContext(_ContextWithBuildDirectory):
         self._clibrary_envs[full_name] = env
 
 class DistutilsBuildContext(BuildContext):
+    def __init__(self, cmd_argv, options_context, pkg, top_node):
+        super(DistutilsBuildContext, self).__init__(cmd_argv, options_context, pkg, top_node)
+
+        o, a = options_context.parser.parse_args(cmd_argv)
+        if o.jobs:
+            jobs = int(o.jobs)
+        else:
+            jobs = 1
+        if o.verbose:
+            verbose = int(o.verbose)
+        else:
+            verbose = 0
+        self.verbose = verbose
+        self.jobs = jobs
+
     def build_extensions_factory(self, *a, **kw):
         from bento.commands.build_distutils \
             import \
@@ -283,14 +298,44 @@ class DistutilsBuildContext(BuildContext):
                 build_compiled_libraries
         return build_compiled_libraries
 
+    def post_compile(self, section_writer):
+        sections = section_writer.sections
+
+        builder = self.build_extensions_factory(self.inplace, self.verbose, self.jobs)
+        sections["extensions"] = builder(self.pkg)
+
+        builder = self.build_compiled_libraries_factory(self.inplace, self.verbose, self.jobs)
+        sections["compiled_libraries"] = builder(self.pkg)
+
 class BuildYakuContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
         super(BuildYakuContext, self).__init__(cmd_argv, options_context, pkg, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
 
+        o, a = options_context.parser.parse_args(cmd_argv)
+        if o.jobs:
+            jobs = int(o.jobs)
+        else:
+            jobs = 1
+        if o.verbose:
+            verbose = int(o.verbose)
+        else:
+            verbose = 0
+        self.verbose = verbose
+        self.jobs = jobs
+
     def shutdown(self):
         super(BuildYakuContext, self).shutdown()
         self.yaku_build_ctx.store()
+
+    def post_compile(self, section_writer):
+        sections = section_writer.sections
+
+        builder = self.build_extensions_factory(self.inplace, self.verbose, self.jobs)
+        sections["extensions"] = builder(self.pkg)
+
+        builder = self.build_compiled_libraries_factory(self.inplace, self.verbose, self.jobs)
+        sections["compiled_libraries"] = builder(self.pkg)
 
     def build_extensions_factory(self, *a, **kw):
         from bento.commands.build_yaku \

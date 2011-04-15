@@ -76,14 +76,6 @@ Usage:   bentomaker build [OPTIONS]."""
         else:
             jobs = None
 
-        build_extensions = ctx.build_extensions_factory(inplace, verbose, jobs)
-        build_compiled_libraries = ctx.build_compiled_libraries_factory(inplace, verbose, jobs)
-
-        self.section_writer.sections_callbacks["compiled_libraries"] = \
-                build_compiled_libraries
-        self.section_writer.sections_callbacks["extensions"] = \
-                build_extensions
-
         def build_packages(pkg):
             return _build_python_files(pkg, ctx.top_node)
         self.section_writer.sections_callbacks["pythonfiles"] = \
@@ -117,9 +109,9 @@ class SectionWriter(object):
         callbacks = [
             ("pythonfiles", None),
             ("bentofiles", None),
+            #("compiled_libraries", None),
+            #("extensions", None),
             ("datafiles", build_data_files),
-            ("compiled_libraries", build_distutils.build_compiled_libraries),
-            ("extensions", build_distutils.build_extensions),
             ("executables", build_executables)]
         self.sections_callbacks = OrderedDict(callbacks)
         self.sections = {}
