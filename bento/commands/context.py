@@ -247,30 +247,22 @@ class BuildContext(_ContextWithBuildDirectory):
         _write_argv_checksum(checksum, "build")
 
     def _compute_extension_name(self, extension_name):
-        parent = self.local_node.path_from(self.top_node).split(os.path.sep)
-        return ".".join(parent + [extension_name])
+        if self.local_node is None:
+            raise ValueError("Forgot to call pre_recurse ?")
+        if self.local_node != self.top_node:
+            parent = self.local_node.path_from(self.top_node).split(os.path.sep)
+            return ".".join(parent + [extension_name])
+        else:
+            return extension_name
 
     def post_compile(self, section_writer):
         raise NotImplementedError()
 
-    # XXX: none of those register_* really belong here
     def register_builder(self, extension_name, builder):
-        full_name = self._compute_extension_name(extension_name)
-        self._extensions_callback[full_name] = builder
+        raise NotImplementedError()
 
     def register_clib_builder(self, clib_name, builder):
-        relpos = self.local_node.path_from(self.top_node)
-        full_name = os.path.join(relpos, clib_name)
-        self._clibraries_callback[full_name] = builder
-
-    def register_environment(self, extension_name, env):
-        full_name = self._compute_extension_name(extension_name)
-        self._extension_envs[full_name] = env
-
-    def register_clib_environment(self, clib_name, env):
-        relpos = self.local_node.path_from(self.top_node)
-        full_name = os.path.join(relpos, clib_name)
-        self._clibrary_envs[full_name] = env
+        raise NotImplementedError()
 
 class DistutilsBuildContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
@@ -315,6 +307,15 @@ class DistutilsBuildContext(BuildContext):
         for name, compiled_library in self._compiled_libraries.iteritems():
             builder = self._compiled_library_callbacks[name]
             sections["compiled_libraries"][name] = builder(compiled_library)
+
+    def register_builder(self, extension_name, builder):
+        full_name = self._compute_extension_name(extension_name)
+        self._extension_callbacks[full_name] = builder
+
+    def register_compiled_library_builder(self, clib_name, builder):
+        relpos = self.local_node.path_from(self.top_node)
+        full_name = os.path.join(relpos, clib_name)
+        self._compiled_library_callbacks[full_name] = builder
 
 class BuildYakuContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):

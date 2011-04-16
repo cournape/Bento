@@ -1,5 +1,8 @@
 Name: hello
 Version: 1.0
+
+HookFile: bscript
+
 Library:
     Packages:
         hello

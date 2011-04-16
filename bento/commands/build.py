@@ -88,19 +88,6 @@ Usage:   bentomaker build [OPTIONS]."""
         self.section_writer.update_sections(ctx.pkg)
         ctx.post_compile(self.section_writer)
 
-    def register_builder(self, extension_name, builder):
-        """Register a builder to override the default builder for a
-        given extension."""
-        if extension_name in self._extension_callback:
-            # Should most likely be a warning
-            raise ValueError("Overriding callback: %s" % \
-                             extension_name)
-        if not extension_name in self.pkg.extensions:
-            raise ValueError(
-                    "Register callback for unknown extension: %s" % \
-                    extension_name)
-        self._extension_callback[extension_name] = builder
-
     def shutdown(self, ctx):
         self.section_writer.store(IPKG_PATH, ctx.pkg)
 

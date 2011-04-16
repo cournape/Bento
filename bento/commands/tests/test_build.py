@@ -17,13 +17,16 @@ from bento.core \
         PackageDescription
 from bento.commands.context \
     import \
-        BuildContext, BuildYakuContext, ConfigureYakuContext
+        BuildContext, BuildYakuContext, ConfigureYakuContext, DistutilsBuildContext, DistutilsConfigureContext
 from bento.commands.options \
     import \
         OptionsContext, Option
 from bento.commands.build \
     import \
         BuildCommand
+from bento.installed_package_description \
+    import \
+        InstalledSection
 
 import bento.commands.build_distutils
 import bento.commands.build_yaku
@@ -34,7 +37,8 @@ from yaku.context \
 
 from bento.commands.tests.utils \
     import \
-        prepare_configure, create_fake_package, create_fake_package_from_bento_info
+        prepare_configure, create_fake_package, create_fake_package_from_bento_infos, \
+        prepare_build, create_fake_package_from_bento_info
 
 BENTO_INFO_WITH_EXT = """\
 Name: foo
@@ -91,13 +95,6 @@ def skipif(condition, msg=None):
         return nose.tools.make_decorator(f)(g)
     return skip_decorator
 
-def has_numpy():
-    try:
-        import numpy
-        return True
-    except ImportError:
-        return False
-
 class _TestBuildSimpleExtension(unittest.TestCase):
     def setUp(self):
         self.save = None
@@ -105,6 +102,7 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
         self.save = os.getcwd()
         self.d = tempfile.mkdtemp()
+
         os.chdir(self.d)
 
     def tearDown(self):
@@ -135,6 +133,40 @@ class TestBuildDistutils(_TestBuildSimpleExtension):
             isection = self._distutils_builder.build_extension(extension)
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
+    def test_extension_registration(self):
+        self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
+        top_node = self.root.srcnode
+
+        bento_info = """\
+Name: foo
+
+Library:
+    Extension: _foo
+        Sources: src/foo.c
+    Extension: _bar
+        Sources: src/bar.c
+"""
+
+        create_fake_package_from_bento_infos(top_node, {"bento.info": bento_info})
+
+        conf, configure = prepare_configure(top_node, bento_info, DistutilsConfigureContext)
+        configure.run(conf)
+        conf.shutdown()
+
+        bld, build = prepare_build(top_node, conf.pkg, context_klass=DistutilsBuildContext)
+        bld.pre_recurse(top_node)
+        try:
+            def dummy(extension):
+                return InstalledSection("extensions", extension.name, "", "", [])
+            bld.register_builder("_bar", dummy)
+        finally:
+            bld.post_recurse()
+        build.run(bld)
+        build.shutdown(bld)
+
+        sections = build.section_writer.sections["extensions"]
+        self.failUnless(len(sections) == 2)
+        self.failUnless(len(sections["_bar"].files) == 0)
 
 class TestBuildYaku(_TestBuildSimpleExtension):
     def setUp(self):
