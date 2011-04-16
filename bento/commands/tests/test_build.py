@@ -56,30 +56,6 @@ Library:
     Modules: fubar
 """
 
-FOO_C = r"""\
-#include <Python.h>
-#include <stdio.h>
-
-static PyObject*
-hello(PyObject *self, PyObject *args)
-{
-    printf("Hello from C\n");
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-static PyMethodDef HelloMethods[] = {
-    {"hello",  hello, METH_VARARGS, "Print a hello world."},
-    {NULL, NULL, 0, NULL}        /* Sentinel */
-};
-
-PyMODINIT_FUNC
-init_bar(void)
-{
-    (void) Py_InitModule("_bar", HelloMethods);
-}
-"""
-
 def skipif(condition, msg=None):
     def skip_decorator(f):
         if callable(condition):
@@ -105,20 +81,35 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
         os.chdir(self.d)
 
+        self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
+
+        self._configure_context = None
+        self._build_context = None
+
     def tearDown(self):
         if self.save:
             os.chdir(self.save)
         if self.d:
             shutil.rmtree(self.d)
 
-    def _test_simple_extension(self):
-        for f, content in [("bento.info", BENTO_INFO_WITH_EXT), ("foo.c", FOO_C)]:
-            fid = open(os.path.join(self.d, f), "w")
-            try:
-                fid.write(content)
-            finally:
-                fid.close()
-        return PackageDescription.from_string(BENTO_INFO_WITH_EXT)
+    def test_simple_extension(self):
+        top_node = self.root.srcnode
+
+        create_fake_package_from_bento_infos(top_node, {"bento.info": BENTO_INFO_WITH_EXT})
+
+        conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, self._configure_context)
+        configure.run(conf)
+        conf.shutdown()
+        pkg = conf.pkg
+
+        bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
+        build.run(bld)
+        build.shutdown(bld)
+
+        sections = build.section_writer.sections["extensions"]
+        for extension in pkg.extensions.values():
+            isection = sections[extension.name]
+            self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
 class TestBuildDistutils(_TestBuildSimpleExtension):
     def setUp(self):
@@ -126,15 +117,10 @@ class TestBuildDistutils(_TestBuildSimpleExtension):
         _TestBuildSimpleExtension.setUp(self)
         self._distutils_builder = DistutilsBuilder()
 
-    def test_simple_extension(self):
-        pkg = self._test_simple_extension()
-
-        for extension in pkg.extensions.values():
-            isection = self._distutils_builder.build_extension(extension)
-            self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
+        self._configure_context = DistutilsConfigureContext
+        self._build_context = DistutilsBuildContext
 
     def test_extension_registration(self):
-        self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
         top_node = self.root.srcnode
 
         bento_info = """\
@@ -178,9 +164,8 @@ class TestBuildYaku(_TestBuildSimpleExtension):
 
         self.yaku_build = get_bld()
 
-    def _build_extensions(self, pkg):
-        return bento.commands.build_yaku.build_extensions(pkg.extensions,
-            self.yaku_build, {}, {})
+        self._configure_context = ConfigureYakuContext
+        self._build_context = BuildYakuContext
 
     def tearDown(self):
         try:
@@ -188,12 +173,9 @@ class TestBuildYaku(_TestBuildSimpleExtension):
         finally:
             super(TestBuildYaku, self).tearDown()
 
-    def test_simple_extension(self):
-        pkg = self._test_simple_extension()
-
-        foo = self._build_extensions(pkg)
-        isection = foo["foo"]
-        self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
+    def _build_extensions(self, pkg):
+        return bento.commands.build_yaku.build_extensions(pkg.extensions,
+            self.yaku_build, {}, {})
 
     def test_no_extension(self):
         fid = open(os.path.join(self.d, "bento.info"), "w")
