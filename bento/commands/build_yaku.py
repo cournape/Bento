@@ -53,23 +53,14 @@ def build_extension(bld, extension, verbose, env=None):
               (extension.name, str(e))
         raise CommandExecutionFailure(msg)
 
-def build_compiled_library(bld, clib, verbose, callbacks, env=None):
+def build_compiled_library(bld, clib, verbose, env=None):
     builder = bld.builders["ctasks"]
     try:
         if verbose:
             builder.env["VERBOSE"] = True
         for p in clib.include_dirs:
             builder.env["CPPPATH"].insert(0, p)
-        if clib.name in callbacks:
-            tasks = callbacks[clib.name](bld, clib, verbose)
-            if tasks is None:
-                raise ValueError(
-                    "Registered callback for %s did not return " \
-                    "a list of tasks!" % clib.name)
-        else:
-            tasks = builder.static_library(clib.name, clib.sources,
-                                           env)
-        return tasks
+        return builder.static_library(clib.name, clib.sources, env)
     except RuntimeError, e:
         msg = "Building library %s failed: %s" % (clib.name, str(e))
         raise CommandExecutionFailure(msg)

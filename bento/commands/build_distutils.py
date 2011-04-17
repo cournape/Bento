@@ -1,4 +1,5 @@
 import os
+import errno
 
 from bento.installed_package_description \
     import \

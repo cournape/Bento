@@ -48,6 +48,14 @@ Library:
         Sources: foo.c
 """
 
+BENTO_INFO_WITH_CLIB = """\
+Name: foo
+
+Library:
+    CompiledLibrary: foo
+        Sources: foo.c
+"""
+
 BENTO_INFO = """\
 Name: foo
 
@@ -158,6 +166,26 @@ Library:
         sections = build.section_writer.sections["extensions"]
         self.failUnless(len(sections) == 2)
         self.failUnless(len(sections["_bar"].files) == 0)
+
+    def test_simple_library(self):
+        top_node = self.root.srcnode
+
+        create_fake_package_from_bento_infos(top_node, {"bento.info": BENTO_INFO_WITH_CLIB})
+
+        conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_CLIB, self._configure_context)
+        configure.run(conf)
+        conf.shutdown()
+        pkg = conf.pkg
+
+        bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
+        build.run(bld)
+        build.shutdown(bld)
+
+        sections = build.section_writer.sections["compiled_libraries"]
+        for library in pkg.compiled_libraries.values():
+            isection = sections[library.name]
+            print isection.files
+            self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
 class TestBuildDistutils(_TestBuildSimpleExtension):
     def setUp(self):

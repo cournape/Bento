@@ -357,11 +357,7 @@ class BuildYakuContext(BuildContext):
             sections["extensions"][name] = build_isection(bld, name, outputs)
         for name, compiled_library in self._compiled_libraries.iteritems():
             builder = self._compiled_library_callbacks[name]
-            tasks = builder(compiled_library)
-            if len(tasks) > 1:
-                outputs = tasks[0].gen.outputs
-            else:
-                outputs = []
+            outputs = builder(compiled_library)
             sections["compiled_libraries"][name] = build_isection(bld, name, outputs)
 
         task_manager = yaku.task_manager.TaskManager(bld.tasks)
