@@ -83,14 +83,30 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
         self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
 
+        # Those should be set by subclasses
         self._configure_context = None
         self._build_context = None
+        self._dummy_builder = None
 
     def tearDown(self):
         if self.save:
             os.chdir(self.save)
         if self.d:
             shutil.rmtree(self.d)
+
+    def test_no_extension(self):
+        top_node = self.root.srcnode
+
+        create_fake_package_from_bento_infos(top_node, {"bento.info": BENTO_INFO})
+
+        conf, configure = prepare_configure(top_node, BENTO_INFO, self._configure_context)
+        configure.run(conf)
+        conf.shutdown()
+        pkg = conf.pkg
+
+        bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
+        build.run(bld)
+        build.shutdown(bld)
 
     def test_simple_extension(self):
         top_node = self.root.srcnode
@@ -111,15 +127,6 @@ class _TestBuildSimpleExtension(unittest.TestCase):
             isection = sections[extension.name]
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
-class TestBuildDistutils(_TestBuildSimpleExtension):
-    def setUp(self):
-        from bento.commands.build_distutils import DistutilsBuilder
-        _TestBuildSimpleExtension.setUp(self)
-        self._distutils_builder = DistutilsBuilder()
-
-        self._configure_context = DistutilsConfigureContext
-        self._build_context = DistutilsBuildContext
-
     def test_extension_registration(self):
         top_node = self.root.srcnode
 
@@ -135,16 +142,14 @@ Library:
 
         create_fake_package_from_bento_infos(top_node, {"bento.info": bento_info})
 
-        conf, configure = prepare_configure(top_node, bento_info, DistutilsConfigureContext)
+        conf, configure = prepare_configure(top_node, bento_info, self._configure_context)
         configure.run(conf)
         conf.shutdown()
 
-        bld, build = prepare_build(top_node, conf.pkg, context_klass=DistutilsBuildContext)
+        bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
         bld.pre_recurse(top_node)
         try:
-            def dummy(extension):
-                return InstalledSection("extensions", extension.name, "", "", [])
-            bld.register_builder("_bar", dummy)
+            bld.register_builder("_bar", self._dummy)
         finally:
             bld.post_recurse()
         build.run(bld)
@@ -153,6 +158,16 @@ Library:
         sections = build.section_writer.sections["extensions"]
         self.failUnless(len(sections) == 2)
         self.failUnless(len(sections["_bar"].files) == 0)
+
+class TestBuildDistutils(_TestBuildSimpleExtension):
+    def setUp(self):
+        from bento.commands.build_distutils import DistutilsBuilder
+        _TestBuildSimpleExtension.setUp(self)
+        self._distutils_builder = DistutilsBuilder()
+
+        self._configure_context = DistutilsConfigureContext
+        self._build_context = DistutilsBuildContext
+        self._dummy = lambda extension: InstalledSection("extensions", extension.name, "", "", [])
 
 class TestBuildYaku(_TestBuildSimpleExtension):
     def setUp(self):
@@ -166,25 +181,13 @@ class TestBuildYaku(_TestBuildSimpleExtension):
 
         self._configure_context = ConfigureYakuContext
         self._build_context = BuildYakuContext
+        self._dummy = lambda extension: []
 
     def tearDown(self):
         try:
             self.yaku_build.store()
         finally:
             super(TestBuildYaku, self).tearDown()
-
-    def _build_extensions(self, pkg):
-        return bento.commands.build_yaku.build_extensions(pkg.extensions,
-            self.yaku_build, {}, {})
-
-    def test_no_extension(self):
-        fid = open(os.path.join(self.d, "bento.info"), "w")
-        try:
-            fid.write("Name: foo")
-        finally:
-            fid.close()
-        pkg = PackageDescription.from_file("bento.info")
-        self._build_extensions(pkg)
 
 class TestBuildCommand(unittest.TestCase):
     def setUp(self):
