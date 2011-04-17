@@ -49,6 +49,13 @@ init%(name)s(void)
 }
 """
 
+DUMMY_CLIB = r"""\
+int hello(void)
+{
+    return 0;
+}
+"""
+
 def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext, cmd_argv=None):
     if cmd_argv is None:
         cmd_argv = []
@@ -91,6 +98,8 @@ def create_fake_package_from_bento_info(top_node, bento_info):
         kw["modules"] = _kw["py_modules"]
     if "packages" in _kw:
         kw["packages"] = _kw["packages"]
+    if "compiled_libraries" in _kw:
+        kw["compiled_libraries"] = _kw["compiled_libraries"]
     return create_fake_package(top_node, **kw)
 
 def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
@@ -114,6 +123,10 @@ def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
         extensions = _kw["extensions"].values()
     else:
         extensions = []
+    if "compiled_libraries" in _kw:
+        compiled_libraries = _kw["compiled_libraries"].values()
+    else:
+        compiled_libraries = []
     packages = _kw.get("packages", [])
     for name, spkg in subpackages.iteritems():
         n = top_node.search(name)
@@ -124,17 +137,20 @@ def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
             py_modules.append(m.path_from(top_node))
 
         extensions.extend(flatten_extensions(top_node, spkg))
+        compiled_libraries.extend(flatten_compiled_libraries(top_node, spkg))
         packages.extend(flatten_packages(top_node, spkg))
 
-    return create_fake_package(top_node, packages, py_modules, extensions)
+    return create_fake_package(top_node, packages, py_modules, extensions, compiled_libraries)
 
-def create_fake_package(top_node, packages=None, modules=None, extensions=[]):
+def create_fake_package(top_node, packages=None, modules=None, extensions=None, compiled_libraries=None):
     if packages is None:
         packages = []
     if modules is None:
         modules = []
     if extensions is None:
         extensions = []
+    if compiled_libraries is None:
+        compiled_libraries = []
 
     for p in packages:
         d = p.replace(".", os.sep)
@@ -155,6 +171,14 @@ def create_fake_package(top_node, packages=None, modules=None, extensions=[]):
         for s in extension.sources[1:]:
             n = top_node.make_node(s)
             n.write("")
+    for library in compiled_libraries:
+        main = library.sources[0]
+        n = top_node.make_node(main)
+        n.parent.mkdir()
+        n.write(DUMMY_CLIB % {"name": library.name.split(".")[-1]})
+        for s in library.sources[1:]:
+            n = top_node.make_node(s)
+            n.write("")
 
 # FIXME: Those flatten extensions are almost redundant with the ones in
 # bento.core.subpackages. Here, we do not ensure that the nodes actually exist
@@ -169,6 +193,17 @@ def flatten_extensions(top_node, subpackage):
         sources = [d.make_node(s).path_from(top_node) for s in extension.sources]
         full_name = root_name + ".%s" % extension.name
         ret.append(Extension(full_name, sources))
+    return ret
+
+def flatten_compiled_libraries(top_node, subpackage):
+    ret = []
+
+    d = top_node.find_dir(subpackage.rdir)
+    root_name = ".".join(subpackage.rdir.split("/"))
+    for library in subpackage.compiled_libraries.values():
+        sources = [d.make_node(s).path_from(top_node) for s in library.sources]
+        full_name = root_name + ".%s" % library.name
+        ret.append(CompiledLibrary(full_name, sources))
     return ret
 
 def flatten_packages(top_node, subpackage):
