@@ -20,6 +20,9 @@ from bento.core.subpackage \
 from bento.commands.configure \
     import \
         _ConfigureState
+from bento.commands.build \
+    import \
+        build_isection
 from bento.commands.errors \
     import \
         UsageException
@@ -236,6 +239,9 @@ class BuildContext(_ContextWithBuildDirectory):
 
         self._outputs = {}
 
+        self._extensions = copy.deepcopy(self.pkg.extensions)
+        self._compiled_libraries = copy.deepcopy(self.pkg.compiled_libraries)
+
     def shutdown(self):
         CmdContext.shutdown(self)
         checksum = _read_argv_checksum("configure")
@@ -250,12 +256,6 @@ class BuildContext(_ContextWithBuildDirectory):
         else:
             return extension_name
 
-    def compile(self):
-        raise NotImplementedError()
-
-    def post_compile(self, section_writer):
-        raise NotImplementedError()
-
     def register_builder(self, extension_name, builder):
         full_name = self._compute_extension_name(extension_name)
         self._extension_callbacks[full_name] = builder
@@ -264,6 +264,12 @@ class BuildContext(_ContextWithBuildDirectory):
         relpos = self.local_node.path_from(self.top_node)
         full_name = os.path.join(relpos, clib_name)
         self._compiled_library_callbacks[full_name] = builder
+
+    def compile(self):
+        raise NotImplementedError()
+
+    def post_compile(self, section_writer):
+        raise NotImplementedError()
 
 class DistutilsBuildContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
@@ -283,9 +289,6 @@ class DistutilsBuildContext(BuildContext):
         self.jobs = jobs
 
         self._distutils_builder = DistutilsBuilder(verbosity=self.verbose)
-
-        self._extensions = copy.deepcopy(self.pkg.extensions)
-        self._compiled_libraries = copy.deepcopy(self.pkg.compiled_libraries)
 
         def build_extension(extension):
             return self._distutils_builder.build_extension(extension)
@@ -310,8 +313,6 @@ class DistutilsBuildContext(BuildContext):
         self._outputs["compiled_libraries"] = outputs
 
     def post_compile(self, section_writer):
-        from bento.commands.build_distutils import build_isection
-
         sections = section_writer.sections
         sections["extensions"] = {}
         sections["compiled_libraries"] = {}
@@ -348,9 +349,6 @@ class BuildYakuContext(BuildContext):
         self._extension_callbacks = collections.defaultdict(lambda : _build_extension)
         self._compiled_library_callbacks = collections.defaultdict(lambda : _build_compiled_library)
 
-        self._extensions = copy.deepcopy(self.pkg.extensions)
-        self._compiled_libraries = copy.deepcopy(self.pkg.compiled_libraries)
-
     def shutdown(self):
         super(BuildYakuContext, self).shutdown()
         self.yaku_build_ctx.store()
@@ -362,11 +360,7 @@ class BuildYakuContext(BuildContext):
         outputs_e = {}
         for name, extension in self._extensions.iteritems():
             builder = self._extension_callbacks[name]
-            tasks = builder(extension)
-            if len(tasks) > 1:
-                outputs_e[name] = tasks[0].gen.outputs
-            else:
-                outputs_e[name] = []
+            outputs_e[name] = builder(extension)
 
         outputs_c = {}
         for name, compiled_library in self._compiled_libraries.iteritems():
@@ -387,7 +381,6 @@ class BuildYakuContext(BuildContext):
         # TODO: inplace support
 
     def post_compile(self, section_writer):
-        from bento.commands.build_yaku import build_isection
         bld = self.yaku_build_ctx
 
         sections = section_writer.sections
@@ -396,9 +389,9 @@ class BuildYakuContext(BuildContext):
 
         outputs_e, outputs_c = self._outputs["extensions"], self._outputs["compiled_libraries"]
         for name, extension in self._extensions.iteritems():
-            sections["extensions"][name] = build_isection(bld, name, outputs_e[name], "extensions")
+            sections["extensions"][name] = build_isection(self, name, outputs_e[name], "extensions")
         for name, compiled_library in self._compiled_libraries.iteritems():
-            sections["compiled_libraries"][name] = build_isection(bld, name,
+            sections["compiled_libraries"][name] = build_isection(self, name,
                             outputs_c[name], "compiled_libraries")
 
 def _argv_checksum(argv):
