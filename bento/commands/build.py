@@ -34,19 +34,18 @@ from bento.commands.script_utils \
         create_posix_script, create_win32_script
 
 def build_isection(bld, ext_name, files, category):
+    """Build an InstalledSection from the list of files for an
+    extension/compiled library."""
     # TODO: make this function common between all builders (distutils, yaku, etc...)
     if len(files) < 1:
         return InstalledSection.from_source_target_directories(category, ext_name,
             "", "", files)
-    # Given an extension name and the list of files which constitute
-    # it (e.g. the .so on unix, the .pyd on windows, etc...), return
-    # an InstallSection
 
     # FIXME: do package -> location translation correctly
     pkg_dir = os.path.dirname(ext_name.replace('.', os.path.sep))
     target = os.path.join('$sitedir', pkg_dir)
 
-    # FIXME: assume all outputs of one extension are in one directory
+    # FIXME: this assumes every file in outputs are in one single directory
     nodes = [bld.top_node.find_node(f) for f in files]
     srcdir = nodes[0].parent.path_from(bld.top_node)
     section = InstalledSection.from_source_target_directories(category, ext_name, srcdir,
