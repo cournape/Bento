@@ -269,7 +269,16 @@ class BuildContext(_ContextWithBuildDirectory):
         raise NotImplementedError()
 
     def post_compile(self, section_writer):
-        raise NotImplementedError()
+        sections = section_writer.sections
+        sections["extensions"] = {}
+        sections["compiled_libraries"] = {}
+
+        outputs_e, outputs_c = self._outputs["extensions"], self._outputs["compiled_libraries"]
+        for name, extension in self._extensions.iteritems():
+            sections["extensions"][name] = build_isection(self, name, outputs_e[name], "extensions")
+        for name, compiled_library in self._compiled_libraries.iteritems():
+            sections["compiled_libraries"][name] = build_isection(self, name,
+                        outputs_c[name], "compiled_libraries")
 
 class DistutilsBuildContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
@@ -311,18 +320,6 @@ class DistutilsBuildContext(BuildContext):
             builder = self._compiled_library_callbacks[name]
             outputs[name] = builder(compiled_library)
         self._outputs["compiled_libraries"] = outputs
-
-    def post_compile(self, section_writer):
-        sections = section_writer.sections
-        sections["extensions"] = {}
-        sections["compiled_libraries"] = {}
-
-        outputs_e, outputs_c = self._outputs["extensions"], self._outputs["compiled_libraries"]
-        for name, extension in self._extensions.iteritems():
-            sections["extensions"][name] = build_isection(self, name, outputs_e[name], "extensions")
-        for name, compiled_library in self._compiled_libraries.iteritems():
-            sections["compiled_libraries"][name] = build_isection(self, name,
-                        outputs_c[name], "compiled_libraries")
 
 class BuildYakuContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
@@ -379,20 +376,6 @@ class BuildYakuContext(BuildContext):
         self._outputs["compiled_libraries"] = outputs_c
 
         # TODO: inplace support
-
-    def post_compile(self, section_writer):
-        bld = self.yaku_build_ctx
-
-        sections = section_writer.sections
-        sections["extensions"] = {}
-        sections["compiled_libraries"] = {}
-
-        outputs_e, outputs_c = self._outputs["extensions"], self._outputs["compiled_libraries"]
-        for name, extension in self._extensions.iteritems():
-            sections["extensions"][name] = build_isection(self, name, outputs_e[name], "extensions")
-        for name, compiled_library in self._compiled_libraries.iteritems():
-            sections["compiled_libraries"][name] = build_isection(self, name,
-                            outputs_c[name], "compiled_libraries")
 
 def _argv_checksum(argv):
     return md5(cPickle.dumps(argv)).hexdigest()
