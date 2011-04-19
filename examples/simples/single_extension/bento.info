@@ -9,3 +9,6 @@ Library:
     Extension: hello._bar
         Sources:
             src/hellomodule.c
+    CompiledLibrary: foo
+        Sources:
+            src/hellolib.c
