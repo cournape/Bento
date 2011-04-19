@@ -86,6 +86,7 @@ Usage:   bentomaker build [OPTIONS]."""
         self.section_writer.sections_callbacks["bentofiles"] = \
                 build_config_py
         self.section_writer.update_sections(ctx.pkg)
+        ctx.compile()
         ctx.post_compile(self.section_writer)
 
     def shutdown(self, ctx):

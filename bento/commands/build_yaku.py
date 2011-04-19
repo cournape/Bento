@@ -18,9 +18,11 @@ import yaku.context
 import yaku.scheduler
 import yaku.errors
 
-def build_isection(bld, ext_name, files):
+def build_isection(bld, ext_name, files, category):
+    # FIXME: use bento nodes, not yaku...
+    # TODO: make this function common between all builders (distutils, yaku, etc...)
     if len(files) < 1:
-        return InstalledSection.from_source_target_directories("extensions", ext_name,
+        return InstalledSection.from_source_target_directories(category, ext_name,
             "", "", files)
     # Given an extension name and the list of files which constitute
     # it (e.g. the .so on unix, the .pyd on windows, etc...), return

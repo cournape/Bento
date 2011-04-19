@@ -234,6 +234,8 @@ class BuildContext(_ContextWithBuildDirectory):
         self._extension_callbacks = None
         self._compiled_library_callbacks = None
 
+        self._outputs = {}
+
     def shutdown(self):
         CmdContext.shutdown(self)
         checksum = _read_argv_checksum("configure")
@@ -247,6 +249,9 @@ class BuildContext(_ContextWithBuildDirectory):
             return ".".join(parent + [extension_name])
         else:
             return extension_name
+
+    def compile(self):
+        raise NotImplementedError()
 
     def post_compile(self, section_writer):
         raise NotImplementedError()
@@ -291,18 +296,32 @@ class DistutilsBuildContext(BuildContext):
         self._extension_callbacks = collections.defaultdict(lambda : build_extension)
         self._compiled_library_callbacks = collections.defaultdict(lambda : build_compiled_library)
 
+    def compile(self):
+        outputs = {}
+        for name, extension in self._extensions.iteritems():
+            builder = self._extension_callbacks[name]
+            outputs[name] = builder(extension)
+        self._outputs["extensions"] = outputs
+
+        outputs = {}
+        for name, compiled_library in self._compiled_libraries.iteritems():
+            builder = self._compiled_library_callbacks[name]
+            outputs[name] = builder(compiled_library)
+        self._outputs["compiled_libraries"] = outputs
+
     def post_compile(self, section_writer):
+        from bento.commands.build_distutils import build_isection
+
         sections = section_writer.sections
         sections["extensions"] = {}
         sections["compiled_libraries"] = {}
 
+        outputs_e, outputs_c = self._outputs["extensions"], self._outputs["compiled_libraries"]
         for name, extension in self._extensions.iteritems():
-            builder = self._extension_callbacks[name]
-            sections["extensions"][name] = builder(extension)
-
+            sections["extensions"][name] = build_isection(self, name, outputs_e[name], "extensions")
         for name, compiled_library in self._compiled_libraries.iteritems():
-            builder = self._compiled_library_callbacks[name]
-            sections["compiled_libraries"][name] = builder(compiled_library)
+            sections["compiled_libraries"][name] = build_isection(self, name,
+                        outputs_c[name], "compiled_libraries")
 
 class BuildYakuContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
@@ -336,29 +355,23 @@ class BuildYakuContext(BuildContext):
         super(BuildYakuContext, self).shutdown()
         self.yaku_build_ctx.store()
 
-    def post_compile(self, section_writer):
-        # TODO: decouple task registration from task output registration from
-        # installed section creation
-        from bento.commands.build_yaku import build_isection
+    def compile(self):
         import yaku.task_manager
         bld = self.yaku_build_ctx
 
-        sections = section_writer.sections
-        sections["extensions"] = {}
-        sections["compiled_libraries"] = {}
-
+        outputs_e = {}
         for name, extension in self._extensions.iteritems():
             builder = self._extension_callbacks[name]
             tasks = builder(extension)
             if len(tasks) > 1:
-                outputs = tasks[0].gen.outputs
+                outputs_e[name] = tasks[0].gen.outputs
             else:
-                outputs = []
-            sections["extensions"][name] = build_isection(bld, name, outputs)
+                outputs_e[name] = []
+
+        outputs_c = {}
         for name, compiled_library in self._compiled_libraries.iteritems():
             builder = self._compiled_library_callbacks[name]
-            outputs = builder(compiled_library)
-            sections["compiled_libraries"][name] = build_isection(bld, name, outputs)
+            outputs_c[name] = builder(compiled_library)
 
         task_manager = yaku.task_manager.TaskManager(bld.tasks)
         if self.jobs < 2:
@@ -368,7 +381,25 @@ class BuildYakuContext(BuildContext):
         runner.start()
         runner.run()
 
+        self._outputs["extensions"] = outputs_e
+        self._outputs["compiled_libraries"] = outputs_c
+
         # TODO: inplace support
+
+    def post_compile(self, section_writer):
+        from bento.commands.build_yaku import build_isection
+        bld = self.yaku_build_ctx
+
+        sections = section_writer.sections
+        sections["extensions"] = {}
+        sections["compiled_libraries"] = {}
+
+        outputs_e, outputs_c = self._outputs["extensions"], self._outputs["compiled_libraries"]
+        for name, extension in self._extensions.iteritems():
+            sections["extensions"][name] = build_isection(bld, name, outputs_e[name], "extensions")
+        for name, compiled_library in self._compiled_libraries.iteritems():
+            sections["compiled_libraries"][name] = build_isection(bld, name,
+                            outputs_c[name], "compiled_libraries")
 
 def _argv_checksum(argv):
     return md5(cPickle.dumps(argv)).hexdigest()

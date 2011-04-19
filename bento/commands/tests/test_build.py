@@ -184,7 +184,6 @@ Library:
         sections = build.section_writer.sections["compiled_libraries"]
         for library in pkg.compiled_libraries.values():
             isection = sections[library.name]
-            print isection.files
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
 class TestBuildDistutils(_TestBuildSimpleExtension):
@@ -195,7 +194,7 @@ class TestBuildDistutils(_TestBuildSimpleExtension):
 
         self._configure_context = DistutilsConfigureContext
         self._build_context = DistutilsBuildContext
-        self._dummy = lambda extension: InstalledSection("extensions", extension.name, "", "", [])
+        self._dummy = lambda extension: []
 
 class TestBuildYaku(_TestBuildSimpleExtension):
     def setUp(self):

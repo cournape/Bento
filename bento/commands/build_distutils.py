@@ -78,13 +78,8 @@ class DistutilsBuilder(object):
             bld_cmd.run()
 
             base, filename = os.path.split(self._extension_filename(extension.name, bld_cmd))
-            files = [filename]
             fullname = os.path.join(bld_cmd.build_lib, base, filename)
-
-            source_dir = os.path.dirname(fullname)
-            target_dir = os.path.join("$sitedir", base)
-            return InstalledSection.from_source_target_directories(
-                "extensions", extension.name, source_dir, target_dir, files)
+            return [fullname]
         except distutils.errors.DistutilsError, e:
             raise BuildError(str(e))
 
@@ -115,14 +110,25 @@ class DistutilsBuilder(object):
                         raise
                 bld_cmd.run()
 
-                files = [filename]
-                fullname = target
-
-                source_dir = os.path.dirname(fullname)
-                target_dir = os.path.join("$sitedir", base)
-                return InstalledSection.from_source_target_directories(
-                    "extensions", library.name, source_dir, target_dir, files)
+                return [target]
             except distutils.errors.DistutilsError, e:
                 raise BuildError(str(e))
         finally:
             bld_cmd.build_clib = old_build_clib
+
+def build_isection(bld, name, files, category):
+    # TODO: refactor to merge this with the one in build_yaku
+    if len(files) < 1:
+        return InstalledSection.from_source_target_directories(category, name,
+            "", "", files)
+    print files
+    nodes = [bld.top_node.find_node(f) for f in files]
+
+    # FIXME: do package -> location translation correctly
+    pkg_dir = os.path.dirname(name.replace('.', os.path.sep))
+
+    source_dir = nodes[0].parent.path_from(bld.top_node)
+    target_dir = os.path.join('$sitedir', pkg_dir)
+    return InstalledSection.from_source_target_directories(
+        "extensions", name, source_dir, target_dir, [node.name for node in nodes])
+
