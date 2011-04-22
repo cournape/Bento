@@ -35,7 +35,9 @@ from bento.commands.script_utils \
 
 def build_isection(bld, ext_name, files, category):
     """Build an InstalledSection from the list of files for an
-    extension/compiled library."""
+    extension/compiled library.
+
+    files are expected to be given relatively to top_node."""
     # TODO: make this function common between all builders (distutils, yaku, etc...)
     if len(files) < 1:
         return InstalledSection.from_source_target_directories(category, ext_name,
@@ -46,7 +48,13 @@ def build_isection(bld, ext_name, files, category):
     target = os.path.join('$sitedir', pkg_dir)
 
     # FIXME: this assumes every file in outputs are in one single directory
-    nodes = [bld.top_node.find_node(f) for f in files]
+    nodes = []
+    for f in files:
+        n = bld.top_node.find_node(f)
+        if n is None:
+            raise IOError("file %s not found (relatively to %s)" % (f, top_node.abspath()))
+        else:
+            nodes.append(n)
     srcdir = nodes[0].parent.path_from(bld.top_node)
     section = InstalledSection.from_source_target_directories(category, ext_name, srcdir,
                                 target, [o.name for o in nodes])
