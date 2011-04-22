@@ -90,28 +90,14 @@ Usage:   bentomaker build [OPTIONS]."""
         if o.help:
             p.print_help()
             return
-        if o.inplace is None:
-            inplace = False
-        else:
-            inplace = True
-        if o.verbose is None:
-            verbose = False
-        else:
-            verbose = True
-        if o.jobs:
-            jobs = int(o.jobs)
-        else:
-            jobs = None
 
         def build_packages(pkg):
             return _build_python_files(pkg, ctx.top_node)
-        self.section_writer.sections_callbacks["pythonfiles"] = \
-                build_packages
+        self.section_writer.sections_callbacks["pythonfiles"] = build_packages
 
         def build_config_py(pkg):
             return _build_config_py(pkg.config_py, ctx.get_paths_scheme(), ctx.top_node)
-        self.section_writer.sections_callbacks["bentofiles"] = \
-                build_config_py
+        self.section_writer.sections_callbacks["bentofiles"] = build_config_py
         self.section_writer.update_sections(ctx.pkg)
         ctx.compile()
         ctx.post_compile(self.section_writer)
