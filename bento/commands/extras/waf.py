@@ -1,6 +1,8 @@
 import os
 import sys
 import shutil
+import logging
+import collections
 
 if os.environ.has_key("WAFDIR"):
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
@@ -35,21 +37,57 @@ WAF_TOP = os.path.join(WAFDIR, os.pardir)
 
 WAF_CONFIG_LOG = 'config.log'
 
-# FIXME: _init should be run and and only once per bentomaker invocation
-__HAS_RUN = False
-def _init():
-    global __HAS_RUN
-    if __HAS_RUN:
-        return
-    else:
-        __HAS_RUN = True
+__USE_NO_OUTPUT_LOGGING = False
+def disable_output():
+    # Make Betty proud...
+    global __USE_NO_OUTPUT_LOGGING
+    __USE_NO_OUTPUT_LOGGING = True
 
+def make_stream_logger(name, stream):
+    # stream should be a file-like object supporting write/read/?
+    logger = logging.getLogger(name)
+    hdlr = logging.StreamHandler(stream)
+    formatter = logging.Formatter('%(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr)
+    logger.setLevel(logging.DEBUG)
+    return logger
+
+def _init_log_no_output():
+    # XXX: all this heavily plays with waf internals - only use for unit
+    # testing bento where waf output screws up nose own output/logging magic
+    from cStringIO import StringIO
+    Logs.got_tty = False
+    Logs.get_term_cols = lambda: 80
+    Logs.get_color = lambda cl: ''
+    Logs.colors = Logs.color_dict()
+
+    fake_output = StringIO()
+    def fake_pprint(col, str, label='', sep='\n'):
+        fake_output.write("%s%s%s %s%s" % (Logs.colors(col), str, Logs.colors.NORMAL, label, sep))
+
+    Logs.pprint = fake_pprint
+
+    log = logging.getLogger('waflib')
+    log.handlers = []
+    log.filters = []
+    hdlr = logging.StreamHandler(StringIO())
+    hdlr.setFormatter(Logs.formatter())
+    log.addHandler(hdlr)
+    log.addFilter(Logs.log_filter())
+    log.setLevel(logging.DEBUG)
+    Logs.log = log
+
+def _init():
     tooldir = os.path.join(WAFDIR, "Tools")
 
     sys.path.insert(0, tooldir)
     cwd = os.getcwd()
 
-    Logs.init_log()
+    if __USE_NO_OUTPUT_LOGGING is True:
+        _init_log_no_output()
+    else:
+        Logs.init_log()
 
     class FakeModule(object):
         pass
