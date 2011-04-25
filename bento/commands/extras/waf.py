@@ -113,7 +113,6 @@ class ConfigureWafContext(ConfigureContext):
         _init()
         waf_context = create_context("configure")
         waf_context.options = Options.options
-        #waf_context.execute()
         waf_context.init_dirs()
         waf_context.cachedir = waf_context.bldnode.make_node(Build.CACHE_DIR)
         waf_context.cachedir.mkdir()
@@ -122,17 +121,20 @@ class ConfigureWafContext(ConfigureContext):
         waf_context.logger = Logs.make_logger(path, 'cfg')
         self.waf_context = waf_context
 
-        if pkg.extensions:
-            conf = self.waf_context
-            
-            conf.load("compiler_c")
-            conf.load("python")
-            conf.check_python_version((2,4,2))
-            conf.check_python_headers()
+        # FIXME: this is wrong (not taking into account sub packages)
+        has_compiled_code = len(pkg.extensions) > 0 or len(pkg.compiled_libraries) > 0
+        conf = self.waf_context
+        try:
+            if has_compiled_code:
+                conf.load("compiler_c")
+                conf.load("python")
+                conf.check_python_version((2,4,2))
+                conf.check_python_headers()
 
-            # HACK for mac os x
-            if sys.platform == "darwin":
-                conf.env["CC"] = ["/usr/bin/gcc-4.0"]
+                # HACK for mac os x
+                if sys.platform == "darwin":
+                    conf.env["CC"] = ["/usr/bin/gcc-4.0"]
+        finally:
             conf.store()
 
         self._old_path = None
@@ -170,6 +172,7 @@ class BuildWafContext(BuildContext):
         else:
             verbose = 0
             zones = []
+        self.inplace = 0
 
         Logs.verbose = verbose
         Logs.init_log()
@@ -186,129 +189,51 @@ class BuildWafContext(BuildContext):
         waf_context.jobs = jobs
         self.waf_context = waf_context
 
-    def post_compile(self, section_writer):
+        def _default_extension_builder(extension):
+            # FIXME: should be handled in the waf builder itself maybe ?
+            target = extension.name.replace(".", os.sep)
+            return self.waf_context(features='c cshlib pyext',
+                                    source=extension.sources, target=target,
+                                    name=extension.name)
+
+        def _default_library_builder(library):
+            return self.waf_context(features='c cstlib pyext', source=library.sources, target=library.name)
+
+        self._extension_callbacks = collections.defaultdict(lambda : _default_extension_builder)
+        self._compiled_library_callbacks = collections.defaultdict(lambda : _default_library_builder)
+
+    def compile(self):
+        self._outputs["extensions"] = {}
+        self._outputs["compiled_libraries"] = {}
+
         bld = self.waf_context
+        for name, extension in self._extensions.iteritems():
+            builder = self._extension_callbacks[name]
+            builder(extension)
+            self._outputs["extensions"][name] = []
+
+        for name, compiled_library in self._compiled_libraries.iteritems():
+            builder = self._compiled_library_callbacks[name]
+            builder(compiled_library)
+            self._outputs["compiled_libraries"][name] = []
+
         bld.compile()
+
         for group in bld.groups:
             for task_gen in group:
                 if hasattr(task_gen, "link_task"):
-                    if task_gen.path != bld.srcnode:
-                        pkg_dir = task_gen.path.srcpath()
-                    else:
-                        pkg_dir = ""
                     if "cstlib" in task_gen.features:
                         category = "compiled_libraries"
                     else:
                         category = "extensions"
-                    name = task_gen.name
-                    source_dir = task_gen.link_task.outputs[0].parent.path_from(bld.srcnode)
-                    target = os.path.join("$sitedir", pkg_dir)
-                    files = [o.name for o in task_gen.link_task.outputs]
+                    files = [o.srcpath() for o in task_gen.link_task.outputs]
+                    self._outputs[category][task_gen.name].extend(files)
 
-                    section = InstalledSection.from_source_target_directories(category, name,
-                                            source_dir, target, files)
-                    section_writer.sections[category][name] = section
-
-        if self.inplace:
-           for g in bld.groups:
-                for task_gen in g:
-                    if hasattr(task_gen, "link_task"):
-                        ltask = task_gen.link_task
-                        for output in ltask.outputs:
-                            if output.is_child_of(bld.bldnode):
-                                shutil.copy(output.abspath(), output.path_from(bld.bldnode))
-
-    def build_extensions_factory(self, *a, **kw):
-        def _full_name(extension, local_node):
-            if local_node != self.top_node:
-                parent = local_node.path_from(self.top_node).split(os.path.sep)
-                return ".".join(parent + [extension.name])
-            else:
-                return extension.name
-
-        def build_grandmaster(pkg):
-            def _default_builder(bld, extension):
-                bld(features='c cshlib pyext', source=extension.sources,
-                    target=extension.name)
-
-            bld = self.waf_context
-
-            # Gather all extensions together with their local_node
-            extensions = []
-            for extension in pkg.extensions.values():
-                local_node = self.top_node.find_dir(".")
-                extensions.append((extension, local_node))
-            for spkg in pkg.subpackages.values():
-                for extension in spkg.extensions.values():
-                    local_node = self.top_node.find_dir(spkg.rdir)
-                    extensions.append((extension, local_node))
-
-            for extension, local_node in extensions:
-                full_name = _full_name(extension, local_node)
-                builder = self._extensions_callback.get(full_name, _default_builder)
-
-                old_path = bld.path
-                bld.path = old_path.find_dir(local_node.path_from(self.top_node))
-                try:
-                    builder(bld, extension)
-                finally:
-                    bld.path = old_path
-
-            return {}
-        return build_grandmaster
-
-    def build_compiled_libraries_factory(self, *a, **kw):
-        def builder(pkg):
-            def _default_builder(bld, library):
-                bld(features='c cstlib pyext', source=library.sources, target=library.name)
-            bld = self.waf_context
-            libraries = []
-            for library in pkg.compiled_libraries.values():
-                local_node = self.top_node.find_dir(".")
-                libraries.append((library, local_node))
-            for spkg in pkg.subpackages.values():
-                for library in spkg.compiled_libraries.values():
-                    local_node = self.top_node.find_dir(spkg.rdir)
-                    libraries.append((library, local_node))
-
-            for library, local_node in libraries:
-                if local_node != self.top_node:
-                    parent = local_node.path_from(self.top_node)
-                else:
-                    parent = ""
-                full_name = os.path.join(parent, library.name)
-                builder = self._clibraries_callback.get(full_name, _default_builder)
-
-                old_path = bld.path
-                bld.path = old_path.find_dir(local_node.path_from(self.top_node))
-                try:
-                    builder(bld, library)
-                finally:
-                    bld.path = old_path
-
-            return {}
-        return builder
-
-# We need to fix build / section writing interaction so that InstalledSection
-# instances can be written after SectionWriter callback has been called. This
-# way that build_installed_section is called only once, and we don't need those
-# hacks to enable multiple build_install_sections calls over the same task
-# groups
-def build_installed_sections(bld, category, task_gen_filter):
-    sections = {}
-    for group in bld.groups:
-        for task_gen in group:
-            if hasattr(task_gen, "link_task") and task_gen_filter(task_gen):
-                if task_gen.path != bld.srcnode:
-                    pkg_dir = task_gen.path.srcpath()
-                else:
-                    pkg_dir = ""
-                name = task_gen.name
-                source_dir = task_gen.link_task.outputs[0].parent.path_from(bld.srcnode)
-                target = os.path.join("$sitedir", pkg_dir)
-                files = [o.name for o in task_gen.link_task.outputs]
-
-                section = InstalledSection.from_source_target_directories(category, name,
-                                        source_dir, target, files)
-                sections[name] = section
-    return sections
+    #    if self.inplace:
+    #       for g in bld.groups:
+    #            for task_gen in g:
+    #                if hasattr(task_gen, "link_task"):
+    #                    ltask = task_gen.link_task
+    #                    for output in ltask.outputs:
+    #                        if output.is_child_of(bld.bldnode):
+    #                            shutil.copy(output.abspath(), output.path_from(bld.bldnode))
