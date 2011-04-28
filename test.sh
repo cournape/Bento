@@ -35,7 +35,7 @@ for i in $tests; do
 	ntests=`expr $ntests + 1`;
 done
 
-python3.1 setup.py build
+python3.2 setup.py build
 export PYTHONPATH=$PWD/build/py3k
 for i in $tests; do
 	echo "======== TESTING $i ============="

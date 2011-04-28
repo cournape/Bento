@@ -70,6 +70,10 @@ class ConfigureContext(object):
         self._stdout_cache = {}
         self._cmd_cache = {}
 
+        self.src_root = None
+        self.bld_root = None
+        self.path = None
+
     def load_tool(self, tool, tooldir=None):
         _t = import_tools([tool], tooldir)
         self.tools.append({"tool": tool, "tooldir": tooldir})
@@ -197,6 +201,7 @@ class BuildContext(object):
                 os.path.abspath(self.env["BLDDIR"]))
         self.src_root = srcnode
         self.bld_root = bldnode
+        self.path = srcnode
 
         fid = open(HOOK_DUMP, "rb")
         try:
@@ -253,6 +258,9 @@ def get_cfg():
             os.path.abspath(env["BLDDIR"]))
     ctx.src_root = srcnode
     ctx.bld_root = bldnode
+    # src_root and bld_root never change, but path may. All source nodes are
+    # created relatively to path (kinda 'virtual' cwd)
+    ctx.path = srcnode
 
     ctx.env = env
     ctx.log = myopen(os.path.join(env["BLDDIR"], "config.log"), "w")

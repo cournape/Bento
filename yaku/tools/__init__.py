@@ -48,7 +48,7 @@ class Builder(object):
             if filenames is a string"""
         if isinstance(filenames, str):
             filenames = [filenames]
-        return [self.ctx.src_root.find_resource(s) for s in filenames]
+        return [self.ctx.path.find_resource(s) for s in filenames]
 
     def configure(self):
         pass
