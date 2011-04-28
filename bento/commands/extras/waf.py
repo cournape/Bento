@@ -158,6 +158,16 @@ def ext_name_to_path(name):
     return name.replace('.', os.path.sep)
 
 class BuildWafContext(BuildContext):
+    def pre_recurse(self, local_node):
+        super(BuildWafContext, self).pre_recurse(local_node)
+        self._old_path = self.waf_context.path
+        # Gymnastic to make a *waf* node from a *bento* node
+        self.waf_context.path = self.waf_context.path.make_node(self.local_node.path_from(self.top_node))
+
+    def post_recurse(self):
+        self.waf_context.path = self._old_path
+        super(BuildWafContext, self).post_recurse()
+
     def __init__(self, cmd_argv, options_context, pkg, top_node):
         super(BuildWafContext, self).__init__(cmd_argv, options_context, pkg, top_node)
 
@@ -172,7 +182,10 @@ class BuildWafContext(BuildContext):
         else:
             verbose = 0
             zones = []
-        self.inplace = 0
+        if o.inplace:
+            self.inplace = 1
+        else:
+            self.inplace = 0
 
         Logs.verbose = verbose
         Logs.init_log()
@@ -206,17 +219,29 @@ class BuildWafContext(BuildContext):
         self._outputs["extensions"] = {}
         self._outputs["compiled_libraries"] = {}
 
-        bld = self.waf_context
         for name, extension in self._extensions.iteritems():
             builder = self._extension_callbacks[name]
-            builder(extension)
+            self.pre_recurse(extension.ref_node)
+            try:
+                extension = extension.extension_from(extension.ref_node)
+                builder(extension)
+            finally:
+                self.post_recurse()
             self._outputs["extensions"][name] = []
 
         for name, compiled_library in self._compiled_libraries.iteritems():
             builder = self._compiled_library_callbacks[name]
-            builder(compiled_library)
+            self.pre_recurse(compiled_library.ref_node)
+            try:
+                compiled_library = compiled_library.extension_from(compiled_library.ref_node)
+                builder(compiled_library)
+            finally:
+                self.post_recurse()
             self._outputs["compiled_libraries"][name] = []
 
+        from bento.core.recurse import translate_name
+
+        bld = self.waf_context
         bld.compile()
 
         for group in bld.groups:
@@ -226,14 +251,10 @@ class BuildWafContext(BuildContext):
                         category = "compiled_libraries"
                     else:
                         category = "extensions"
-                    files = [o.srcpath() for o in task_gen.link_task.outputs]
-                    self._outputs[category][task_gen.name].extend(files)
-
-    #    if self.inplace:
-    #       for g in bld.groups:
-    #            for task_gen in g:
-    #                if hasattr(task_gen, "link_task"):
-    #                    ltask = task_gen.link_task
-    #                    for output in ltask.outputs:
-    #                        if output.is_child_of(bld.bldnode):
-    #                            shutil.copy(output.abspath(), output.path_from(bld.bldnode))
+                    ref_node = self.top_node.make_node(task_gen.path.path_from(task_gen.path.ctx.srcnode))
+                    name = translate_name(task_gen.name, ref_node, self.top_node)
+                    self._outputs[category][name] = [o.srcpath() for o in task_gen.link_task.outputs]
+                    if self.inplace:
+                        for output in task_gen.link_task.outputs:
+                            if output.is_child_of(bld.bldnode):
+                                shutil.copy(output.abspath(), output.path_from(bld.bldnode))

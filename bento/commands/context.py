@@ -230,6 +230,16 @@ class ConfigureYakuContext(ConfigureContext):
         super(ConfigureYakuContext, self).shutdown()
         self.yaku_configure_ctx.store()
 
+    def pre_recurse(self, local_node):
+        super(ConfigureYakuContext, self).pre_recurse(local_node)
+        self._old_path = self.yaku_configure_ctx.path
+        # Gymnastic to make a *yaku* node from a *bento* node
+        self.yaku_configure_ctx.path = self.yaku_configure_ctx.path.make_node(self.local_node.path_from(self.top_node))
+
+    def post_recurse(self):
+        self.yaku_configure_ctx.path = self._old_path
+        super(ConfigureYakuContext, self).post_recurse()
+
 class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
         super(BuildContext, self).__init__(cmd_argv, options_context, pkg, top_node)
@@ -239,8 +249,12 @@ class BuildContext(_ContextWithBuildDirectory):
 
         self._outputs = {}
 
-        self._extensions = copy.deepcopy(self.pkg.extensions)
-        self._compiled_libraries = copy.deepcopy(self.pkg.compiled_libraries)
+        from bento.core.recurse import NodeRepresentation
+        r = NodeRepresentation(top_node, top_node)
+        r.update_package(pkg)
+
+        self._extensions = r._extensions
+        self._compiled_libraries = r._compiled_libraries
 
     def shutdown(self):
         CmdContext.shutdown(self)
@@ -262,7 +276,7 @@ class BuildContext(_ContextWithBuildDirectory):
 
     def register_compiled_library_builder(self, clib_name, builder):
         relpos = self.local_node.path_from(self.top_node)
-        full_name = os.path.join(relpos, clib_name)
+        full_name = os.path.join(relpos, clib_name).replace(os.sep, ".")
         self._compiled_library_callbacks[full_name] = builder
 
     def compile(self):
@@ -312,12 +326,14 @@ class DistutilsBuildContext(BuildContext):
         outputs = {}
         for name, extension in self._extensions.iteritems():
             builder = self._extension_callbacks[name]
+            extension = extension.extension_from(extension.ref_node)
             outputs[name] = builder(extension)
         self._outputs["extensions"] = outputs
 
         outputs = {}
         for name, compiled_library in self._compiled_libraries.iteritems():
             builder = self._compiled_library_callbacks[name]
+            compiled_library = compiled_library.extension_from(compiled_library.ref_node)
             outputs[name] = builder(compiled_library)
         self._outputs["compiled_libraries"] = outputs
 
@@ -357,12 +373,22 @@ class BuildYakuContext(BuildContext):
         outputs_e = {}
         for name, extension in self._extensions.iteritems():
             builder = self._extension_callbacks[name]
-            outputs_e[name] = builder(extension)
+            self.pre_recurse(extension.ref_node)
+            try:
+                extension = extension.extension_from(extension.ref_node)
+                outputs_e[name] = builder(extension)
+            finally:
+                self.post_recurse()
 
         outputs_c = {}
         for name, compiled_library in self._compiled_libraries.iteritems():
             builder = self._compiled_library_callbacks[name]
-            outputs_c[name] = builder(compiled_library)
+            self.pre_recurse(compiled_library.ref_node)
+            try:
+                compiled_library = compiled_library.extension_from(compiled_library.ref_node)
+                outputs_c[name] = builder(compiled_library)
+            finally:
+                self.post_recurse()
 
         task_manager = yaku.task_manager.TaskManager(bld.tasks)
         if self.jobs < 2:
@@ -376,6 +402,16 @@ class BuildYakuContext(BuildContext):
         self._outputs["compiled_libraries"] = outputs_c
 
         # TODO: inplace support
+
+    def pre_recurse(self, local_node):
+        super(BuildYakuContext, self).pre_recurse(local_node)
+        self._old_path = self.yaku_build_ctx.path
+        # Gymnastic to make a *yaku* node from a *bento* node
+        self.yaku_build_ctx.path = self.yaku_build_ctx.path.make_node(self.local_node.path_from(self.top_node))
+
+    def post_recurse(self):
+        self.yaku_build_ctx.path = self._old_path
+        super(BuildYakuContext, self).post_recurse()
 
 def _argv_checksum(argv):
     return md5(cPickle.dumps(argv)).hexdigest()

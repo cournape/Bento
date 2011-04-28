@@ -254,6 +254,11 @@ class TestBuildWaf(_TestBuildSimpleExtension):
         self._stderr = sys.stderr
         self._stdout = sys.stdout
         super(TestBuildWaf, self).setUp()
+        # XXX: ugly stuff to make waf and nose happy together
+        if not hasattr(sys.stdout, "encoding"):
+            sys.stdout.encoding = "ascii"
+        if not hasattr(sys.stderr, "encoding"):
+            sys.stderr.encoding = "ascii"
 
         if _not_has_waf():
             return
