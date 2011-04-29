@@ -1,6 +1,5 @@
 import os
 import sys
-import copy
 import collections
 import cPickle
 
@@ -17,6 +16,9 @@ from bento.core.package_cache \
 from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries
+from bento.core.recurse \
+    import \
+        NodeRepresentation
 from bento.commands.configure \
     import \
         _ConfigureState
@@ -249,7 +251,6 @@ class BuildContext(_ContextWithBuildDirectory):
 
         self._outputs = {}
 
-        from bento.core.recurse import NodeRepresentation
         r = NodeRepresentation(top_node, top_node)
         r.update_package(pkg)
 
