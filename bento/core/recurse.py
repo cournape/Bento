@@ -2,7 +2,7 @@ import os
 
 from bento.core.pkg_objects \
     import \
-        Extension, CompiledLibrary
+        Extension
 
 def translate_name(name, ref_node, from_node):
     if from_node != ref_node:
@@ -19,7 +19,7 @@ class NodeExtension(object):
 
     def extension_from(self, from_node=None):
         if len(self.nodes) < 1:
-            return Extension(name, [])
+            return Extension(self.name, [])
         else:
             if from_node is None:
                 from_node = self.nodes[0].srcnode
