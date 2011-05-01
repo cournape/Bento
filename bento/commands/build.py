@@ -93,10 +93,6 @@ Usage:   bentomaker build [OPTIONS]."""
             p.print_help()
             return
 
-        def build_config_py(pkg):
-            return _build_config_py(pkg.config_py, ctx.get_paths_scheme(), ctx.top_node)
-        self.section_writer.sections_callbacks["bentofiles"] = build_config_py
-
         py_sections = {}
         def build_py_isection(name, nodes):
             isection = InstalledSection.from_source_target_directories("pythonfiles",
@@ -106,6 +102,12 @@ Usage:   bentomaker build [OPTIONS]."""
             build_py_isection(name, nodes)
         for name, node in ctx._node_pkg.iter_category("modules"):
             build_py_isection(name, [node])
+        if ctx.pkg.config_py:
+            content = _config_content(ctx.get_paths_scheme())
+            target_node = ctx.top_node.bldnode.make_node(ctx.pkg.config_py)
+            target_node.parent.mkdir()
+            target_node.safe_write(content)
+            build_py_isection("bento_config", [target_node])
         self.section_writer.sections["pythonfiles"] = py_sections
 
         self.section_writer.update_sections(ctx.pkg)
@@ -118,9 +120,6 @@ Usage:   bentomaker build [OPTIONS]."""
 class SectionWriter(object):
     def __init__(self):
         callbacks = [
-            ("bentofiles", None),
-            #("compiled_libraries", None),
-            #("extensions", None),
             ("datafiles", build_data_files),
             ("executables", build_executables)]
         self.sections_callbacks = OrderedDict(callbacks)
@@ -144,21 +143,6 @@ def _config_content(paths):
     for name, value in sorted(paths.items()):
         content.append('%s = "%s"' % (name.upper().ljust(n), subst_vars(value, paths)))
     return "\n".join(content)
-
-def _build_config_py(target, paths, top_node):
-    if target is not None:
-        content = _config_content(paths)
-        target_node = top_node.bldnode.make_node(target)
-        target_node.parent.mkdir()
-        target_node.safe_write(content)
-
-        section = InstalledSection.from_source_target_directories("bentofiles", "config",
-                os.path.join("$_srcrootdir", os.path.dirname(target_node.srcpath())),
-                os.path.join("$sitedir", os.path.dirname(target)),
-                [os.path.basename(target)])
-        return {"bentofiles": section}
-    else:
-        return {}
 
 def build_data_files(pkg):
     ret = {}
