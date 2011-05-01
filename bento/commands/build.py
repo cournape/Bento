@@ -110,6 +110,13 @@ Usage:   bentomaker build [OPTIONS]."""
             build_py_isection("bento_config", [target_node])
         self.section_writer.sections["pythonfiles"] = py_sections
 
+        data_sections = {}
+        for name, section in ctx._node_pkg.iter_category("datafiles"):
+            source_dir = os.path.join("$_srcrootdir", section.ref_node.srcpath())
+            data_sections[name] = InstalledSection.from_source_target_directories("datafiles", name,
+                source_dir, section.target_dir, [n.path_from(section.ref_node) for n in section.nodes])
+        self.section_writer.sections["datafiles"] = data_sections
+
         self.section_writer.update_sections(ctx.pkg)
         ctx.compile()
         ctx.post_compile(self.section_writer)
@@ -120,7 +127,6 @@ Usage:   bentomaker build [OPTIONS]."""
 class SectionWriter(object):
     def __init__(self):
         callbacks = [
-            ("datafiles", build_data_files),
             ("executables", build_executables)]
         self.sections_callbacks = OrderedDict(callbacks)
         self.sections = {}
@@ -143,18 +149,6 @@ def _config_content(paths):
     for name, value in sorted(paths.items()):
         content.append('%s = "%s"' % (name.upper().ljust(n), subst_vars(value, paths)))
     return "\n".join(content)
-
-def build_data_files(pkg):
-    ret = {}
-    # Get data files
-    for name, data_section in pkg.data_files.items():
-        files = data_section.resolve_glob()
-        source_dir = os.path.join("$_srcrootdir", data_section.source_dir)
-        new_data_section = DataFiles(data_section.name, files,
-                                     data_section.target_dir, source_dir)
-        ret[name] = InstalledSection.from_data_files(name, new_data_section)
-
-    return ret
 
 def build_dir():
     # FIXME: handle build directory differently, wo depending on distutils

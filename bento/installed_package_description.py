@@ -28,13 +28,6 @@ def ipkg_meta_from_pkg(pkg):
 
 class InstalledSection(object):
     @classmethod
-    def from_data_files(cls, name, data_files):
-        return cls.from_source_target_directories("datafiles", name,
-                   data_files.source_dir,
-                   data_files.target_dir,
-                   data_files.files)
-
-    @classmethod
     def from_source_target_directories(cls, category, name, source_dir, target_dir, files):
         files = [(f, f) for f in files]
         return cls(category, name, source_dir, target_dir, files)
