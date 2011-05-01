@@ -5,11 +5,13 @@ Released on .
 Main features:
 
     - Preliminary support for .mpkg (Mac OS X native packaging)
+    - More consistent API for extension/compiled library build registration
 
 Internals
 ---------
 
     - Significantly better code coverage of bento.commands
+    - Use node-based representation of package description in build and install
 
 Version 0.0.5
 =============

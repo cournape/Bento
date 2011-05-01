@@ -154,6 +154,17 @@ class NodeRepresentation(object):
         self._update_data_files(pkg)
         self._update_extra_sources(pkg)
 
+    def iter_category(self, category):
+        cat = {"extensions": self._extensions.iteritems(),
+               "libraries": self._compiled_libraries.iteritems(),
+               "packages": iter(self._py_packages),
+               "modules": iter(self._py_modules),
+               "datafiles": self._data.iteritems()}
+        if category in cat:
+            return cat[category]
+        else:
+            raise ValueError("Unknown category %s" % category)
+
     def nodes_iter(self):
         for n in self._py_modules:
             yield n

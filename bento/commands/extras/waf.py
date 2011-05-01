@@ -219,7 +219,7 @@ class BuildWafContext(BuildContext):
         self._outputs["extensions"] = {}
         self._outputs["compiled_libraries"] = {}
 
-        for name, extension in self._extensions.iteritems():
+        for name, extension in self._node_pkg.iter_category("extensions"):
             builder = self._extension_callbacks[name]
             self.pre_recurse(extension.ref_node)
             try:
@@ -229,7 +229,7 @@ class BuildWafContext(BuildContext):
                 self.post_recurse()
             self._outputs["extensions"][name] = []
 
-        for name, compiled_library in self._compiled_libraries.iteritems():
+        for name, compiled_library in self._node_pkg.iter_category("libraries"):
             builder = self._compiled_library_callbacks[name]
             self.pre_recurse(compiled_library.ref_node)
             try:

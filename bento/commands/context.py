@@ -251,11 +251,8 @@ class BuildContext(_ContextWithBuildDirectory):
 
         self._outputs = {}
 
-        r = NodeRepresentation(top_node, top_node)
-        r.update_package(pkg)
-
-        self._extensions = r._extensions
-        self._compiled_libraries = r._compiled_libraries
+        self._node_pkg = NodeRepresentation(top_node, top_node)
+        self._node_pkg.update_package(pkg)
 
     def shutdown(self):
         CmdContext.shutdown(self)
@@ -289,9 +286,9 @@ class BuildContext(_ContextWithBuildDirectory):
         sections["compiled_libraries"] = {}
 
         outputs_e, outputs_c = self._outputs["extensions"], self._outputs["compiled_libraries"]
-        for name, extension in self._extensions.iteritems():
+        for name, extension in self._node_pkg.iter_category("extensions"):
             sections["extensions"][name] = build_isection(self, name, outputs_e[name], "extensions")
-        for name, compiled_library in self._compiled_libraries.iteritems():
+        for name, extension in self._node_pkg.iter_category("libraries"):
             sections["compiled_libraries"][name] = build_isection(self, name,
                         outputs_c[name], "compiled_libraries")
 
@@ -325,14 +322,14 @@ class DistutilsBuildContext(BuildContext):
 
     def compile(self):
         outputs = {}
-        for name, extension in self._extensions.iteritems():
+        for name, extension in self._node_pkg.iter_category("extensions"):
             builder = self._extension_callbacks[name]
             extension = extension.extension_from(extension.ref_node)
             outputs[name] = builder(extension)
         self._outputs["extensions"] = outputs
 
         outputs = {}
-        for name, compiled_library in self._compiled_libraries.iteritems():
+        for name, compiled_library in self._node_pkg.iter_category("libraries"):
             builder = self._compiled_library_callbacks[name]
             compiled_library = compiled_library.extension_from(compiled_library.ref_node)
             outputs[name] = builder(compiled_library)
@@ -372,7 +369,7 @@ class BuildYakuContext(BuildContext):
         bld = self.yaku_build_ctx
 
         outputs_e = {}
-        for name, extension in self._extensions.iteritems():
+        for name, extension in self._node_pkg.iter_category("extensions"):
             builder = self._extension_callbacks[name]
             self.pre_recurse(extension.ref_node)
             try:
@@ -382,7 +379,7 @@ class BuildYakuContext(BuildContext):
                 self.post_recurse()
 
         outputs_c = {}
-        for name, compiled_library in self._compiled_libraries.iteritems():
+        for name, compiled_library in self._node_pkg.iter_category("libraries"):
             builder = self._compiled_library_callbacks[name]
             self.pre_recurse(compiled_library.ref_node)
             try:
