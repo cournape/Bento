@@ -93,13 +93,21 @@ Usage:   bentomaker build [OPTIONS]."""
             p.print_help()
             return
 
-        def build_packages(pkg):
-            return _build_python_files(pkg, ctx.top_node)
-        self.section_writer.sections_callbacks["pythonfiles"] = build_packages
-
         def build_config_py(pkg):
             return _build_config_py(pkg.config_py, ctx.get_paths_scheme(), ctx.top_node)
         self.section_writer.sections_callbacks["bentofiles"] = build_config_py
+
+        py_sections = {}
+        def build_py_isection(name, nodes):
+            isection = InstalledSection.from_source_target_directories("pythonfiles",
+                name, "$_srcrootdir", "$sitedir", [n.srcpath() for n in nodes])
+            py_sections[name] = isection
+        for name, nodes in ctx._node_pkg.iter_category("packages"):
+            build_py_isection(name, nodes)
+        for name, node in ctx._node_pkg.iter_category("modules"):
+            build_py_isection(name, [node])
+        self.section_writer.sections["pythonfiles"] = py_sections
+
         self.section_writer.update_sections(ctx.pkg)
         ctx.compile()
         ctx.post_compile(self.section_writer)
@@ -110,7 +118,6 @@ Usage:   bentomaker build [OPTIONS]."""
 class SectionWriter(object):
     def __init__(self):
         callbacks = [
-            ("pythonfiles", None),
             ("bentofiles", None),
             #("compiled_libraries", None),
             #("extensions", None),
@@ -129,18 +136,6 @@ class SectionWriter(object):
         meta = ipkg_meta_from_pkg(pkg)
         p = InstalledPkgDescription(self.sections, meta, pkg.executables)
         p.write(filename)
-
-def _build_python_files(pkg, top_node):
-    python_files = []
-    for p in get_packages(pkg, top_node):
-        python_files.extend(find_package(p, top_node))
-    for m in pkg.py_modules:
-        node = top_node.find_node("%s.py" % m)
-        python_files.append(node.path_from(top_node))
-    py_section = InstalledSection.from_source_target_directories("pythonfiles", "library",
-            "$_srcrootdir", "$sitedir", python_files)
-
-    return {"library": py_section}
 
 def _config_content(paths):
     keys = sorted(paths.keys())

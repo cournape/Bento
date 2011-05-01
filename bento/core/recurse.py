@@ -64,7 +64,7 @@ class NodeRepresentation(object):
         self._compiled_libraries = {}
 
         self._py_packages = {}
-        self._py_modules = []
+        self._py_modules = {}
         self._data = {}
 
         self._extra_source_nodes = []
@@ -137,7 +137,7 @@ class NodeRepresentation(object):
             if n is None:
                 raise IOError("file for module %s not found" % m)
             else:
-                self._py_modules.append(n)
+                self._py_modules[m] = n
 
     def _update_extra_sources(self, pkg):
         for s in pkg.extra_source_files:
@@ -157,8 +157,8 @@ class NodeRepresentation(object):
     def iter_category(self, category):
         cat = {"extensions": self._extensions.iteritems(),
                "libraries": self._compiled_libraries.iteritems(),
-               "packages": iter(self._py_packages),
-               "modules": iter(self._py_modules),
+               "packages": self._py_packages.iteritems(),
+               "modules": self._py_modules.iteritems(),
                "datafiles": self._data.iteritems()}
         if category in cat:
             return cat[category]
