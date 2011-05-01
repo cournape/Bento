@@ -50,9 +50,11 @@ def build_isection(bld, ext_name, files, category):
     # FIXME: this assumes every file in outputs are in one single directory
     nodes = []
     for f in files:
-        n = bld.top_node.find_node(f)
+        # FIXME: change internal context APIs to return built files relatively
+        # to build directory
+        n = bld.top_node.bldnode.parent.find_node(f)
         if n is None:
-            raise IOError("file %s not found (relatively to %s)" % (f, top_node.abspath()))
+            raise IOError("file %s not found (relatively to %s)" % (f, bld.path.abspath()))
         else:
             nodes.append(n)
     srcdir = nodes[0].parent.path_from(bld.top_node)
