@@ -9,6 +9,9 @@ from bento.core.utils \
     import \
         pprint
 
+from bento.core.node \
+    import \
+        create_root_with_source_tree
 from bento.commands.script_utils \
     import \
         create_posix_script, create_win32_script
@@ -17,22 +20,25 @@ from bento.commands.script_utils \
 MODE_755 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | \
     stat.S_IROTH | stat.S_IXOTH
 
-def _create_executable(name, executable):
+root = create_root_with_source_tree(os.getcwd(), os.path.join(os.getcwd(), "build"))
+
+def _create_executable(name, executable, scripts_node):
     if sys.platform == "win32":
-        section = create_win32_script(name, executable, ".")
+        nodes = create_win32_script(name, executable, scripts_node)
     else:
-        section = create_posix_script(name, executable, ".")
-        for f, g in section.files:
-            os.chmod(g, MODE_755)
-    return section
+        nodes = create_posix_script(name, executable, scripts_node)
+        for n in nodes:
+            n.chmod(MODE_755)
+    return nodes
 
 def install_inplace(pkg):
     """Install scripts of pkg in the current directory."""
     for basename, executable in pkg.executables.items():
         version_str = ".".join([str(i) for i in sys.version_info[:2]])
+        scripts_node = root.srcnode
         for name in [basename, "%s-%s" % (basename, version_str)]:
-            section = _create_executable(name, executable)
-            installed = ",".join([g for f, g in section.files])
+            nodes = _create_executable(name, executable, scripts_node)
+            installed = ",".join([n.path_from(scripts_node) for n in nodes])
             pprint("GREEN", "installing %s in current directory" % installed)
 
 if __name__ == "__main__":

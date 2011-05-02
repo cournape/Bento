@@ -117,7 +117,14 @@ Usage:   bentomaker build [OPTIONS]."""
                 source_dir, section.target_dir, [n.path_from(section.ref_node) for n in section.nodes])
         self.section_writer.sections["datafiles"] = data_sections
 
-        self.section_writer.update_sections(ctx.pkg)
+        scripts_node = ctx.top_node.bldnode.make_node("scripts-%s" % sys.version[:3])
+        scripts_node.mkdir()
+        executable_sections = {}
+        for name, executable in ctx.pkg.executables.iteritems():
+            section = build_executable(name, executable, scripts_node)
+            executable_sections[name] = section
+        self.section_writer.sections["executables"] = executable_sections
+
         ctx.compile()
         ctx.post_compile(self.section_writer)
 
@@ -126,16 +133,7 @@ Usage:   bentomaker build [OPTIONS]."""
 
 class SectionWriter(object):
     def __init__(self):
-        callbacks = [
-            ("executables", build_executables)]
-        self.sections_callbacks = OrderedDict(callbacks)
         self.sections = {}
-        for k in self.sections_callbacks:
-            self.sections[k] = {}
-
-    def update_sections(self, pkg):
-        for name, updater in self.sections_callbacks.iteritems():
-            self.sections[name].update(updater(pkg))
 
     def store(self, filename, pkg):
         meta = ipkg_meta_from_pkg(pkg)
@@ -150,27 +148,12 @@ def _config_content(paths):
         content.append('%s = "%s"' % (name.upper().ljust(n), subst_vars(value, paths)))
     return "\n".join(content)
 
-def build_dir():
-    # FIXME: handle build directory differently, wo depending on distutils
-    from distutils.command.build_scripts import build_scripts
-    from distutils.dist import Distribution
-
-    dist = Distribution()
-
-    bld_scripts = build_scripts(dist)
-    bld_scripts.initialize_options()
-    bld_scripts.finalize_options()
-    return bld_scripts.build_dir
-
-def build_executables(pkg):
-    if not pkg.executables:
-        return {}
-    bdir = build_dir()
-    ret = {}
-
-    for name, executable in pkg.executables.items():
-        if sys.platform == "win32":
-            ret[name] = create_win32_script(name, executable, bdir)
-        else:
-            ret[name] = create_posix_script(name, executable, bdir)
-    return ret
+def build_executable(name, executable, scripts_node):
+    if sys.platform == "win32":
+        nodes = create_win32_script(name, executable, scripts_node)
+    else:
+        nodes = create_posix_script(name, executable, scripts_node)
+    source_dir = scripts_node
+    return InstalledSection.from_source_target_directories(
+            "executables", name, source_dir.srcpath(),
+            "$bindir", [n.path_from(source_dir) for n in nodes])

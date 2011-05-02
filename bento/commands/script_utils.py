@@ -112,7 +112,7 @@ def create_scripts(executables, bdir):
             ret[name] = create_posix_script(name, executable, bdir)
     return ret
 
-def create_win32_script(name, executable, bdir):
+def create_win32_script(name, executable, scripts_node):
     script_text = SCRIPT_TEXT % {"python_exec": SYS_EXECUTABLE,
             "module": executable.module,
             "function": executable.function}
@@ -137,44 +137,24 @@ def create_win32_script(name, executable, bdir):
     finally:
         fid.close()
 
-    files = []
-    if bdir and not os.path.exists(bdir):
-        os.makedirs(bdir)
-
     def _write(name, cnt, mode):
-        target = os.path.join(bdir, name)
-        f = open(target, "w" + mode)
-        try:
-            f.write(cnt)
-        finally:
-            f.close()
+        target = scripts_node.make_node(name)
+        target.safe_write(cnt, "w%s" % mode)
+        return nodes
 
-        files.append(os.path.basename(target))
+    nodes = []
+    nodes.append(_write(name + ext, hdr + script_text, 't'))
+    nodes.append(_write(name + ".exe", cnt, 'b'))
+    nodes.append(_write(name + ".exe.manifest", _LAUNCHER_MANIFEST % (name,), 't'))
 
-    _write(name + ext, hdr + script_text, 't')
-    _write(name + ".exe", cnt, 'b')
-    _write(name + ".exe.manifest", _LAUNCHER_MANIFEST % (name,), 't')
+    return nodes
 
-    return InstalledSection.from_source_target_directories("executables", name, bdir, "$bindir",
-                            files)
-
-def create_posix_script(name, executable, bdir):
+def create_posix_script(name, executable, scripts_node):
     header = "#!%(python_exec)s\n" % {"python_exec": SYS_EXECUTABLE}
     cnt = SCRIPT_TEXT % {"python_exec": SYS_EXECUTABLE,
             "module": executable.module,
             "function": executable.function}
 
-    target = os.path.join(bdir, name)
-
-    d = os.path.dirname(target)
-    if d and not os.path.exists(d):
-        os.makedirs(d)
-
-    f = open(target, "w")
-    try:
-        f.write(header + cnt)
-    finally:
-        f.close()
-
-    return InstalledSection.from_source_target_directories("executables", name, d, "$bindir",
-                            [os.path.basename(target)])
+    n = scripts_node.make_node(name)
+    n.safe_write(header + cnt)
+    return [n]
