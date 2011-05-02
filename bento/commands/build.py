@@ -93,43 +93,50 @@ Usage:   bentomaker build [OPTIONS]."""
             p.print_help()
             return
 
-        py_sections = {}
-        def build_py_isection(name, nodes):
-            isection = InstalledSection.from_source_target_directories("pythonfiles",
-                name, "$_srcrootdir", "$sitedir", [n.srcpath() for n in nodes])
-            py_sections[name] = isection
-        for name, nodes in ctx._node_pkg.iter_category("packages"):
-            build_py_isection(name, nodes)
-        for name, node in ctx._node_pkg.iter_category("modules"):
-            build_py_isection(name, [node])
-        if ctx.pkg.config_py:
-            content = _config_content(ctx.get_paths_scheme())
-            target_node = ctx.top_node.bldnode.make_node(ctx.pkg.config_py)
-            target_node.parent.mkdir()
-            target_node.safe_write(content)
-            build_py_isection("bento_config", [target_node])
-        self.section_writer.sections["pythonfiles"] = py_sections
-
-        data_sections = {}
-        for name, section in ctx._node_pkg.iter_category("datafiles"):
-            source_dir = os.path.join("$_srcrootdir", section.ref_node.srcpath())
-            data_sections[name] = InstalledSection.from_source_target_directories("datafiles", name,
-                source_dir, section.target_dir, [n.path_from(section.ref_node) for n in section.nodes])
-        self.section_writer.sections["datafiles"] = data_sections
-
-        scripts_node = ctx.top_node.bldnode.make_node("scripts-%s" % sys.version[:3])
-        scripts_node.mkdir()
-        executable_sections = {}
-        for name, executable in ctx.pkg.executables.iteritems():
-            section = build_executable(name, executable, scripts_node)
-            executable_sections[name] = section
-        self.section_writer.sections["executables"] = executable_sections
+        self.section_writer.sections["pythonfiles"] = build_python_files(ctx)
+        self.section_writer.sections["datafiles"] = build_data_files(ctx)
+        self.section_writer.sections["executables"] = build_executables(ctx)
 
         ctx.compile()
         ctx.post_compile(self.section_writer)
 
     def shutdown(self, ctx):
         self.section_writer.store(IPKG_PATH, ctx.pkg)
+
+def build_python_files(ctx):
+    py_sections = {}
+    def build_py_isection(name, nodes):
+        isection = InstalledSection.from_source_target_directories("pythonfiles",
+            name, "$_srcrootdir", "$sitedir", [n.srcpath() for n in nodes])
+        py_sections[name] = isection
+    for name, nodes in ctx._node_pkg.iter_category("packages"):
+        build_py_isection(name, nodes)
+    for name, node in ctx._node_pkg.iter_category("modules"):
+        build_py_isection(name, [node])
+    if ctx.pkg.config_py:
+        content = _config_content(ctx.get_paths_scheme())
+        target_node = ctx.top_node.bldnode.make_node(ctx.pkg.config_py)
+        target_node.parent.mkdir()
+        target_node.safe_write(content)
+        build_py_isection("bento_config", [target_node])
+    return py_sections
+
+def build_data_files(ctx):
+    data_sections = {}
+    for name, section in ctx._node_pkg.iter_category("datafiles"):
+        source_dir = os.path.join("$_srcrootdir", section.ref_node.srcpath())
+        data_sections[name] = InstalledSection.from_source_target_directories("datafiles", name,
+            source_dir, section.target_dir, [n.path_from(section.ref_node) for n in section.nodes])
+    return data_sections
+
+def build_executables(ctx):
+    scripts_node = ctx.top_node.bldnode.make_node("scripts-%s" % sys.version[:3])
+    scripts_node.mkdir()
+    executable_sections = {}
+    for name, executable in ctx.pkg.executables.iteritems():
+        section = build_executable(name, executable, scripts_node)
+        executable_sections[name] = section
+    return executable_sections
 
 class SectionWriter(object):
     def __init__(self):
