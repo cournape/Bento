@@ -55,7 +55,7 @@ class _ConfigureState(object):
 
     def dump(self, node):
         node.parent.mkdir()
-        node.save_write(dumps(self), 'wb')
+        node.safe_write(dumps(self), 'wb')
 
     @classmethod
     def from_dump(cls, node):
