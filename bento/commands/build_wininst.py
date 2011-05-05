@@ -54,7 +54,7 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
                     % (SCRIPT_NAME, "build_wininst"))
 
         ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
-        create_wininst(ipkg)
+        create_wininst(ipkg, src_root_dir, ctx.top_node.bldnode.abspath())
 
 def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
     meta = PackageMetadata.from_ipkg(ipkg)

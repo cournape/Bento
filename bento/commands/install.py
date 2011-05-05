@@ -141,7 +141,7 @@ Usage:   bentomaker install [OPTIONS]."""
         ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
         scheme = ctx.get_paths_scheme()
         ipkg.update_paths(scheme)
-        file_sections = ipkg.resolve_paths()
+        file_sections = ipkg.resolve_paths(src_root_dir=ctx.top_node.bldnode.abspath())
         if o.list_files:
             # XXX: this won't take into account action in post install scripts.
             # A better way would be to log install steps and display those, but

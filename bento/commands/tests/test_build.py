@@ -15,6 +15,9 @@ from nose.plugins.skip \
 from bento.core.node \
     import \
         create_root_with_source_tree
+from bento.core.utils \
+    import \
+        subst_vars
 from bento.core \
     import \
         PackageDescription
@@ -126,6 +129,11 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
         return conf, configure, bld, build
 
+    def _resolve_isection(self, node, isection):
+        source_dir = subst_vars(isection.source_dir, {"_srcrootdir": node.bldnode.abspath()})
+        isection.source_dir = source_dir
+        return isection
+
     def test_no_extension(self):
         self._prepare({"bento.info": BENTO_INFO})
 
@@ -134,7 +142,7 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
         sections = build.section_writer.sections["extensions"]
         for extension in conf.pkg.extensions.values():
-            isection = sections[extension.name]
+            isection = self._resolve_isection(bld.top_node, sections[extension.name])
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
     def test_extension_registration(self):
@@ -172,7 +180,7 @@ Library:
         conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_CLIB})
         sections = build.section_writer.sections["compiled_libraries"]
         for library in conf.pkg.compiled_libraries.values():
-            isection = sections[library.name]
+            isection = self._resolve_isection(bld.top_node, sections[library.name])
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
 class TestBuildDistutils(_TestBuildSimpleExtension):

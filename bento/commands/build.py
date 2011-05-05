@@ -45,7 +45,7 @@ def build_isection(bld, ext_name, files, category):
 
     # FIXME: do package -> location translation correctly
     pkg_dir = os.path.dirname(ext_name.replace('.', os.path.sep))
-    target = os.path.join('$sitedir', pkg_dir)
+    target_dir = os.path.join('$sitedir', pkg_dir)
 
     # FIXME: this assumes every file in outputs are in one single directory
     nodes = []
@@ -57,9 +57,10 @@ def build_isection(bld, ext_name, files, category):
             raise IOError("file %s not found (relatively to %s)" % (f, bld.path.abspath()))
         else:
             nodes.append(n)
-    srcdir = nodes[0].parent.path_from(bld.top_node)
-    section = InstalledSection.from_source_target_directories(category, ext_name, srcdir,
-                                target, [o.name for o in nodes])
+    source_dir = nodes[0].parent
+    section = InstalledSection.from_source_target_directories(category, ext_name,
+        os.path.join("$_srcrootdir", source_dir.bldpath()),
+        target_dir, [o.path_from(source_dir) for o in nodes])
     return section
 
 class BuildCommand(Command):
@@ -106,8 +107,10 @@ Usage:   bentomaker build [OPTIONS]."""
 def build_python_files(ctx):
     py_sections = {}
     def build_py_isection(name, nodes):
+        source_dir = ctx.top_node.path_from(ctx.top_node.bldnode)
         isection = InstalledSection.from_source_target_directories("pythonfiles",
-            name, "$_srcrootdir", "$sitedir", [n.srcpath() for n in nodes])
+            name, os.path.join("$_srcrootdir", source_dir), "$sitedir",
+            [n.srcpath() for n in nodes])
         py_sections[name] = isection
     for name, nodes in ctx._node_pkg.iter_category("packages"):
         build_py_isection(name, nodes)
@@ -124,7 +127,7 @@ def build_python_files(ctx):
 def build_data_files(ctx):
     data_sections = {}
     for name, section in ctx._node_pkg.iter_category("datafiles"):
-        source_dir = os.path.join("$_srcrootdir", section.ref_node.srcpath())
+        source_dir = os.path.join("$_srcrootdir", section.ref_node.bldpath())
         data_sections[name] = InstalledSection.from_source_target_directories("datafiles", name,
             source_dir, section.target_dir, [n.path_from(section.ref_node) for n in section.nodes])
     return data_sections
