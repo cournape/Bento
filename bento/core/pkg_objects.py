@@ -98,7 +98,7 @@ class Executable(object):
     def __repr__(self):
         return repr({"name": self.name, "module": self.module, "function": self.function})
 
-class Extension(object):
+class Compiled(object):
     @classmethod
     def from_parse_dict(cls, d):
         return cls(**d)
@@ -111,23 +111,14 @@ class Extension(object):
         else:
             self.include_dirs = include_dirs
 
-    def __repr__(self):
-        return "Extension(%s, sources=%s, include_dirs=%r)" % \
-                    (self.name, self.sources, self.include_dirs)
-
-class CompiledLibrary(object):
-    @classmethod
-    def from_parse_dict(cls, d):
-        return cls(**d)
-
-    def __init__(self, name, sources, include_dirs=None):
-        self.name = normalize_path(name)
-        self.sources = [normalize_path(p) for p in sources]
-        if include_dirs is None:
-            self.include_dirs = []
-        else:
-            self.include_dirs = include_dirs
+    def __str__(self):
+        return "%s(name=%s)" % (self.__class__.__name__, self.name)
 
     def __repr__(self):
-        return "CompiledLibrary(%s, sources=%s, include_dirs=%r)" % \
-                    (self.name, self.sources, self.include_dirs)
+        return self.__str__()
+
+class Extension(Compiled):
+    pass
+
+class CompiledLibrary(Compiled):
+    pass

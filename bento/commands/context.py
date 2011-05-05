@@ -1,5 +1,6 @@
 import os
 import sys
+import collections
 import cPickle
 
 try:
@@ -15,9 +16,15 @@ from bento.core.package_cache \
 from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries
+from bento.core.recurse \
+    import \
+        NodeRepresentation
 from bento.commands.configure \
     import \
         _ConfigureState
+from bento.commands.build \
+    import \
+        build_isection
 from bento.commands.errors \
     import \
         UsageException
@@ -225,19 +232,27 @@ class ConfigureYakuContext(ConfigureContext):
         super(ConfigureYakuContext, self).shutdown()
         self.yaku_configure_ctx.store()
 
+    def pre_recurse(self, local_node):
+        super(ConfigureYakuContext, self).pre_recurse(local_node)
+        self._old_path = self.yaku_configure_ctx.path
+        # Gymnastic to make a *yaku* node from a *bento* node
+        self.yaku_configure_ctx.path = self.yaku_configure_ctx.path.make_node(self.local_node.path_from(self.top_node))
+
+    def post_recurse(self):
+        self.yaku_configure_ctx.path = self._old_path
+        super(ConfigureYakuContext, self).post_recurse()
+
 class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
         super(BuildContext, self).__init__(cmd_argv, options_context, pkg, top_node)
-        self._extensions_callback = {}
-        self._clibraries_callback = {}
-        self._clibrary_envs = {}
-        self._extension_envs = {}
+        # Those are dummies - are set by subclasses
+        self._extension_callbacks = None
+        self._compiled_library_callbacks = None
 
-        o, a = options_context.parser.parse_args(cmd_argv)
-        if o.inplace:
-            self.inplace = True
-        else:
-            self.inplace = False
+        self._outputs = {}
+
+        self._node_pkg = NodeRepresentation(top_node, top_node)
+        self._node_pkg.update_package(pkg)
 
     def shutdown(self):
         CmdContext.shutdown(self)
@@ -245,74 +260,156 @@ class BuildContext(_ContextWithBuildDirectory):
         _write_argv_checksum(checksum, "build")
 
     def _compute_extension_name(self, extension_name):
-        parent = self.local_node.path_from(self.top_node).split(os.path.sep)
-        return ".".join(parent + [extension_name])
+        if self.local_node is None:
+            raise ValueError("Forgot to call pre_recurse ?")
+        if self.local_node != self.top_node:
+            parent = self.local_node.path_from(self.top_node).split(os.path.sep)
+            return ".".join(parent + [extension_name])
+        else:
+            return extension_name
 
-    def post_compile(self, section_writer):
-        pass
-
-    # XXX: none of those register_* really belong here
     def register_builder(self, extension_name, builder):
         full_name = self._compute_extension_name(extension_name)
-        self._extensions_callback[full_name] = builder
+        self._extension_callbacks[full_name] = builder
 
-    def register_clib_builder(self, clib_name, builder):
+    def register_compiled_library_builder(self, clib_name, builder):
         relpos = self.local_node.path_from(self.top_node)
-        full_name = os.path.join(relpos, clib_name)
-        self._clibraries_callback[full_name] = builder
+        full_name = os.path.join(relpos, clib_name).replace(os.sep, ".")
+        self._compiled_library_callbacks[full_name] = builder
 
-    def register_environment(self, extension_name, env):
-        full_name = self._compute_extension_name(extension_name)
-        self._extension_envs[full_name] = env
+    def compile(self):
+        raise NotImplementedError()
 
-    def register_clib_environment(self, clib_name, env):
-        relpos = self.local_node.path_from(self.top_node)
-        full_name = os.path.join(relpos, clib_name)
-        self._clibrary_envs[full_name] = env
+    def post_compile(self, section_writer):
+        sections = section_writer.sections
+        sections["extensions"] = {}
+        sections["compiled_libraries"] = {}
+
+        outputs_e, outputs_c = self._outputs["extensions"], self._outputs["compiled_libraries"]
+        for name, extension in self._node_pkg.iter_category("extensions"):
+            sections["extensions"][name] = build_isection(self, name, outputs_e[name], "extensions")
+        for name, extension in self._node_pkg.iter_category("libraries"):
+            sections["compiled_libraries"][name] = build_isection(self, name,
+                        outputs_c[name], "compiled_libraries")
 
 class DistutilsBuildContext(BuildContext):
-    def build_extensions_factory(self, *a, **kw):
-        from bento.commands.build_distutils \
-            import \
-                build_extensions
-        return lambda pkg: build_extensions(pkg, use_numpy_distutils=False)
+    def __init__(self, cmd_argv, options_context, pkg, top_node):
+        from bento.commands.build_distutils import DistutilsBuilder
+        super(DistutilsBuildContext, self).__init__(cmd_argv, options_context, pkg, top_node)
 
-    def build_compiled_libraries_factory(self, *a, **kw):
-        from bento.commands.build_distutils \
-            import \
-                build_compiled_libraries
-        return build_compiled_libraries
+        o, a = options_context.parser.parse_args(cmd_argv)
+        if o.jobs:
+            jobs = int(o.jobs)
+        else:
+            jobs = 1
+        if o.verbose:
+            verbose = int(o.verbose)
+        else:
+            verbose = 0
+        self.verbose = verbose
+        self.jobs = jobs
+
+        self._distutils_builder = DistutilsBuilder(verbosity=self.verbose)
+
+        def build_extension(extension):
+            return self._distutils_builder.build_extension(extension)
+
+        def build_compiled_library(library):
+            return self._distutils_builder.build_compiled_library(library)
+
+        self._extension_callbacks = collections.defaultdict(lambda : build_extension)
+        self._compiled_library_callbacks = collections.defaultdict(lambda : build_compiled_library)
+
+    def compile(self):
+        outputs = {}
+        for name, extension in self._node_pkg.iter_category("extensions"):
+            builder = self._extension_callbacks[name]
+            extension = extension.extension_from(extension.ref_node)
+            outputs[name] = builder(extension)
+        self._outputs["extensions"] = outputs
+
+        outputs = {}
+        for name, compiled_library in self._node_pkg.iter_category("libraries"):
+            builder = self._compiled_library_callbacks[name]
+            compiled_library = compiled_library.extension_from(compiled_library.ref_node)
+            outputs[name] = builder(compiled_library)
+        self._outputs["compiled_libraries"] = outputs
 
 class BuildYakuContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
         super(BuildYakuContext, self).__init__(cmd_argv, options_context, pkg, top_node)
         self.yaku_build_ctx = yaku.context.get_bld()
 
+        o, a = options_context.parser.parse_args(cmd_argv)
+        if o.jobs:
+            jobs = int(o.jobs)
+        else:
+            jobs = 1
+        if o.verbose:
+            verbose = int(o.verbose)
+        else:
+            verbose = 0
+        self.verbose = verbose
+        self.jobs = jobs
+
+        from bento.commands.build_yaku import build_extension, build_compiled_library
+        def _build_extension(extension):
+            return build_extension(self.yaku_build_ctx, extension, verbose)
+        def _build_compiled_library(library):
+            return build_compiled_library(self.yaku_build_ctx, library, verbose)
+        self._extension_callbacks = collections.defaultdict(lambda : _build_extension)
+        self._compiled_library_callbacks = collections.defaultdict(lambda : _build_compiled_library)
+
     def shutdown(self):
         super(BuildYakuContext, self).shutdown()
         self.yaku_build_ctx.store()
 
-    def build_extensions_factory(self, *a, **kw):
-        from bento.commands.build_yaku \
-            import \
-                build_extensions
-        extensions = get_extensions(self.pkg, self.top_node)
-        def builder(pkg):
-            return build_extensions(extensions,
-                    self.yaku_build_ctx, self._extensions_callback,
-                    self._extension_envs, *a, **kw)
-        return builder
+    def compile(self):
+        import yaku.task_manager
+        bld = self.yaku_build_ctx
 
-    def build_compiled_libraries_factory(self, *a, **kw):
-        from bento.commands.build_yaku \
-            import \
-                build_compiled_libraries
-        libraries = get_compiled_libraries(self.pkg, self.top_node)
-        def builder(pkg):
-            return build_compiled_libraries(libraries,
-                    self.yaku_build_ctx, self._clibraries_callback,
-                    self._clibrary_envs, *a, **kw)
-        return builder
+        outputs_e = {}
+        for name, extension in self._node_pkg.iter_category("extensions"):
+            builder = self._extension_callbacks[name]
+            self.pre_recurse(extension.ref_node)
+            try:
+                extension = extension.extension_from(extension.ref_node)
+                outputs_e[name] = builder(extension)
+            finally:
+                self.post_recurse()
+
+        outputs_c = {}
+        for name, compiled_library in self._node_pkg.iter_category("libraries"):
+            builder = self._compiled_library_callbacks[name]
+            self.pre_recurse(compiled_library.ref_node)
+            try:
+                compiled_library = compiled_library.extension_from(compiled_library.ref_node)
+                outputs_c[name] = builder(compiled_library)
+            finally:
+                self.post_recurse()
+
+        task_manager = yaku.task_manager.TaskManager(bld.tasks)
+        if self.jobs < 2:
+            runner = yaku.scheduler.SerialRunner(bld, task_manager)
+        else:
+            runner = yaku.scheduler.ParallelRunner(bld, task_manager, self.jobs)
+        runner.start()
+        runner.run()
+
+        self._outputs["extensions"] = outputs_e
+        self._outputs["compiled_libraries"] = outputs_c
+
+        # TODO: inplace support
+
+    def pre_recurse(self, local_node):
+        super(BuildYakuContext, self).pre_recurse(local_node)
+        self._old_path = self.yaku_build_ctx.path
+        # Gymnastic to make a *yaku* node from a *bento* node
+        self.yaku_build_ctx.path = self.yaku_build_ctx.path.make_node(self.local_node.path_from(self.top_node))
+
+    def post_recurse(self):
+        self.yaku_build_ctx.path = self._old_path
+        super(BuildYakuContext, self).post_recurse()
 
 def _argv_checksum(argv):
     return md5(cPickle.dumps(argv)).hexdigest()

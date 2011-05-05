@@ -1,9 +1,12 @@
 import os
+import sys
 import shutil
 import unittest
 import tempfile
+import types
 
 import nose
+import nose.config
 
 from nose.plugins.skip \
     import \
@@ -12,18 +15,24 @@ from nose.plugins.skip \
 from bento.core.node \
     import \
         create_root_with_source_tree
+from bento.core.utils \
+    import \
+        subst_vars
 from bento.core \
     import \
         PackageDescription
 from bento.commands.context \
     import \
-        BuildContext, BuildYakuContext, ConfigureYakuContext
+        BuildContext, BuildYakuContext, ConfigureYakuContext, DistutilsBuildContext, DistutilsConfigureContext
 from bento.commands.options \
     import \
         OptionsContext, Option
 from bento.commands.build \
     import \
         BuildCommand
+from bento.installed_package_description \
+    import \
+        InstalledSection
 
 import bento.commands.build_distutils
 import bento.commands.build_yaku
@@ -34,13 +43,22 @@ from yaku.context \
 
 from bento.commands.tests.utils \
     import \
-        prepare_configure, create_fake_package, create_fake_package_from_bento_info
+        prepare_configure, create_fake_package, create_fake_package_from_bento_infos, \
+        prepare_build, create_fake_package_from_bento_info
 
 BENTO_INFO_WITH_EXT = """\
 Name: foo
 
 Library:
     Extension: foo
+        Sources: foo.c
+"""
+
+BENTO_INFO_WITH_CLIB = """\
+Name: foo
+
+Library:
+    CompiledLibrary: foo
         Sources: foo.c
 """
 
@@ -52,29 +70,7 @@ Library:
     Modules: fubar
 """
 
-FOO_C = r"""\
-#include <Python.h>
-#include <stdio.h>
-
-static PyObject*
-hello(PyObject *self, PyObject *args)
-{
-    printf("Hello from C\n");
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-static PyMethodDef HelloMethods[] = {
-    {"hello",  hello, METH_VARARGS, "Print a hello world."},
-    {NULL, NULL, 0, NULL}        /* Sentinel */
-};
-
-PyMODINIT_FUNC
-init_bar(void)
-{
-    (void) Py_InitModule("_bar", HelloMethods);
-}
-"""
+_NOSE_CONFIG = nose.config.Config()
 
 def skipif(condition, msg=None):
     def skip_decorator(f):
@@ -91,13 +87,6 @@ def skipif(condition, msg=None):
         return nose.tools.make_decorator(f)(g)
     return skip_decorator
 
-def has_numpy():
-    try:
-        import numpy
-        return True
-    except ImportError:
-        return False
-
 class _TestBuildSimpleExtension(unittest.TestCase):
     def setUp(self):
         self.save = None
@@ -105,7 +94,15 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
         self.save = os.getcwd()
         self.d = tempfile.mkdtemp()
+
         os.chdir(self.d)
+
+        self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
+
+        # Those should be set by subclasses
+        self._configure_context = None
+        self._build_context = None
+        self._dummy_builder = None
 
     def tearDown(self):
         if self.save:
@@ -113,37 +110,88 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         if self.d:
             shutil.rmtree(self.d)
 
-    def _test_simple_extension(self):
-        for f, content in [("bento.info", BENTO_INFO_WITH_EXT), ("foo.c", FOO_C)]:
-            fid = open(os.path.join(self.d, f), "w")
-            try:
-                fid.write(content)
-            finally:
-                fid.close()
-        return PackageDescription.from_string(BENTO_INFO_WITH_EXT)
+    def _prepare(self, bentos, bscripts=None):
+        conf, configure, bld, build = self._create_contexts(bentos, bscripts)
+        configure.run(conf)
+        conf.shutdown()
 
-class TestBuildDistutils(_TestBuildSimpleExtension):
-    def test_simple_extension(self):
-        pkg = self._test_simple_extension()
-        foo = bento.commands.build_distutils.build_extensions(pkg, use_numpy_distutils=False)
-        isection = foo["foo"]
-        self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
+        build.run(bld)
+        build.shutdown(bld)
+        return conf, configure, bld, build
 
-    @skipif(lambda : not has_numpy())
-    def test_simple_extension_with_numpy(self):
-        pkg = self._test_simple_extension()
-        foo = bento.commands.build_distutils.build_extensions(pkg, use_numpy_distutils=True)
-        isection = foo["foo"]
-        self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
+    def _create_contexts(self, bentos, bscripts=None):
+        top_node = self.root.srcnode
+
+        create_fake_package_from_bento_infos(top_node, bentos, bscripts)
+
+        conf, configure = prepare_configure(top_node, bentos["bento.info"], self._configure_context)
+
+        bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
+        return conf, configure, bld, build
+
+    def _resolve_isection(self, node, isection):
+        source_dir = subst_vars(isection.source_dir, {"_srcrootdir": node.bldnode.abspath()})
+        isection.source_dir = source_dir
+        return isection
 
     def test_no_extension(self):
-        fid = open(os.path.join(self.d, "bento.info"), "w")
+        self._prepare({"bento.info": BENTO_INFO})
+
+    def test_simple_extension(self):
+        conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_EXT})
+
+        sections = build.section_writer.sections["extensions"]
+        for extension in conf.pkg.extensions.values():
+            isection = self._resolve_isection(bld.top_node, sections[extension.name])
+            self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
+
+    def test_extension_registration(self):
+        top_node = self.root.srcnode
+
+        bento_info = """\
+Name: foo
+
+Library:
+    Extension: _foo
+        Sources: src/foo.c
+    Extension: _bar
+        Sources: src/bar.c
+"""
+        bentos = {"bento.info": bento_info}
+
+        conf, configure, bld, build = self._create_contexts(bentos)
+        configure.run(conf)
+        conf.shutdown()
+
+        #bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
+        bld.pre_recurse(top_node)
         try:
-            fid.write("Name: foo")
+            bld.register_builder("_bar", self._dummy)
         finally:
-            fid.close()
-        pkg = PackageDescription.from_file("bento.info")
-        foo = bento.commands.build_distutils.build_extensions(pkg)
+            bld.post_recurse()
+        build.run(bld)
+        build.shutdown(bld)
+
+        sections = build.section_writer.sections["extensions"]
+        self.failUnless(len(sections) == 2)
+        self.failUnless(len(sections["_bar"].files) == 0)
+
+    def test_simple_library(self):
+        conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_CLIB})
+        sections = build.section_writer.sections["compiled_libraries"]
+        for library in conf.pkg.compiled_libraries.values():
+            isection = self._resolve_isection(bld.top_node, sections[library.name])
+            self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
+
+class TestBuildDistutils(_TestBuildSimpleExtension):
+    def setUp(self):
+        from bento.commands.build_distutils import DistutilsBuilder
+        _TestBuildSimpleExtension.setUp(self)
+        self._distutils_builder = DistutilsBuilder()
+
+        self._configure_context = DistutilsConfigureContext
+        self._build_context = DistutilsBuildContext
+        self._dummy = lambda extension: []
 
 class TestBuildYaku(_TestBuildSimpleExtension):
     def setUp(self):
@@ -155,9 +203,9 @@ class TestBuildYaku(_TestBuildSimpleExtension):
 
         self.yaku_build = get_bld()
 
-    def _build_extensions(self, pkg):
-        return bento.commands.build_yaku.build_extensions(pkg.extensions,
-            self.yaku_build, {}, {})
+        self._configure_context = ConfigureYakuContext
+        self._build_context = BuildYakuContext
+        self._dummy = lambda extension: []
 
     def tearDown(self):
         try:
@@ -165,21 +213,74 @@ class TestBuildYaku(_TestBuildSimpleExtension):
         finally:
             super(TestBuildYaku, self).tearDown()
 
+def _not_has_waf():
+    try:
+        import bento.commands.extras.waf
+        bento.commands.extras.waf.disable_output()
+        return False
+    except RuntimeError, e:
+        return True
+
+def skip_no_waf(f):
+    return skipif(_not_has_waf, "waf not found")(f)
+
+class TestBuildWaf(_TestBuildSimpleExtension):
+    #def __init__(self, *a, **kw):
+    #    super(TestBuildWaf, self).__init__(*a, **kw)
+
+    #    # Add skip_no_waf decorator to any test function
+    #    for m in dir(self):
+    #        a = getattr(self, m)
+    #        if isinstance(a, types.MethodType) and _NOSE_CONFIG.testMatch.match(m):
+    #            setattr(self, m, skip_no_waf(a))
+
+    def _create_contexts(self, bentos, bscripts=None):
+        conf, configure, bld, build = super(TestBuildWaf, self)._create_contexts(bentos, bscripts)
+        from bento.commands.extras.waf import make_stream_logger
+        from cStringIO import StringIO
+        bld.waf_context.logger = make_stream_logger("build", StringIO())
+        return conf, configure, bld, build
+
+    @skip_no_waf
     def test_simple_extension(self):
-        pkg = self._test_simple_extension()
+        super(TestBuildWaf, self).test_simple_extension()
 
-        foo = self._build_extensions(pkg)
-        isection = foo["foo"]
-        self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
+    @skip_no_waf
+    def test_simple_library(self):
+        super(TestBuildWaf, self).test_simple_library()
 
+    @skip_no_waf
     def test_no_extension(self):
-        fid = open(os.path.join(self.d, "bento.info"), "w")
-        try:
-            fid.write("Name: foo")
-        finally:
-            fid.close()
-        pkg = PackageDescription.from_file("bento.info")
-        self._build_extensions(pkg)
+        super(TestBuildWaf, self).test_no_extension()
+
+    @skip_no_waf
+    def test_extension_registration(self):
+        super(TestBuildWaf, self).test_extension_registration()
+
+    def setUp(self):
+        self._fake_output = None
+        self._stderr = sys.stderr
+        self._stdout = sys.stdout
+        super(TestBuildWaf, self).setUp()
+        # XXX: ugly stuff to make waf and nose happy together
+        if not hasattr(sys.stdout, "encoding"):
+            sys.stdout.encoding = "ascii"
+        if not hasattr(sys.stderr, "encoding"):
+            sys.stderr.encoding = "ascii"
+
+        if _not_has_waf():
+            return
+        else:
+            from bento.commands.extras.waf import ConfigureWafContext, BuildWafContext
+
+            self._configure_context = ConfigureWafContext
+            self._build_context = BuildWafContext
+            self._dummy = lambda extension: []
+
+    def tearDown(self):
+        super(TestBuildWaf, self).tearDown()
+        sys.stderr = self._stderr
+        sys.stdout = self._stdout
 
 class TestBuildCommand(unittest.TestCase):
     def setUp(self):

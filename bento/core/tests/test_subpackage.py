@@ -81,8 +81,8 @@ class TestTranslation(unittest.TestCase):
             top_node = root.find_dir(top)
             clibs = subpackage.flatten_subpackage_compiled_libraries(
                     spkg, top_node)
-            self.failUnless("bar/clib" in clibs)
-            clib = clibs["bar/clib"]
+            self.failUnless("bar.clib" in clibs)
+            clib = clibs["bar.clib"]
             assert_equal(clib.sources, ["bar/src/clib.c"])
             assert_equal(clib.include_dirs, ["bar"])
         finally:

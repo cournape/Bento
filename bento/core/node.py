@@ -14,6 +14,47 @@ from bento.compat.api \
     import \
         rename
 
+def to_list(sth):
+	if isinstance(sth, str):
+		return sth.split()
+	else:
+		return sth
+
+exclude_regs = '''
+**/*~
+**/#*#
+**/.#*
+**/%*%
+**/._*
+**/CVS
+**/CVS/**
+**/.cvsignore
+**/SCCS
+**/SCCS/**
+**/vssver.scc
+**/.svn
+**/.svn/**
+**/BitKeeper
+**/.git
+**/.git/**
+**/.gitignore
+**/.bzr
+**/.bzrignore
+**/.bzr/**
+**/.hg
+**/.hg/**
+**/_MTN
+**/_MTN/**
+**/.arch-ids
+**/{arch}
+**/_darcs
+**/_darcs/**
+**/.DS_Store'''
+"""
+Ant patterns for files and folders to exclude while doing the
+recursive traversal in :py:meth:`waflib.Node.Node.ant_glob`
+"""
+
 def split_path(path):
     return path.split('/')
 
@@ -299,6 +340,148 @@ class Node(object):
             diff -= 1
             p = p.parent
         return id(p) == id(node)
+
+    def _ant_iter(self, accept=None, maxdepth=25, pats=[], dir=False, src=True, remove=True):
+        """
+        Semi-private and recursive method used by ant_glob.
+
+        :param accept: function used for accepting/rejecting a node, returns the patterns that can be still accepted in recursion
+        :type accept: function
+        :param maxdepth: maximum depth in the filesystem (25)
+        :type maxdepth: int
+        :param pats: list of patterns to accept and list of patterns to exclude
+        :type pats: tuple
+        :param dir: return folders too (False by default)
+        :type dir: bool
+        :param src: return files (True by default)
+        :type src: bool
+        :param remove: remove files/folders that do not exist (True by default)
+        :type remove: bool
+        """
+        dircont = self.listdir()
+        dircont.sort()
+
+        try:
+            lst = set(self.children.keys())
+            if remove:
+                for x in lst - set(dircont):
+                    del self.children[x]
+        except:
+            self.children = {}
+
+        for name in dircont:
+            npats = accept(name, pats)
+            if npats and npats[0]:
+                accepted = [] in npats[0]
+
+                node = self.make_node([name])
+
+                isdir = os.path.isdir(node.abspath())
+                if accepted:
+                    if isdir:
+                        if dir:
+                            yield node
+                    else:
+                        if src:
+                            yield node
+
+                if getattr(node, 'cache_isdir', None) or isdir:
+                    node.cache_isdir = True
+                    if maxdepth:
+                        for k in node._ant_iter(accept=accept, maxdepth=maxdepth - 1, pats=npats, dir=dir, src=src):
+                            yield k
+        raise StopIteration
+
+    def ant_glob(self, *k, **kw):
+        """
+        This method is used for finding files across folders. It behaves like ant patterns:
+
+        * ``**/*`` find all files recursively
+        * ``**/*.class`` find all files ending by .class
+        * ``..`` find files having two dot characters
+
+        For example::
+
+            def configure(cfg):
+                cfg.path.ant_glob('**/*.cpp') # find all .cpp files
+                cfg.root.ant_glob('etc/*.txt') # using the filesystem root can be slow
+                cfg.path.ant_glob('*.cpp', excl=['*.c'], src=True, dir=False)
+
+        For more information see http://ant.apache.org/manual/dirtasks.html
+
+        The nodes that correspond to files and folders that do not exist will be removed
+
+        :param incl: ant patterns or list of patterns to include
+        :type incl: string or list of strings
+        :param excl: ant patterns or list of patterns to exclude
+        :type excl: string or list of strings
+        :param dir: return folders too (False by default)
+        :type dir: bool
+        :param src: return files (True by default)
+        :type src: bool
+        :param remove: remove files/folders that do not exist (True by default)
+        :type remove: bool
+        :param maxdepth: maximum depth of recursion
+        :type maxdepth: int
+        """
+
+        src = kw.get('src', True)
+        dir = kw.get('dir', False)
+
+        excl = kw.get('excl', exclude_regs)
+        incl = k and k[0] or kw.get('incl', '**')
+
+        def to_pat(s):
+            lst = to_list(s)
+            ret = []
+            for x in lst:
+                x = x.replace('\\', '/').replace('//', '/')
+                if x.endswith('/'):
+                    x += '**'
+                lst2 = x.split('/')
+                accu = []
+                for k in lst2:
+                    if k == '**':
+                        accu.append(k)
+                    else:
+                        k = k.replace('.', '[.]').replace('*','.*').replace('?', '.').replace('+', '\\+')
+                        k = '^%s$' % k
+                        try:
+                            #print "pattern", k
+                            accu.append(re.compile(k))
+                        except Exception as e:
+                            raise Errors.WafError("Invalid pattern: %s" % k, e)
+                ret.append(accu)
+            return ret
+
+        def filtre(name, nn):
+            ret = []
+            for lst in nn:
+                if not lst:
+                    pass
+                elif lst[0] == '**':
+                    ret.append(lst)
+                    if len(lst) > 1:
+                        if lst[1].match(name):
+                            ret.append(lst[2:])
+                    else:
+                        ret.append([])
+                elif lst[0].match(name):
+                    ret.append(lst[1:])
+            return ret
+
+        def accept(name, pats):
+            nacc = filtre(name, pats[0])
+            nrej = filtre(name, pats[1])
+            if [] in nrej:
+                nacc = []
+            return [nacc, nrej]
+
+        ret = [x for x in self._ant_iter(accept=accept, pats=[to_pat(incl), to_pat(excl)], maxdepth=25, dir=dir, src=src, remove=kw.get('remove', True))]
+        if kw.get('flat', False):
+            return ' '.join([x.path_from(self) for x in ret])
+
+        return ret
 
     def find_dir(self, lst):
         """

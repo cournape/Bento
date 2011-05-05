@@ -214,8 +214,14 @@ class PackageDescription:
                     ext.sources = sources
                 return compiled_modules
 
-        self.extensions = normalize_paths(extensions)
-        self.compiled_libraries = normalize_paths(compiled_libraries)
+        if extensions:
+            self.extensions = extensions
+        else:
+            self.extensions = {}
+        if compiled_libraries:
+            self.compiled_libraries = compiled_libraries
+        else:
+            self.compiled_libraries = {}
 
         if not extra_source_files:
             self.extra_source_files = []

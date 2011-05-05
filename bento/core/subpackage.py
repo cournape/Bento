@@ -75,7 +75,8 @@ def flatten_subpackage_extensions(spkg, top_node):
 
     ret = {}
     for name, extension in spkg.extensions.items():
-        full_name = spkg.rdir + ".%s" % name
+        parent_pkg = spkg.rdir.replace(os.sep, ".")
+        full_name = parent_pkg + ".%s" % name
         sources = []
         for s in extension.sources:
             node = local_node.find_node(s)
@@ -126,7 +127,8 @@ def flatten_subpackage_compiled_libraries(spkg, top_node):
         include_dirs = [
                 local_node.find_node(d).path_from(top_node) \
                 for d in clib.include_dirs]
-        full_name = normalize_path(os.path.join(spkg.rdir, name))
+        parent_pkg = spkg.rdir.replace(os.sep, ".")
+        full_name = ".".join([parent_pkg, name])
         ret[full_name] = CompiledLibrary(full_name, sources, include_dirs)
     return ret
 
