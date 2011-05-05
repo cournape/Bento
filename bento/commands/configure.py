@@ -54,19 +54,12 @@ class _ConfigureState(object):
             self.user_data = user_data
 
     def dump(self, node):
-        # Write into tmp file and atomtically rename the file to avoid
-        # corruption
         node.parent.mkdir()
-        node.write(dumps(self))
+        node.save_write(dumps(self), 'wb')
 
     @classmethod
     def from_dump(cls, node):
-        f = open(node.abspath(), 'rb')
-        try:
-            s = f.read()
-            return loads(s)
-        finally:
-            f.close()
+        return loads(node.read('rb'))
 
 def set_scheme_options(scheme, options):
     """Set path variables given in options in scheme dictionary."""
