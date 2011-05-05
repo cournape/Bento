@@ -176,7 +176,7 @@ class BuildContext(object):
         self.builders = {}
         self.tasks = []
 
-    def load(self):
+    def load(self, src_path=None):
         self.env = Environment()
         if os.path.exists(DEFAULT_ENV):
             self.env.load(DEFAULT_ENV)
@@ -196,8 +196,10 @@ class BuildContext(object):
         else:
             self.cache = {}
 
+        if src_path is None:
+            src_path = os.getcwd()
         srcnode, bldnode = create_top_nodes(
-                os.path.abspath(os.getcwd()),
+                os.path.abspath(src_path),
                 os.path.abspath(self.env["BLDDIR"]))
         self.src_root = srcnode
         self.bld_root = bldnode
@@ -230,7 +232,7 @@ def myopen(filename, mode="r"):
         ensure_dir(filename)
     return open(filename, mode)
 
-def get_cfg():
+def get_cfg(src_path=None):
     ctx = ConfigureContext()
     if os.path.exists(CONFIG_CACHE):
         fid = open(CONFIG_CACHE, "rb")
@@ -253,8 +255,10 @@ def get_cfg():
     # 3 os.environ is an object instead of a dict
     env["ENV"] = dict([(k, v) for k, v in os.environ.items()])
 
+    if src_path is None:
+        src_path = os.getcwd()
     srcnode, bldnode = create_top_nodes(
-            os.path.abspath(os.getcwd()),
+            os.path.abspath(src_path),
             os.path.abspath(env["BLDDIR"]))
     ctx.src_root = srcnode
     ctx.bld_root = bldnode
@@ -266,8 +270,8 @@ def get_cfg():
     ctx.log = myopen(os.path.join(env["BLDDIR"], "config.log"), "w")
     return ctx
 
-def get_bld():
+def get_bld(src_path=None):
     ctx = BuildContext()
-    ctx.load()
+    ctx.load(src_path=src_path)
 
     return ctx
