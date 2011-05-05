@@ -33,36 +33,6 @@ from bento.commands.script_utils \
     import \
         create_posix_script, create_win32_script
 
-def build_isection(bld, ext_name, files, category):
-    """Build an InstalledSection from the list of files for an
-    extension/compiled library.
-
-    files are expected to be given relatively to top_node."""
-    # TODO: make this function common between all builders (distutils, yaku, etc...)
-    if len(files) < 1:
-        return InstalledSection.from_source_target_directories(category, ext_name,
-            "", "", files)
-
-    # FIXME: do package -> location translation correctly
-    pkg_dir = os.path.dirname(ext_name.replace('.', os.path.sep))
-    target_dir = os.path.join('$sitedir', pkg_dir)
-
-    # FIXME: this assumes every file in outputs are in one single directory
-    nodes = []
-    for f in files:
-        # FIXME: change internal context APIs to return built files relatively
-        # to build directory
-        n = bld.top_node.bldnode.parent.find_node(f)
-        if n is None:
-            raise IOError("file %s not found (relatively to %s)" % (f, bld.path.abspath()))
-        else:
-            nodes.append(n)
-    source_dir = nodes[0].parent
-    section = InstalledSection.from_source_target_directories(category, ext_name,
-        os.path.join("$_srcrootdir", source_dir.bldpath()),
-        target_dir, [o.path_from(source_dir) for o in nodes])
-    return section
-
 class BuildCommand(Command):
     long_descr = """\
 Purpose: build the project
@@ -140,6 +110,36 @@ def build_executables(ctx):
         section = build_executable(name, executable, scripts_node)
         executable_sections[name] = section
     return executable_sections
+
+def build_isection(bld, ext_name, files, category):
+    """Build an InstalledSection from the list of files for an
+    extension/compiled library.
+
+    files are expected to be given relatively to top_node."""
+    # TODO: make this function common between all builders (distutils, yaku, etc...)
+    if len(files) < 1:
+        return InstalledSection.from_source_target_directories(category, ext_name,
+            "", "", files)
+
+    # FIXME: do package -> location translation correctly
+    pkg_dir = os.path.dirname(ext_name.replace('.', os.path.sep))
+    target_dir = os.path.join('$sitedir', pkg_dir)
+
+    # FIXME: this assumes every file in outputs are in one single directory
+    nodes = []
+    for f in files:
+        # FIXME: change internal context APIs to return built files relatively
+        # to build directory
+        n = bld.top_node.bldnode.parent.find_node(f)
+        if n is None:
+            raise IOError("file %s not found (relatively to %s)" % (f, bld.path.abspath()))
+        else:
+            nodes.append(n)
+    source_dir = nodes[0].parent
+    section = InstalledSection.from_source_target_directories(category, ext_name,
+        os.path.join("$_srcrootdir", source_dir.bldpath()),
+        target_dir, [o.path_from(source_dir) for o in nodes])
+    return section
 
 class SectionWriter(object):
     def __init__(self):
