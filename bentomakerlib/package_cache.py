@@ -18,9 +18,6 @@ except ImportError:
     from md5 import md5
 import warnings
 
-from bento._config \
-    import \
-        CHECKSUM_DB_FILE
 from bento.core.parser.api \
     import \
         raw_parse
@@ -51,9 +48,6 @@ class CachedPackage(object):
             return cache.get_options(filename)
         finally:
             cache.close()
-
-    def write_checksums(self, target=CHECKSUM_DB_FILE):
-        _CachedPackageImpl.write_checksums(self._db_location, target)
 
 class _CachedPackageImpl(object):
     __version__ = "1"
@@ -139,27 +133,6 @@ class _CachedPackageImpl(object):
 
     def close(self):
         safe_write(self._location, lambda fd: cPickle.dump(self.db, fd))
-
-    @classmethod
-    def write_checksums(cls, db_location, target=CHECKSUM_DB_FILE):
-        def _writer(fd):
-            cache = cls(db_location)
-            if "bentos_checksums" in cache.db:
-                cPickle.dump(cPickle.loads(cache.db["bentos_checksums"]),
-                             fd)
-        safe_write(target, _writer)
-
-    @classmethod
-    def has_changed(cls, source=CHECKSUM_DB_FILE):
-        fid = open(CHECKSUM_DB_FILE, "rb")
-        try:
-            checksums = cPickle.load(fid)
-            for f, checksum in checksums.items():
-                if checksum != md5(open(f, "rb").read()).hexdigest():
-                    return True
-            return False
-        finally:
-            fid.close()
 
 def _create_package_nocached(filename, user_flags, db):
     pkg, options = _create_objects_no_cached(filename, user_flags, db)

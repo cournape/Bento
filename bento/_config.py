@@ -38,7 +38,6 @@ BUILD_DIR = os.path.join(_BUILD_DIR, _SUB_BUILD_DIR)
 # _SUB_BUILD_DIR already are
 CONFIGURED_STATE_DUMP = os.path.join(_SUB_BUILD_DIR, ".config.bin")
 DB_FILE = os.path.join(_SUB_BUILD_DIR, "cache.db")
-CHECKSUM_DB_FILE = os.path.join(BUILD_DIR, "checksums.db")
 ARGS_CHECKSUM_DB_FILE = os.path.join(BUILD_DIR, "argchecksums.db")
 DISTCHECK_DIR = os.path.join(BUILD_DIR, "distcheck")
 IPKG_PATH = os.path.join(BUILD_DIR, "ipkg.info")

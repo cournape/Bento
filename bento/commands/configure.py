@@ -17,7 +17,7 @@ from bento.core import \
         PackageOptions, PackageDescription
 from bento._config \
     import \
-        CONFIGURED_STATE_DUMP, BENTO_SCRIPT, BUILD_DIR, CHECKSUM_DB_FILE
+        CONFIGURED_STATE_DUMP, BENTO_SCRIPT
 
 from bento.commands.core import \
         Command, SCRIPT_NAME, Option, OptionGroup
