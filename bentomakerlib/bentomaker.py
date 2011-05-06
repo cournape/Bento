@@ -17,7 +17,7 @@ from bento.core.utils import \
 from bento.core.parser.api import \
         ParseError
 from bento._config import \
-        BENTO_SCRIPT, BUILD_DIR, DB_FILE
+        BENTO_SCRIPT, DB_FILE, _SUB_BUILD_DIR
 import bento.core.node
 
 from bento.commands.api \
@@ -60,8 +60,28 @@ CMD_SCHEDULER.set_before("build_egg", "build")
 CMD_SCHEDULER.set_before("build_wininst", "build")
 CMD_SCHEDULER.set_before("install", "build")
 
-CMD_DATA_DUMP = os.path.join(BUILD_DIR, "cmd_data.db")
-CMD_DATA_STORE = CommandDataProvider.from_file(CMD_DATA_DUMP)
+# Path relative to build directory
+CMD_DATA_DUMP = os.path.join(_SUB_BUILD_DIR, "cmd_data.db")
+
+# FIXME: those private functions hiding global variables are horrible - they
+# are a dirty workaround until a better solution to pass nodes to the
+# underlying implementation is found (Node instances can only be created once
+# the source and build directories are known)
+__CMD_DATA_STORE = None
+def _get_cmd_data_provider(top_node):
+    node = top_node.bldnode.make_node(CMD_DATA_DUMP)
+    global __CMD_DATA_STORE
+    if __CMD_DATA_STORE is None:
+        __CMD_DATA_STORE = CommandDataProvider.from_file(node.abspath())
+    return __CMD_DATA_STORE
+
+def _set_cmd_data_provider(cmd_name, cmd_argv, top_node):
+    global __CMD_DATA_STORE
+    node = top_node.bldnode.find_node(CMD_DATA_DUMP)
+    if __CMD_DATA_STORE is None:
+        _get_cmd_data_provider(top_node)
+    __CMD_DATA_STORE.set(cmd_name, cmd_argv)
+    __CMD_DATA_STORE.store(node.abspath())
 
 OPTIONS_REGISTRY = OptionsRegistry()
 
@@ -289,10 +309,12 @@ def _get_subpackage(pkg, top, local_node):
             return None
 
 def run_dependencies(cmd_name, top, pkg):
+    cmd_data_db = top.bldnode.make_node(CMD_DATA_DUMP)
+
     deps = CMD_SCHEDULER.order(cmd_name)
     for cmd_name in deps:
         cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
-        cmd_argv = CMD_DATA_STORE.get_argv(cmd_name)
+        cmd_argv = _get_cmd_data_provider(cmd_data_db).get_argv(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, top, pkg)
 
@@ -330,8 +352,7 @@ def run_cmd(cmd_name, cmd_opts, top):
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
 
-        CMD_DATA_STORE.set(cmd_name, cmd_opts)
-        CMD_DATA_STORE.store(CMD_DATA_DUMP)
+        _set_cmd_data_provider(cmd_name, cmd_opts, top)
 
 def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
     """Run the given Command instance inside its context, including any hook
