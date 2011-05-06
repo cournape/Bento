@@ -30,7 +30,7 @@ from bento.commands._config \
         SCRIPT_NAME
 from bento._config \
     import \
-        ARGS_CHECKSUM_DB_FILE, CONFIGURED_STATE_DUMP
+        CONFIGURED_STATE_DUMP
 
 class ContextRegistry(object):
     def __init__(self, default=None):
@@ -206,7 +206,6 @@ class ConfigureContext(_ContextWithBuildDirectory):
 
     def shutdown(self):
         CmdContext.shutdown(self)
-        _write_argv_checksum(_argv_checksum(sys.argv), "configure")
 
 class DistutilsConfigureContext(ConfigureContext):
     pass
@@ -252,8 +251,6 @@ class BuildContext(_ContextWithBuildDirectory):
 
     def shutdown(self):
         CmdContext.shutdown(self)
-        checksum = _read_argv_checksum("configure")
-        _write_argv_checksum(checksum, "build")
 
     def _compute_extension_name(self, extension_name):
         if self.local_node is None:
@@ -406,33 +403,5 @@ class BuildYakuContext(BuildContext):
     def post_recurse(self):
         self.yaku_build_ctx.path = self._old_path
         super(BuildYakuContext, self).post_recurse()
-
-def _argv_checksum(argv):
-    return md5(cPickle.dumps(argv)).hexdigest()
-
-def _read_argv_checksum(cmd_name):
-    fid = open(ARGS_CHECKSUM_DB_FILE, "rb")
-    try:
-        data = cPickle.load(fid)
-        return data[cmd_name]
-    finally:
-        fid.close()
-
-def _write_argv_checksum(checksum, cmd_name):
-    if os.path.exists(ARGS_CHECKSUM_DB_FILE):
-        fid = open(ARGS_CHECKSUM_DB_FILE, "rb")
-        try:
-            data = cPickle.load(fid)
-        finally:
-            fid.close()
-    else:
-        data = {}
-
-    data[cmd_name] = checksum
-    fid = open(ARGS_CHECKSUM_DB_FILE, "wb")
-    try:
-        cPickle.dump(data, fid)
-    finally:
-        fid.close()
 
 CONTEXT_REGISTRY = ContextRegistry()
