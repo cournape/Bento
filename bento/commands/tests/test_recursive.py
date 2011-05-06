@@ -3,9 +3,6 @@ import shutil
 import unittest
 import tempfile
 
-from bento._config \
-    import \
-        BUILD_DIR
 from bento.core \
     import \
         PackageDescription, PackageOptions

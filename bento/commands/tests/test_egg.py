@@ -8,7 +8,7 @@ from bento._config \
         IPKG_PATH
 from bento.core.node \
     import \
-        Node
+        create_root_with_source_tree
 from bento.core.package \
     import \
         PackageDescription
@@ -110,12 +110,12 @@ class TestEggInfo(unittest.TestCase):
     def setUp(self):
         self.old_dir = None
         self.tmpdir = None
-        root = Node("", None)
 
         self.old_dir = os.getcwd()
         self.tmpdir = tempfile.mkdtemp()
 
         os.chdir(self.tmpdir)
+        root = create_root_with_source_tree(self.tmpdir, os.path.join(self.tmpdir, "build"))
         self.top_node = root.make_node(self.tmpdir)
 
     def tearDown(self):
@@ -127,7 +127,7 @@ class TestEggInfo(unittest.TestCase):
     def _prepare_egg_info(self):
         create_fake_package(self.top_node, ["sphinx", "sphinx.builders"],
                             ["cat.py"], [Extension("_dog", [os.path.join("src", "dog.c")])])
-        ipkg_file = self.top_node.make_node(IPKG_PATH)
+        ipkg_file = self.top_node.bldnode.make_node(IPKG_PATH)
         ipkg_file.parent.mkdir()
         ipkg_file.write("")
 
@@ -162,5 +162,5 @@ Platform: UNKNOWN
 
     def test_iter_meta(self):
         egg_info = self._prepare_egg_info()
-        for name, content in egg_info.iter_meta():
+        for name, content in egg_info.iter_meta(self.top_node):
             pass

@@ -40,7 +40,8 @@ class install_lib(old_install_lib):
     def run(self):
         self.run_command('build')
 
-        ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
+        n = self.distribtution.top_node.bldnode.make_node(IPKG_PATH)
+        ipkg = InstalledPkgDescription.from_file(n.abspath())
         ipkg.update_paths({"sitedir": self.install_dir})
 
         file_sections = ipkg.resolve_paths()

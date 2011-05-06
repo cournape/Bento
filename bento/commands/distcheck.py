@@ -39,15 +39,16 @@ Usage:   bentomaker distcheck [OPTIONS]."""
         tardir = sdist.topdir
 
         saved = os.getcwd()
-        if os.path.exists(DISTCHECK_DIR):
-            shutil.rmtree(DISTCHECK_DIR)
-        os.makedirs(DISTCHECK_DIR)
-        target = os.path.join(DISTCHECK_DIR,
-                              os.path.basename(tarname))
-        rename(tarname, target)
-        tarname = os.path.basename(target)
 
-        os.chdir(DISTCHECK_DIR)
+        distcheck_dir = ctx.top_node.bldnode.make_node(DISTCHECK_DIR)
+        if os.path.exists(distcheck_dir.abspath()):
+            shutil.rmtree(distcheck_dir.abspath())
+        distcheck_dir.mkdir()
+        target = distcheck_dir.make_node(os.path.basename(tarname))
+        rename(tarname, target.abspath())
+        tarname = os.path.basename(target.abspath())
+
+        os.chdir(distcheck_dir.abspath())
         try:
             pprint('PINK', "\t-> Extracting sdist...")
             tarball = tarfile.TarFile.gzopen(tarname)

@@ -31,7 +31,8 @@ class install_data(old_install_data):
     def run(self):
         self.run_command('build')
 
-        ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
+        n = self.distribution.top_node.bldnode.make_node(IPKG_PATH)
+        ipkg = InstalledPkgDescription.from_file(n.abspath())
         ipkg.update_paths({"prefix": self.install_dir, "eprefix": self.install_dir})
 
         file_sections = ipkg.resolve_paths()

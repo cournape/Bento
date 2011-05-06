@@ -7,9 +7,6 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from bento._config \
-    import \
-        IPKG_PATH
 from bento.installed_package_description import \
         iter_source_files, InstalledPkgDescription
 from bento.conv import \
@@ -17,6 +14,9 @@ from bento.conv import \
 
 from bento.core import \
         PackageMetadata
+from bento._config \
+    import \
+        IPKG_PATH
 
 def egg_filename(fullname, pyver=None):
     if not pyver:
@@ -80,15 +80,11 @@ class EggInfo(object):
         ret.append('')
         return "\n".join(ret)
 
-    def get_ipkg_info(self):
+    def get_ipkg_info(self, ipkg_node):
         # FIXME: this is wrong. Rethink the EggInfo interface and its
         # relationship with ipkg
         if self.ipkg is None:
-            f = open(IPKG_PATH)
-            try:
-                return f.read()
-            finally:
-                f.close()
+            return ipkg_node.read()
         else:
             tmp = StringIO()
             self.ipkg._write(tmp)
@@ -96,7 +92,8 @@ class EggInfo(object):
             tmp.close()
             return ret
 
-    def iter_meta(self):
+    def iter_meta(self, top_node):
+        ipkg_node = top_node.bldnode.make_node(IPKG_PATH)
         func_table = {
                 "pkg_info": self.get_pkg_info,
                 "sources": self.get_sources,
@@ -105,7 +102,7 @@ class EggInfo(object):
                 "not_zip_safe": self.get_not_zip_safe,
                 "dependency_links": self.get_dependency_links,
                 "entry_points": self.get_entry_points,
-                "ipkg_info": self.get_ipkg_info,
+                "ipkg_info": lambda: self.get_ipkg_info(ipkg_node),
             }
         file_table = {
                 "pkg_info": "PKG-INFO",

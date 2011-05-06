@@ -34,5 +34,8 @@ class bdist_egg(old_bdist_egg):
 
         build = self.get_finalized_command("build")
         build.run()
-        ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
+
+        dist = build.distribution
+        n = dist.top_node.bldnode.make_node(IPKG_PATH)
+        ipkg = InstalledPkgDescription.from_file(n.abspath())
         build_egg(ipkg)

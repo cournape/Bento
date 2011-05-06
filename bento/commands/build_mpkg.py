@@ -50,10 +50,6 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
             p.print_help()
             return
 
-        if not os.path.exists(IPKG_PATH):
-            raise UsageException("%s: error: %s subcommand require executed build" \
-                    % (SCRIPT_NAME, "build_mpkg"))
-
         root = ctx.top_node
         while root.height() > 0:
             root = root.parent
@@ -62,7 +58,8 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
         default_prefix = default_scheme["prefix"]
         default_sitedir = default_scheme["sitedir"]
 
-        ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
+        n = ctx.top_node.bldnode.make_node(IPKG_PATH)
+        ipkg = InstalledPkgDescription.from_file(n.abspath())
         name = ipkg.meta["name"]
         version = ipkg.meta["version"]
         py_short = ".".join([str(i) for i in sys.version_info[:2]])

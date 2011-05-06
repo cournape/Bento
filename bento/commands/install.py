@@ -134,11 +134,9 @@ Usage:   bentomaker install [OPTIONS]."""
         if o.help:
             p.print_help()
             return
-        if not os.path.exists(IPKG_PATH):
-            msg = "%s file not found ! (Did you run build ?)" % IPKG_PATH
-            raise UsageException(msg)
 
-        ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
+        n = ctx.top_node.bldnode.make_node(IPKG_PATH)
+        ipkg = InstalledPkgDescription.from_file(n.abspath())
         scheme = ctx.get_paths_scheme()
         ipkg.update_paths(scheme)
         file_sections = ipkg.resolve_paths(src_root_dir=ctx.top_node.bldnode.abspath())

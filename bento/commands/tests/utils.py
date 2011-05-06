@@ -1,8 +1,5 @@
 import os
 
-from bento._config \
-    import \
-        BUILD_DIR
 from bento.core \
     import \
         PackageDescription, PackageOptions
@@ -59,10 +56,6 @@ int hello(void)
 def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext, cmd_argv=None):
     if cmd_argv is None:
         cmd_argv = []
-
-    # FIXME: this should be created in the configure context
-    junk_node = top_node.make_node(BUILD_DIR)
-    junk_node.mkdir()
 
     top_node.make_node("bento.info").safe_write(bento_info)
 

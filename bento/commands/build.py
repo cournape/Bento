@@ -9,7 +9,7 @@ from bento.installed_package_description \
         InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
 from bento._config \
     import \
-        IPKG_PATH, BUILD_DIR
+        IPKG_PATH
 from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries, get_packages
@@ -48,10 +48,6 @@ Usage:   bentomaker build [OPTIONS]."""
                                   help="Verbose output (yaku build only)",
                                   action="store_true")]
 
-    @classmethod
-    def has_run(self):
-        return os.path.exists(IPKG_PATH)
-
     def __init__(self, *a, **kw):
         Command.__init__(self, *a, **kw)
         self.section_writer = SectionWriter()
@@ -72,7 +68,8 @@ Usage:   bentomaker build [OPTIONS]."""
         ctx.post_compile(self.section_writer)
 
     def shutdown(self, ctx):
-        self.section_writer.store(IPKG_PATH, ctx.pkg)
+        n = ctx.top_node.bldnode.make_node(IPKG_PATH)
+        self.section_writer.store(n.abspath(), ctx.pkg)
 
 def build_python_files(ctx):
     py_sections = {}

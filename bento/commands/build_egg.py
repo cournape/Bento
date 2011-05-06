@@ -37,14 +37,11 @@ Usage:   bentomaker build_egg [OPTIONS]"""
             p.print_help()
             return
 
-        if not os.path.exists(IPKG_PATH):
-            raise UsageException("%s: error: %s subcommand require executed build" \
-                    % (SCRIPT_NAME, "build_egg"))
+        n = ctx.top_node.bldnode.make_node(IPKG_PATH)
+        ipkg = InstalledPkgDescription.from_file(n.abspath())
+        build_egg(ipkg, ctx, ctx.top_node.bldnode.abspath())
 
-        ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
-        build_egg(ipkg, ctx.top_node.bldnode.abspath())
-
-def build_egg(ipkg, source_root=".", path=None):
+def build_egg(ipkg, ctx, source_root=".", path=None):
     meta = PackageMetadata.from_ipkg(ipkg)
     egg_info = EggInfo.from_ipkg(ipkg)
 
@@ -60,7 +57,7 @@ def build_egg(ipkg, source_root=".", path=None):
     zid = compat.ZipFile(egg, "w", compat.ZIP_DEFLATED)
     try:
         ipkg.update_paths({"prefix": ".", "eprefix": ".", "sitedir": "."})
-        for filename, cnt in egg_info.iter_meta():
+        for filename, cnt in egg_info.iter_meta(ctx.top_node):
             zid.writestr(os.path.join("EGG-INFO", filename), cnt)
 
         file_sections = ipkg.resolve_paths(source_root)

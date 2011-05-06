@@ -55,7 +55,7 @@ class build(old_build):
         section_writer.sections_callbacks["bentofiles"] = build_config_py
 
         section_writer.update_sections(dist.pkg)
-        ipkg_path = dist.top_node.make_node(IPKG_PATH)
-        ipkg_path.parent.mkdir()
+        n = dist.top_node.bldnode.make_node(IPKG_PATH)
+        n.parent.mkdir()
 
-        section_writer.store(ipkg_path.abspath(), dist.pkg)
+        section_writer.store(n.abspath(), dist.pkg)

@@ -49,11 +49,8 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
             p.print_help()
             return
 
-        if not os.path.exists(IPKG_PATH):
-            raise UsageException("%s: error: %s subcommand require executed build" \
-                    % (SCRIPT_NAME, "build_wininst"))
-
-        ipkg = InstalledPkgDescription.from_file(IPKG_PATH)
+        n = ctx.top_node.bldnode.make_node(IPKG_PATH)
+        ipkg = InstalledPkgDescription.from_file(n.abspath())
         create_wininst(ipkg, src_root_dir, ctx.top_node.bldnode.abspath())
 
 def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
@@ -71,7 +68,7 @@ def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
     fid, arcname = tempfile.mkstemp(prefix="zip")
     zid = compat.ZipFile(arcname, "w", compat.ZIP_DEFLATED)
     try:
-        for filename, cnt in egg_info.iter_meta():
+        for filename, cnt in egg_info.iter_meta(ctx.top_node):
             zid.writestr(os.path.join(egg_info_dir, filename), cnt)
 
         ipkg.update_paths({"bindir": "SCRIPTS", "sitedir": "PURELIB", "gendatadir": "$sitedir"})
