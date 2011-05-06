@@ -13,9 +13,6 @@ from bento._config \
 from bento.core.utils \
     import \
         to_camel_case
-from bento.core.package_cache \
-    import \
-        CachedPackage
 from bento.commands.options \
     import \
         OptionsContext

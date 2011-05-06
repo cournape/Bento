@@ -11,8 +11,6 @@ db["parsed_dict"]: pickled raw parsed dictionary (as returned by
                    raw_parse, before having been seen by the visitor)
 """
 import os
-import sys
-import tempfile
 import cPickle
 try:
     from hashlib import md5
@@ -22,7 +20,7 @@ import warnings
 
 from bento._config \
     import \
-        DB_FILE, CHECKSUM_DB_FILE
+        CHECKSUM_DB_FILE
 from bento.core.parser.api \
     import \
         raw_parse
@@ -37,25 +35,25 @@ from bento.core.utils \
         ensure_dir, safe_write
 
 class CachedPackage(object):
-    @classmethod
-    def get_package(cls, filename, user_flags=None):
-        cache = _CachedPackageImpl()
+    def __init__(self, db_node):
+        self._db_location = db_node
+
+    def get_package(self, filename, user_flags=None):
+        cache = _CachedPackageImpl(self._db_location.abspath())
         try:
             return cache.get_package(filename, user_flags)
         finally:
             cache.close()
 
-    @classmethod
-    def get_options(cls, filename):
-        cache = _CachedPackageImpl()
+    def get_options(self, filename):
+        cache = _CachedPackageImpl(self._db_location.abspath())
         try:
             return cache.get_options(filename)
         finally:
             cache.close()
 
-    @classmethod
-    def write_checksums(cls, target=CHECKSUM_DB_FILE):
-        _CachedPackageImpl.write_checksums(target)
+    def write_checksums(self, target=CHECKSUM_DB_FILE):
+        _CachedPackageImpl.write_checksums(self._db_location, target)
 
 class _CachedPackageImpl(object):
     __version__ = "1"
@@ -77,7 +75,7 @@ class _CachedPackageImpl(object):
         self.db["version"] = self.__version__
         self._first_time = True
 
-    def __init__(self, db_location=DB_FILE):
+    def __init__(self, db_location):
         self._location = db_location
         self._first_time = False
         if not os.path.exists(db_location):
@@ -143,9 +141,9 @@ class _CachedPackageImpl(object):
         safe_write(self._location, lambda fd: cPickle.dump(self.db, fd))
 
     @classmethod
-    def write_checksums(cls, target=CHECKSUM_DB_FILE):
+    def write_checksums(cls, db_location, target=CHECKSUM_DB_FILE):
         def _writer(fd):
-            cache = cls()
+            cache = cls(db_location)
             if "bentos_checksums" in cache.db:
                 cPickle.dump(cPickle.loads(cache.db["bentos_checksums"]),
                              fd)

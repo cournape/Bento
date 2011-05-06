@@ -10,9 +10,6 @@ except ImportError:
 
 import yaku.context
 
-from bento.core.package_cache \
-    import \
-        CachedPackage
 from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries
@@ -209,7 +206,6 @@ class ConfigureContext(_ContextWithBuildDirectory):
 
     def shutdown(self):
         CmdContext.shutdown(self)
-        CachedPackage.write_checksums()
         _write_argv_checksum(_argv_checksum(sys.argv), "configure")
 
 class DistutilsConfigureContext(ConfigureContext):

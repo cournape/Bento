@@ -15,9 +15,6 @@ from bento.core.platforms import \
         get_scheme
 from bento.core import \
         PackageOptions, PackageDescription
-from bento.core.package_cache \
-    import \
-        CachedPackage
 from bento._config \
     import \
         CONFIGURED_STATE_DUMP, BENTO_SCRIPT, BUILD_DIR, CHECKSUM_DB_FILE
