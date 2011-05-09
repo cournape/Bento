@@ -26,7 +26,7 @@ def module_to_path(module):
     return module.replace(".", os.path.sep)
 
 class DistutilsBuilder(object):
-    def __init__(self, verbosity=1):
+    def __init__(self, verbosity=1, build_base=None):
         from distutils.dist import Distribution
         from distutils import log
 
@@ -36,13 +36,18 @@ class DistutilsBuilder(object):
         self._compilers = {}
         self._cmds = {}
 
+        opt_dict = self._dist.get_option_dict("build")
+        if build_base:
+            opt_dict["build_base"] = ("bento", build_base)
+
     def _setup_cmd(self, cmd, t):
         from distutils.ccompiler import new_compiler
         from distutils.sysconfig import customize_compiler
+        from distutils.command.build import build
 
-        bld_cmd = cmd(self._dist)
-        bld_cmd.initialize_options()
-        bld_cmd.finalize_options()
+        build = self._dist.get_command_obj("build")
+        bld_cmd = build.get_finalized_command(cmd)
+
         compiler = new_compiler(compiler=bld_cmd.compiler,
                                 dry_run=bld_cmd.dry_run,
                                 force=bld_cmd.force)
@@ -51,11 +56,11 @@ class DistutilsBuilder(object):
 
     def _setup_clib(self):
         from distutils.command.build_clib import build_clib
-        return self._setup_cmd(build_clib, "compiled_libraries")
+        return self._setup_cmd("build_clib", "compiled_libraries")
 
     def _setup_ext(self):
         from distutils.command.build_ext import build_ext
-        return self._setup_cmd(build_ext, "extensions")
+        return self._setup_cmd("build_ext", "extensions")
 
     def _extension_filename(self, name, cmd):
         m = module_to_path(name)

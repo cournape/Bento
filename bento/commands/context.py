@@ -303,7 +303,8 @@ class DistutilsBuildContext(BuildContext):
         self.verbose = verbose
         self.jobs = jobs
 
-        self._distutils_builder = DistutilsBuilder(verbosity=self.verbose)
+        build_path = top_node.bldnode.srcpath()
+        self._distutils_builder = DistutilsBuilder(verbosity=self.verbose, build_base=build_path)
 
         def build_extension(extension):
             return self._distutils_builder.build_extension(extension)
