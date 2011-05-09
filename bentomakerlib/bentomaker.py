@@ -210,7 +210,7 @@ def main(argv=None):
 
     # FIXME: top_node vs srcnode
     source_root = os.getcwd()
-    build_root = os.path.join(os.getcwd(), "build")
+    build_root = os.path.join(os.getcwd(), popts["build_directory"])
 
     root = bento.core.node.create_root_with_source_tree(source_root, build_root)
     top_node = root.srcnode
@@ -265,9 +265,12 @@ def parse_global_options(argv):
                               help="Version"))
     context.add_option(Option("--full-version", dest="show_full_version", action="store_true",
                               help="Full version"))
+    context.add_option(Option("--build-directory", dest="build_directory",
+                              help="Build directory as relative path from cwd (default: '%default')"))
     context.add_option(Option("-h", "--help", dest="show_help", action="store_true",
                               help="Display help and exit"))
-    context.parser.set_defaults(show_version=False, show_full_version=False, show_help=False)
+    context.parser.set_defaults(show_version=False, show_full_version=False, show_help=False,
+                                build_directory="build")
     OPTIONS_REGISTRY.register_command("", context)
 
     global_args, cmd_args = [], []
@@ -285,6 +288,7 @@ def parse_global_options(argv):
 
     o, a = context.parser.parse_args(global_args)
     ret["show_usage"] = o.show_help
+    ret["build_directory"] = o.build_directory
     ret["show_version"] = o.show_version
     ret["show_full_version"] = o.show_full_version
 

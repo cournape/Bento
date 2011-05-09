@@ -213,7 +213,8 @@ class DistutilsConfigureContext(ConfigureContext):
 class ConfigureYakuContext(ConfigureContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
         super(ConfigureYakuContext, self).__init__(cmd_argv, options_context, pkg, top_node)
-        self.yaku_configure_ctx = yaku.context.get_cfg()
+        build_path = top_node.bldnode.srcpath()
+        self.yaku_configure_ctx = yaku.context.get_cfg(build_path=build_path)
 
     def setup(self):
         extensions = get_extensions(self.pkg, self.top_node)
@@ -331,7 +332,8 @@ class DistutilsBuildContext(BuildContext):
 class BuildYakuContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
         super(BuildYakuContext, self).__init__(cmd_argv, options_context, pkg, top_node)
-        self.yaku_build_ctx = yaku.context.get_bld()
+        build_path = top_node.bldnode.srcpath()
+        self.yaku_build_ctx = yaku.context.get_bld(build_path=build_path)
 
         o, a = options_context.parser.parse_args(cmd_argv)
         if o.jobs:
