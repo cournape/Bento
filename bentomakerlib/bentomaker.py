@@ -3,7 +3,7 @@
 #demandimport.enable()
 import sys
 import os
-import getopt
+import optparse
 import traceback
 
 import bento
@@ -32,7 +32,7 @@ from bento.commands.dependency \
         CommandScheduler, CommandDataProvider
 from bento.commands.options \
     import \
-        OptionsRegistry, OptionsContext
+        OptionsRegistry, OptionsContext, Option
 
 from bento.commands.hooks \
     import \
@@ -46,6 +46,9 @@ import bento.core.errors
 from bentomakerlib.package_cache \
     import \
         CachedPackage
+from bentomakerlib.help \
+    import \
+        get_usage
 
 if os.environ.get("BENTOMAKER_DEBUG", "0") != "0":
     BENTOMAKER_DEBUG = True
@@ -140,6 +143,23 @@ def register_options(cmd_name):
     context = OptionsContext.from_command(cmd_klass, usage=usage)
     OPTIONS_REGISTRY.register_command(cmd_name, context)
 
+def register_options_special():
+    # Register options for special topics not attached to a "real" command
+    # (e.g. 'commands')
+    context = OptionsContext()
+    def print_usage():
+        print get_usage()
+    context.parser.print_help = print_usage
+    OPTIONS_REGISTRY.register_command("commands", context)
+
+    context = OptionsContext()
+    def print_help():
+        global_options = OPTIONS_REGISTRY.get_options("")
+        p = global_options.parser
+        return p.print_help()
+    context.parser.print_help = print_help
+    OPTIONS_REGISTRY.register_command("globals", context)
+
 def register_command_contexts():
     CONTEXT_REGISTRY.set_default(CmdContext)
     if not CONTEXT_REGISTRY.is_registered("configure"):
@@ -154,6 +174,7 @@ def register_stuff():
     register_commands()
     for cmd_name in COMMANDS_REGISTRY.get_command_names():
         register_options(cmd_name)
+    register_options_special()
     register_command_contexts()
 
 def set_main(top_node):
@@ -239,26 +260,33 @@ def _wrapped_main(popts, top_node):
             mod.shutdown()
 
 def parse_global_options(argv):
-    ret = {"cmd_name": None, "cmd_opts": None,
-           "show_version": False, "show_full_version": False,
-           "show_usage": False}
+    context = OptionsContext(usage="%prog [options] [cmd_name [cmd_options]]")
+    context.add_option(Option("--version", "-v", dest="show_version", action="store_true",
+                              help="Version"))
+    context.add_option(Option("--full-version", dest="show_full_version", action="store_true",
+                              help="Full version"))
+    context.add_option(Option("-h", "--help", dest="show_help", action="store_true",
+                              help="Display help and exit"))
+    context.parser.set_defaults(show_version=False, show_full_version=False, show_help=False)
+    OPTIONS_REGISTRY.register_command("", context)
 
-    try:
-        opts, pargs = getopt.getopt(argv, "hv", ["help", "version", "full-version"])
-        for opt, arg in opts:
-            if opt in ("--help", "-h"):
-                ret["show_usage"] = True
-            if opt in ("--version", "-v"):
-                ret["show_version"] = True
-            if opt in ("--full-version"):
-                ret["show_full_version"] = True
+    global_args, cmd_args = [], []
+    for i, a in enumerate(argv):
+        if a.startswith("-"):
+            global_args.append(a)
+        else:
+            cmd_args = argv[i:]
+            break
 
-        if len(pargs) > 0:
-            ret["cmd_name"] = pargs.pop(0)
-            ret["cmd_opts"] = pargs
-    except getopt.GetoptError, e:
-        emsg = "%s: illegal global option: %r" % (SCRIPT_NAME, e.opt)
-        raise UsageException(emsg)
+    ret = {"cmd_name": None, "cmd_opts": None}
+    if cmd_args:
+        ret["cmd_name"] = cmd_args[0]
+        ret["cmd_opts"] = cmd_args[1:]
+
+    o, a = context.parser.parse_args(global_args)
+    ret["show_usage"] = o.show_help
+    ret["show_version"] = o.show_version
+    ret["show_full_version"] = o.show_full_version
 
     return ret
 

@@ -76,16 +76,12 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             help_args = _args
             cmd_name = cmd_args[0]
 
-        if cmd_name == "commands":
-            print get_usage()
-            return
-
-        if not cmd_name in COMMANDS_REGISTRY.get_command_names():
-            raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
-        else:
-            options_context = ctx.options_registry.get_options(cmd_name)
+        options_context = ctx.options_registry.get_options(cmd_name)
+        if ctx.options_registry.is_registered(cmd_name):
             p = options_context.parser
             p.print_help()
+        else:
+            raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
 
 def fill_string(s, minlen):
     if len(s) < minlen:
@@ -118,26 +114,8 @@ def get_simple_usage():
                      "more help on e.g. configure command"))
     commands.append(("  %s help commands" % SCRIPT_NAME,
                      "list all commands"))
-
-    minlen = max([len(header) for header, hlp in commands]) + 2
-    for header, hlp in commands:
-        ret.append(fill_string(header, minlen) + hlp)
-    return "\n".join(ret)
-
-def get_usage():
-    ret = [USAGE % {"name": SCRIPT_NAME,
-                    "version": bento.__version__}]
-    ret.append("Bento commands:")
-
-    commands = []
-    cmd_names = sorted(COMMANDS_REGISTRY.get_public_command_names())
-    for name in cmd_names:
-        v = COMMANDS_REGISTRY.get_command(name)
-        doc = v.short_descr
-        if doc is None:
-            doc = "undocumented"
-        header = "  %s" % name
-        commands.append((header, doc))
+    commands.append(("  %s help globals" % SCRIPT_NAME,
+                     "show global options"))
 
     minlen = max([len(header) for header, hlp in commands]) + 2
     for header, hlp in commands:
