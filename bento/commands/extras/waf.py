@@ -78,7 +78,7 @@ def _init_log_no_output():
     log.setLevel(logging.DEBUG)
     Logs.log = log
 
-def _init():
+def _init(build_path="build"):
     tooldir = os.path.join(WAFDIR, "Tools")
 
     sys.path.insert(0, tooldir)
@@ -94,11 +94,11 @@ def _init():
     Context.g_module = FakeModule
     Context.g_module.root_path = os.path.abspath(__file__)
     Context.g_module.top = os.getcwd()
-    Context.g_module.out = os.path.join(os.getcwd(), "build")
+    Context.g_module.out = os.path.join(os.getcwd(), build_path)
 
     Context.top_dir = os.getcwd()
     Context.run_dir = os.getcwd()
-    Context.out_dir = os.path.join(os.getcwd(), "build")
+    Context.out_dir = os.path.join(os.getcwd(), build_path)
     Context.waf_dir = WAF_TOP
 
     opts = OptionsContext()
@@ -110,7 +110,8 @@ class ConfigureWafContext(ConfigureContext):
     def __init__(self, cmd_argv, options_context, pkg, top_node):
         super(ConfigureWafContext, self).__init__(cmd_argv, options_context, pkg, top_node)
 
-        _init()
+        build_path = top_node.bldnode.srcpath()
+        _init(build_path=build_path)
         waf_context = create_context("configure")
         waf_context.options = Options.options
         waf_context.init_dirs()
@@ -194,7 +195,8 @@ class BuildWafContext(BuildContext):
         else:
             Logs.zones = zones
 
-        _init()
+        build_path = top_node.bldnode.srcpath()
+        _init(build_path=build_path)
         waf_context = create_context("build")
         waf_context.restore()
         if not waf_context.all_envs:
