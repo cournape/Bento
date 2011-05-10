@@ -5,6 +5,10 @@ import unittest
 import tempfile
 import types
 
+from cStringIO \
+    import \
+        StringIO
+
 import nose
 import nose.config
 
@@ -224,6 +228,24 @@ def _not_has_waf():
 def skip_no_waf(f):
     return skipif(_not_has_waf, "waf not found")(f)
 
+def protect_streams_waf(func):
+    """Run the given function in an environment where standard streams are
+    directed to strings without making waf angry."""
+    # This is not thread safe...
+    set_stdout = False
+    set_stderr = False
+    try:
+        if not hasattr(sys.stdout, "encoding"):
+            sys.stdout.encoding = "ascii"
+        if not hasattr(sys.stderr, "encoding"):
+            sys.stderr.encoding = "ascii"
+        func()
+    finally:
+        if set_stdout:
+            del sys.stdout.encoding
+        if set_stderr:
+            del sys.stderr.encoding
+
 class TestBuildWaf(_TestBuildSimpleExtension):
     #def __init__(self, *a, **kw):
     #    super(TestBuildWaf, self).__init__(*a, **kw)
@@ -308,3 +330,63 @@ class TestBuildCommand(unittest.TestCase):
 
         bld = BuildYakuContext([], opts, conf.pkg, top_node)
         build.run(bld)
+
+class TestBuildDirectory(unittest.TestCase):
+    def setUp(self):
+        self.d = tempfile.mkdtemp()
+
+        self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "yoyobuild"))
+        self.old_dir = os.getcwd()
+        os.chdir(self.d)
+
+    def tearDown(self):
+        os.chdir(self.old_dir)
+        shutil.rmtree(self.d)
+
+    def test_simple_yaku(self):
+        top_node = self.root.srcnode
+
+        create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
+        conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, ConfigureYakuContext)
+        configure.run(conf)
+        conf.shutdown()
+
+        build = BuildCommand()
+        opts = OptionsContext.from_command(build)
+
+        bld = BuildYakuContext([], opts, conf.pkg, top_node)
+        build.run(bld)
+
+    def test_simple_distutils(self):
+        top_node = self.root.srcnode
+
+        create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
+        conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, DistutilsConfigureContext)
+        configure.run(conf)
+        conf.shutdown()
+
+        build = BuildCommand()
+        opts = OptionsContext.from_command(build)
+
+        bld = DistutilsBuildContext([], opts, conf.pkg, top_node)
+        build.run(bld)
+
+    @skip_no_waf
+    def test_simple_waf(self):
+        from bento.commands.extras.waf import ConfigureWafContext, BuildWafContext, make_stream_logger
+
+        top_node = self.root.srcnode
+
+        create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
+        conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, ConfigureWafContext)
+        configure.run(conf)
+        conf.shutdown()
+
+        build = BuildCommand()
+        opts = OptionsContext.from_command(build)
+
+        def _run():
+            bld = BuildWafContext([], opts, conf.pkg, top_node)
+            bld.waf_context.logger = make_stream_logger("build", StringIO())
+            build.run(bld)
+        protect_streams_waf(_run)
