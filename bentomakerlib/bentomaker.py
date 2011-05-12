@@ -221,6 +221,10 @@ def main(argv=None):
     run_node = root.find_node(os.getcwd())
     top_node = root.find_node(source_root)
     build_node = root.find_node(build_root)
+    if run_node != top_node and run_node.is_src():
+        raise UsageException("You cannot execute bentomaker in a subdirectory of the source tree !")
+    if run_node != build_node and run_node.is_bld():
+        raise UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
 
     if cmd_name and cmd_name not in ["convert"] or not cmd_name:
         _wrapped_main(popts, run_node, top_node, build_node)
