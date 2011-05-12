@@ -29,6 +29,7 @@ class TestBuildCommand(unittest.TestCase):
     def setUp(self):
         self.d = tempfile.mkdtemp()
         self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
+        self.top_node = self.root.find_node(self.d)
 
         self.old_dir = os.getcwd()
         os.chdir(self.d)
@@ -38,8 +39,7 @@ class TestBuildCommand(unittest.TestCase):
         shutil.rmtree(self.d)
 
     def _test_run(self, bento_info):
-        root = self.root
-        top_node = root.srcnode
+        top_node = self.top_node
 
         create_fake_package_from_bento_info(top_node, bento_info)
 

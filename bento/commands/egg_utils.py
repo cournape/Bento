@@ -92,8 +92,8 @@ class EggInfo(object):
             tmp.close()
             return ret
 
-    def iter_meta(self, top_node):
-        ipkg_node = top_node.bldnode.make_node(IPKG_PATH)
+    def iter_meta(self, build_node):
+        ipkg_node = build_node.make_node(IPKG_PATH)
         func_table = {
                 "pkg_info": self.get_pkg_info,
                 "sources": self.get_sources,

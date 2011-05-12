@@ -71,20 +71,18 @@ CMD_DATA_DUMP = os.path.join(_SUB_BUILD_DIR, "cmd_data.db")
 # underlying implementation is found (Node instances can only be created once
 # the source and build directories are known)
 __CMD_DATA_STORE = None
-def _get_cmd_data_provider(top_node):
-    node = top_node.bldnode.make_node(CMD_DATA_DUMP)
+def _get_cmd_data_provider(dump_node):
     global __CMD_DATA_STORE
     if __CMD_DATA_STORE is None:
-        __CMD_DATA_STORE = CommandDataProvider.from_file(node.abspath())
+        __CMD_DATA_STORE = CommandDataProvider.from_file(dump_node.abspath())
     return __CMD_DATA_STORE
 
-def _set_cmd_data_provider(cmd_name, cmd_argv, top_node):
+def _set_cmd_data_provider(cmd_name, cmd_argv, dump_node):
     global __CMD_DATA_STORE
-    node = top_node.bldnode.find_node(CMD_DATA_DUMP)
     if __CMD_DATA_STORE is None:
-        _get_cmd_data_provider(top_node)
+        _get_cmd_data_provider(dump_node)
     __CMD_DATA_STORE.set(cmd_name, cmd_argv)
-    __CMD_DATA_STORE.store(node.abspath())
+    __CMD_DATA_STORE.store(dump_node.abspath())
 
 OPTIONS_REGISTRY = OptionsRegistry()
 
@@ -105,12 +103,13 @@ def _get_cached_package():
         return __CACHED_PACKAGE
 
 __PACKAGE_OPTIONS = None
-def __get_package_options():
+def __get_package_options(top_node):
     global __PACKAGE_OPTIONS
     if __PACKAGE_OPTIONS:
         return __PACKAGE_OPTIONS
     else:
-        __PACKAGE_OPTIONS = _get_cached_package().get_options(BENTO_SCRIPT)
+        n = top_node.find_node(BENTO_SCRIPT)
+        __PACKAGE_OPTIONS = _get_cached_package().get_options(n.abspath())
         return __PACKAGE_OPTIONS
 
 #================================
@@ -177,22 +176,25 @@ def register_stuff():
     register_options_special()
     register_command_contexts()
 
-def set_main(top_node):
+def set_main(top_node, build_node):
     # Some commands work without a bento description file (convert, help)
-    if not os.path.exists(BENTO_SCRIPT):
+    # FIXME: this should not be called here then - clearly separate commands
+    # which require bento.info from the ones who do not
+    n = top_node.find_node(BENTO_SCRIPT)
+    if n is None:
         return []
 
-    _set_cached_package(top_node.bldnode.make_node(DB_FILE))
+    _set_cached_package(build_node.make_node(DB_FILE))
 
-    pkg = _get_cached_package().get_package(BENTO_SCRIPT)
+    pkg = _get_cached_package().get_package(n.abspath())
     #create_package_description(BENTO_SCRIPT)
 
     modules = []
     for f in pkg.hook_files:
-        main_file = os.path.abspath(f)
-        if not os.path.exists(main_file):
-            raise ValueError("Hook file %s not found" % main_file)
-        modules.append(create_hook_module(f))
+        hook_node = top_node.make_node(f)
+        if hook_node is None or not os.path.exists(hook_node.abspath()):
+            raise ValueError("Hook file %s not found" % f)
+        modules.append(create_hook_module(hook_node.abspath()))
     return modules
 
 def main(argv=None):
@@ -212,16 +214,21 @@ def main(argv=None):
     source_root = os.getcwd()
     build_root = os.path.join(os.getcwd(), popts["build_directory"])
 
+    # FIXME: create_root_with_source_tree should return source node and build
+    # node so that we don't have to find them and take the risk of
+    # inconsistency
     root = bento.core.node.create_root_with_source_tree(source_root, build_root)
-    top_node = root.srcnode
+    run_node = root.find_node(os.getcwd())
+    top_node = root.find_node(source_root)
+    build_node = root.find_node(build_root)
 
     if cmd_name and cmd_name not in ["convert"] or not cmd_name:
-        _wrapped_main(popts, top_node)
+        _wrapped_main(popts, run_node, top_node, build_node)
     else:
         register_stuff()
         _main(popts, top_node)
 
-def _wrapped_main(popts, top_node):
+def _wrapped_main(popts, run_node, top_node, build_node):
     def _big_ugly_hack():
         # FIXME: huge ugly hack - we need to specify once and for all when the
         # package info is parsed and available, so that we can define options
@@ -229,8 +236,9 @@ def _wrapped_main(popts, top_node):
         from bento.commands.configure import _setup_options_parser
         # FIXME: logic to handle codepaths which work without a bento.info
         # should be put in one place
-        if os.path.exists(BENTO_SCRIPT):
-            package_options = __get_package_options()
+        n = top_node.find_node(BENTO_SCRIPT)
+        if n:
+            package_options = __get_package_options(top_node)
             _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
         else:
             import warnings
@@ -240,7 +248,7 @@ def _wrapped_main(popts, top_node):
 
     global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY,
                                    OPTIONS_REGISTRY, CMD_SCHEDULER)
-    mods = set_main(top_node)
+    mods = set_main(top_node, build_node)
     for mod in mods:
         mod.startup(global_context)
 
@@ -254,7 +262,7 @@ def _wrapped_main(popts, top_node):
             register_options(cmd_name)
 
     try:
-        return _main(popts, top_node)
+        return _main(popts, run_node, top_node, build_node)
     finally:
         for mod in mods:
             mod.shutdown()
@@ -294,7 +302,7 @@ def parse_global_options(argv):
 
     return ret
 
-def _main(popts, top):
+def _main(popts, run_node, top_node, build_node):
     if popts["show_version"]:
         print bento.__version__
         return 0
@@ -318,16 +326,17 @@ def _main(popts, top):
         if not cmd_name in COMMANDS_REGISTRY.get_command_names():
             raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
         else:
-            run_cmd(cmd_name, cmd_opts, top)
+            run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node)
 
-def _get_package_with_user_flags(cmd_name, cmd_opts, package_options):
+def _get_package_with_user_flags(cmd_name, cmd_opts, package_options, top_node):
     from bento.commands.configure import _get_flag_values
 
     p = OPTIONS_REGISTRY.get_options(cmd_name)
     o, a = p.parser.parse_args(cmd_opts)
     flag_values = _get_flag_values(package_options.flag_options.keys(), o)
 
-    return _get_cached_package().get_package(BENTO_SCRIPT, flag_values)
+    bento_info = top_node.find_node(BENTO_SCRIPT)
+    return _get_cached_package().get_package(bento_info.abspath(), flag_values)
 
 def _get_subpackage(pkg, top, local_node):
     rpath = local_node.path_from(top)
@@ -340,22 +349,22 @@ def _get_subpackage(pkg, top, local_node):
         else:
             return None
 
-def run_dependencies(cmd_name, top, pkg):
-    cmd_data_db = top.bldnode.make_node(CMD_DATA_DUMP)
+def run_dependencies(cmd_name, run_node, top_node, build_node, pkg):
+    cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
 
     deps = CMD_SCHEDULER.order(cmd_name)
     for cmd_name in deps:
         cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
         cmd_argv = _get_cmd_data_provider(cmd_data_db).get_argv(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-        run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, top, pkg)
+        run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg)
 
 def is_help_only(cmd_name, cmd_argv):
     p = OPTIONS_REGISTRY.get_options(cmd_name)
     o, a = p.parser.parse_args(cmd_argv)
     return o.help is True
 
-def run_cmd(cmd_name, cmd_opts, top):
+def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
 
     # XXX: fix this special casing (commands which do not need a pkg instance)
@@ -363,47 +372,49 @@ def run_cmd(cmd_name, cmd_opts, top):
         cmd = cmd_klass()
         options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-        ctx = ctx_klass(cmd_opts, options_ctx, None, top)
+        ctx = ctx_klass(cmd_opts, options_ctx, None, run_node)
         # XXX: hack for help command to get option context for any command
         # without making help depends on bentomakerlib
         ctx.options_registry = OPTIONS_REGISTRY
         cmd.run(ctx)
         return
 
-    if not os.path.exists(BENTO_SCRIPT):
-        raise UsageException("Error: no %s found !" % BENTO_SCRIPT)
+    bento_info = top_node.find_node(BENTO_SCRIPT)
+    if bento_info is None:
+        raise UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))
 
-    package_options = __get_package_options()
-    pkg = _get_package_with_user_flags(cmd_name, cmd_opts, package_options)
+    package_options = __get_package_options(top_node)
+    pkg = _get_package_with_user_flags(cmd_name, cmd_opts, package_options, top_node)
     if is_help_only(cmd_name, cmd_opts):
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-        run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
+        run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg)
     else:
-        run_dependencies(cmd_name, top, pkg)
+        run_dependencies(cmd_name, run_node, top_node, build_node, pkg)
 
         ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-        run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg)
+        run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg)
 
-        _set_cmd_data_provider(cmd_name, cmd_opts, top)
+        cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
+        _set_cmd_data_provider(cmd_name, cmd_opts, cmd_data_db)
 
-def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
+def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
     cmd = cmd_klass()
     options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
-    ctx = ctx_klass(cmd_opts, options_ctx, pkg, top)
+    ctx = ctx_klass(cmd_opts, options_ctx, pkg, run_node)
     # FIXME: hack to pass package_options to configure command - most likely
     # this needs to be known in option context ?
-    ctx.package_options = __get_package_options()
+    ctx.package_options = __get_package_options(top_node)
     if get_command_override(cmd_name):
         cmd_funcs = get_command_override(cmd_name)
     else:
-        cmd_funcs = [(cmd.run, top.abspath())]
+        cmd_funcs = [(cmd.run, top_node.abspath())]
 
     try:
         def _run_hooks(hook_iter):
             for hook, local_dir, help_bypass in hook_iter:
-                local_node = top.find_dir(relpath(local_dir, top.abspath()))
+                local_node = top_node.find_dir(relpath(local_dir, top_node.abspath()))
                 ctx.pre_recurse(local_node)
                 try:
                     if not ctx.help and help_bypass:
@@ -415,7 +426,7 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, top, pkg):
 
         while cmd_funcs:
             cmd_func, local_dir = cmd_funcs.pop(0)
-            local_node = top.find_dir(relpath(local_dir, top.abspath()))
+            local_node = top_node.find_dir(relpath(local_dir, top_node.abspath()))
             ctx.pre_recurse(local_node)
             try:
                 cmd_func(ctx)

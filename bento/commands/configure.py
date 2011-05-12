@@ -149,8 +149,8 @@ Usage: bentomaker configure [OPTIONS]"""
         self.flags = package_options.flag_options.keys()
 
     def run(self, ctx):
-        top_node = ctx.top_node
-        bento_script = top_node.find_node(BENTO_SCRIPT)
+        run_node = ctx.run_node
+        bento_script = ctx.top_node.find_node(BENTO_SCRIPT)
         if bento_script is None:
             raise IOError("%s not found ?" % BENTO_SCRIPT)
 
@@ -170,7 +170,7 @@ Usage: bentomaker configure [OPTIONS]"""
         ctx.setup()
         s = _ConfigureState(bento_script, ctx.pkg, self.scheme, flag_vals, {})
 
-        dump_node = top_node.bldnode.make_node(CONFIGURED_STATE_DUMP)
+        dump_node = ctx.build_node.make_node(CONFIGURED_STATE_DUMP)
         s.dump(dump_node)
 
 def _compute_scheme(package_options):

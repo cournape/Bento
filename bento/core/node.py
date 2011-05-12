@@ -15,10 +15,10 @@ from bento.compat.api \
         rename
 
 def to_list(sth):
-	if isinstance(sth, str):
-		return sth.split()
-	else:
-		return sth
+    if isinstance(sth, str):
+        return sth.split()
+    else:
+        return sth
 
 exclude_regs = '''
 **/*~
@@ -501,13 +501,12 @@ class Node(object):
 class NodeWithBuild(Node):
     """
     Never create directly, use create_root_with_source_tree function.
-    """
-    def __init__(self, name, parent):
-        super(NodeWithBuild, self).__init__(name, parent)
-        # We keep waf naming convention for the members here
-        self.srcnode = self.__class__.source_node
-        self.bldnode = self.__class__.build_node
 
+    Every instance of this class must have srcnode/bldnode attributes attached
+    to it *outside* __init__ (we need to create nodes before being able to
+    refer to them in the instances...)
+    """
+    _ctx = None
     def is_src(self):
         """
         True if the node is below the source directory
@@ -516,8 +515,8 @@ class NodeWithBuild(Node):
         :rtype: bool
         """
         cur = self
-        x = id(self.srcnode)
-        y = id(self.bldnode)
+        x = id(self._ctx.srcnode)
+        y = id(self._ctx.bldnode)
         while cur.parent:
             if id(cur) == y:
                 return False
@@ -534,7 +533,7 @@ class NodeWithBuild(Node):
         :rtype: bool
         """
         cur = self
-        y = id(self.bldnode)
+        y = id(self._ctx.bldnode)
         while cur.parent:
             if id(cur) == y:
                 return True
@@ -543,27 +542,28 @@ class NodeWithBuild(Node):
 
     def bldpath(self):
         "Path seen from the build directory default/src/foo.cpp"
-        return self.path_from(self.bldnode)
+        return self.path_from(self._ctx.bldnode)
 
     def srcpath(self):
         "Path seen from the source directory ../src/foo.cpp"
-        return self.path_from(self.srcnode)
+        return self.path_from(self._ctx.srcnode)
+
+class _NodeContext(object):
+    __slot__ = ("srcnode", "bldnode")
 
 def create_root_with_source_tree(source_path, build_path):
     """
     Both source_path and build_path should be absolute paths
     """
-    NodeWithBuild.source_node = None
-    NodeWithBuild.build_node = None
-
     root = NodeWithBuild("", None)
-    top = root.make_node(source_path)
+    top = root.find_node(source_path)
+    if top is None:
+        raise IOError("Invalid source_path: %r" % source_path)
     build = root.make_node(build_path)
 
-    NodeWithBuild.source_node = top
-    NodeWithBuild.build_node = build
-    for node in [root, top, build]:
-        node.srcnode = top
-        node.bldnode = build
+    node_context = _NodeContext()
+    node_context.srcnode = top
+    node_context.bldnode = build
+    NodeWithBuild._ctx = node_context
 
     return root

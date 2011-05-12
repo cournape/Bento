@@ -1,6 +1,9 @@
 import os
 import errno
 
+from bento.compat.api \
+    import \
+        relpath
 from bento.installed_package_description \
     import \
         InstalledSection
@@ -36,9 +39,11 @@ class DistutilsBuilder(object):
         self._compilers = {}
         self._cmds = {}
 
-        opt_dict = self._dist.get_option_dict("build")
         if build_base:
+            opt_dict = self._dist.get_option_dict("build")
             opt_dict["build_base"] = ("bento", build_base)
+        build = self._dist.get_command_obj("build")
+        self._build_base = build.build_base
 
     def _setup_cmd(self, cmd, t):
         from distutils.ccompiler import new_compiler
@@ -84,7 +89,7 @@ class DistutilsBuilder(object):
 
             base, filename = os.path.split(self._extension_filename(extension.name, bld_cmd))
             fullname = os.path.join(bld_cmd.build_lib, base, filename)
-            return [fullname]
+            return [relpath(fullname, self._build_base)]
         except distutils.errors.DistutilsError, e:
             raise BuildError(str(e))
 
@@ -115,7 +120,7 @@ class DistutilsBuilder(object):
                         raise
                 bld_cmd.run()
 
-                return [target]
+                return [relpath(target, self._build_base)]
             except distutils.errors.DistutilsError, e:
                 raise BuildError(str(e))
         finally:

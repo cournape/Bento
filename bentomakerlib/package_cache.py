@@ -152,12 +152,14 @@ def _raw_to_pkg(raw, user_flags, filename):
     return pkg, files
 
 def _create_objects_no_cached(filename, user_flags, db):
+    d = os.path.dirname(filename)
     info_file = open(filename, 'r')
     try:
         data = info_file.read()
         raw = raw_parse(data, filename)
 
         pkg, files = _raw_to_pkg(raw, user_flags, filename)
+        files = [os.path.join(d, f) for f in files]
         options = _raw_to_options(raw)
 
         checksums = [md5(open(f, "rb").read()).hexdigest() for f in files]

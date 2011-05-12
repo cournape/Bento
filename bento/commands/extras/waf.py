@@ -78,7 +78,9 @@ def _init_log_no_output():
     log.setLevel(logging.DEBUG)
     Logs.log = log
 
-def _init(build_path="build"):
+def _init(run_path, source_path, build_path):
+    if not (os.path.isabs(run_path) and os.path.isabs(source_path) and os.path.isabs(build_path)):
+        raise ValueError("All paths must be absolute !")
     tooldir = os.path.join(WAFDIR, "Tools")
 
     sys.path.insert(0, tooldir)
@@ -93,12 +95,12 @@ def _init(build_path="build"):
         pass
     Context.g_module = FakeModule
     Context.g_module.root_path = os.path.abspath(__file__)
-    Context.g_module.top = os.getcwd()
-    Context.g_module.out = os.path.join(os.getcwd(), build_path)
+    Context.g_module.top = run_path
+    Context.g_module.out = build_path
 
-    Context.top_dir = os.getcwd()
-    Context.run_dir = os.getcwd()
-    Context.out_dir = os.path.join(os.getcwd(), build_path)
+    Context.top_dir = source_path
+    Context.run_dir = run_path
+    Context.out_dir = build_path
     Context.waf_dir = WAF_TOP
 
     opts = OptionsContext()
@@ -107,11 +109,13 @@ def _init(build_path="build"):
     Options.options.check_c_compiler = "gcc"
 
 class ConfigureWafContext(ConfigureContext):
-    def __init__(self, cmd_argv, options_context, pkg, top_node):
-        super(ConfigureWafContext, self).__init__(cmd_argv, options_context, pkg, top_node)
+    def __init__(self, cmd_argv, options_context, pkg, run_node):
+        super(ConfigureWafContext, self).__init__(cmd_argv, options_context, pkg, run_node)
 
-        build_path = top_node.bldnode.srcpath()
-        _init(build_path=build_path)
+        run_path = self.run_node.abspath()
+        source_path = self.top_node.abspath()
+        build_path = self.build_node.abspath()
+        _init(run_path=run_path, source_path=source_path, build_path=build_path)
         waf_context = create_context("configure")
         waf_context.options = Options.options
         waf_context.init_dirs()
@@ -144,7 +148,7 @@ class ConfigureWafContext(ConfigureContext):
         ConfigureContext.pre_recurse(self, local_node)
         self._old_path = self.waf_context.path
         # Gymnastic to make a *waf* node from a *bento* node
-        self.waf_context.path = self.waf_context.path.make_node(self.local_node.path_from(self.top_node))
+        self.waf_context.path = self.waf_context.path.make_node(self.local_node.srcpath())
 
     def post_recurse(self):
         self.waf_context.path = self._old_path
@@ -163,14 +167,14 @@ class BuildWafContext(BuildContext):
         super(BuildWafContext, self).pre_recurse(local_node)
         self._old_path = self.waf_context.path
         # Gymnastic to make a *waf* node from a *bento* node
-        self.waf_context.path = self.waf_context.path.make_node(self.local_node.path_from(self.top_node))
+        self.waf_context.path = self.waf_context.path.make_node(self.local_node.srcpath())
 
     def post_recurse(self):
         self.waf_context.path = self._old_path
         super(BuildWafContext, self).post_recurse()
 
-    def __init__(self, cmd_argv, options_context, pkg, top_node):
-        super(BuildWafContext, self).__init__(cmd_argv, options_context, pkg, top_node)
+    def __init__(self, cmd_argv, options_context, pkg, run_node):
+        super(BuildWafContext, self).__init__(cmd_argv, options_context, pkg, run_node)
 
         o, a = options_context.parser.parse_args(cmd_argv)
         if o.jobs:
@@ -195,8 +199,10 @@ class BuildWafContext(BuildContext):
         else:
             Logs.zones = zones
 
-        build_path = top_node.bldnode.srcpath()
-        _init(build_path=build_path)
+        run_path = self.run_node.abspath()
+        source_path = self.top_node.abspath()
+        build_path = self.build_node.abspath()
+        _init(run_path=run_path, source_path=source_path, build_path=build_path)
         waf_context = create_context("build")
         waf_context.restore()
         if not waf_context.all_envs:
@@ -255,7 +261,7 @@ class BuildWafContext(BuildContext):
                         category = "extensions"
                     ref_node = self.top_node.make_node(task_gen.path.path_from(task_gen.path.ctx.srcnode))
                     name = translate_name(task_gen.name, ref_node, self.top_node)
-                    self._outputs[category][name] = [o.srcpath() for o in task_gen.link_task.outputs]
+                    self._outputs[category][name] = [o.bldpath() for o in task_gen.link_task.outputs]
                     if self.inplace:
                         for output in task_gen.link_task.outputs:
                             if output.is_child_of(bld.bldnode):

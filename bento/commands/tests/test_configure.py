@@ -41,7 +41,7 @@ class TestConfigureCommand(unittest.TestCase):
 
     def test_simple(self):
         root = self.root
-        top_node = root.srcnode
+        run_node = root.find_node(self.d)
 
-        conf, configure = prepare_configure(top_node, BENTO_INFO, ConfigureYakuContext)
+        conf, configure = prepare_configure(run_node, BENTO_INFO, ConfigureYakuContext)
         configure.run(conf)

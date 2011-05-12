@@ -53,10 +53,9 @@ def to_node_extension(extension, ref_node):
 
 class NodeRepresentation(object):
     """Node-based representation of a Package content."""
-    def __init__(self, top_node, source_dir):
-        # top_node is process cwd, source_dir the top source directory node
+    def __init__(self, run_node, top_node):
         self.top_node = top_node
-        self.source_dir = source_dir
+        self.run_node = run_node
 
         # FIXME: would make more sense to organize those as a trees to easily
         # find all the objects at different levels
@@ -67,37 +66,37 @@ class NodeRepresentation(object):
         self._py_modules = {}
         self._data = {}
 
-        self._extra_source_nodes = []
+        self._extra_top_nodes = []
 
     def _run_in_subpackage(self, pkg, func):
         for name, sub_pkg in pkg.subpackages.iteritems():
-            ref_node = self.source_dir.find_node(sub_pkg.rdir)
+            ref_node = self.top_node.find_node(sub_pkg.rdir)
             if ref_node is None:
                 raise IOError("directory %s relative to %s not found !" % (sub_pkg.rdir,
-                              self.source_dir.abspath()))
+                              self.top_node.abspath()))
             func(sub_pkg, ref_node)
 
     def _update_extensions(self, pkg):
         for name, extension in pkg.extensions.iteritems():
-            extension = to_node_extension(extension, self.source_dir)
+            extension = to_node_extension(extension, self.top_node)
             self._extensions[name] = extension
 
         def _subpackage_extension(sub_package, ref_node):
             for name, extension in sub_package.extensions.iteritems():
                 extension = to_node_extension(extension, ref_node)
-                name = translate_name(name, ref_node, self.source_dir)
+                name = translate_name(name, ref_node, self.top_node)
                 self._extensions[name] = extension
         self._run_in_subpackage(pkg, _subpackage_extension)
 
     def _update_libraries(self, pkg):
         for name, compiled_library in pkg.compiled_libraries.iteritems():
-            compiled_library = to_node_extension(compiled_library, self.source_dir)
+            compiled_library = to_node_extension(compiled_library, self.top_node)
             self._compiled_libraries[name] = compiled_library
 
         def _subpackage_compiled_libraries(sub_package, ref_node):
             for name, compiled_library in sub_package.compiled_libraries.iteritems():
                 compiled_library = to_node_extension(compiled_library, ref_node)
-                name = translate_name(name, ref_node, self.source_dir)
+                name = translate_name(name, ref_node, self.top_node)
                 self._compiled_libraries[name] = compiled_library
         self._run_in_subpackage(pkg, _subpackage_compiled_libraries)
 
@@ -114,14 +113,14 @@ class NodeRepresentation(object):
             for package in sub_package.packages:
                 _resolve_package(package, ref_node)
 
-        src = self.source_dir
+        src = self.top_node
         for package in pkg.packages:
             _resolve_package(package, src)
         self._run_in_subpackage(pkg, _subpackage_resolve_package)
 
     def _update_data_files(self, pkg):
         for name, data_section in pkg.data_files.iteritems():
-            ref_node = self.source_dir.find_node(data_section.source_dir)
+            ref_node = self.top_node.find_node(data_section.source_dir)
             nodes = []
             for f in data_section.files:
                 ns = ref_node.ant_glob(f)
@@ -133,7 +132,7 @@ class NodeRepresentation(object):
 
     def _update_py_modules(self, pkg):
         for m in pkg.py_modules:
-            n = self.source_dir.find_node("%s.py" % m)
+            n = self.top_node.find_node("%s.py" % m)
             if n is None:
                 raise IOError("file for module %s not found" % m)
             else:
@@ -141,8 +140,8 @@ class NodeRepresentation(object):
 
     def _update_extra_sources(self, pkg):
         for s in pkg.extra_source_files:
-            nodes = self.source_dir.ant_glob(s)
-            self._extra_source_nodes.extend(nodes)
+            nodes = self.top_node.ant_glob(s)
+            self._extra_top_nodes.extend(nodes)
 
     def update_package(self, pkg):
         self._update_py_packages(pkg)
@@ -180,5 +179,5 @@ class NodeRepresentation(object):
         for data in self._data.itervalues():
             for n in data.nodes:
                 yield n
-        for n in self._extra_source_nodes:
+        for n in self._extra_top_nodes:
             yield n

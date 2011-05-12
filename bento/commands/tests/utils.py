@@ -53,10 +53,11 @@ int hello(void)
 }
 """
 
-def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext, cmd_argv=None):
+def prepare_configure(run_node, bento_info, context_klass=ConfigureYakuContext, cmd_argv=None):
     if cmd_argv is None:
         cmd_argv = []
 
+    top_node = run_node._ctx.srcnode
     top_node.make_node("bento.info").safe_write(bento_info)
 
     package = PackageDescription.from_string(bento_info)
@@ -68,16 +69,16 @@ def prepare_configure(top_node, bento_info, context_klass=ConfigureYakuContext, 
     # FIXME: this emulates the big ugly hack inside bentomaker.
     _setup_options_parser(opts, package_options)
 
-    context = context_klass(cmd_argv, opts, package, top_node)
+    context = context_klass(cmd_argv, opts, package, run_node)
     context.package_options = package_options
 
     return context, configure
 
-def prepare_build(top_node, pkg, context_klass=BuildYakuContext):
+def prepare_build(run_node, pkg, context_klass=BuildYakuContext):
     build = BuildCommand()
     opts = OptionsContext.from_command(build)
 
-    bld = context_klass([], opts, pkg, top_node)
+    bld = context_klass([], opts, pkg, run_node)
     return bld, build
 
 def create_fake_package_from_bento_info(top_node, bento_info):

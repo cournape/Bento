@@ -68,13 +68,13 @@ Usage:   bentomaker build [OPTIONS]."""
         ctx.post_compile(self.section_writer)
 
     def shutdown(self, ctx):
-        n = ctx.top_node.bldnode.make_node(IPKG_PATH)
+        n = ctx.build_node.make_node(IPKG_PATH)
         self.section_writer.store(n.abspath(), ctx.pkg)
 
 def build_python_files(ctx):
     py_sections = {}
     def build_py_isection(name, nodes):
-        source_dir = ctx.top_node.path_from(ctx.top_node.bldnode)
+        source_dir = ctx.run_node.bldpath()
         isection = InstalledSection.from_source_target_directories("pythonfiles",
             name, os.path.join("$_srcrootdir", source_dir), "$sitedir",
             [n.srcpath() for n in nodes])
@@ -85,7 +85,7 @@ def build_python_files(ctx):
         build_py_isection(name, [node])
     if ctx.pkg.config_py:
         content = _config_content(ctx.get_paths_scheme())
-        target_node = ctx.top_node.bldnode.make_node(ctx.pkg.config_py)
+        target_node = ctx.build_node.make_node(ctx.pkg.config_py)
         target_node.parent.mkdir()
         target_node.safe_write(content)
         build_py_isection("bento_config", [target_node])
@@ -100,7 +100,7 @@ def build_data_files(ctx):
     return data_sections
 
 def build_executables(ctx):
-    scripts_node = ctx.top_node.bldnode.make_node("scripts-%s" % sys.version[:3])
+    scripts_node = ctx.build_node.make_node("scripts-%s" % sys.version[:3])
     scripts_node.mkdir()
     executable_sections = {}
     for name, executable in ctx.pkg.executables.iteritems():
@@ -112,7 +112,7 @@ def build_isection(bld, ext_name, files, category):
     """Build an InstalledSection from the list of files for an
     extension/compiled library.
 
-    files are expected to be given relatively to top_node."""
+    files are expected to be given relatively to build_node."""
     # TODO: make this function common between all builders (distutils, yaku, etc...)
     if len(files) < 1:
         return InstalledSection.from_source_target_directories(category, ext_name,
@@ -125,11 +125,9 @@ def build_isection(bld, ext_name, files, category):
     # FIXME: this assumes every file in outputs are in one single directory
     nodes = []
     for f in files:
-        # FIXME: change internal context APIs to return built files relatively
-        # to build directory
-        n = bld.top_node.bldnode.parent.find_node(f)
+        n = bld.build_node.find_node(f)
         if n is None:
-            raise IOError("file %s not found (relatively to %s)" % (f, bld.path.abspath()))
+            raise IOError("file %s not found (relatively to %s)" % (f, bld.build_node.abspath()))
         else:
             nodes.append(n)
     source_dir = nodes[0].parent

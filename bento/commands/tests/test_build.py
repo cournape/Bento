@@ -101,7 +101,9 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
         os.chdir(self.d)
 
-        self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
+        root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
+        self.top_node = root._ctx.srcnode
+        self.build_node = root._ctx.bldnode
 
         # Those should be set by subclasses
         self._configure_context = None
@@ -124,7 +126,7 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         return conf, configure, bld, build
 
     def _create_contexts(self, bentos, bscripts=None):
-        top_node = self.root.srcnode
+        top_node = self.top_node
 
         create_fake_package_from_bento_infos(top_node, bentos, bscripts)
 
@@ -134,7 +136,7 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         return conf, configure, bld, build
 
     def _resolve_isection(self, node, isection):
-        source_dir = subst_vars(isection.source_dir, {"_srcrootdir": node.bldnode.abspath()})
+        source_dir = subst_vars(isection.source_dir, {"_srcrootdir": self.build_node.abspath()})
         isection.source_dir = source_dir
         return isection
 
@@ -146,11 +148,11 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
         sections = build.section_writer.sections["extensions"]
         for extension in conf.pkg.extensions.values():
-            isection = self._resolve_isection(bld.top_node, sections[extension.name])
+            isection = self._resolve_isection(bld.run_node, sections[extension.name])
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
     def test_extension_registration(self):
-        top_node = self.root.srcnode
+        top_node = self.top_node
 
         bento_info = """\
 Name: foo
@@ -184,7 +186,7 @@ Library:
         conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_CLIB})
         sections = build.section_writer.sections["compiled_libraries"]
         for library in conf.pkg.compiled_libraries.values():
-            isection = self._resolve_isection(bld.top_node, sections[library.name])
+            isection = self._resolve_isection(bld.run_node, sections[library.name])
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
 class TestBuildDistutils(_TestBuildSimpleExtension):
@@ -318,7 +320,7 @@ class TestBuildCommand(unittest.TestCase):
 
     def test_simple(self):
         root = self.root
-        top_node = root.srcnode
+        top_node = root.find_node(self.d)
 
         create_fake_package_from_bento_info(top_node, BENTO_INFO)
         conf, configure = prepare_configure(top_node, BENTO_INFO, ConfigureYakuContext)
@@ -336,6 +338,9 @@ class TestBuildDirectory(unittest.TestCase):
         self.d = tempfile.mkdtemp()
 
         self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "yoyobuild"))
+        self.top_node = self.root.find_node(self.d)
+        self.run_node = self.top_node
+
         self.old_dir = os.getcwd()
         os.chdir(self.d)
 
@@ -344,7 +349,7 @@ class TestBuildDirectory(unittest.TestCase):
         shutil.rmtree(self.d)
 
     def test_simple_yaku(self):
-        top_node = self.root.srcnode
+        top_node = self.top_node
 
         create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
         conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, ConfigureYakuContext)
@@ -358,7 +363,7 @@ class TestBuildDirectory(unittest.TestCase):
         build.run(bld)
 
     def test_simple_distutils(self):
-        top_node = self.root.srcnode
+        top_node = self.top_node
 
         create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
         conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, DistutilsConfigureContext)
@@ -375,7 +380,7 @@ class TestBuildDirectory(unittest.TestCase):
     def test_simple_waf(self):
         from bento.commands.extras.waf import ConfigureWafContext, BuildWafContext, make_stream_logger
 
-        top_node = self.root.srcnode
+        top_node = self.top_node
 
         create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
         conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, ConfigureWafContext)

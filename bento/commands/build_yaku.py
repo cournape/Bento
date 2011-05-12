@@ -33,7 +33,7 @@ def build_extension(bld, extension, verbose, env=None):
             outputs = tasks[0].gen.outputs
         else:
             outputs = []
-        return [n.path_from(bld.src_root) for n in outputs]
+        return [n.bldpath() for n in outputs]
     except RuntimeError, e:
         msg = "Building extension %s failed: %s" % \
               (extension.name, str(e))
@@ -47,7 +47,7 @@ def build_compiled_library(bld, clib, verbose, env=None):
         for p in clib.include_dirs:
             builder.env["CPPPATH"].insert(0, p)
         outputs = builder.static_library(clib.name, clib.sources, env)
-        return [n.path_from(bld.src_root) for n in outputs]
+        return [n.bldpath() for n in outputs]
     except RuntimeError, e:
         msg = "Building library %s failed: %s" % (clib.name, str(e))
         raise CommandExecutionFailure(msg)

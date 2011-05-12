@@ -31,6 +31,8 @@ class TestRecurseBase(unittest.TestCase):
 
         self.d = tempfile.mkdtemp()
         self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
+        self.run_node = self.root.find_node(self.d)
+        self.top_node = self.run_node
 
         os.chdir(self.d)
 
@@ -40,7 +42,8 @@ class TestRecurseBase(unittest.TestCase):
 
     def test_simple(self):
         root = self.root
-        top_node = root.srcnode
+        top_node = self.top_node
+        run_node = self.run_node
 
         bento_info = """\
 Name: foo
@@ -65,9 +68,9 @@ Library:
 """
         bentos = {"bento.info": bento_info, os.path.join("bar", "bento.info"): bento_info2,
                   os.path.join("bar", "foo", "bento.info"): bento_info3}
-        create_fake_package_from_bento_infos(top_node, bentos)
+        create_fake_package_from_bento_infos(run_node, bentos)
 
-        conf, configure = prepare_configure(top_node, bento_info, ConfigureYakuContext)
+        conf, configure = prepare_configure(run_node, bento_info, ConfigureYakuContext)
         configure.run(conf)
         conf.shutdown()
 
@@ -75,12 +78,12 @@ Library:
         opts = OptionsContext.from_command(build)
 
         cmd_argv = []
-        bld = BuildYakuContext(cmd_argv, opts, conf.pkg, top_node)
+        bld = BuildYakuContext(cmd_argv, opts, conf.pkg, run_node)
         build.run(bld)
 
     def test_hook(self):
         root = self.root
-        top_node = root.srcnode
+        top_node = self.top_node
 
         bento_info = """\
 Name: foo
@@ -107,7 +110,7 @@ def configure(ctx):
         bscripts = {os.path.join("bar", "bscript"): bscript}
         create_fake_package_from_bento_infos(top_node, bentos, bscripts)
 
-        conf, configure = prepare_configure(top_node, bento_info, ConfigureYakuContext)
+        conf, configure = prepare_configure(self.run_node, bento_info, ConfigureYakuContext)
 
         hook = top_node.search("bar/bscript")
         m = create_hook_module(hook.abspath())

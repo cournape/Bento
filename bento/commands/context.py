@@ -96,7 +96,7 @@ class DummyContextManager(object):
         self.post()
 
 class CmdContext(object):
-    def __init__(self, cmd_argv, options_context, pkg, top_node):
+    def __init__(self, cmd_argv, options_context, pkg, run_node):
         self.pkg = pkg
 
         self.options_context = options_context
@@ -107,7 +107,19 @@ class CmdContext(object):
             self.help = False
 
         self.cmd_argv = cmd_argv
-        self.top_node = top_node
+
+        # CWD node
+        self.run_node = run_node
+        # Top source node (the one containing the top bento.info)
+        # TODO: kept for compatibility. Remove it ?
+        if run_node is not None:
+            self.top_node = run_node._ctx.srcnode
+            self.build_node = run_node._ctx.bldnode
+            # cur_node refers to the current path when recursing into sub directories
+            self.cur_node = self.top_node
+        else:
+            self.top_node = None
+            self.build_node = None
 
         self._configured_state = None
 
@@ -120,7 +132,7 @@ class CmdContext(object):
 
     def _get_configured_state(self):
         if self._configured_state is None:
-            dump_node = self.top_node.bldnode.find_node(CONFIGURED_STATE_DUMP)
+            dump_node = self.build_node.find_node(CONFIGURED_STATE_DUMP)
             if dump_node is None:
                 raise UsageException(
                        "You need to run %s configure before building" % SCRIPT_NAME)
@@ -160,8 +172,8 @@ class CmdContext(object):
         Calling pre_recurse for the top hook node must work as well (but could
         do nothing)
         """
-        if local_node == self.top_node:
-            self.local_node = self.top_node
+        if local_node == self.run_node:
+            self.local_node = self.run_node
             return
         else:
             if not local_node.is_src():
@@ -169,7 +181,7 @@ class CmdContext(object):
             self.local_node = local_node
 
             def _get_sub_package():
-                k = local_node.find_node("bento.info").path_from(self.top_node)
+                k = local_node.find_node("bento.info").path_from(self.run_node)
                 if k is None:
                     raise IOError("%r not found" % os.path.join(local_node.abspath(), "bento.info"))
                 else:
@@ -195,11 +207,11 @@ class HelpContext(CmdContext):
 class _ContextWithBuildDirectory(CmdContext):
     def __init__(self, *a, **kw):
         CmdContext.__init__(self, *a, **kw)
-        self.build_root = self.top_node.make_node("build")
+        self.build_root = self.run_node.make_node("build")
 
 class ConfigureContext(_ContextWithBuildDirectory):
-    def __init__(self, cmd_argv, options_context, pkg, top_node):
-        CmdContext.__init__(self, cmd_argv, options_context, pkg, top_node)
+    def __init__(self, cmd_argv, options_context, pkg, run_node):
+        CmdContext.__init__(self, cmd_argv, options_context, pkg, run_node)
 
     def setup(self):
         pass
@@ -211,14 +223,15 @@ class DistutilsConfigureContext(ConfigureContext):
     pass
 
 class ConfigureYakuContext(ConfigureContext):
-    def __init__(self, cmd_argv, options_context, pkg, top_node):
-        super(ConfigureYakuContext, self).__init__(cmd_argv, options_context, pkg, top_node)
-        build_path = top_node.bldnode.srcpath()
-        self.yaku_configure_ctx = yaku.context.get_cfg(build_path=build_path)
+    def __init__(self, cmd_argv, options_context, pkg, run_node):
+        super(ConfigureYakuContext, self).__init__(cmd_argv, options_context, pkg, run_node)
+        build_path = run_node._ctx.bldnode.path_from(run_node)
+        source_path = run_node._ctx.srcnode.path_from(run_node)
+        self.yaku_configure_ctx = yaku.context.get_cfg(src_path=source_path, build_path=build_path)
 
     def setup(self):
-        extensions = get_extensions(self.pkg, self.top_node)
-        libraries = get_compiled_libraries(self.pkg, self.top_node)
+        extensions = get_extensions(self.pkg, self.run_node)
+        libraries = get_compiled_libraries(self.pkg, self.run_node)
 
         yaku_ctx = self.yaku_configure_ctx
         if extensions or libraries:
@@ -232,22 +245,22 @@ class ConfigureYakuContext(ConfigureContext):
         super(ConfigureYakuContext, self).pre_recurse(local_node)
         self._old_path = self.yaku_configure_ctx.path
         # Gymnastic to make a *yaku* node from a *bento* node
-        self.yaku_configure_ctx.path = self.yaku_configure_ctx.path.make_node(self.local_node.path_from(self.top_node))
+        self.yaku_configure_ctx.path = self.yaku_configure_ctx.path.make_node(self.local_node.path_from(self.run_node))
 
     def post_recurse(self):
         self.yaku_configure_ctx.path = self._old_path
         super(ConfigureYakuContext, self).post_recurse()
 
 class BuildContext(_ContextWithBuildDirectory):
-    def __init__(self, cmd_argv, options_context, pkg, top_node):
-        super(BuildContext, self).__init__(cmd_argv, options_context, pkg, top_node)
+    def __init__(self, cmd_argv, options_context, pkg, run_node):
+        super(BuildContext, self).__init__(cmd_argv, options_context, pkg, run_node)
         # Those are dummies - are set by subclasses
         self._extension_callbacks = None
         self._compiled_library_callbacks = None
 
         self._outputs = {}
 
-        self._node_pkg = NodeRepresentation(top_node, top_node)
+        self._node_pkg = NodeRepresentation(run_node, self.top_node)
         self._node_pkg.update_package(pkg)
 
     def shutdown(self):
@@ -256,8 +269,8 @@ class BuildContext(_ContextWithBuildDirectory):
     def _compute_extension_name(self, extension_name):
         if self.local_node is None:
             raise ValueError("Forgot to call pre_recurse ?")
-        if self.local_node != self.top_node:
-            parent = self.local_node.path_from(self.top_node).split(os.path.sep)
+        if self.local_node != self.run_node:
+            parent = self.local_node.path_from(self.run_node).split(os.path.sep)
             return ".".join(parent + [extension_name])
         else:
             return extension_name
@@ -267,7 +280,7 @@ class BuildContext(_ContextWithBuildDirectory):
         self._extension_callbacks[full_name] = builder
 
     def register_compiled_library_builder(self, clib_name, builder):
-        relpos = self.local_node.path_from(self.top_node)
+        relpos = self.local_node.path_from(self.run_node)
         full_name = os.path.join(relpos, clib_name).replace(os.sep, ".")
         self._compiled_library_callbacks[full_name] = builder
 
@@ -287,9 +300,9 @@ class BuildContext(_ContextWithBuildDirectory):
                         outputs_c[name], "compiled_libraries")
 
 class DistutilsBuildContext(BuildContext):
-    def __init__(self, cmd_argv, options_context, pkg, top_node):
+    def __init__(self, cmd_argv, options_context, pkg, run_node):
         from bento.commands.build_distutils import DistutilsBuilder
-        super(DistutilsBuildContext, self).__init__(cmd_argv, options_context, pkg, top_node)
+        super(DistutilsBuildContext, self).__init__(cmd_argv, options_context, pkg, run_node)
 
         o, a = options_context.parser.parse_args(cmd_argv)
         if o.jobs:
@@ -303,7 +316,7 @@ class DistutilsBuildContext(BuildContext):
         self.verbose = verbose
         self.jobs = jobs
 
-        build_path = top_node.bldnode.srcpath()
+        build_path = self.build_node.path_from(self.run_node)
         self._distutils_builder = DistutilsBuilder(verbosity=self.verbose, build_base=build_path)
 
         def build_extension(extension):
@@ -331,10 +344,11 @@ class DistutilsBuildContext(BuildContext):
         self._outputs["compiled_libraries"] = outputs
 
 class BuildYakuContext(BuildContext):
-    def __init__(self, cmd_argv, options_context, pkg, top_node):
-        super(BuildYakuContext, self).__init__(cmd_argv, options_context, pkg, top_node)
-        build_path = top_node.bldnode.srcpath()
-        self.yaku_build_ctx = yaku.context.get_bld(build_path=build_path)
+    def __init__(self, cmd_argv, options_context, pkg, run_node):
+        super(BuildYakuContext, self).__init__(cmd_argv, options_context, pkg, run_node)
+        build_path = run_node._ctx.bldnode.path_from(run_node)
+        source_path = run_node._ctx.srcnode.path_from(run_node)
+        self.yaku_build_ctx = yaku.context.get_bld(src_path=source_path, build_path=build_path)
 
         o, a = options_context.parser.parse_args(cmd_argv)
         if o.jobs:
@@ -400,8 +414,10 @@ class BuildYakuContext(BuildContext):
     def pre_recurse(self, local_node):
         super(BuildYakuContext, self).pre_recurse(local_node)
         self._old_path = self.yaku_build_ctx.path
+        # FIXME: we should not modify yaku context src_root, but add current
+        # node + recurse support to yaku instead
         # Gymnastic to make a *yaku* node from a *bento* node
-        self.yaku_build_ctx.path = self.yaku_build_ctx.path.make_node(self.local_node.path_from(self.top_node))
+        self.yaku_build_ctx.src_root = self.yaku_build_ctx.src_root.make_node(self.local_node.path_from(self.top_node))
 
     def post_recurse(self):
         self.yaku_build_ctx.path = self._old_path

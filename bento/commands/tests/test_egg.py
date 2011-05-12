@@ -116,7 +116,9 @@ class TestEggInfo(unittest.TestCase):
 
         os.chdir(self.tmpdir)
         root = create_root_with_source_tree(self.tmpdir, os.path.join(self.tmpdir, "build"))
-        self.top_node = root.make_node(self.tmpdir)
+        self.run_node = root.find_node(self.tmpdir)
+        self.top_node = self.run_node._ctx.srcnode
+        self.build_node = self.run_node._ctx.bldnode
 
     def tearDown(self):
         if self.old_dir:
@@ -127,7 +129,7 @@ class TestEggInfo(unittest.TestCase):
     def _prepare_egg_info(self):
         create_fake_package(self.top_node, ["sphinx", "sphinx.builders"],
                             ["cat.py"], [Extension("_dog", [os.path.join("src", "dog.c")])])
-        ipkg_file = self.top_node.bldnode.make_node(IPKG_PATH)
+        ipkg_file = self.build_node.make_node(IPKG_PATH)
         ipkg_file.parent.mkdir()
         ipkg_file.write("")
 
@@ -162,5 +164,5 @@ Platform: UNKNOWN
 
     def test_iter_meta(self):
         egg_info = self._prepare_egg_info()
-        for name, content in egg_info.iter_meta(self.top_node):
+        for name, content in egg_info.iter_meta(self.build_node):
             pass
