@@ -6,12 +6,17 @@ Main features:
 
     - Preliminary support for .mpkg (Mac OS X native packaging)
     - More consistent API for extension/compiled library build registration
+    - Build directory is now customizable through bentomaker with
+      --build-directory option
+    - Out of tree builds support (i.e. running bento in a directory which does
+      not contain bento.info), with global --bento-info option
 
 Internals
 ---------
 
     - Significantly better code coverage of bento.commands
     - Use node-based representation of package description in build and install
+    - Cleanly separated source, cwd and build directories
 
 Version 0.0.5
 =============
