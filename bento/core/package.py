@@ -52,22 +52,21 @@ def _parse_libraries(libraries):
 
     return ret
 
-def recurse_subentos(subentos):
+def recurse_subentos(subentos, source_dir):
     filenames = []
     subpackages = {}
 
-    root_dir = os.getcwd()
+    # FIXME: this is damn ugly - using nodes would be good here
     def _recurse(subento, cwd):
         f = os.path.join(cwd, subento, "bento.info")
-        f = relpath(f, root_dir)
         if not os.path.exists(f):
             raise ValueError("%s not found !" % f)
         filenames.append(f)
 
         fid = open(f)
         try:
-            key = relpath(f, root_dir)
-            rdir = relpath(os.path.join(cwd, subento), root_dir)
+            key = relpath(f, source_dir)
+            rdir = relpath(os.path.join(cwd, subento), source_dir)
 
             d = raw_parse(fid.read(), f)
             kw, subentos = raw_to_subpkg_kw(d)
@@ -78,7 +77,7 @@ def recurse_subentos(subentos):
             fid.close()
 
     for s in subentos:
-        _recurse(s, root_dir)
+        _recurse(s, source_dir)
     return subpackages, filenames
 
 def build_libs_from_dict(libraries_d):
@@ -127,7 +126,11 @@ def raw_to_pkg_kw(raw_dict, user_flags, filename):
 
     if misc_d.has_key("subento"):
         subentos = misc_d.pop("subento")
-        subpackages, files = recurse_subentos(subentos)
+        if filename is None:
+            source_dir = os.getcwd()
+        else:
+            source_dir = os.path.dirname(filename)
+        subpackages, files = recurse_subentos(subentos, source_dir=source_dir)
         kw["subpackages"] = subpackages
     else:
         files = []
