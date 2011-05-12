@@ -211,7 +211,7 @@ def main(argv=None):
     cmd_name = popts["cmd_name"]
 
     # FIXME: top_node vs srcnode
-    source_root = os.getcwd()
+    source_root = os.path.join(os.getcwd(), os.path.dirname(popts["bento_info"]))
     build_root = os.path.join(os.getcwd(), popts["build_directory"])
 
     # FIXME: create_root_with_source_tree should return source node and build
@@ -275,10 +275,13 @@ def parse_global_options(argv):
                               help="Full version"))
     context.add_option(Option("--build-directory", dest="build_directory",
                               help="Build directory as relative path from cwd (default: '%default')"))
+    context.add_option(Option("--bento-info", dest="bento_info",
+                              help="Bento location as a relative path from cwd (default: '%default'). " \
+                                   "The base name (without its component) must be 'bento.info("))
     context.add_option(Option("-h", "--help", dest="show_help", action="store_true",
                               help="Display help and exit"))
     context.parser.set_defaults(show_version=False, show_full_version=False, show_help=False,
-                                build_directory="build")
+                                build_directory="build", bento_info="bento.info")
     OPTIONS_REGISTRY.register_command("", context)
 
     global_args, cmd_args = [], []
@@ -297,6 +300,11 @@ def parse_global_options(argv):
     o, a = context.parser.parse_args(global_args)
     ret["show_usage"] = o.show_help
     ret["build_directory"] = o.build_directory
+    if not os.path.basename(o.bento_info) == BENTO_SCRIPT:
+        context.parser.error("Invalid value for --bento-info: %r (basename should be %r)" % \
+                             (o.bento_info, BENTO_SCRIPT))
+
+    ret["bento_info"] = o.bento_info
     ret["show_version"] = o.show_version
     ret["show_full_version"] = o.show_full_version
 
