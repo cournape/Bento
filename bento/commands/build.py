@@ -74,7 +74,7 @@ Usage:   bentomaker build [OPTIONS]."""
 def build_python_files(ctx):
     py_sections = {}
     def build_py_isection(name, nodes):
-        source_dir = ctx.run_node.bldpath()
+        source_dir = ctx.top_node.bldpath()
         isection = InstalledSection.from_source_target_directories("pythonfiles",
             name, os.path.join("$_srcrootdir", source_dir), "$sitedir",
             [n.srcpath() for n in nodes])
