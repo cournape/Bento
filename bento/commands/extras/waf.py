@@ -95,7 +95,7 @@ def _init(run_path, source_path, build_path):
         pass
     Context.g_module = FakeModule
     Context.g_module.root_path = os.path.abspath(__file__)
-    Context.g_module.top = run_path
+    Context.g_module.top = source_path
     Context.g_module.out = build_path
 
     Context.top_dir = source_path
@@ -116,7 +116,7 @@ class ConfigureWafContext(ConfigureContext):
         source_path = self.top_node.abspath()
         build_path = self.build_node.abspath()
         _init(run_path=run_path, source_path=source_path, build_path=build_path)
-        waf_context = create_context("configure")
+        waf_context = create_context("configure", run_dir=source_path)
         waf_context.options = Options.options
         waf_context.init_dirs()
         waf_context.cachedir = waf_context.bldnode.make_node(Build.CACHE_DIR)
