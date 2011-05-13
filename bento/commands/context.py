@@ -269,8 +269,8 @@ class BuildContext(_ContextWithBuildDirectory):
     def _compute_extension_name(self, extension_name):
         if self.local_node is None:
             raise ValueError("Forgot to call pre_recurse ?")
-        if self.local_node != self.run_node:
-            parent = self.local_node.path_from(self.run_node).split(os.path.sep)
+        if self.local_node != self.top_node:
+            parent = self.local_node.srcpath().split(os.path.sep)
             return ".".join(parent + [extension_name])
         else:
             return extension_name
@@ -280,7 +280,7 @@ class BuildContext(_ContextWithBuildDirectory):
         self._extension_callbacks[full_name] = builder
 
     def register_compiled_library_builder(self, clib_name, builder):
-        relpos = self.local_node.path_from(self.run_node)
+        relpos = self.local_node.path_from(self.top_node)
         full_name = os.path.join(relpos, clib_name).replace(os.sep, ".")
         self._compiled_library_callbacks[full_name] = builder
 
