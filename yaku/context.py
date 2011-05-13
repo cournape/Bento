@@ -29,7 +29,7 @@ def create_top_nodes(start_dir, build_dir):
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
     if not os.path.exists(start_dir):
-        raise ValueError("%s does not exist ???")
+        raise ValueError("%s does not exist ???" % start_dir)
     srcnode = root.find_dir(start_dir)
     bldnode = root.find_dir(build_dir)
 
