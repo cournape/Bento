@@ -73,11 +73,13 @@ Usage:   bentomaker build [OPTIONS]."""
 
 def build_python_files(ctx):
     py_sections = {}
-    def build_py_isection(name, nodes):
-        source_dir = ctx.top_node.bldpath()
+    def build_py_isection(name, nodes, from_node=None):
+        if from_node is None:
+            from_node = ctx.top_node
+        source_dir = from_node.bldpath()
         isection = InstalledSection.from_source_target_directories("pythonfiles",
             name, os.path.join("$_srcrootdir", source_dir), "$sitedir",
-            [n.srcpath() for n in nodes])
+            [n.path_from(from_node) for n in nodes])
         py_sections[name] = isection
     for name, nodes in ctx._node_pkg.iter_category("packages"):
         build_py_isection(name, nodes)
@@ -88,7 +90,7 @@ def build_python_files(ctx):
         target_node = ctx.build_node.make_node(ctx.pkg.config_py)
         target_node.parent.mkdir()
         target_node.safe_write(content)
-        build_py_isection("bento_config", [target_node])
+        build_py_isection("bento_config", [target_node], ctx.build_node)
     return py_sections
 
 def build_data_files(ctx):
@@ -158,7 +160,6 @@ def build_executable(name, executable, scripts_node):
         nodes = create_win32_script(name, executable, scripts_node)
     else:
         nodes = create_posix_script(name, executable, scripts_node)
-    source_dir = scripts_node
     return InstalledSection.from_source_target_directories(
-            "executables", name, source_dir.srcpath(),
-            "$bindir", [n.path_from(source_dir) for n in nodes])
+            "executables", name, os.path.join("$_srcrootdir", scripts_node.bldpath()),
+            "$bindir", [n.path_from(scripts_node) for n in nodes])
