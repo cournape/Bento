@@ -417,7 +417,7 @@ class BuildYakuContext(BuildContext):
         # FIXME: we should not modify yaku context src_root, but add current
         # node + recurse support to yaku instead
         # Gymnastic to make a *yaku* node from a *bento* node
-        self.yaku_build_ctx.src_root = self.yaku_build_ctx.src_root.make_node(self.local_node.path_from(self.top_node))
+        self.yaku_build_ctx.path = self.yaku_build_ctx.path.make_node(self.local_node.path_from(self.top_node))
 
     def post_recurse(self):
         self.yaku_build_ctx.path = self._old_path
