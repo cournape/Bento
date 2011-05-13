@@ -154,7 +154,7 @@ class CCBuilder(yaku.tools.Builder):
         return tasks
 
     def compile(self, name, sources, env=None):
-        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        sources = self.to_nodes(sources)
         task_gen = CompiledTaskGen("cccompile", self.ctx, sources, name)
         task_gen.env = yaku.tools._merge_env(self.env, env)
         tasks = self._compile(task_gen, name)
@@ -173,7 +173,7 @@ class CCBuilder(yaku.tools.Builder):
         return yaku.tools.try_task_maker(self.ctx, self._compile, name, body, headers, env)
 
     def static_library(self, name, sources, env=None):
-        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        sources = self.to_nodes(sources)
         task_gen = CompiledTaskGen("ccstaticlib", self.ctx, sources, name)
         task_gen.env = yaku.tools._merge_env(self.env, env)
 
@@ -206,7 +206,7 @@ class CCBuilder(yaku.tools.Builder):
         return yaku.tools.try_task_maker(self.ctx, self._static_library, name, body, headers, env)
 
     def shared_library(self, name, sources, env=None):
-        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        sources = self.to_nodes(sources)
         task_gen = CompiledTaskGen("ccsharedlib", self.ctx, sources, name)
         task_gen.env = yaku.tools._merge_env(self.env, env)
 
@@ -239,7 +239,7 @@ class CCBuilder(yaku.tools.Builder):
         return yaku.tools.try_task_maker(self.ctx, self._shared_library, name, body, headers, env)
 
     def program(self, name, sources, env=None):
-        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        sources = self.to_nodes(sources)
         task_gen = CompiledTaskGen("ccprogram", self.ctx,
                                    sources, name)
         task_gen.env = yaku.tools._merge_env(self.env, env)

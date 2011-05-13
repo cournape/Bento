@@ -10,14 +10,12 @@ from os.path \
 
 TOOLDIRS = [abspath(join(dirname(__file__), "tools"))]
 
-BUILD_DIR = "build"
+# relative to the build directory
+DEFAULT_ENV = "default.env.py"
+BUILD_CONFIG = "build.config.py"
+HOOK_DUMP = ".hooks.pck"
 
-# Use dot in the name to avoid accidental import of it
-DEFAULT_ENV = join(BUILD_DIR, "default.env.py")
-BUILD_CONFIG = join(BUILD_DIR, "build.config.py")
-HOOK_DUMP = join(BUILD_DIR, ".hooks.pck")
-
-CONFIG_CACHE = join(BUILD_DIR, ".config.pck")
-BUILD_CACHE = join(BUILD_DIR, ".build.pck")
+CONFIG_CACHE = ".config.pck"
+BUILD_CACHE = ".build.pck"
 
 _OUTPUT = sys.stdout

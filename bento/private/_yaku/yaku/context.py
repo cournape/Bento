@@ -3,11 +3,11 @@ import sys
 
 from cPickle \
     import \
-        load, dump
+        load, dump, dumps
 
 from yaku._config \
     import \
-        BUILD_DIR, DEFAULT_ENV, BUILD_CONFIG, BUILD_CACHE, CONFIG_CACHE, HOOK_DUMP, \
+        DEFAULT_ENV, BUILD_CONFIG, BUILD_CACHE, CONFIG_CACHE, HOOK_DUMP, \
         _OUTPUT
 from yaku.environment \
     import \
@@ -29,7 +29,7 @@ def create_top_nodes(start_dir, build_dir):
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
     if not os.path.exists(start_dir):
-        raise ValueError("%s does not exist ???")
+        raise ValueError("%s does not exist ???" % start_dir)
     srcnode = root.find_dir(start_dir)
     bldnode = root.find_dir(build_dir)
 
@@ -70,6 +70,10 @@ class ConfigureContext(object):
         self._stdout_cache = {}
         self._cmd_cache = {}
 
+        self.src_root = None
+        self.bld_root = None
+        self.path = None
+
     def load_tool(self, tool, tooldir=None):
         _t = import_tools([tool], tooldir)
         self.tools.append({"tool": tool, "tooldir": tooldir})
@@ -97,30 +101,25 @@ class ConfigureContext(object):
                self._configured[builder] = True
 
     def store(self):
-        self.env.store(DEFAULT_ENV)
+        default_env = self.bld_root.make_node(DEFAULT_ENV)
+        self.env.store(default_env.abspath())
 
         self.log.close()
-        fid = open(CONFIG_CACHE, "wb")
-        try:
-            dump(self.cache, fid)
-            dump(self._stdout_cache, fid)
-            dump(self._cmd_cache, fid)
-        finally:
-            fid.close()
 
-        fid = myopen(BUILD_CONFIG, "w")
-        try:
-            fid.write("%r\n" % self.tools)
-        finally:
-            fid.close()
+        config_cache = self.bld_root.make_node(CONFIG_CACHE)
+        out = []
+        out.append(dumps(self.cache))
+        out.append(dumps(self._stdout_cache))
+        out.append(dumps(self._cmd_cache))
+        config_cache.write("".join(out), flags="wb")
 
-        fid = myopen(HOOK_DUMP, "wb")
-        try:
-            dump({"extensions": yaku.task_manager.RULES_REGISTRY,
-                  "files": _hook_id_to_hook_path(yaku.task_manager.FILES_REGISTRY)},
-                 fid)
-        finally:
-            fid.close()
+        build_config = self.bld_root.make_node(BUILD_CONFIG)
+        build_config.write("%r\n" % self.tools)
+
+        hook_dump = self.bld_root.make_node(HOOK_DUMP)
+        s = dumps({"extensions": yaku.task_manager.RULES_REGISTRY,
+                   "files": _hook_id_to_hook_path(yaku.task_manager.FILES_REGISTRY)})
+        hook_dump.write(s, flags="wb")
 
     def start_message(self, msg):
         _OUTPUT.write(msg + "... ")
@@ -172,16 +171,36 @@ class BuildContext(object):
         self.builders = {}
         self.tasks = []
 
-    def load(self):
-        self.env = Environment()
-        if os.path.exists(DEFAULT_ENV):
-            self.env.load(DEFAULT_ENV)
+    def load(self, src_path=None, build_path="build"):
+        if src_path is None:
+            src_path = os.getcwd()
+        src_path = os.path.abspath(src_path)
+        build_path = os.path.abspath(os.path.join(os.getcwd(), build_path))
+        if not os.path.exists(build_path):
+            raise IOError("%s not found (did you use different build_path for configure and build contexts ?)" \
+                          % build_path)
 
-        f = open(BUILD_CONFIG)
-        try:
-            load_tools(self, f)
-        finally:
-            f.close()
+        srcnode, bldnode = create_top_nodes(src_path, build_path)
+        self.src_root = srcnode
+        self.bld_root = bldnode
+        self.path = srcnode
+
+        self.env = Environment()
+        default_env = bldnode.find_node(DEFAULT_ENV)
+        if default_env:
+            self.env.load(default_env.abspath())
+        if not os.path.abspath(self.env["BLDDIR"]) == bldnode.abspath():
+            raise ValueError("Gne ?")
+
+        build_config = bldnode.find_node(BUILD_CONFIG)
+        if build_config is None:
+            raise IOError("Did not find %r in %r" % (BUILD_CONFIG, bldnode.abspath()))
+        else:
+            f = open(build_config.abspath())
+            try:
+                load_tools(self, f)
+            finally:
+                f.close()
 
         if os.path.exists(BUILD_CACHE):
             fid = open(BUILD_CACHE, "rb")
@@ -192,13 +211,8 @@ class BuildContext(object):
         else:
             self.cache = {}
 
-        srcnode, bldnode = create_top_nodes(
-                os.path.abspath(os.getcwd()),
-                os.path.abspath(self.env["BLDDIR"]))
-        self.src_root = srcnode
-        self.bld_root = bldnode
-
-        fid = open(HOOK_DUMP, "rb")
+        hook_dump = bldnode.find_node(HOOK_DUMP)
+        fid = open(hook_dump.abspath(), "rb")
         try:
             data = load(fid)
             yaku.task_manager.RULES_REGISTRY = data["extensions"]
@@ -207,13 +221,13 @@ class BuildContext(object):
             fid.close()
 
     def store(self):
-        # Use rename to avoid corrupting the cache if interrupted
-        tmp_fid = open(BUILD_CACHE + ".tmp", "wb")
+        build_cache = self.bld_root.make_node(BUILD_CACHE)
+        tmp_fid = open(build_cache.abspath() + ".tmp", "wb")
         try:
             dump(self.cache, tmp_fid)
         finally:
             tmp_fid.close()
-        rename(BUILD_CACHE + ".tmp", BUILD_CACHE)
+        rename(build_cache.abspath() + ".tmp", build_cache.abspath())
 
     def set_stdout_cache(self, task, stdout):
         pass
@@ -225,7 +239,7 @@ def myopen(filename, mode="r"):
         ensure_dir(filename)
     return open(filename, mode)
 
-def get_cfg():
+def get_cfg(src_path=None, build_path="build"):
     ctx = ConfigureContext()
     if os.path.exists(CONFIG_CACHE):
         fid = open(CONFIG_CACHE, "rb")
@@ -239,7 +253,7 @@ def get_cfg():
     # XXX: how to reload existing environment ?
     env = Environment()
     if not env.has_key("BLDDIR"):
-        env["BLDDIR"] = BUILD_DIR
+        env["BLDDIR"] = build_path
     # FIXME: nothing to do here
     env["VERBOSE"] = False
     if "-v" in sys.argv:
@@ -248,18 +262,23 @@ def get_cfg():
     # 3 os.environ is an object instead of a dict
     env["ENV"] = dict([(k, v) for k, v in os.environ.items()])
 
+    if src_path is None:
+        src_path = os.getcwd()
     srcnode, bldnode = create_top_nodes(
-            os.path.abspath(os.getcwd()),
+            os.path.abspath(src_path),
             os.path.abspath(env["BLDDIR"]))
     ctx.src_root = srcnode
     ctx.bld_root = bldnode
+    # src_root and bld_root never change, but path may. All source nodes are
+    # created relatively to path (kinda 'virtual' cwd)
+    ctx.path = srcnode
 
     ctx.env = env
     ctx.log = myopen(os.path.join(env["BLDDIR"], "config.log"), "w")
     return ctx
 
-def get_bld():
+def get_bld(src_path=None, build_path="build"):
     ctx = BuildContext()
-    ctx.load()
+    ctx.load(src_path=src_path, build_path=build_path)
 
     return ctx

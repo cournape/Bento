@@ -17,11 +17,12 @@ def build(ctx):
     builder.static_library("bar", ["src/bar.c"])
 
 if __name__ == "__main__":
-    ctx = get_cfg()
+    build_path = "BBUILD"
+    ctx = get_cfg(build_path=build_path)
     configure(ctx)
     ctx.store()
 
-    ctx = get_bld()
+    ctx = get_bld(build_path=build_path)
     build(ctx)
     run_tasks(ctx)
     ctx.store()

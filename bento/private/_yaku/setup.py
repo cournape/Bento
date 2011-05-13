@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 
+import setuptools
 from distutils.core \
     import \
         setup

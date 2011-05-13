@@ -261,7 +261,7 @@ class PythonBuilder(yaku.tools.Builder):
         return tasks
 
     def extension(self, name, sources, env=None):
-        sources = [self.ctx.src_root.find_resource(s) for s in sources]
+        sources = self.to_nodes(sources)
         task_gen = CompiledTaskGen("pyext", self.ctx, sources, name)
         task_gen.bld = self.ctx
         task_gen.env = yaku.tools._merge_env(self.env, env)
