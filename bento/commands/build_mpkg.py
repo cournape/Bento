@@ -58,7 +58,7 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
         default_prefix = default_scheme["prefix"]
         default_sitedir = default_scheme["sitedir"]
 
-        n = ctx.top_node.bldnode.make_node(IPKG_PATH)
+        n = ctx.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
         name = ipkg.meta["name"]
         version = ipkg.meta["version"]
@@ -95,22 +95,22 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
 
         # Package the stuff which ends up into site-packages
         pkg_root = os.path.join(mpkg_root, "Contents", "Packages", purelib_pkg)
-        build_pkg_from_temp(ipkg, pkg_root, root, "/", ["pythonfiles"], "Pure Python modules and packages")
+        build_pkg_from_temp(ctx, ipkg, pkg_root, root, "/", ["pythonfiles"], "Pure Python modules and packages")
 
         pkg_root = os.path.join(mpkg_root, "Contents", "Packages", scripts_pkg)
-        build_pkg_from_temp(ipkg, pkg_root, root, "/", ["executables"], "Scripts and binaries")
+        build_pkg_from_temp(ctx, ipkg, pkg_root, root, "/", ["executables"], "Scripts and binaries")
 
         pkg_root = os.path.join(mpkg_root, "Contents", "Packages", datafiles_pkg)
-        build_pkg_from_temp(ipkg, pkg_root, root, "/", ["bentofiles", "datafiles"], "Data files")
+        build_pkg_from_temp(ctx, ipkg, pkg_root, root, "/", ["bentofiles", "datafiles"], "Data files")
 
-def build_pkg_from_temp(ipkg, pkg_root, root_node, install_root, categories, description=None):
+def build_pkg_from_temp(ctx, ipkg, pkg_root, root_node, install_root, categories, description=None):
     d = tempfile.mkdtemp()
     try:
         tmp_root = root_node.make_node(d)
         prefix_node = tmp_root.make_node(root_node.make_node(sys.exec_prefix).path_from(root_node))
         prefix = eprefix = prefix_node.abspath()
         ipkg.update_paths({"prefix": prefix, "eprefix": eprefix})
-        file_sections = ipkg.resolve_paths(".")
+        file_sections = ipkg.resolve_paths(ctx.build_node.abspath())
         for kind, source, target in iter_files(file_sections):
             if kind in categories:
                 if not os.path.exists(os.path.dirname(target)):
