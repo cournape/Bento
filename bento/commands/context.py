@@ -21,10 +21,13 @@ from bento.commands.configure \
         _ConfigureState
 from bento.commands.build \
     import \
-        build_isection
+        build_isection, build_py_isection
 from bento.commands.errors \
     import \
         UsageException
+from bento.installed_package_description \
+    import \
+        InstalledSection
 from bento.commands._config \
     import \
         SCRIPT_NAME
@@ -288,16 +291,59 @@ class BuildContext(_ContextWithBuildDirectory):
         raise NotImplementedError()
 
     def post_compile(self, section_writer):
-        sections = section_writer.sections
-        sections["extensions"] = {}
-        sections["compiled_libraries"] = {}
+        self._build_python_files(section_writer)
+        self._build_data_files(section_writer)
+        self._build_script_files(section_writer)
 
-        outputs_e, outputs_c = self._outputs["extensions"], self._outputs["compiled_libraries"]
+        self._build_extensions(section_writer)
+        self._build_libraries(section_writer)
+
+    def _build_extensions(self, section_writer):
+        sections = section_writer.sections["extensions"] = {}
+        outputs_e = self._outputs["extensions"]
         for name, extension in self._node_pkg.iter_category("extensions"):
-            sections["extensions"][name] = build_isection(self, name, outputs_e[name], "extensions")
-        for name, extension in self._node_pkg.iter_category("libraries"):
-            sections["compiled_libraries"][name] = build_isection(self, name,
-                        outputs_c[name], "compiled_libraries")
+            sections[name] = build_isection(self, name, outputs_e[name], "extensions")
+
+    def _build_libraries(self, section_writer):
+        sections = section_writer.sections["compiled_libraries"] = {}
+        outputs_l = self._outputs["compiled_libraries"]
+        for name, library in self._node_pkg.iter_category("libraries"):
+            sections[name] = build_isection(self, name, outputs_l[name], "compiled_libraries")
+
+    def _build_python_files(self, section_writer):
+        from bento.commands.build import _config_content
+        sections = section_writer.sections
+        sections["pythonfiles"] = {}
+
+        for name, nodes in self._node_pkg.iter_category("packages"):
+            sections["pythonfiles"][name] = build_py_isection(self, name, nodes)
+        for name, node in self._node_pkg.iter_category("modules"):
+            sections["pythonfiles"][name] = build_py_isection(self, name, [node])
+        if self.pkg.config_py:
+            content = _config_content(self.get_paths_scheme())
+            target_node = self.build_node.make_node(self.pkg.config_py)
+            target_node.parent.mkdir()
+            target_node.safe_write(content)
+            build_py_isection(self, "bento_config", [target_node], self.build_node)
+
+    def _build_data_files(self, section_writer):
+        def build_data_section(context, section):
+            source_dir = os.path.join("$_srcrootdir", section.ref_node.bldpath())
+            return InstalledSection.from_source_target_directories(
+                "datafiles", name, source_dir, section.target_dir,
+                [n.path_from(section.ref_node) for n in section.nodes])
+
+        section_writer.sections["datafiles"] = data_sections = {}
+        for name, section in self._node_pkg.iter_category("datafiles"):
+            data_sections[name] = build_data_section(self, section)
+
+    def _build_script_files(self, section_writer):
+        from bento.commands.build import build_executable
+        scripts_node = self.build_node.make_node("scripts-%s" % sys.version[:3])
+        scripts_node.mkdir()
+        section_writer.sections["executables"] = sections = {}
+        for name, executable in self.pkg.executables.iteritems():
+            sections[name] = build_executable(name, executable, scripts_node)
 
 class DistutilsBuildContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
@@ -422,5 +468,6 @@ class BuildYakuContext(BuildContext):
     def post_recurse(self):
         self.yaku_build_ctx.path = self._old_path
         super(BuildYakuContext, self).post_recurse()
+
 
 CONTEXT_REGISTRY = ContextRegistry()
