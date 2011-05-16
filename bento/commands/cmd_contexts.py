@@ -1,5 +1,6 @@
 import os
 import sys
+import collections
 
 from bento.core.recurse \
     import \
@@ -146,12 +147,33 @@ class ConfigureContext(_ContextWithBuildDirectory):
     def shutdown(self):
         CmdContext.shutdown(self)
 
+class BuilderRegistry(object):
+    def __init__(self):
+        self._callbacks = {}
+
+    def register_category(self, category, default_builder):
+        if category in self._callbacks:
+            raise ValueError("Category %r already registered" % category)
+        else:
+            self._callbacks[category] = collections.defaultdict(lambda: default_builder)
+
+    def register_builder(self, category, name, builder):
+        c = self._callbacks.get(category, None)
+        if c is not None:
+            c[name] = builder
+        else:
+            raise ValueError("category %s is not registered yet" % category)
+
+    def builder(self, category, name):
+        if not category in self._callbacks:
+            raise ValueError("Unregistered category %r" % category)
+        else:
+            return self._callbacks[category][name]
+
 class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
         super(BuildContext, self).__init__(cmd_argv, options_context, pkg, run_node)
-        # Those are dummies - are set by subclasses
-        self._extension_callbacks = None
-        self._compiled_library_callbacks = None
+        self.builder_registry = BuilderRegistry()
 
         self._outputs = {}
 
@@ -172,12 +194,12 @@ class BuildContext(_ContextWithBuildDirectory):
 
     def register_builder(self, extension_name, builder):
         full_name = self._compute_extension_name(extension_name)
-        self._extension_callbacks[full_name] = builder
+        self.builder_registry.register_builder("extensions", full_name, builder)
 
     def register_compiled_library_builder(self, clib_name, builder):
         relpos = self.local_node.path_from(self.top_node)
         full_name = os.path.join(relpos, clib_name).replace(os.sep, ".")
-        self._compiled_library_callbacks[full_name] = builder
+        self.builder_registry.register_builder("compiled_libraries", full_name, builder)
 
     def compile(self):
         raise NotImplementedError()

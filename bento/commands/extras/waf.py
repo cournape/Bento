@@ -220,25 +220,28 @@ class BuildWafContext(BuildContext):
         def _default_library_builder(library):
             return self.waf_context(features='c cstlib pyext', source=library.sources, target=library.name)
 
-        self._extension_callbacks = collections.defaultdict(lambda : _default_extension_builder)
-        self._compiled_library_callbacks = collections.defaultdict(lambda : _default_library_builder)
+        self.builder_registry.register_category("extensions", _default_extension_builder)
+        self.builder_registry.register_category("compiled_libraries", _default_library_builder)
+
 
     def compile(self):
+        reg = self.builder_registry
+
         self._outputs["extensions"] = {}
         self._outputs["compiled_libraries"] = {}
 
         for name, extension in self._node_pkg.iter_category("extensions"):
-            builder = self._extension_callbacks[name]
+            builder = reg.builder("extensions", name)
             self.pre_recurse(extension.ref_node)
             try:
                 extension = extension.extension_from(extension.ref_node)
-                builder(extension)
+                task_gen = builder(extension)
             finally:
                 self.post_recurse()
             self._outputs["extensions"][name] = []
 
         for name, compiled_library in self._node_pkg.iter_category("libraries"):
-            builder = self._compiled_library_callbacks[name]
+            builder = reg.builder("compiled_libraries", name)
             self.pre_recurse(compiled_library.ref_node)
             try:
                 compiled_library = compiled_library.extension_from(compiled_library.ref_node)

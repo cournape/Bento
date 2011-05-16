@@ -122,20 +122,21 @@ class DistutilsBuildContext(BuildContext):
         def build_compiled_library(library):
             return self._distutils_builder.build_compiled_library(library)
 
-        self._extension_callbacks = collections.defaultdict(lambda : build_extension)
-        self._compiled_library_callbacks = collections.defaultdict(lambda : build_compiled_library)
+        self.builder_registry.register_category("extensions", build_extension)
+        self.builder_registry.register_category("compiled_libraries", build_compiled_library)
 
     def compile(self):
+        reg = self.builder_registry
         outputs = {}
         for name, extension in self._node_pkg.iter_category("extensions"):
-            builder = self._extension_callbacks[name]
+            builder = reg.builder("extensions", name)
             extension = extension.extension_from(extension.ref_node)
             outputs[name] = builder(extension)
         self._outputs["extensions"] = outputs
 
         outputs = {}
         for name, compiled_library in self._node_pkg.iter_category("libraries"):
-            builder = self._compiled_library_callbacks[name]
+            builder = reg.builder("compiled_libraries", name)
             compiled_library = compiled_library.extension_from(compiled_library.ref_node)
             outputs[name] = builder(compiled_library)
         self._outputs["compiled_libraries"] = outputs
@@ -164,8 +165,8 @@ class BuildYakuContext(BuildContext):
             return build_extension(self.yaku_build_ctx, extension, verbose)
         def _build_compiled_library(library):
             return build_compiled_library(self.yaku_build_ctx, library, verbose)
-        self._extension_callbacks = collections.defaultdict(lambda : _build_extension)
-        self._compiled_library_callbacks = collections.defaultdict(lambda : _build_compiled_library)
+        self.builder_registry.register_category("extensions", _build_extension)
+        self.builder_registry.register_category("compiled_libraries", _build_compiled_library)
 
     def shutdown(self):
         super(BuildYakuContext, self).shutdown()
@@ -175,9 +176,11 @@ class BuildYakuContext(BuildContext):
         import yaku.task_manager
         bld = self.yaku_build_ctx
 
+        reg = self.builder_registry
+
         outputs_e = {}
         for name, extension in self._node_pkg.iter_category("extensions"):
-            builder = self._extension_callbacks[name]
+            builder = reg.builder("extensions", name)
             self.pre_recurse(extension.ref_node)
             try:
                 extension = extension.extension_from(extension.ref_node)
@@ -187,7 +190,7 @@ class BuildYakuContext(BuildContext):
 
         outputs_c = {}
         for name, compiled_library in self._node_pkg.iter_category("libraries"):
-            builder = self._compiled_library_callbacks[name]
+            builder = reg.builder("compiled_libraries", name)
             self.pre_recurse(compiled_library.ref_node)
             try:
                 compiled_library = compiled_library.extension_from(compiled_library.ref_node)
