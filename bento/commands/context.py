@@ -127,19 +127,13 @@ class DistutilsBuildContext(BuildContext):
 
     def compile(self):
         reg = self.builder_registry
-        outputs = {}
-        for name, extension in self._node_pkg.iter_category("extensions"):
-            builder = reg.builder("extensions", name)
-            extension = extension.extension_from(extension.ref_node)
-            outputs[name] = builder(extension)
-        self._outputs["extensions"] = outputs
-
-        outputs = {}
-        for name, compiled_library in self._node_pkg.iter_category("libraries"):
-            builder = reg.builder("compiled_libraries", name)
-            compiled_library = compiled_library.extension_from(compiled_library.ref_node)
-            outputs[name] = builder(compiled_library)
-        self._outputs["compiled_libraries"] = outputs
+        for category in ("extensions", "compiled_libraries"):
+            outputs = {}
+            for name, extension in self._node_pkg.iter_category(category):
+                builder = reg.builder(category, name)
+                extension = extension.extension_from(extension.ref_node)
+                outputs[name] = builder(extension)
+            self._outputs[category] = outputs
 
 class BuildYakuContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
@@ -178,25 +172,16 @@ class BuildYakuContext(BuildContext):
 
         reg = self.builder_registry
 
-        outputs_e = {}
-        for name, extension in self._node_pkg.iter_category("extensions"):
-            builder = reg.builder("extensions", name)
-            self.pre_recurse(extension.ref_node)
-            try:
-                extension = extension.extension_from(extension.ref_node)
-                outputs_e[name] = builder(extension)
-            finally:
-                self.post_recurse()
-
-        outputs_c = {}
-        for name, compiled_library in self._node_pkg.iter_category("libraries"):
-            builder = reg.builder("compiled_libraries", name)
-            self.pre_recurse(compiled_library.ref_node)
-            try:
-                compiled_library = compiled_library.extension_from(compiled_library.ref_node)
-                outputs_c[name] = builder(compiled_library)
-            finally:
-                self.post_recurse()
+        for category in ["extensions", "compiled_libraries"]:
+            self._outputs[category] = {}
+            for name, item in self._node_pkg.iter_category(category):
+                builder = reg.builder(category, name)
+                self.pre_recurse(item.ref_node)
+                try:
+                    item = item.extension_from(item.ref_node)
+                    self._outputs[category][name] = builder(item)
+                finally:
+                    self.post_recurse()
 
         task_manager = yaku.task_manager.TaskManager(bld.tasks)
         if self.jobs < 2:
@@ -205,9 +190,6 @@ class BuildYakuContext(BuildContext):
             runner = yaku.scheduler.ParallelRunner(bld, task_manager, self.jobs)
         runner.start()
         runner.run()
-
-        self._outputs["extensions"] = outputs_e
-        self._outputs["compiled_libraries"] = outputs_c
 
         # TODO: inplace support
 
