@@ -155,7 +155,7 @@ class NodeRepresentation(object):
 
     def iter_category(self, category):
         cat = {"extensions": self._extensions.iteritems(),
-               "libraries": self._compiled_libraries.iteritems(),
+               "compiled_libraries": self._compiled_libraries.iteritems(),
                "packages": self._py_packages.iteritems(),
                "modules": self._py_modules.iteritems(),
                "datafiles": self._data.iteritems()}

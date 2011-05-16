@@ -221,7 +221,7 @@ class BuildContext(_ContextWithBuildDirectory):
     def _register_libraries_files(self, section_writer):
         sections = section_writer.sections["compiled_libraries"] = {}
         outputs_l = self._outputs["compiled_libraries"]
-        for name, library in self._node_pkg.iter_category("libraries"):
+        for name, library in self._node_pkg.iter_category("compiled_libraries"):
             sections[name] = build_isection(self, name, outputs_l[name], "compiled_libraries")
 
     def _register_python_files(self, section_writer):

@@ -227,28 +227,17 @@ class BuildWafContext(BuildContext):
     def compile(self):
         reg = self.builder_registry
 
-        self._outputs["extensions"] = {}
-        self._outputs["compiled_libraries"] = {}
-
-        for name, extension in self._node_pkg.iter_category("extensions"):
-            builder = reg.builder("extensions", name)
-            self.pre_recurse(extension.ref_node)
-            try:
-                extension = extension.extension_from(extension.ref_node)
-                task_gen = builder(extension)
-            finally:
-                self.post_recurse()
-            self._outputs["extensions"][name] = []
-
-        for name, compiled_library in self._node_pkg.iter_category("libraries"):
-            builder = reg.builder("compiled_libraries", name)
-            self.pre_recurse(compiled_library.ref_node)
-            try:
-                compiled_library = compiled_library.extension_from(compiled_library.ref_node)
-                builder(compiled_library)
-            finally:
-                self.post_recurse()
-            self._outputs["compiled_libraries"][name] = []
+        for category in ("extensions", "compiled_libraries"):
+            self._outputs[category] = {}
+            for name, extension in self._node_pkg.iter_category(category):
+                builder = reg.builder(category, name)
+                self.pre_recurse(extension.ref_node)
+                try:
+                    extension = extension.extension_from(extension.ref_node)
+                    task_gen = builder(extension)
+                finally:
+                    self.post_recurse()
+                self._outputs[category][name] = []
 
         from bento.core.recurse import translate_name
 
