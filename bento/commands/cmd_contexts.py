@@ -6,7 +6,8 @@ from bento.core.recurse \
         NodeRepresentation
 from bento.commands.build \
     import \
-        build_isection, build_py_isection, build_data_section
+        build_isection, build_py_isection, build_data_section, _config_content, \
+        build_executable
 from bento._config \
     import \
         CONFIGURED_STATE_DUMP
@@ -182,27 +183,26 @@ class BuildContext(_ContextWithBuildDirectory):
         raise NotImplementedError()
 
     def post_compile(self, section_writer):
-        self._build_python_files(section_writer)
-        self._build_data_files(section_writer)
-        self._build_script_files(section_writer)
+        self._register_python_files(section_writer)
+        self._register_data_files(section_writer)
+        self._register_script_files(section_writer)
 
-        self._build_extensions(section_writer)
-        self._build_libraries(section_writer)
+        self._register_extensions_files(section_writer)
+        self._register_libraries_files(section_writer)
 
-    def _build_extensions(self, section_writer):
+    def _register_extensions_files(self, section_writer):
         sections = section_writer.sections["extensions"] = {}
         outputs_e = self._outputs["extensions"]
         for name, extension in self._node_pkg.iter_category("extensions"):
             sections[name] = build_isection(self, name, outputs_e[name], "extensions")
 
-    def _build_libraries(self, section_writer):
+    def _register_libraries_files(self, section_writer):
         sections = section_writer.sections["compiled_libraries"] = {}
         outputs_l = self._outputs["compiled_libraries"]
         for name, library in self._node_pkg.iter_category("libraries"):
             sections[name] = build_isection(self, name, outputs_l[name], "compiled_libraries")
 
-    def _build_python_files(self, section_writer):
-        from bento.commands.build import _config_content
+    def _register_python_files(self, section_writer):
         sections = section_writer.sections
         sections["pythonfiles"] = {}
 
@@ -217,16 +217,14 @@ class BuildContext(_ContextWithBuildDirectory):
             target_node.safe_write(content)
             build_py_isection(self, "bento_config", [target_node], self.build_node)
 
-    def _build_data_files(self, section_writer):
+    def _register_data_files(self, section_writer):
         section_writer.sections["datafiles"] = data_sections = {}
         for name, section in self._node_pkg.iter_category("datafiles"):
             data_sections[name] = build_data_section(self, section)
 
-    def _build_script_files(self, section_writer):
-        from bento.commands.build import build_executable
+    def _register_script_files(self, section_writer):
         scripts_node = self.build_node.make_node("scripts-%s" % sys.version[:3])
         scripts_node.mkdir()
         section_writer.sections["executables"] = sections = {}
         for name, executable in self.pkg.executables.iteritems():
             sections[name] = build_executable(name, executable, scripts_node)
-
