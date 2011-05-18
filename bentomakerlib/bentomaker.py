@@ -3,7 +3,6 @@
 #demandimport.enable()
 import sys
 import os
-import optparse
 import traceback
 
 import bento
@@ -227,10 +226,10 @@ def main(argv=None):
         raise UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
 
     if cmd_name and cmd_name not in ["convert"] or not cmd_name:
-        _wrapped_main(popts, run_node, top_node, build_node)
+        return _wrapped_main(popts, run_node, top_node, build_node)
     else:
         register_stuff()
-        _main(popts, top_node)
+        return _main(popts, run_node, top_node, build_node)
 
 def _wrapped_main(popts, run_node, top_node, build_node):
     def _big_ugly_hack():
