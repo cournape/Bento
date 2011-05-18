@@ -19,12 +19,13 @@ _PKG_TO_DIST = {
 
 _META_PKG_TO_DIST = {}
 def _setup():
-    for k in ["name", "version", "summary", "url", "author",
-              "author_email", "maintainer", "maintainer_email",
-              "license", "description", "download_url"]:
+    for k in ["name", "version", "url", "author", "author_email", "maintainer",
+              "maintainer_email", "license", "download_url"]:
         def _f(attr):
             return lambda pkg: getattr(pkg, attr)
         _META_PKG_TO_DIST[k] = _f(k)
+    _META_PKG_TO_DIST["long_description"] = lambda pkg: pkg.description
+    _META_PKG_TO_DIST["description"] = lambda pkg: pkg.summary
 _setup()
 _PKG_TO_DIST.update(_META_PKG_TO_DIST)
 
