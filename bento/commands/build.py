@@ -3,7 +3,7 @@ import sys
 
 from bento.core.utils \
     import \
-        find_package, OrderedDict, subst_vars, rename, ensure_dir
+        find_package, subst_vars, rename, ensure_dir
 from bento.installed_package_description \
     import \
         InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
