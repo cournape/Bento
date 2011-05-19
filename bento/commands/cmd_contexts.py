@@ -15,6 +15,9 @@ from bento._config \
 from bento.commands.configure \
     import \
         _ConfigureState
+from bento.commands.build \
+    import \
+        SectionWriter
 
 class DummyContextManager(object):
     def __init__(self, pre, post):
@@ -174,6 +177,7 @@ class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
         super(BuildContext, self).__init__(cmd_argv, options_context, pkg, run_node)
         self.builder_registry = BuilderRegistry()
+        self.section_writer = SectionWriter()
 
         self._outputs = {}
 
@@ -204,7 +208,9 @@ class BuildContext(_ContextWithBuildDirectory):
     def compile(self):
         raise NotImplementedError()
 
-    def post_compile(self, section_writer):
+    def post_compile(self):
+        section_writer = self.section_writer
+
         self._register_python_files(section_writer)
         self._register_data_files(section_writer)
         self._register_script_files(section_writer)

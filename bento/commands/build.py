@@ -59,7 +59,6 @@ Usage:   bentomaker build [OPTIONS]."""
 
     def __init__(self, *a, **kw):
         Command.__init__(self, *a, **kw)
-        self.section_writer = SectionWriter()
 
     def run(self, ctx):
         argv = ctx.get_command_arguments()
@@ -70,11 +69,11 @@ Usage:   bentomaker build [OPTIONS]."""
             return
 
         ctx.compile()
-        ctx.post_compile(self.section_writer)
+        ctx.post_compile()
 
     def shutdown(self, ctx):
         n = ctx.build_node.make_node(IPKG_PATH)
-        self.section_writer.store(n.abspath(), ctx.pkg)
+        ctx.section_writer.store(n.abspath(), ctx.pkg)
 
 def build_py_isection(bld, name, nodes, from_node=None):
     if from_node is None:

@@ -146,7 +146,7 @@ class _TestBuildSimpleExtension(unittest.TestCase):
     def test_simple_extension(self):
         conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_EXT})
 
-        sections = build.section_writer.sections["extensions"]
+        sections = bld.section_writer.sections["extensions"]
         for extension in conf.pkg.extensions.values():
             isection = self._resolve_isection(bld.run_node, sections[extension.name])
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
@@ -178,13 +178,13 @@ Library:
         build.run(bld)
         build.shutdown(bld)
 
-        sections = build.section_writer.sections["extensions"]
+        sections = bld.section_writer.sections["extensions"]
         self.failUnless(len(sections) == 2)
         self.failUnless(len(sections["_bar"].files) == 0)
 
     def test_simple_library(self):
         conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_CLIB})
-        sections = build.section_writer.sections["compiled_libraries"]
+        sections = bld.section_writer.sections["compiled_libraries"]
         for library in conf.pkg.compiled_libraries.values():
             isection = self._resolve_isection(bld.run_node, sections[library.name])
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
