@@ -150,28 +150,42 @@ class ConfigureContext(_ContextWithBuildDirectory):
     def shutdown(self):
         CmdContext.shutdown(self)
 
-class BuilderRegistry(object):
+class _Dummy(object):
+    pass
+
+class _RegistryBase(object):
+    """A simple registry of sets of callbacks, one set per category."""
     def __init__(self):
         self._callbacks = {}
+        self.categories = _Dummy()
 
     def register_category(self, category, default_builder):
         if category in self._callbacks:
             raise ValueError("Category %r already registered" % category)
         else:
             self._callbacks[category] = collections.defaultdict(lambda: default_builder)
+            setattr(self.categories, category, _Dummy())
 
-    def register_builder(self, category, name, builder):
+    def register_callback(self, category, name, builder):
         c = self._callbacks.get(category, None)
         if c is not None:
             c[name] = builder
+            cat = getattr(self.categories, category)
+            setattr(cat, name, builder)
         else:
             raise ValueError("category %s is not registered yet" % category)
 
-    def builder(self, category, name):
+    def callback(self, category, name):
         if not category in self._callbacks:
             raise ValueError("Unregistered category %r" % category)
         else:
             return self._callbacks[category][name]
+
+class BuilderRegistry(_RegistryBase):
+    builder = _RegistryBase.callback
+
+class ISectionRegistry(_RegistryBase):
+    registrer = _RegistryBase.callback
 
 class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
@@ -183,6 +197,14 @@ class BuildContext(_ContextWithBuildDirectory):
 
         self._node_pkg = NodeRepresentation(run_node, self.top_node)
         self._node_pkg.update_package(pkg)
+
+        self.isection_registry = ISectionRegistry()
+        self.isection_registry.register_category("extensions", build_isection)
+        self.isection_registry.register_category("compiled_libraries", build_isection)
+        self.isection_registry.register_category("packages", build_py_isection)
+        self.isection_registry.register_category("modules", build_py_isection)
+        self.isection_registry.register_category("datafiles", build_data_section)
+        self.isection_registry.register_category("executables", build_executable)
 
     def shutdown(self):
         CmdContext.shutdown(self)
@@ -198,12 +220,12 @@ class BuildContext(_ContextWithBuildDirectory):
 
     def register_builder(self, extension_name, builder):
         full_name = self._compute_extension_name(extension_name)
-        self.builder_registry.register_builder("extensions", full_name, builder)
+        self.builder_registry.register_callback("extensions", full_name, builder)
 
     def register_compiled_library_builder(self, clib_name, builder):
         relpos = self.local_node.path_from(self.top_node)
         full_name = os.path.join(relpos, clib_name).replace(os.sep, ".")
-        self.builder_registry.register_builder("compiled_libraries", full_name, builder)
+        self.builder_registry.register_callback("compiled_libraries", full_name, builder)
 
     def compile(self):
         raise NotImplementedError()
@@ -222,37 +244,43 @@ class BuildContext(_ContextWithBuildDirectory):
         sections = section_writer.sections["extensions"] = {}
         outputs_e = self._outputs["extensions"]
         for name, extension in self._node_pkg.iter_category("extensions"):
-            sections[name] = build_isection(self, name, outputs_e[name], "extensions")
+            registrer = self.isection_registry.registrer("extensions", name)
+            sections[name] = registrer(self, name, outputs_e[name], "extensions")
 
     def _register_libraries_files(self, section_writer):
         sections = section_writer.sections["compiled_libraries"] = {}
         outputs_l = self._outputs["compiled_libraries"]
         for name, library in self._node_pkg.iter_category("compiled_libraries"):
-            sections[name] = build_isection(self, name, outputs_l[name], "compiled_libraries")
+            registrer = self.isection_registry.registrer("compiled_libraries", name)
+            sections[name] = registrer(self, name, outputs_l[name], "compiled_libraries")
 
     def _register_python_files(self, section_writer):
-        sections = section_writer.sections
-        sections["pythonfiles"] = {}
+        sections = section_writer.sections["pythonfiles"] = {}
 
         for name, nodes in self._node_pkg.iter_category("packages"):
-            sections["pythonfiles"][name] = build_py_isection(self, name, nodes)
+            registrer = self.isection_registry.registrer("packages", name)
+            sections[name] = registrer(self, name, nodes)
         for name, node in self._node_pkg.iter_category("modules"):
-            sections["pythonfiles"][name] = build_py_isection(self, name, [node])
+            registrer = self.isection_registry.registrer("modules", name)
+            sections[name] = registrer(self, name, [node])
         if self.pkg.config_py:
             content = _config_content(self.get_paths_scheme())
             target_node = self.build_node.make_node(self.pkg.config_py)
             target_node.parent.mkdir()
             target_node.safe_write(content)
-            build_py_isection(self, "bento_config", [target_node], self.build_node)
+            registrer = self.isection_registry.registrer("modules", name)
+            sections["__bento_config"] = registrer(self, "bento_config", [target_node], self.build_node)
 
     def _register_data_files(self, section_writer):
         section_writer.sections["datafiles"] = data_sections = {}
         for name, section in self._node_pkg.iter_category("datafiles"):
-            data_sections[name] = build_data_section(self, section)
+            registrer = self.isection_registry.registrer("datafiles", name)
+            data_sections[name] = registrer(self, section)
 
     def _register_script_files(self, section_writer):
         scripts_node = self.build_node.make_node("scripts-%s" % sys.version[:3])
         scripts_node.mkdir()
         section_writer.sections["executables"] = sections = {}
         for name, executable in self.pkg.executables.iteritems():
-            sections[name] = build_executable(name, executable, scripts_node)
+            registrer = self.isection_registry.registrer("executables", name)
+            sections[name] = registrer(name, executable, scripts_node)
