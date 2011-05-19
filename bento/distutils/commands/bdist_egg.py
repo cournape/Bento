@@ -20,6 +20,10 @@ from bento.commands.build_egg \
     import \
         build_egg
 
+class _FakeContext(object):
+    def __init__(self, build_node):
+        self.build_node = build_node
+
 class bdist_egg(old_bdist_egg):
     def __init__(self, *a, **kw):
         old_bdist_egg.__init__(self, *a, **kw)
@@ -36,6 +40,11 @@ class bdist_egg(old_bdist_egg):
         build.run()
 
         dist = build.distribution
-        n = dist.top_node.bldnode.make_node(IPKG_PATH)
+        n = dist.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
-        build_egg(ipkg)
+
+        build_node = self.distribution.build_node
+        # FIXME: fix build_egg signature - we use a dummy context here to avoid
+        # creating the whole command context stuff
+        context = _FakeContext(build_node)
+        build_egg(ipkg, context, build_node.abspath())

@@ -22,21 +22,17 @@ from bento.core.package \
     import \
         PackageDescription
 
-from bento.distutils.commands.sdist \
+from bento.distutils.commands.config \
     import \
-        sdist
+        config
 from bento.distutils.commands.build \
     import \
         build
-from bento.distutils.commands.install_lib \
+from bento.distutils.commands.install \
     import \
-        install_lib
-from bento.distutils.commands.install_data \
-    import \
-        install_data
+        install
 
-_BENTO_MONKEYED_CLASSES = {"build": build, "install_data": install_data,
-                           "install_lib": install_lib, "sdist": sdist}
+_BENTO_MONKEYED_CLASSES = {"build": build, "config": config, "install": install}
 
 if _is_setuptools_activated():
     from bento.distutils.commands.bdist_egg \
@@ -83,8 +79,10 @@ class BentoDistribution(Distribution):
 
         source_root = os.getcwd()
         build_root = os.path.join(source_root, "build")
-        self.root = create_root_with_source_tree(source_root, build_root)
-        self.top_node = self.root.srcnode
+        root = create_root_with_source_tree(source_root, build_root)
+        self.top_node = root._ctx.srcnode
+        self.build_node = root._ctx.bldnode
+        self.run_node = root._ctx.srcnode
 
     def has_data_files(self):
         return len(self.pkg.data_files) > 0        
