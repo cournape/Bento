@@ -10,13 +10,18 @@ Main features:
       --build-directory option
     - Out of tree builds support (i.e. running bento in a directory which does
       not contain bento.info), with global --bento-info option
+    - More reliable distutils compatibility layer
 
 Internals
 ---------
 
-    - Significantly better code coverage of bento.commands
+    - Significantly better code coverage of bento commands.
     - Use node-based representation of package description in build and install
     - Cleanly separated source, cwd and build directories
+    - Rewrote distutils compatibility layer to use command contexts.
+      Concretely, this means it works much closer to how bentomaker does, so
+      there should be less surprises between bentomaker and distutils
+      execution.
 
 Version 0.0.5
 =============
