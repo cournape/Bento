@@ -202,8 +202,9 @@ class BuildContext(object):
             finally:
                 f.close()
 
-        if os.path.exists(BUILD_CACHE):
-            fid = open(BUILD_CACHE, "rb")
+        build_cache = bldnode.find_node(BUILD_CACHE)
+        if build_cache is not None:
+            fid = open(build_cache.abspath(), "rb")
             try:
                 self.cache = load(fid)
             finally:
@@ -241,8 +242,9 @@ def myopen(filename, mode="r"):
 
 def get_cfg(src_path=None, build_path="build"):
     ctx = ConfigureContext()
-    if os.path.exists(CONFIG_CACHE):
-        fid = open(CONFIG_CACHE, "rb")
+    config_cache = os.path.join(build_path, CONFIG_CACHE)
+    if os.path.exists(config_cache):
+        fid = open(config_cache, "rb")
         try:
             ctx.cache = load(fid)
             ctx._stdout_cache = load(fid)
