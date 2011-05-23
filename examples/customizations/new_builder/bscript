@@ -1,0 +1,52 @@
+"""
+This example shows experimental support for build extensions through waf.
+
+You need to define the WAFDIR environment variable, pointing to the root of waf sources. This requires waf 1.6.x
+"""
+import os
+from bento.commands import hooks
+
+from bento.commands.extras.waf \
+    import \
+        ConfigureWafContext, BuildWafContext
+from bento.installed_package_description \
+    import \
+        InstalledSection
+
+import waflib
+# FIXME: abstract those module gen tasks...
+class write_module(waflib.Task.Task):
+    color = "CYAN"
+    vars = ["CONTENT"]
+    def run(self):
+        # FIXME: put actual data here
+        self.outputs[0].write(self.env.CONTENT)
+
+@waflib.TaskGen.feature("gen_pymodule")
+def process_write_config(self):
+    if not hasattr(self, "content"):
+        raise ValueError("task gen %r expects a 'content' argument" % self.name)
+    else:
+        self.env.CONTENT = self.content
+    if not hasattr(self, "name"):
+        self.name = self.target
+    output = self.path.find_or_declare(self.target)
+    self.bld.register_outputs("gen_pymodule", self.name, [output])
+
+    bento_context = self.bld.bento_context
+    bento_context._node_pkg._py_modules[self.name] = bento_context.build_node.make_node(output.bldpath())
+    tsk = self.create_task("write_module")
+    tsk.set_outputs(output)
+    return tsk
+
+@hooks.pre_build()
+def pre_build(context):
+    from bento.commands.build import build_py_isection
+    context.isection_registry.register_category("gen_pymodule", build_py_isection)
+    context.waf_context(features="gen_pymodule",
+                        content="print 'foo'",
+                        target="yoyo.py")
+
+def startup(context):
+    context.register_context("configure", ConfigureWafContext)
+    context.register_context("build", BuildWafContext)

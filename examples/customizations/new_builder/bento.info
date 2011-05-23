@@ -1,0 +1,14 @@
+Name: hello
+Version: 1.0
+
+HookFile: bscript
+
+Library:
+    Packages:
+        hello
+    Extension: hello._bar
+        Sources:
+            src/hellomodule.c
+    CompiledLibrary: hello.bar
+        Sources:
+            src/hellolib.c
