@@ -1,6 +1,7 @@
 import os
 import sys
 import collections
+import warnings
 
 from bento.core.recurse \
     import \
@@ -242,17 +243,25 @@ class BuildContext(_ContextWithBuildDirectory):
 
     def _register_extensions_files(self, section_writer):
         sections = section_writer.sections["extensions"] = {}
-        outputs_e = self._outputs["extensions"]
+        outputs_e = self._outputs.get("extensions", {})
         for name, extension in self._node_pkg.iter_category("extensions"):
+            outputs = outputs_e.get(name, None)
+            if outputs is None:
+                warnings.warn("Not outputs recorded for extension %s" % name)
+                outputs = []
             registrer = self.isection_registry.registrer("extensions", name)
-            sections[name] = registrer(self, name, outputs_e[name], "extensions")
+            sections[name] = registrer(self, name, outputs, "extensions")
 
     def _register_libraries_files(self, section_writer):
         sections = section_writer.sections["compiled_libraries"] = {}
-        outputs_l = self._outputs["compiled_libraries"]
+        outputs_l = self._outputs.get("compiled_libraries", {})
         for name, library in self._node_pkg.iter_category("compiled_libraries"):
+            outputs = outputs_l.get(name, None)
+            if outputs is None:
+                warnings.warn("Not outputs recorded for compiled library %s" % name)
+                outputs = []
             registrer = self.isection_registry.registrer("compiled_libraries", name)
-            sections[name] = registrer(self, name, outputs_l[name], "compiled_libraries")
+            sections[name] = registrer(self, name, outputs, "compiled_libraries")
 
     def _register_python_files(self, section_writer):
         sections = section_writer.sections["pythonfiles"] = {}

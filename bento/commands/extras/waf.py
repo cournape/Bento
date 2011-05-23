@@ -22,6 +22,7 @@ from waflib import Options
 from waflib import Context
 from waflib import Logs
 from waflib import Build
+import waflib
 
 from bento.commands.context \
     import \
@@ -162,6 +163,48 @@ def ext_name_to_path(name):
     """
     return name.replace('.', os.path.sep)
 
+class BentoBuildContext(Build.BuildContext):
+    """Waf build context with additional support to register builder output to
+    bento build context."""
+    def __init__(self, *a, **kw):
+        Build.BuildContext.__init__(self, *a, **kw)
+        # XXX: set into BuildWafContext
+        self.bento_context = None
+
+    def register_outputs(self, category, name, outputs):
+        if self.bento_context._outputs.get(category, None) is None:
+            cat = self.bento_context._outputs[category] = {}
+        else:
+            cat = self.bento_context._outputs[category]
+        cat[name] = [n.bldpath() for n in outputs]
+
+@waflib.TaskGen.feature("bento")
+@waflib.TaskGen.after_method("apply_link")
+def apply_register_outputs(self):
+    from bento.core.recurse import translate_name
+
+    for x in self.features:
+        if x == "cprogram" and "cxx" in self.features:
+            x = "cxxprogram"
+        if x == "cshlib" and "cxx" in self.features:
+            x = "cxxshlib"
+
+        if x in waflib.Task.classes:
+            if issubclass(waflib.Task.classes[x], waflib.Tools.ccroot.link_task):
+                link = x
+                break
+    else:
+        return
+
+    if "pyext" in self.features and "cshlib" in self.features:
+        category = "extensions"
+    else:
+        category = "compiled_libraries"
+    bento_context = self.bld.bento_context
+    ref_node = bento_context.top_node.make_node(self.path.path_from(self.path.ctx.srcnode))
+    name = translate_name(self.name, ref_node, bento_context.top_node)
+    self.bld.register_outputs(category, name, self.link_task.outputs)
+
 class BuildWafContext(BuildContext):
     def pre_recurse(self, local_node):
         super(BuildWafContext, self).pre_recurse(local_node)
@@ -208,17 +251,18 @@ class BuildWafContext(BuildContext):
         if not waf_context.all_envs:
             waf_context.load_envs()
         waf_context.jobs = jobs
+        waf_context.bento_context = self
         self.waf_context = waf_context
 
         def _default_extension_builder(extension):
             # FIXME: should be handled in the waf builder itself maybe ?
             target = extension.name.replace(".", os.sep)
-            return self.waf_context(features='c cshlib pyext',
+            return self.waf_context(features='c cshlib pyext bento',
                                     source=extension.sources, target=target,
                                     name=extension.name)
 
         def _default_library_builder(library):
-            return self.waf_context(features='c cstlib pyext', source=library.sources, target=library.name)
+            return self.waf_context(features='c cstlib pyext bento', source=library.sources, target=library.name)
 
         self.builder_registry.register_category("extensions", _default_extension_builder)
         self.builder_registry.register_category("compiled_libraries", _default_library_builder)
@@ -228,7 +272,6 @@ class BuildWafContext(BuildContext):
         reg = self.builder_registry
 
         for category in ("extensions", "compiled_libraries"):
-            self._outputs[category] = {}
             for name, extension in self._node_pkg.iter_category(category):
                 builder = reg.builder(category, name)
                 self.pre_recurse(extension.ref_node)
@@ -237,24 +280,5 @@ class BuildWafContext(BuildContext):
                     task_gen = builder(extension)
                 finally:
                     self.post_recurse()
-                self._outputs[category][name] = []
 
-        from bento.core.recurse import translate_name
-
-        bld = self.waf_context
-        bld.compile()
-
-        for group in bld.groups:
-            for task_gen in group:
-                if hasattr(task_gen, "link_task"):
-                    if "cstlib" in task_gen.features:
-                        category = "compiled_libraries"
-                    else:
-                        category = "extensions"
-                    ref_node = self.top_node.make_node(task_gen.path.path_from(task_gen.path.ctx.srcnode))
-                    name = translate_name(task_gen.name, ref_node, self.top_node)
-                    self._outputs[category][name] = [o.bldpath() for o in task_gen.link_task.outputs]
-                    if self.inplace:
-                        for output in task_gen.link_task.outputs:
-                            if output.is_child_of(bld.bldnode):
-                                shutil.copy(output.abspath(), output.path_from(bld.bldnode))
+        self.waf_context.compile()
