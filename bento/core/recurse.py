@@ -57,14 +57,10 @@ class NodeRepresentation(object):
         self.top_node = top_node
         self.run_node = run_node
 
-        # FIXME: would make more sense to organize those as a trees to easily
-        # find all the objects at different levels
-        self._extensions = {}
-        self._compiled_libraries = {}
-
-        self._py_packages = {}
-        self._py_modules = {}
-        self._data = {}
+        self._registry = {}
+        for category in ("modules", "packages", "extensions",
+                         "compiled_libraries", "datafiles"):
+            self._registry[category] = {}
 
         self._extra_top_nodes = []
 
@@ -79,25 +75,25 @@ class NodeRepresentation(object):
     def _update_extensions(self, pkg):
         for name, extension in pkg.extensions.iteritems():
             extension = to_node_extension(extension, self.top_node)
-            self._extensions[name] = extension
+            self._registry["extensions"][name] = extension
 
         def _subpackage_extension(sub_package, ref_node):
             for name, extension in sub_package.extensions.iteritems():
                 extension = to_node_extension(extension, ref_node)
                 name = translate_name(name, ref_node, self.top_node)
-                self._extensions[name] = extension
+                self._registry["extensions"][name] = extension
         self._run_in_subpackage(pkg, _subpackage_extension)
 
     def _update_libraries(self, pkg):
         for name, compiled_library in pkg.compiled_libraries.iteritems():
             compiled_library = to_node_extension(compiled_library, self.top_node)
-            self._compiled_libraries[name] = compiled_library
+            self._registry["compiled_libraries"][name] = compiled_library
 
         def _subpackage_compiled_libraries(sub_package, ref_node):
             for name, compiled_library in sub_package.compiled_libraries.iteritems():
                 compiled_library = to_node_extension(compiled_library, ref_node)
                 name = translate_name(name, ref_node, self.top_node)
-                self._compiled_libraries[name] = compiled_library
+                self._registry["compiled_libraries"][name] = compiled_library
         self._run_in_subpackage(pkg, _subpackage_compiled_libraries)
 
     def _update_py_packages(self, pkg):
@@ -108,7 +104,7 @@ class NodeRepresentation(object):
                 raise IOError("init file for package %s not found !" % package)
             else:
                 p = n.parent
-                self._py_packages[package] = [p.find_node(f) for f in p.listdir() if f.endswith(".py")]
+                self._registry["packages"][package] = [p.find_node(f) for f in p.listdir() if f.endswith(".py")]
         def _subpackage_resolve_package(sub_package, ref_node):
             for package in sub_package.packages:
                 _resolve_package(package, ref_node)
@@ -128,7 +124,7 @@ class NodeRepresentation(object):
                     raise IOError("File/glob %s could not be resolved (data file section %s)" % (f, name))
                 else:
                     nodes.extend(ns)
-            self._data[name] = NodeDataFiles(name, nodes, ref_node, data_section.target_dir)
+            self._registry["datafiles"][name] = NodeDataFiles(name, nodes, ref_node, data_section.target_dir)
 
     def _update_py_modules(self, pkg):
         for m in pkg.py_modules:
@@ -136,7 +132,7 @@ class NodeRepresentation(object):
             if n is None:
                 raise IOError("file for module %s not found" % m)
             else:
-                self._py_modules[m] = n
+                self._registry["modules"][m] = n
 
     def _update_extra_sources(self, pkg):
         for s in pkg.extra_source_files:
@@ -154,30 +150,13 @@ class NodeRepresentation(object):
         self._update_extra_sources(pkg)
 
     def iter_category(self, category):
-        cat = {"extensions": self._extensions.iteritems(),
-               "compiled_libraries": self._compiled_libraries.iteritems(),
-               "packages": self._py_packages.iteritems(),
-               "modules": self._py_modules.iteritems(),
-               "datafiles": self._data.iteritems()}
-        if category in cat:
-            return cat[category]
+        if category in self._registry:
+            return self._registry[category].iteritems()
         else:
             raise ValueError("Unknown category %s" % category)
 
-    def nodes_iter(self):
-        for n in self._py_modules:
-            yield n
-        for p in self._py_packages.itervalues():
-            for n in p:
-                yield n
-        for extension in self._extensions.itervalues():
-            for n in extension.nodes:
-                yield n
-        for library in self._compiled_libraries.itervalues():
-            for n in library.nodes:
-                yield n
-        for data in self._data.itervalues():
-            for n in data.nodes:
-                yield n
-        for n in self._extra_top_nodes:
-            yield n
+    def register_entity(self, category, name, entity):
+        if category in self._registry:
+            self._registry[category][name] = entity
+        else:
+            raise ValueError("Category %r not registered" % category)

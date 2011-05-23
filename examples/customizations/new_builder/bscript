@@ -34,7 +34,8 @@ def process_write_config(self):
     self.bld.register_outputs("gen_pymodule", self.name, [output])
 
     bento_context = self.bld.bento_context
-    bento_context._node_pkg._py_modules[self.name] = bento_context.build_node.make_node(output.bldpath())
+    bento_context._node_pkg.register_entity("modules", self.name,
+                                            bento_context.build_node.make_node(output.bldpath()))
     tsk = self.create_task("write_module")
     tsk.set_outputs(output)
     return tsk
