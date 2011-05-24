@@ -39,7 +39,7 @@ Usage:   bentomaker build_egg [OPTIONS]"""
 
         n = ctx.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
-        build_egg(ipkg, ctx, ctx.top_node.bldnode.abspath())
+        build_egg(ipkg, ctx, ctx.build_node.abspath())
 
 def build_egg(ipkg, ctx, source_root, path=None):
     meta = PackageMetadata.from_ipkg(ipkg)
