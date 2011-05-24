@@ -24,6 +24,9 @@ from waflib import Logs
 from waflib import Build
 import waflib
 
+from bento.core.node_package \
+    import \
+        translate_name
 from bento.commands.context \
     import \
         ConfigureContext, BuildContext
@@ -181,8 +184,6 @@ class BentoBuildContext(Build.BuildContext):
 @waflib.TaskGen.feature("bento")
 @waflib.TaskGen.after_method("apply_link")
 def apply_register_outputs(self):
-    from bento.core.recurse import translate_name
-
     for x in self.features:
         if x == "cprogram" and "cxx" in self.features:
             x = "cxxprogram"

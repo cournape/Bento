@@ -3,7 +3,7 @@ import sys
 import collections
 import warnings
 
-from bento.core.recurse \
+from bento.core.node_package \
     import \
         NodeRepresentation
 from bento.commands.build \

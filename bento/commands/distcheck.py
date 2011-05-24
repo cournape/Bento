@@ -40,7 +40,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
 
         saved = os.getcwd()
 
-        distcheck_dir = ctx.top_node.bldnode.make_node(DISTCHECK_DIR)
+        distcheck_dir = ctx.build_node.make_node(DISTCHECK_DIR)
         if os.path.exists(distcheck_dir.abspath()):
             shutil.rmtree(distcheck_dir.abspath())
         distcheck_dir.mkdir()
