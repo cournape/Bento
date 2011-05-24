@@ -1,14 +1,11 @@
 import bento
 
-from bento.commands._config \
-    import \
-        SCRIPT_NAME
 from bento.commands.core \
     import \
         COMMANDS_REGISTRY, USAGE, fill_string
 
 def get_usage():
-    ret = [USAGE % {"name": SCRIPT_NAME,
+    ret = [USAGE % {"name": "bentomaker",
                     "version": bento.__version__}]
     ret.append("Bento commands:")
 

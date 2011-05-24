@@ -17,9 +17,6 @@ from bento.commands.options \
     import \
         OptionsContext
 
-from bento.commands._config \
-    import \
-        SCRIPT_NAME
 from bento.commands.errors \
     import \
         UsageException
@@ -81,7 +78,7 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             p = options_context.parser
             p.print_help()
         else:
-            raise UsageException("%s: error: %s not recognized" % (SCRIPT_NAME, cmd_name))
+            raise UsageException("error: command %s not recognized" % cmd_name)
 
 def fill_string(s, minlen):
     if len(s) < minlen:
@@ -89,7 +86,7 @@ def fill_string(s, minlen):
     return s
 
 def get_simple_usage():
-    ret = [USAGE % {"name": SCRIPT_NAME,
+    ret = [USAGE % {"name": "bentomaker",
                     "version": bento.__version__}]
     ret.append("Basic Commands:")
 
@@ -102,7 +99,7 @@ def get_simple_usage():
             if doc is None:
                 doc = "undocumented"
             header = "  %(script)s %(cmd_name)s" % \
-                        {"script": SCRIPT_NAME,
+                        {"script": "bentomaker",
                          "cmd_name": name}
             commands.append((header, doc))
     add_group(["configure", "build", "install"])
@@ -110,11 +107,11 @@ def get_simple_usage():
     add_group(["sdist", "build_wininst", "build_egg"])
     commands.append(("", ""))
 
-    commands.append(("  %s help configure" % SCRIPT_NAME,
+    commands.append(("  %s help configure" % "bentomaker",
                      "more help on e.g. configure command"))
-    commands.append(("  %s help commands" % SCRIPT_NAME,
+    commands.append(("  %s help commands" % "bentomaker",
                      "list all commands"))
-    commands.append(("  %s help globals" % SCRIPT_NAME,
+    commands.append(("  %s help globals" % "bentomaker",
                      "show global options"))
 
     minlen = max([len(header) for header, hlp in commands]) + 2

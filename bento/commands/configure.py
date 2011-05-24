@@ -20,7 +20,7 @@ from bento._config \
         CONFIGURED_STATE_DUMP, BENTO_SCRIPT
 
 from bento.commands.core import \
-        Command, SCRIPT_NAME, Option, OptionGroup
+        Command, Option, OptionGroup
 from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries, get_packages
@@ -93,8 +93,8 @@ def _get_flag_values(flag_names, options):
             elif flag_value.lower() in ["false", "no"]:
                 flag_values[option_name] = False
             else:
-                msg = """Error: %s: option %s expects a true or false argument"""
-                raise UsageException(msg % (SCRIPT_NAME, "--%s" % option_name))
+                msg = """Option %s expects a true or false argument"""
+                raise UsageException(msg % "--%s" % option_name)
     return flag_values
 
 def _setup_options_parser(options_context, package_options):

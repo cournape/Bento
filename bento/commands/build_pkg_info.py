@@ -9,7 +9,7 @@ from bento.commands.errors \
     import \
         UsageException
 from bento.commands.core import \
-        Command, SCRIPT_NAME
+        Command
 
 class BuildPkgInfoCommand(Command):
     long_descr = """\
@@ -28,8 +28,7 @@ Usage:   bentomaker build_pkg_info [OPTIONS]"""
             p.print_help()
             return
         if len(a) < 1:
-            raise UsageException("%s: error: %s subcommand require an argument" \
-                    % (SCRIPT_NAME, "parse"))
+            raise UsageException("error: parse subcommand require an argument")
         else:
             filename = a[0]
 

@@ -17,7 +17,7 @@ from bento._config \
         IPKG_PATH
 from bento.commands.core \
     import \
-        Command, SCRIPT_NAME
+        Command
 from bento.commands.mpkg_utils \
     import \
         build_pkg, PackageInfo, MetaPackageInfo, make_mpkg_plist, make_mpkg_description

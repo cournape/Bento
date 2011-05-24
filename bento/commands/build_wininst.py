@@ -27,7 +27,7 @@ from bento.commands.errors \
     import \
         UsageException
 from bento.commands.core import \
-        Command, SCRIPT_NAME
+        Command
 from bento.commands.egg_utils import \
         EggInfo, egg_info_dirname
 from bento.commands.wininst_utils import \

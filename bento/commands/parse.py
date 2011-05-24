@@ -7,7 +7,7 @@ from bento.commands.errors \
     import \
         UsageException
 from bento.commands.core import \
-        Command, SCRIPT_NAME, Option
+        Command, Option
 from bento.core.parser.api \
     import \
         build_ast_from_data, ParseError
@@ -39,7 +39,7 @@ Usage:   bentomaker parse [OPTIONS]"""
             filename = a[0]
 
         if not os.path.exists(filename):
-            raise UsageException("%s: error: file %s does not exist" % SCRIPT_NAME)
+            raise UsageException("%s: error: file %s does not exist" % "bentomaker")
 
         f = open(filename, "r")
         try:
