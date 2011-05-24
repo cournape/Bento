@@ -83,7 +83,13 @@ def build_py_isection(bld, name, nodes, from_node=None):
         name, os.path.join("$_srcrootdir", source_dir), "$sitedir",
         [n.path_from(from_node) for n in nodes])
 
-def build_isection(bld, ext_name, files, category):
+def build_extension_isection(bld, name, files):
+    return _build_isection(bld, name, files, "extensions")
+
+def build_compiled_library_isection(bld, name, files):
+    return _build_isection(bld, name, files, "compiled_libraries")
+
+def _build_isection(bld, ext_name, files, category):
     """Build an InstalledSection from the list of files for an
     extension/compiled library.
 

@@ -8,7 +8,8 @@ from bento.core.recurse \
         NodeRepresentation
 from bento.commands.build \
     import \
-        build_isection, build_py_isection, build_data_section, _config_content, \
+        build_extension_isection, build_compiled_library_isection, \
+        build_py_isection, build_data_section, _config_content, \
         build_executable
 from bento._config \
     import \
@@ -200,8 +201,8 @@ class BuildContext(_ContextWithBuildDirectory):
         self._node_pkg.update_package(pkg)
 
         self.isection_registry = ISectionRegistry()
-        self.isection_registry.register_category("extensions", build_isection)
-        self.isection_registry.register_category("compiled_libraries", build_isection)
+        self.isection_registry.register_category("extensions", build_extension_isection)
+        self.isection_registry.register_category("compiled_libraries", build_compiled_library_isection)
         self.isection_registry.register_category("packages", build_py_isection)
         self.isection_registry.register_category("modules", build_py_isection)
         self.isection_registry.register_category("datafiles", build_data_section)
@@ -238,30 +239,19 @@ class BuildContext(_ContextWithBuildDirectory):
         self._register_data_files(section_writer)
         self._register_script_files(section_writer)
 
-        self._register_extensions_files(section_writer)
-        self._register_libraries_files(section_writer)
+        for category in ("extensions", "compiled_libraries"):
+            self._register_compiled_files(section_writer, category)
 
-    def _register_extensions_files(self, section_writer):
-        sections = section_writer.sections["extensions"] = {}
-        outputs_e = self._outputs.get("extensions", {})
-        for name, extension in self._node_pkg.iter_category("extensions"):
+    def _register_compiled_files(self, section_writer, category):
+        sections = section_writer.sections[category] = {}
+        outputs_e = self._outputs.get(category, {})
+        for name, extension in self._node_pkg.iter_category(category):
             outputs = outputs_e.get(name, None)
             if outputs is None:
                 warnings.warn("Not outputs recorded for extension %s" % name)
                 outputs = []
-            registrer = self.isection_registry.registrer("extensions", name)
-            sections[name] = registrer(self, name, outputs, "extensions")
-
-    def _register_libraries_files(self, section_writer):
-        sections = section_writer.sections["compiled_libraries"] = {}
-        outputs_l = self._outputs.get("compiled_libraries", {})
-        for name, library in self._node_pkg.iter_category("compiled_libraries"):
-            outputs = outputs_l.get(name, None)
-            if outputs is None:
-                warnings.warn("Not outputs recorded for compiled library %s" % name)
-                outputs = []
-            registrer = self.isection_registry.registrer("compiled_libraries", name)
-            sections[name] = registrer(self, name, outputs, "compiled_libraries")
+            registrer = self.isection_registry.registrer(category, name)
+            sections[name] = registrer(self, name, outputs)
 
     def _register_python_files(self, section_writer):
         sections = section_writer.sections["pythonfiles"] = {}
