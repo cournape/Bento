@@ -1,8 +1,10 @@
 import os
 import sys
-import collections
 import warnings
 
+from bento.compat.api \
+    import \
+        defaultdict
 from bento.core.node_package \
     import \
         NodeRepresentation
@@ -165,7 +167,7 @@ class _RegistryBase(object):
         if category in self._callbacks:
             raise ValueError("Category %r already registered" % category)
         else:
-            self._callbacks[category] = collections.defaultdict(lambda: default_builder)
+            self._callbacks[category] = defaultdict(lambda: default_builder)
             setattr(self.categories, category, _Dummy())
 
     def register_callback(self, category, name, builder):
