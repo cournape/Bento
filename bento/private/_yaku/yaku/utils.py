@@ -100,3 +100,8 @@ def find_program(program, path_list=None):
                 return ppath
 
     return None
+
+if sys.version_info[0] < 3:
+    from yaku._utils_py2 import join_bytes
+else:
+    from yaku._utils_py3 import join_bytes

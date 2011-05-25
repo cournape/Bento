@@ -48,7 +48,14 @@ class Builder(object):
             if filenames is a string"""
         if isinstance(filenames, str):
             filenames = [filenames]
-        return [self.ctx.path.find_resource(s) for s in filenames]
+        nodes = []
+        for s in filenames:
+            n = self.ctx.path.find_resource(s)
+            if n is None:
+                raise IOError("Source file %s not found" % s)
+            else:
+                nodes.append(n)
+        return nodes
 
     def configure(self):
         pass
