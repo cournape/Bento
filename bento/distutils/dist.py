@@ -31,8 +31,11 @@ from bento.distutils.commands.build \
 from bento.distutils.commands.install \
     import \
         install
+from bento.distutils.commands.sdist \
+    import \
+        sdist
 
-_BENTO_MONKEYED_CLASSES = {"build": build, "config": config, "install": install}
+_BENTO_MONKEYED_CLASSES = {"build": build, "config": config, "install": install, "sdist": sdist}
 
 if _is_setuptools_activated():
     from bento.distutils.commands.bdist_egg \
@@ -49,6 +52,13 @@ def _setup_cmd_classes(attrs):
     return attrs
 
 class BentoDistribution(Distribution):
+    def get_command_class(self, command):
+        # Better raising an error than having some weird behavior for a command
+        # we don't support
+        if not command in _BENTO_MONKEYED_CLASSES:
+            raise ValueError("Command %s is not supported by bento.distutils compat layer" % command)
+        return Distribution.get_command_class(self, command)
+
     def __init__(self, attrs=None):
         if attrs is None:
             attrs = {}
