@@ -3,6 +3,10 @@ Version: 1.0
 
 HookFile: bscript
 
+DataFiles: foo
+    TargetDir: $mandir
+    Files: foo.1
+
 Library:
     Packages:
         hello
