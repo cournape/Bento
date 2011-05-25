@@ -17,7 +17,7 @@ from yaku.tools \
         import_tools
 from yaku.utils \
     import \
-        ensure_dir, rename
+        ensure_dir, rename, join_bytes
 from yaku.errors \
     import \
         UnknownTask
@@ -111,7 +111,7 @@ class ConfigureContext(object):
         out.append(dumps(self.cache))
         out.append(dumps(self._stdout_cache))
         out.append(dumps(self._cmd_cache))
-        config_cache.write("".join(out), flags="wb")
+        config_cache.write(join_bytes(out), flags="wb")
 
         build_config = self.bld_root.make_node(BUILD_CONFIG)
         build_config.write("%r\n" % self.tools)
