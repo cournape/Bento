@@ -191,6 +191,42 @@ class BuilderRegistry(_RegistryBase):
 class ISectionRegistry(_RegistryBase):
     registrer = _RegistryBase.callback
 
+class OutputRegistry(object):
+    def __init__(self, categories=None):
+        self.categories = {}
+        self.installed_categories = {}
+        if categories:
+            for category, installed_category in categories:
+                self.register_category(category, installed_category)
+
+    def register_category(self, category, installed_category):
+        if category in self.categories:
+            raise ValueError("Category %r already registered")
+        else:
+            self.categories[category] = {}
+            self.installed_categories[category] = installed_category
+
+    def register_outputs(self, category, name, outputs):
+        if not category in self.categories:
+            raise ValueError("Unknown category %r" % category)
+        else:
+            cat = self.categories[category]
+            if name in cat:
+                raise ValueError("Outputs for categoryr=%r and name=%r already registered" % (category, name))
+            else:
+                cat[name] = outputs
+
+    def iter_category(self, category):
+        if not category in self.categories:
+            raise ValueError("Unknown category %r" % category)
+        else:
+            return self.categories[category].iteritems()
+
+    def iter_over_category(self):
+        for category in self.categories:
+            for name, nodes in self.iter_category(category):
+                yield category, name, nodes
+
 class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
         super(BuildContext, self).__init__(cmd_argv, options_context, pkg, run_node)
@@ -201,6 +237,16 @@ class BuildContext(_ContextWithBuildDirectory):
 
         self._node_pkg = NodeRepresentation(run_node, self.top_node)
         self._node_pkg.update_package(pkg)
+
+        categories = (("packages", "pythonfiles"), ("modules", "pythonfiles"))
+        self.outputs_registry = OutputRegistry(categories)
+        for category, installed_category in categories:
+            for name, nodes in self._node_pkg.iter_category(category):
+                # FIXME: modules should also defines a list of nodes for
+                # consistency
+                if category == "modules":
+                    nodes = [nodes]
+                self.outputs_registry.register_outputs(category, name, nodes)
 
         self.isection_registry = ISectionRegistry()
         self.isection_registry.register_category("extensions", build_extension_isection)
@@ -244,6 +290,15 @@ class BuildContext(_ContextWithBuildDirectory):
         for category in ("extensions", "compiled_libraries"):
             self._register_compiled_files(section_writer, category)
 
+        for category, name, nodes in self.outputs_registry.iter_over_category():
+            installed_category = self.outputs_registry.installed_categories[category]
+            if installed_category in section_writer.sections:
+                sections = section_writer.sections[installed_category]
+            else:
+                sections = section_writer.sections[installed_category] = {}
+            registrer = self.isection_registry.registrer(category, name)
+            sections[name] = registrer(self, name, nodes)
+
     def _register_compiled_files(self, section_writer, category):
         sections = section_writer.sections[category] = {}
         outputs_e = self._outputs.get(category, {})
@@ -256,14 +311,10 @@ class BuildContext(_ContextWithBuildDirectory):
             sections[name] = registrer(self, name, outputs)
 
     def _register_python_files(self, section_writer):
-        sections = section_writer.sections["pythonfiles"] = {}
-
-        for name, nodes in self._node_pkg.iter_category("packages"):
-            registrer = self.isection_registry.registrer("packages", name)
-            sections[name] = registrer(self, name, nodes)
-        for name, node in self._node_pkg.iter_category("modules"):
-            registrer = self.isection_registry.registrer("modules", name)
-            sections[name] = registrer(self, name, [node])
+        if "pythonfiles" in section_writer.sections:
+            sections = section_writer.sections["pythonfiles"]
+        else:
+            sections = section_writer.sections["pythonfiles"] = {}
         if self.pkg.config_py:
             content = _config_content(self.get_paths_scheme())
             target_node = self.build_node.make_node(self.pkg.config_py)

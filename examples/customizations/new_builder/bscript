@@ -12,6 +12,9 @@ from bento.commands.extras.waf \
 from bento.installed_package_description \
     import \
         InstalledSection
+from bento.commands.build \
+    import \
+        build_py_isection
 
 import waflib
 # FIXME: abstract those module gen tasks...
@@ -31,19 +34,20 @@ def process_write_config(self):
     if not hasattr(self, "name"):
         self.name = self.target
     output = self.path.find_or_declare(self.target)
-    self.bld.register_outputs("gen_pymodule", self.name, [output])
 
     bento_context = self.bld.bento_context
-    bento_context._node_pkg.register_entity("modules", self.name,
-                                            bento_context.build_node.make_node(output.bldpath()))
+    # hack to convert waf node -> bento node
+    b_output = bento_context.build_node.make_node(output.bldpath())
+    bento_context.outputs_registry.register_outputs("gen_pymodule", self.name, [b_output])
+
     tsk = self.create_task("write_module")
     tsk.set_outputs(output)
     return tsk
 
 @hooks.pre_build()
 def pre_build(context):
-    from bento.commands.build import build_py_isection
     context.isection_registry.register_category("gen_pymodule", build_py_isection)
+    context.outputs_registry.register_category("gen_pymodule", "pythonfiles")
     context.waf_context(features="gen_pymodule",
                         content="print 'foo'",
                         target="yoyo.py")
