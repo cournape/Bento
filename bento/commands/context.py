@@ -1,3 +1,4 @@
+import os.path as op
 import collections
 
 import yaku.context
@@ -116,24 +117,31 @@ class DistutilsBuildContext(BuildContext):
         build_path = self.build_node.path_from(self.run_node)
         self._distutils_builder = DistutilsBuilder(verbosity=self.verbose, build_base=build_path)
 
-        def build_extension(extension):
-            return self._distutils_builder.build_extension(extension)
+        def _builder_factory(category, builder):
+            def _build(extension):
+                outputs = builder(extension)
+                nodes = [self.build_node.find_node(o) for o in outputs]
+                from_node = self.build_node
 
-        def build_compiled_library(library):
-            return self._distutils_builder.build_compiled_library(library)
+                pkg_dir = op.dirname(extension.name.replace('.', op.sep))
+                target_dir = op.join('$sitedir', pkg_dir)
+                self.outputs_registry.register_outputs(category, extension.name, nodes,
+                                                       from_node, target_dir)
+            return _build
 
-        self.builder_registry.register_category("extensions", build_extension)
-        self.builder_registry.register_category("compiled_libraries", build_compiled_library)
+        self.builder_registry.register_category("extensions", 
+            _builder_factory("extensions", self._distutils_builder.build_extension))
+        self.builder_registry.register_category("compiled_libraries",
+            _builder_factory("compiled_libraries", self._distutils_builder.build_compiled_library))
 
     def compile(self):
+        super(DistutilsBuildContext, self).compile()
         reg = self.builder_registry
         for category in ("extensions", "compiled_libraries"):
-            outputs = {}
             for name, extension in self._node_pkg.iter_category(category):
                 builder = reg.builder(category, name)
                 extension = extension.extension_from(extension.ref_node)
-                outputs[name] = builder(extension)
-            self._outputs[category] = outputs
+                builder(extension)
 
 class BuildYakuContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
@@ -155,31 +163,43 @@ class BuildYakuContext(BuildContext):
         self.jobs = jobs
 
         from bento.commands.build_yaku import build_extension, build_compiled_library
-        def _build_extension(extension):
-            return build_extension(self.yaku_build_ctx, extension, verbose)
-        def _build_compiled_library(library):
-            return build_compiled_library(self.yaku_build_ctx, library, verbose)
-        self.builder_registry.register_category("extensions", _build_extension)
-        self.builder_registry.register_category("compiled_libraries", _build_compiled_library)
+
+        def _builder_factory(category, builder):
+            def _build(extension):
+                outputs = builder(self.yaku_build_ctx, extension, verbose)
+                nodes = [self.build_node.make_node(o) for o in outputs]
+                from_node = self.build_node
+
+                pkg_dir = op.dirname(extension.name.replace('.', op.sep))
+                target_dir = op.join('$sitedir', pkg_dir)
+                self.outputs_registry.register_outputs(category, extension.name, nodes,
+                                                       from_node, target_dir)
+            return _build
+
+        self.builder_registry.register_category("extensions",
+            _builder_factory("extensions", build_extension))
+        self.builder_registry.register_category("compiled_libraries",
+            _builder_factory("compiled_libraries", build_compiled_library))
 
     def shutdown(self):
         super(BuildYakuContext, self).shutdown()
         self.yaku_build_ctx.store()
 
     def compile(self):
+        super(BuildYakuContext, self).compile()
+
         import yaku.task_manager
         bld = self.yaku_build_ctx
 
         reg = self.builder_registry
 
         for category in ["extensions", "compiled_libraries"]:
-            self._outputs[category] = {}
             for name, item in self._node_pkg.iter_category(category):
                 builder = reg.builder(category, name)
                 self.pre_recurse(item.ref_node)
                 try:
                     item = item.extension_from(item.ref_node)
-                    self._outputs[category][name] = builder(item)
+                    builder(item)
                 finally:
                     self.post_recurse()
 

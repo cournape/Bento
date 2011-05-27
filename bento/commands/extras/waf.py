@@ -175,11 +175,15 @@ class BentoBuildContext(Build.BuildContext):
         self.bento_context = None
 
     def register_outputs(self, category, name, outputs):
-        if self.bento_context._outputs.get(category, None) is None:
-            cat = self.bento_context._outputs[category] = {}
-        else:
-            cat = self.bento_context._outputs[category]
-        cat[name] = [n.bldpath() for n in outputs]
+        outputs_registry = self.bento_context.outputs_registry
+
+        # waf -> bento nodes translations
+        nodes = [self.bento_context.build_node.make_node(n.bldpath()) for n in outputs]
+        from_node = self.bento_context.build_node.find_node(outputs[0].parent.bldpath())
+
+        pkg_dir = os.path.dirname(name.replace('.', os.path.sep))
+        target_dir = os.path.join('$sitedir', pkg_dir)
+        outputs_registry.register_outputs(category, name, nodes, from_node, target_dir)
 
 @waflib.TaskGen.feature("bento")
 @waflib.TaskGen.after_method("apply_link")
@@ -270,6 +274,7 @@ class BuildWafContext(BuildContext):
 
 
     def compile(self):
+        super(BuildWafContext, self).compile()
         reg = self.builder_registry
 
         for category in ("extensions", "compiled_libraries"):

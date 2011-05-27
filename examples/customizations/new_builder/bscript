@@ -12,9 +12,6 @@ from bento.commands.extras.waf \
 from bento.installed_package_description \
     import \
         InstalledSection
-from bento.commands.build \
-    import \
-        build_py_isection
 
 import waflib
 # FIXME: abstract those module gen tasks...
@@ -38,7 +35,7 @@ def process_write_config(self):
     bento_context = self.bld.bento_context
     # hack to convert waf node -> bento node
     b_output = bento_context.build_node.make_node(output.bldpath())
-    bento_context.outputs_registry.register_outputs("gen_pymodule", self.name, [b_output])
+    bento_context.outputs_registry.register_outputs("gen_pymodule", self.name, [b_output], bento_context.build_node, "$sitedir")
 
     tsk = self.create_task("write_module")
     tsk.set_outputs(output)
@@ -46,7 +43,11 @@ def process_write_config(self):
 
 @hooks.pre_build()
 def pre_build(context):
-    context.isection_registry.register_category("gen_pymodule", build_py_isection)
+    def iregistrer(category, name, nodes, from_node, target_dir):
+        source_dir = os.path.join("$_srcrootdir", from_node.bldpath())
+        files = [n.path_from(from_node) for n in nodes]
+        return InstalledSection.from_source_target_directories(category, name, source_dir, target_dir, files)
+    context.isection_registry.register_category("gen_pymodule", iregistrer)
     context.outputs_registry.register_category("gen_pymodule", "pythonfiles")
     context.waf_context(features="gen_pymodule",
                         content="print 'foo'",

@@ -5,6 +5,8 @@ import unittest
 import tempfile
 import types
 
+import os.path as op
+
 from cStringIO \
     import \
         StringIO
@@ -108,7 +110,20 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         # Those should be set by subclasses
         self._configure_context = None
         self._build_context = None
-        self._dummy_builder = None
+
+        def builder_factory(build_context):
+            def _dummy(extension):
+                from_node = self.build_node
+
+                pkg_dir = op.dirname(extension.name.replace('.', op.sep))
+                target_dir = op.join('$sitedir', pkg_dir)
+                build_context.outputs_registry.register_outputs("extensions",
+                    extension.name, [], from_node, target_dir)
+            return _dummy
+
+        self._builder_factory = builder_factory
+
+        #self._dummy_builder = None
 
     def tearDown(self):
         if self.save:
@@ -172,7 +187,8 @@ Library:
         #bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
         bld.pre_recurse(top_node)
         try:
-            bld.register_builder("_bar", self._dummy)
+            builder = self._builder_factory(bld)
+            bld.register_builder("_bar", builder)
         finally:
             bld.post_recurse()
         build.run(bld)
@@ -197,7 +213,6 @@ class TestBuildDistutils(_TestBuildSimpleExtension):
 
         self._configure_context = DistutilsConfigureContext
         self._build_context = DistutilsBuildContext
-        self._dummy = lambda extension: []
 
 class TestBuildYaku(_TestBuildSimpleExtension):
     def setUp(self):
@@ -211,7 +226,6 @@ class TestBuildYaku(_TestBuildSimpleExtension):
 
         self._configure_context = ConfigureYakuContext
         self._build_context = BuildYakuContext
-        self._dummy = lambda extension: []
 
     def tearDown(self):
         try:
@@ -299,7 +313,6 @@ class TestBuildWaf(_TestBuildSimpleExtension):
 
             self._configure_context = ConfigureWafContext
             self._build_context = BuildWafContext
-            self._dummy = lambda extension: []
 
     def tearDown(self):
         super(TestBuildWaf, self).tearDown()

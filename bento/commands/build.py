@@ -75,63 +75,6 @@ Usage:   bentomaker build [OPTIONS]."""
         n = ctx.build_node.make_node(IPKG_PATH)
         ctx.section_writer.store(n.abspath(), ctx.pkg)
 
-def build_py_isection(bld, name, nodes, from_node=None):
-    if from_node is None:
-        from_node = bld.top_node
-    source_dir = from_node.bldpath()
-    return InstalledSection.from_source_target_directories("pythonfiles",
-        name, os.path.join("$_srcrootdir", source_dir), "$sitedir",
-        [n.path_from(from_node) for n in nodes])
-
-def build_extension_isection(bld, name, files):
-    return _build_isection(bld, name, files, "extensions")
-
-def build_compiled_library_isection(bld, name, files):
-    return _build_isection(bld, name, files, "compiled_libraries")
-
-def _build_isection(bld, ext_name, files, category):
-    """Build an InstalledSection from the list of files for an
-    extension/compiled library.
-
-    files are expected to be given relatively to build_node."""
-    # TODO: make this function common between all builders (distutils, yaku, etc...)
-    if len(files) < 1:
-        return InstalledSection.from_source_target_directories(category, ext_name,
-            "", "", files)
-
-    # FIXME: do package -> location translation correctly
-    pkg_dir = os.path.dirname(ext_name.replace('.', os.path.sep))
-    target_dir = os.path.join('$sitedir', pkg_dir)
-
-    # FIXME: this assumes every file in outputs are in one single directory
-    nodes = []
-    for f in files:
-        n = bld.build_node.find_node(f)
-        if n is None:
-            raise IOError("file %s not found (relatively to %s)" % (f, bld.build_node.abspath()))
-        else:
-            nodes.append(n)
-    source_dir = nodes[0].parent
-    section = InstalledSection.from_source_target_directories(category, ext_name,
-        os.path.join("$_srcrootdir", source_dir.bldpath()),
-        target_dir, [o.path_from(source_dir) for o in nodes])
-    return section
-
-def build_executable(name, executable, scripts_node):
-    if sys.platform == "win32":
-        nodes = create_win32_script(name, executable, scripts_node)
-    else:
-        nodes = create_posix_script(name, executable, scripts_node)
-    return InstalledSection.from_source_target_directories(
-            "executables", name, os.path.join("$_srcrootdir", scripts_node.bldpath()),
-            "$bindir", [n.path_from(scripts_node) for n in nodes])
-
-def build_data_section(bld, section):
-    source_dir = os.path.join("$_srcrootdir", section.ref_node.bldpath())
-    return InstalledSection.from_source_target_directories(
-        "datafiles", section.name, source_dir, section.target_dir,
-        [n.path_from(section.ref_node) for n in section.nodes])
-
 def _config_content(paths):
     keys = sorted(paths.keys())
     n = max([len(k) for k in keys]) + 2
