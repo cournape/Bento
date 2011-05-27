@@ -10,7 +10,8 @@ Main features:
       --build-directory option
     - Out of tree builds support (i.e. running bento in a directory which does
       not contain bento.info), with global --bento-info option
-    - More reliable distutils compatibility layer
+    - More reliable distutils compatibility layer (most packages not using
+      hooks should now be pip-installable)
 
 Internals
 ---------
