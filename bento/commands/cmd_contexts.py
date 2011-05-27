@@ -343,4 +343,4 @@ class BuildContext(_ContextWithBuildDirectory):
             else:
                 sections = section_writer.sections[installed_category] = {}
             registrer = self.isection_registry.registrer(category, name)
-            sections[name] = registrer(category, name, nodes, from_node, target_dir)
+            sections[name] = registrer(installed_category, name, nodes, from_node, target_dir)
