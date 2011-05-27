@@ -267,7 +267,10 @@ class BuildWafContext(BuildContext):
                                     name=extension.name)
 
         def _default_library_builder(library):
-            return self.waf_context(features='c cstlib pyext bento', source=library.sources, target=library.name)
+            # FIXME: should be handled in the waf builder itself maybe ?
+            target = library.name.replace(".", os.sep)
+            return self.waf_context(features='c cstlib pyext bento', source=library.sources,
+                                    target=target, name=library.name)
 
         self.builder_registry.register_category("extensions", _default_extension_builder)
         self.builder_registry.register_category("compiled_libraries", _default_library_builder)
