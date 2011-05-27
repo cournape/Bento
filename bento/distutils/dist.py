@@ -41,7 +41,11 @@ if _is_setuptools_activated():
     from bento.distutils.commands.bdist_egg \
         import \
             bdist_egg
+    from bento.distutils.commands.egg_info \
+        import \
+            egg_info
     _BENTO_MONKEYED_CLASSES["bdist_egg"] = bdist_egg
+    _BENTO_MONKEYED_CLASSES["egg_info"] = egg_info
 
 def _setup_cmd_classes(attrs):
     cmdclass = attrs.get("cmdclass", {})
