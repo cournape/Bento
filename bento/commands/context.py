@@ -1,5 +1,4 @@
 import os.path as op
-import collections
 
 import yaku.context
 

@@ -1,37 +1,19 @@
-import os
-import sys
-
 from bento.core.utils \
     import \
-        find_package, subst_vars, rename, ensure_dir
+        subst_vars
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg
+        InstalledPkgDescription, ipkg_meta_from_pkg
 from bento._config \
     import \
         IPKG_PATH
-from bento.core.subpackage \
-    import \
-        get_extensions, get_compiled_libraries, get_packages
-from bento.core.pkg_objects \
-    import \
-        DataFiles
 
 from bento.commands.core \
     import \
         Option
-from bento.commands \
-    import \
-        build_distutils
-from bento.commands \
-    import \
-        build_yaku
 from bento.commands.core \
     import \
         Command
-from bento.commands.script_utils \
-    import \
-        create_posix_script, create_win32_script
 
 class SectionWriter(object):
     def __init__(self):
