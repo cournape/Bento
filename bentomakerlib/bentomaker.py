@@ -397,8 +397,11 @@ def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
     package_options = __get_package_options(top_node)
     pkg = _get_package_with_user_flags(cmd_name, cmd_opts, package_options, top_node)
     if is_help_only(cmd_name, cmd_opts):
-        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
-        run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg)
+        options_context = OPTIONS_REGISTRY.get_options(cmd_name)
+        p = options_context.parser
+        o, a = p.parse_args(cmd_opts)
+        if o.help:
+            p.print_help()
     else:
         run_dependencies(cmd_name, run_node, top_node, build_node, pkg)
 
