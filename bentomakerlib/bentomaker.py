@@ -254,9 +254,10 @@ def _wrapped_main(popts, run_node, top_node, build_node):
     mods = set_main(top_node, build_node)
     for mod in mods:
         mod.startup(global_context)
-
     register_stuff()
     _big_ugly_hack()
+    for mod in mods:
+        mod.options(global_context)
 
     # FIXME: this registered options for new commands registered in hook. It
     # should be made all in one place (hook and non-hook)

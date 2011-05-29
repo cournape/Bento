@@ -53,6 +53,7 @@ def pre_build(context):
                         content="print 'foo'",
                         target="yoyo.py")
 
+@hooks.startup
 def startup(context):
     context.register_context("configure", ConfigureWafContext)
     context.register_context("build", BuildWafContext)

@@ -12,6 +12,7 @@ __HOOK_REGISTRY = {}
 __PRE_HOOK_REGISTRY = {}
 __POST_HOOK_REGISTRY = {}
 __COMMANDS_OVERRIDE = {}
+__INIT_FUNCS = {}
 
 def add_to_registry(func, category):
     global __HOOK_REGISTRY
@@ -100,7 +101,22 @@ pre_sdist = _make_hook_decorator("sdist", "pre")
 def override(f):
     override_command(f.__name__, f)
 
+def options(f):
+    __INIT_FUNCS["options"] = f
+    return lambda context: f(context)
+
+def startup(f):
+    __INIT_FUNCS["startup"] = f
+    return lambda context: f(context)
+
+def shutdown(f):
+    __INIT_FUNCS["shutdown"] = f
+    return lambda context: f(context)
+
 def dummy_startup(ctx):
+    pass
+
+def dummy_options(ctx):
     pass
 
 def dummy_shutdown():
@@ -125,9 +141,11 @@ def create_hook_module(target):
         sys.path.pop(0)
 
     module.root_path = main_file
-    if not hasattr(module, "startup"):
+    if not "startup" in __INIT_FUNCS:
         module.startup = dummy_startup
-    if not hasattr(module, "shutdown"):
+    if not "options" in __INIT_FUNCS:
+        module.options = dummy_options
+    if not "shutdown" in __INIT_FUNCS:
         module.shutdown = dummy_shutdown
 
     return module
