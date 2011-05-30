@@ -8,7 +8,7 @@ from bento.commands import hooks
 
 from bento.commands.extras.waf \
     import \
-        ConfigureWafContext, BuildWafContext
+        ConfigureWafContext, BuildWafContext, register_options
 from bento.installed_package_description \
     import \
         InstalledSection
@@ -52,6 +52,10 @@ def pre_build(context):
     context.waf_context(features="gen_pymodule",
                         content="print 'foo'",
                         target="yoyo.py")
+
+@hooks.options
+def options(context):
+    register_options(context)
 
 @hooks.startup
 def startup(context):

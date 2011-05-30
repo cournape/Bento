@@ -22,11 +22,15 @@ from waflib import Options
 from waflib import Context
 from waflib import Logs
 from waflib import Build
+from waflib import Utils
 import waflib
 
 from bento.core.node_package \
     import \
         translate_name
+from bento.commands.options \
+    import \
+        Option
 from bento.commands.context \
     import \
         ConfigureContext, BuildContext
@@ -111,6 +115,10 @@ def _init(run_path, source_path, build_path):
     opts.parse_args([])
     opts.load("compiler_c")
     Options.options.check_c_compiler = "gcc"
+
+def register_options(global_context):
+    opt = Option("-p", "--progress", help="Use progress bar", action="store_true", dest="progress_bar")
+    global_context.add_option("build", opt)
 
 class ConfigureWafContext(ConfigureContext):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
@@ -239,6 +247,10 @@ class BuildWafContext(BuildContext):
             self.inplace = 1
         else:
             self.inplace = 0
+        if o.progress_bar:
+            self.progress_bar = True
+        else:
+            self.progress_bar = False
 
         Logs.verbose = verbose
         Logs.init_log()
@@ -256,6 +268,9 @@ class BuildWafContext(BuildContext):
         if not waf_context.all_envs:
             waf_context.load_envs()
         waf_context.jobs = jobs
+        waf_context.timer = Utils.Timer()
+        if self.progress_bar:
+            waf_context.progress_bar = 1
         waf_context.bento_context = self
         self.waf_context = waf_context
 
@@ -275,7 +290,6 @@ class BuildWafContext(BuildContext):
         self.builder_registry.register_category("extensions", _default_extension_builder)
         self.builder_registry.register_category("compiled_libraries", _default_library_builder)
 
-
     def compile(self):
         super(BuildWafContext, self).compile()
         reg = self.builder_registry
@@ -290,4 +304,14 @@ class BuildWafContext(BuildContext):
                 finally:
                     self.post_recurse()
 
-        self.waf_context.compile()
+        if self.progress_bar:
+            sys.stderr.write(Logs.colors.cursor_off)
+        try:
+            self.waf_context.compile()
+        finally:
+            if self.progress_bar:
+                c = len(self.waf_context.returned_tasks) or 1
+                self.waf_context.to_log(self.waf_context.progress_line(c, c, Logs.colors.BLUE, Logs.colors.NORMAL))
+                print('')
+                sys.stdout.flush()
+                sys.stderr.write(Logs.colors.cursor_on)
