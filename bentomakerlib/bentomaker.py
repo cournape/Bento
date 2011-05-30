@@ -252,12 +252,12 @@ def _wrapped_main(popts, run_node, top_node, build_node):
     global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY,
                                    OPTIONS_REGISTRY, CMD_SCHEDULER)
     mods = set_main(top_node, build_node)
-    for mod in mods:
-        mod.startup(global_context)
+    if mods:
+        mods[0].startup(global_context)
     register_stuff()
     _big_ugly_hack()
-    for mod in mods:
-        mod.options(global_context)
+    if mods:
+        mods[0].options(global_context)
 
     # FIXME: this registered options for new commands registered in hook. It
     # should be made all in one place (hook and non-hook)
@@ -268,8 +268,8 @@ def _wrapped_main(popts, run_node, top_node, build_node):
     try:
         return _main(popts, run_node, top_node, build_node)
     finally:
-        for mod in mods:
-            mod.shutdown()
+        if mods:
+            mods[0].shutdown()
 
 def parse_global_options(argv):
     context = OptionsContext(usage="%prog [options] [cmd_name [cmd_options]]")
