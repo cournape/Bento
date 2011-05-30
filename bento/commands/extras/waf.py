@@ -140,6 +140,12 @@ class ConfigureWafContext(ConfigureContext):
 
         # FIXME: this is wrong (not taking into account sub packages)
         has_compiled_code = len(pkg.extensions) > 0 or len(pkg.compiled_libraries) > 0
+        if not has_compiled_code:
+            if pkg.subpackages:
+                for v in pkg.subpackages.values():
+                    if len(v.extensions) > 0 or len(v.compiled_libraries) > 0:
+                        has_compiled_code = True
+                        break
         conf = self.waf_context
         if has_compiled_code:
             conf.load("compiler_c")
