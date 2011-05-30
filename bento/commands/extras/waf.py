@@ -141,19 +141,15 @@ class ConfigureWafContext(ConfigureContext):
         # FIXME: this is wrong (not taking into account sub packages)
         has_compiled_code = len(pkg.extensions) > 0 or len(pkg.compiled_libraries) > 0
         conf = self.waf_context
-        try:
-            if has_compiled_code:
-                conf.load("compiler_c")
-                conf.load("python")
-                conf.check_python_version((2,4,2))
-                conf.check_python_headers()
+        if has_compiled_code:
+            conf.load("compiler_c")
+            conf.load("python")
+            conf.check_python_version((2,4,2))
+            conf.check_python_headers()
 
-                # HACK for mac os x
-                if sys.platform == "darwin":
-                    conf.env["CC"] = ["/usr/bin/gcc-4.0"]
-        finally:
-            conf.store()
-
+            # HACK for mac os x
+            if sys.platform == "darwin":
+                conf.env["CC"] = ["/usr/bin/gcc-4.0"]
         self._old_path = None
 
     def pre_recurse(self, local_node):
@@ -165,6 +161,10 @@ class ConfigureWafContext(ConfigureContext):
     def post_recurse(self):
         self.waf_context.path = self._old_path
         ConfigureContext.post_recurse(self)
+
+    def shutdown(self):
+        super(ConfigureWafContext, self).shutdown()
+        self.waf_context.store()
 
 def ext_name_to_path(name):
     """Convert extension name to path - the path does not include the
