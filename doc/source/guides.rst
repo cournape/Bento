@@ -227,6 +227,7 @@ everytime you execute bentomaker. Assuming the following bento.info file::
 
 the hook file will look like::
 
+    @hooks.startup
     def startup(context):
         print "Yummy bento"
 
