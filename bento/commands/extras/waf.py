@@ -111,11 +111,6 @@ def _init(run_path, source_path, build_path):
     Context.out_dir = build_path
     Context.waf_dir = WAF_TOP
 
-    opts = OptionsContext()
-    opts.parse_args([])
-    opts.load("compiler_c")
-    Options.options.check_c_compiler = "gcc"
-
 def register_options(global_context):
     opt = Option("-p", "--progress", help="Use progress bar", action="store_true", dest="progress_bar")
     global_context.add_option("build", opt)
@@ -128,6 +123,13 @@ class ConfigureWafContext(ConfigureContext):
         source_path = self.top_node.abspath()
         build_path = self.build_node.abspath()
         _init(run_path=run_path, source_path=source_path, build_path=build_path)
+
+        opts = OptionsContext()
+        opts.parse_args([])
+        opts.load("compiler_c")
+        Options.options.check_c_compiler = "gcc"
+        self.waf_options_context = opts
+
         waf_context = create_context("configure", run_dir=source_path)
         waf_context.options = Options.options
         waf_context.init_dirs()
