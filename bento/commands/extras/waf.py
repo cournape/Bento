@@ -323,3 +323,7 @@ class BuildWafContext(BuildContext):
                 print('')
                 sys.stdout.flush()
                 sys.stderr.write(Logs.colors.cursor_on)
+
+    def shutdown(self):
+        super(BuildWafContext, self).shutdown()
+        self.waf_context.store()
