@@ -20,7 +20,7 @@ from yaku.utils \
         ensure_dir, rename, join_bytes
 from yaku.errors \
     import \
-        UnknownTask
+        UnknownTask, ConfigurationFailure
 import yaku.node
 import yaku.task_manager
 
@@ -128,6 +128,10 @@ class ConfigureContext(object):
 
     def end_message(self, msg):
         _OUTPUT.write("%s\n" % msg)
+
+    def fail_configuration(self, msg):
+        msg = "%s\nPlease look at the configuration log %r" % (msg, self.log.name)
+        raise ConfigurationFailure(msg)
 
     def set_cmd_cache(self, task, cmd):
         self._cmd_cache[task.get_uid()] = cmd[:]
