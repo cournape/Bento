@@ -83,7 +83,6 @@ def compile_fun_shell(name, line):
 
     c = COMPILE_TEMPLATE_SHELL % (line, parm)
 
-    #debug('action: %s', c)
     return (funex(c), dvars)
 
 def compile_fun_noshell(name, line):
@@ -115,14 +114,13 @@ def compile_fun_noshell(name, line):
             else:
                 app('lst.extend([i.path_from(bld_root) for i in task.outputs])')
         else:
-            app('lst.extend(to_list(env[%r]))' % var)
+            app('lst.extend(to_list(env.get(%r, [])))' % var)
             if not var in dvars: dvars.append(var)
 
     if params[-1]:
         app("lst.extend(%r)" % shlex.split(params[-1]))
 
     fun = COMPILE_TEMPLATE_NOSHELL % "\n\t".join(buf)
-    #debug('action: %s', fun)
     return (funex(fun), dvars)
 
 def compile_fun(name, line, shell=None):
