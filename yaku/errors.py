@@ -29,6 +29,9 @@ class TaskRunFailure(YakuError):
         else:
             return ret
 
+class ConfigurationFailure(YakuError):
+    pass
+
 class UnknownTask(YakuError):
     pass
 
