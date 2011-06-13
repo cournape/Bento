@@ -7,6 +7,7 @@ def setup(ctx):
     ctx.env["CC_TGT_F"] = ["-c", "-o"]
     ctx.env["CC_SRC_F"] = []
     ctx.env["CFLAGS"] = ["-Wall"]
+    ctx.env["CFLAGS_SH"] = ["-fPIC"]
     ctx.env["DEFINES"] = []
     ctx.env["DEFINES_FMT"] = "-D%s"
     ctx.env["LINK"] = ["gcc"]

@@ -9,7 +9,7 @@ from yaku.task \
         task_factory
 from yaku.task_manager \
     import \
-        extension, CompiledTaskGen
+        extension, CompiledTaskGen, set_extension_hook
 from yaku.utils \
     import \
         find_deps, ensure_dir
@@ -31,6 +31,8 @@ from yaku._config \
 import yaku.tools
 
 ccompile, cc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${APP_DEFINES} ${INCPATH} ${CC_TGT_F}${TGT[0].abspath()} ${CC_SRC_F}${SRC}", False)
+
+shccompile, sgcc_vars = compile_fun("cc", "${CC} ${CFLAGS} ${CFLAGS_SH} ${APP_DEFINES} ${INCPATH} ${CC_TGT_F}${TGT[0].abspath()} ${CC_SRC_F}${SRC}", False)
 
 ccprogram, ccprogram_vars = compile_fun("ccprogram", "${LINK} ${LINK_TGT_F}${TGT[0].abspath()} ${LINK_SRC_F}${SRC} ${APP_LIBDIR} ${APP_LIBS} ${LINKFLAGS}", False)
 
@@ -57,6 +59,23 @@ def ccompile_task(self, node):
     #task.deps.extend(task.scan())
     task.env = self.env
     task.func = ccompile
+    return [task]
+
+def shared_c_hook(self, node):
+    tasks = shared_ccompile_task(self, node)
+    self.object_tasks.extend(tasks)
+    return tasks
+
+def shared_ccompile_task(self, node):
+    base = self.env["CC_OBJECT_FMT"] % node.name
+    target = node.parent.declare(base)
+    ensure_dir(target.abspath())
+
+    task = task_factory("shcc")(inputs=[node], outputs=[target])
+    task.gen = self
+    task.env_vars = cc_vars
+    task.env = self.env
+    task.func = shccompile
     return [task]
 
 def shlink_task(self, name):
@@ -218,6 +237,8 @@ class CCBuilder(yaku.tools.Builder):
         return outputs
 
     def _shared_library(self, task_gen, name):
+        old_hook = set_extension_hook(".c", shared_c_hook)
+
         apply_define(task_gen)
         apply_cpppath(task_gen)
         apply_libdir(task_gen)
@@ -229,6 +250,8 @@ class CCBuilder(yaku.tools.Builder):
         for t in tasks:
             t.env = task_gen.env
         task_gen.link_task = ltask
+
+        set_extension_hook(".c", old_hook)
         return tasks
 
     def try_shared_library(self, name, body, headers=None):
@@ -351,7 +374,8 @@ __YAKU_DLL_MARK int foo()
         if self.try_shared_library("foo", shared_code):
             ctx.end_message("yes")
         else:
-            raise ValueError()
+            ctx.end_message("no")
+            ctx.fail_configuration("")
 
         ctx.start_message("Checking whether %s can link shared libraries to exe" % cc_type)
         def f():
@@ -360,7 +384,8 @@ __YAKU_DLL_MARK int foo()
                                           env={"LIBS": ["foo"]}):
                 ctx.end_message("yes")
             else:
-                raise ValueError()
+                ctx.end_message("no")
+                ctx.fail_configuration("")
         with_conf_blddir(self.ctx, "exeshlib", "checking shared link", f)
         self.configured = True
 
