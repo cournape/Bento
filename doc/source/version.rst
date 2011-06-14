@@ -12,6 +12,7 @@ Main features:
       not contain bento.info), with global --bento-info option
     - More reliable distutils compatibility layer (most packages not using
       hooks should now be pip-installable)
+    - Hook File can now be specified in recursed bento.info
 
 Internals
 ---------
