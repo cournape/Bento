@@ -9,7 +9,7 @@ from bento.core.pkg_objects \
 
 class SubPackageDescription:
     def __init__(self, rdir, packages=None, extensions=None,
-                 compiled_libraries=None, py_modules=None):
+                 compiled_libraries=None, py_modules=None, hook_files=None):
         self.rdir = rdir
         if packages is None:
             self.packages = []
@@ -27,6 +27,11 @@ class SubPackageDescription:
             self.py_modules = []
         else:
             self.py_modules = py_modules
+
+        if hook_files is None:
+            self.hook_files = []
+        else:
+            self.hook_files = hook_files
 
     def __repr__(self):
         return repr({"packages": self.packages,

@@ -103,6 +103,7 @@ def raw_to_subpkg_kw(raw_dict):
     kw = {}
     libraries = build_libs_from_dict(libraries_d)
     kw.update(libraries)
+    kw["hook_files"] = misc_d["hook_files"]
 
     return kw, misc_d["subento"]
 

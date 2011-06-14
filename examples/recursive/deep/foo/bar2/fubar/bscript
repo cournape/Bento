@@ -1,8 +1,6 @@
-from bento.commands.hooks \
-    import \
-        post_configure
+from bento.commands import hooks
 
-@post_configure
+@hooks.post_configure()
 def configure(ctx):
     print "Configure:", __file__
-    print "Src dir is", ctx.local_dir
+    print "Src dir is", ctx.local_node.abspath()

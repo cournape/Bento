@@ -4,10 +4,7 @@ Version: 1.0
 Recurse: foo
 
 HookFile:
-    bscript,
-    foo/bar1/bscript,
-    foo/bar2/bscript,
-    foo/bar2/fubar/bscript
+    bscript
 
 Library:
     Packages: foo

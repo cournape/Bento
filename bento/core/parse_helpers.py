@@ -37,7 +37,7 @@ def extract_top_dicts_subento(d):
     library, and misc dictionaries.
     
     This function should be used for subentos"""
-    misc = {"subento": []}
+    misc = {"subento": [], "hook_files": []}
 
     if d.has_key("libraries"):
         libraries = d.pop("libraries")

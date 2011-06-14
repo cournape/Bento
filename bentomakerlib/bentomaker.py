@@ -189,7 +189,11 @@ def set_main(top_node, build_node):
     #create_package_description(BENTO_SCRIPT)
 
     modules = []
-    for f in pkg.hook_files:
+    hook_files = pkg.hook_files
+    for name, spkg in pkg.subpackages.iteritems():
+        hook_files.extend([os.path.join(spkg.rdir, h) for h in spkg.hook_files])
+    # TODO: find doublons
+    for f in hook_files:
         hook_node = top_node.make_node(f)
         if hook_node is None or not os.path.exists(hook_node.abspath()):
             raise ValueError("Hook file %s not found" % f)
