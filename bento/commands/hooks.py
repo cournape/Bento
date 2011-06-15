@@ -71,25 +71,18 @@ def get_command_override(cmd_name):
 
 def _make_hook_decorator(command_name, kind):
     name = "%s_%s" % (kind, command_name)
-    def func(help_bypass=True):
-        def decorator(f):
-            local_dir = os.path.dirname(compat_inspect.stack()[1][1])
-            add_to_registry((f, local_dir, help_bypass), name)
-            if kind == "post":
-                add_to_post_registry((f, local_dir, help_bypass), command_name)
-            elif kind == "pre":
-                add_to_pre_registry((f, local_dir, help_bypass), command_name)
-            else:
-                raise ValueError("invalid hook kind %s" % kind)
-        return decorator
-    func.__name__ = name
-    func.__doc__ = """\
-Tag the given function as a %(kind)s %(command_name)s hook.
-
-If help_bypass is True, the hook will not be executed if the command is
-called in help mode.
-""" % {"kind": kind, "command_name": command_name}
-    return func
+    help_bypass = False
+    def decorator(f):
+        local_dir = os.path.dirname(compat_inspect.stack()[1][1])
+        add_to_registry((f, local_dir, help_bypass), name)
+        if kind == "post":
+            add_to_post_registry((f, local_dir, help_bypass), command_name)
+        elif kind == "pre":
+            add_to_pre_registry((f, local_dir, help_bypass), command_name)
+        else:
+            raise ValueError("invalid hook kind %s" % kind)
+        return f
+    return decorator
 
 post_configure = _make_hook_decorator("configure", "post")
 pre_configure = _make_hook_decorator("configure", "pre")

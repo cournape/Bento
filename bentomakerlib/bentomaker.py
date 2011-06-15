@@ -436,7 +436,7 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, run_node, top_n
                 local_node = top_node.find_dir(relpath(local_dir, top_node.abspath()))
                 ctx.pre_recurse(local_node)
                 try:
-                    if not ctx.help and help_bypass:
+                    if not ctx.help:
                         hook(ctx)
                 finally:
                     ctx.post_recurse()

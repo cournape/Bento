@@ -1,12 +1,6 @@
-from bento.commands.hooks \
-    import \
-        post_configure
+from bento.commands import hooks
 
-import yaku.context
-
-@post_configure
-def myconfigure(ctx):
-    if not ctx.help:
-        ctx = yaku.context.get_cfg()
-        ctx.use_tools(["cython"])
-        ctx.store()
+@hooks.post_configure
+def post_configure(ctx):
+    cfg = ctx.yaku_configure_ctx
+    cfg.use_tools(["cython"])
