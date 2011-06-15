@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 
 from bento.compat \
     import \
@@ -7,6 +8,8 @@ from bento.compat \
 from bento.commands.core \
     import \
         command
+
+SAFE_MODULE_NAME = re.compile("[^a-zA-Z_]")
 
 __HOOK_REGISTRY = {}
 __PRE_HOOK_REGISTRY = {}
@@ -118,8 +121,7 @@ def dummy_shutdown():
 def create_hook_module(target):
     import imp
 
-    # FIXME: really make the name safe
-    safe_name = target.replace("/", "_")
+    safe_name = SAFE_MODULE_NAME.sub("_", target, len(target))
     module_name = "bento_hook_%s" % safe_name
     main_file = os.path.abspath(target)
     module = imp.new_module(module_name)
