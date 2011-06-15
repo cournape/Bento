@@ -306,6 +306,11 @@ class BuildContext(_ContextWithBuildDirectory):
         full_name = self._compute_extension_name(extension_name)
         self.builder_registry.register_callback("extensions", full_name, builder)
 
+    def disable_extension(self, extension_name):
+        def nobuild(extension):
+            pass
+        self.register_builder(extension_name, nobuild)
+
     def register_compiled_library_builder(self, clib_name, builder):
         relpos = self.local_node.path_from(self.top_node)
         full_name = os.path.join(relpos, clib_name).replace(os.sep, ".")
