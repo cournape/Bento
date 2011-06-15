@@ -101,7 +101,7 @@ Library:
 
         bscript = """\
 from bento.commands import hooks
-@hooks.pre_configure()
+@hooks.pre_configure
 def configure(ctx):
     py_modules = ctx.local_pkg.py_modules
     ctx.local_node.make_node("test").write(str(py_modules))
