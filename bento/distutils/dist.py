@@ -98,6 +98,9 @@ class BentoDistribution(Distribution):
         self.build_node = root._ctx.bldnode
         self.run_node = root._ctx.srcnode
 
+        from bento.distutils.utils import set_main
+        modules = set_main(self.top_node, self.build_node, self.pkg)
+
     def has_data_files(self):
         return len(self.pkg.data_files) > 0        
 

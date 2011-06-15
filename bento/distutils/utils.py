@@ -1,3 +1,4 @@
+import os
 import sys
 
 from bento._config \
@@ -15,7 +16,7 @@ from bento.commands.options \
         OptionsContext
 from bento.commands.hooks \
     import \
-        get_command_override, get_pre_hooks, get_post_hooks
+        get_command_override, get_pre_hooks, get_post_hooks, create_hook_module
 from bento.commands.configure \
     import \
         _setup_options_parser
@@ -49,7 +50,7 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, context_klass, run_node, t
                 local_node = top_node.find_dir(relpath(local_dir, top_node.abspath()))
                 context.pre_recurse(local_node)
                 try:
-                    if not context.help and help_bypass:
+                    if not context.help:
                         hook(context)
                 finally:
                     context.post_recurse()
@@ -70,3 +71,24 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, context_klass, run_node, t
         cmd.shutdown(context)
     finally:
         context.shutdown()
+
+# Same as above: consolidate this with bentomakerlib
+def set_main(top_node, build_node, pkg):
+    # Some commands work without a bento description file (convert, help)
+    # FIXME: this should not be called here then - clearly separate commands
+    # which require bento.info from the ones who do not
+    n = top_node.find_node(BENTO_SCRIPT)
+    if n is None:
+        return []
+
+    modules = []
+    hook_files = pkg.hook_files
+    for name, spkg in pkg.subpackages.iteritems():
+        hook_files.extend([os.path.join(spkg.rdir, h) for h in spkg.hook_files])
+    # TODO: find doublons
+    for f in hook_files:
+        hook_node = top_node.make_node(f)
+        if hook_node is None or not os.path.exists(hook_node.abspath()):
+            raise ValueError("Hook file %s not found" % f)
+        modules.append(create_hook_module(hook_node.abspath()))
+    return modules
