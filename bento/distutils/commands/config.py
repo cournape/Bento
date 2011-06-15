@@ -23,11 +23,6 @@ class config(old_config):
         pkg = self.distribution.pkg
         install = self.get_finalized_command("install")
 
-        ## FIXME: this should be centralized with other scheme-related stuff
-        #scheme = get_scheme(sys.platform)[0]
-        #scheme["pkgname"] = pkg.name
-        #py_version = sys.version.split()[0]
-        #scheme["py_version_short"] = py_version[:3]
         scheme = {}
         if hasattr(install, "install_dir"):
             scheme["sitedir"] = install.install_dir
@@ -48,37 +43,3 @@ class config(old_config):
 
         run_cmd_in_context(ConfigureCommand, "configure", argv, ConfigureYakuContext,
                            dist.run_node, dist.top_node, dist.pkg)
-        #from bento._config import BENTO_SCRIPT
-        #from bento.commands.configure import ConfigureCommand
-        #from bento.commands.options import OptionsContext
-        #from bento.compat.api import relpath
-
-        #from bento.commands.configure import _setup_options_parser
-
-        #package_options = PackageOptions.from_file(BENTO_SCRIPT)
-
-        #dist = self.distribution
-        #top_node = dist.top_node
-
-        #cmd = ConfigureCommand()
-        #options_ctx = OptionsContext.from_command(cmd)
-        #_setup_options_parser(options_ctx, package_options)
-
-        #ctx = ConfigureYakuContext(argv, options_ctx, dist.pkg, dist.run_node)
-        #ctx.package_options = package_options
-
-        #cmd_funcs = [(cmd.run, dist.top_node.abspath())]
-
-        #try:
-        #    while cmd_funcs:
-        #        cmd_func, local_dir = cmd_funcs.pop(0)
-        #        local_node = top_node.find_dir(relpath(local_dir, top_node.abspath()))
-        #        ctx.pre_recurse(local_node)
-        #        try:
-        #            cmd_func(ctx)
-        #        finally:
-        #            ctx.post_recurse()
-
-        #    cmd.shutdown(ctx)
-        #finally:
-        #    ctx.shutdown()
