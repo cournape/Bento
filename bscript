@@ -2,9 +2,6 @@ import os
 import sys
 import subprocess
 
-from bento.commands.hooks \
-    import \
-        pre_configure, command
 from bento.core.package \
     import \
         file_list
@@ -17,12 +14,13 @@ from bento.commands.core \
 from bento.core.utils \
     import \
         pprint, test_program_run
+from bento.commands import hooks
 
 import yaku.context
 import yaku.scheduler
 
-@pre_configure()
-def pconfigure(ctx):
+@hooks.pre_configure
+def pre_configure(ctx):
     try:
         ctx.yaku_context.load_tool("python_2to3")
     except ImportError:
@@ -30,7 +28,7 @@ def pconfigure(ctx):
 
 PY3K_BUILD = os.path.join("build", "py3k")
 
-@command()
+@hooks.command
 def _run_2to3(ctx):
     bld = yaku.context.get_bld()
     if not "python_2to3" in bld.builders:
@@ -50,7 +48,7 @@ def _run_2to3(ctx):
     finally:
         bld.store()
 
-@command()
+@hooks.command
 def run_2to3(ctx):
     """\
 Purpose: run 2to3 on bento.
