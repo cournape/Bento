@@ -4,5 +4,5 @@ from bento.commands.hooks \
 
 @post_configure
 def configure(ctx):
-    yctx = ctx.yaku_configure_ctx
+    yctx = ctx.yaku_context
     yctx.use_tools(["ctasks", "pyext"])

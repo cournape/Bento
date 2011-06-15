@@ -72,28 +72,28 @@ class ConfigureYakuContext(ConfigureContext):
         super(ConfigureYakuContext, self).__init__(cmd_argv, options_context, pkg, run_node)
         build_path = run_node._ctx.bldnode.path_from(run_node)
         source_path = run_node._ctx.srcnode.path_from(run_node)
-        self.yaku_configure_ctx = yaku.context.get_cfg(src_path=source_path, build_path=build_path)
+        self.yaku_context = yaku.context.get_cfg(src_path=source_path, build_path=build_path)
 
     def setup(self):
         extensions = get_extensions(self.pkg, self.run_node)
         libraries = get_compiled_libraries(self.pkg, self.run_node)
 
-        yaku_ctx = self.yaku_configure_ctx
+        yaku_ctx = self.yaku_context
         if extensions or libraries:
             yaku_ctx.use_tools(["ctasks", "pyext"])
 
     def shutdown(self):
         super(ConfigureYakuContext, self).shutdown()
-        self.yaku_configure_ctx.store()
+        self.yaku_context.store()
 
     def pre_recurse(self, local_node):
         super(ConfigureYakuContext, self).pre_recurse(local_node)
-        self._old_path = self.yaku_configure_ctx.path
+        self._old_path = self.yaku_context.path
         # Gymnastic to make a *yaku* node from a *bento* node
-        self.yaku_configure_ctx.path = self.yaku_configure_ctx.path.make_node(self.local_node.path_from(self.run_node))
+        self.yaku_context.path = self.yaku_context.path.make_node(self.local_node.path_from(self.run_node))
 
     def post_recurse(self):
-        self.yaku_configure_ctx.path = self._old_path
+        self.yaku_context.path = self._old_path
         super(ConfigureYakuContext, self).post_recurse()
 
 class DistutilsBuildContext(BuildContext):
@@ -147,7 +147,7 @@ class BuildYakuContext(BuildContext):
         super(BuildYakuContext, self).__init__(cmd_argv, options_context, pkg, run_node)
         build_path = run_node._ctx.bldnode.path_from(run_node)
         source_path = run_node._ctx.srcnode.path_from(run_node)
-        self.yaku_build_ctx = yaku.context.get_bld(src_path=source_path, build_path=build_path)
+        self.yaku_context = yaku.context.get_bld(src_path=source_path, build_path=build_path)
 
         o, a = options_context.parser.parse_args(cmd_argv)
         if o.jobs:
@@ -165,7 +165,7 @@ class BuildYakuContext(BuildContext):
 
         def _builder_factory(category, builder):
             def _build(extension):
-                outputs = builder(self.yaku_build_ctx, extension, verbose)
+                outputs = builder(self.yaku_context, extension, verbose)
                 nodes = [self.build_node.make_node(o) for o in outputs]
                 from_node = self.build_node
 
@@ -182,13 +182,13 @@ class BuildYakuContext(BuildContext):
 
     def shutdown(self):
         super(BuildYakuContext, self).shutdown()
-        self.yaku_build_ctx.store()
+        self.yaku_context.store()
 
     def compile(self):
         super(BuildYakuContext, self).compile()
 
         import yaku.task_manager
-        bld = self.yaku_build_ctx
+        bld = self.yaku_context
 
         reg = self.builder_registry
 
@@ -214,14 +214,14 @@ class BuildYakuContext(BuildContext):
 
     def pre_recurse(self, local_node):
         super(BuildYakuContext, self).pre_recurse(local_node)
-        self._old_path = self.yaku_build_ctx.path
+        self._old_path = self.yaku_context.path
         # FIXME: we should not modify yaku context src_root, but add current
         # node + recurse support to yaku instead
         # Gymnastic to make a *yaku* node from a *bento* node
-        self.yaku_build_ctx.path = self.yaku_build_ctx.path.make_node(self.local_node.path_from(self.top_node))
+        self.yaku_context.path = self.yaku_context.path.make_node(self.local_node.path_from(self.top_node))
 
     def post_recurse(self):
-        self.yaku_build_ctx.path = self._old_path
+        self.yaku_context.path = self._old_path
         super(BuildYakuContext, self).post_recurse()
 
 

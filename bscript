@@ -24,7 +24,7 @@ import yaku.scheduler
 @pre_configure()
 def pconfigure(ctx):
     try:
-        ctx.yaku_configure_ctx.load_tool("python_2to3")
+        ctx.yaku_context.load_tool("python_2to3")
     except ImportError:
         pass
 
