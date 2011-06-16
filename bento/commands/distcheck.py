@@ -2,8 +2,9 @@ import os
 import sys
 import shutil
 import tarfile
-
 import subprocess
+
+import os.path as op
 
 from bento.compat.api \
     import \
@@ -24,6 +25,10 @@ from bento.core.package \
 from bento._config \
     import \
         BENTO_SCRIPT, DISTCHECK_DIR
+
+import bentomakerlib
+
+_BENTOMAKER_SCRIPT = [op.join(op.dirname(bentomakerlib.__file__), os.pardir, "bentomaker")]
 
 class DistCheckCommand(Command):
     long_descr = """\
@@ -67,26 +72,23 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                 if p.returncode != 0:
                     raise CalledProcessError(p.returncode, cmd)
 
-            _call([sys.executable, "bootstrap.py"])
-            bentomaker_script = [os.path.abspath("bentomaker")]
-
             pprint('PINK', "\t-> Configuring from sdist...")
-            _call(bentomaker_script + ["configure", "--prefix=%s" % os.path.abspath("tmp")])
+            _call(_BENTOMAKER_SCRIPT + ["configure", "--prefix=%s" % os.path.abspath("tmp")])
 
             pprint('PINK', "\t-> Building from sdist...")
-            _call(bentomaker_script + ["build", "-i"])
+            _call(_BENTOMAKER_SCRIPT + ["build", "-i"])
 
             pprint('PINK', "\t-> Building egg from sdist...")
-            _call(bentomaker_script + ["build_egg"])
+            _call(_BENTOMAKER_SCRIPT + ["build_egg"])
 
             if sys.platform == "win32":
                 pprint('PINK', "\t-> Building wininst from sdist...")
-                _call(bentomaker_script + ["build_wininst"])
+                _call(_BENTOMAKER_SCRIPT + ["build_wininst"])
 
             if "test" in COMMANDS_REGISTRY.get_command_names():
                 pprint('PINK', "\t-> Testing from sdist...")
                 try:
-                    _call(bentomaker_script + ["test"])
+                    _call(_BENTOMAKER_SCRIPT + ["test"])
                 except CalledProcessError, e:
                     raise CommandExecutionFailure(
                             "test command failed")
