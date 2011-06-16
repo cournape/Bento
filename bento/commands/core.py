@@ -120,7 +120,8 @@ def get_simple_usage():
     return "\n".join(ret)
 
 # Decorator to create a new command class from a simple function
-def command(bypass_help=True):
+def command(f):
+    bypass_help = True
     def _dec(f):
         klass_name = "%sCommand" % to_camel_case(f.__name__)
 
@@ -147,7 +148,8 @@ def command(bypass_help=True):
         klass.run = run
         if f.__doc__:
             klass.long_descr = f.__doc__
-    return _dec
+        return f
+    return _dec(f)
 
 class CommandRegistry(object):
     def __init__(self):

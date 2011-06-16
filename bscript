@@ -120,6 +120,7 @@ class TestCommand(Command):
             for stream in [stdout, stderr]:
                 print(stream.decode())
 
+@hooks.startup
 def startup(context):
     context.register_command("test", TestCommand)
     context.register_command("test_py3k", TestPy3kCommand)
