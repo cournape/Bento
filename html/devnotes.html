@@ -1,0 +1,213 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Build workflow &mdash; Bento v0.0.6-git4833227b96 documentation</title>
+    <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.6-git4833227b96',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="Bento v0.0.6-git4833227b96 documentation" href="index.html" />
+ 
+<style type="text/css">
+  table.right { float: right; margin-left: 20px; }
+  table.right td { border: 1px solid #ccc; }
+</style>
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">Bento home</a>&nbsp;|&nbsp;</li>
+        <li><a href="contents.html">Documentation</a>
+          &raquo;</li>
+ 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/devnotes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="build-workflow">
+<h1>Build workflow<a class="headerlink" href="#build-workflow" title="Permalink to this headline">¶</a></h1>
+<p>The main issue blocking bento alpha release is customization of new types of
+built &#8220;entities&#8221;. The main constraints:</p>
+<blockquote>
+<div><ul class="simple">
+<li>we need to keep a consistent interface at install time</li>
+<li>we need to register some outputs <em>before</em> the files actually exist
+(extensions, generated python code, etc...)</li>
+<li>the system should be flexible enough so that one can add new types of
+files (ctypes shared library, etc...)</li>
+</ul>
+</div></blockquote>
+<p>Suggested architecture:</p>
+<div class="highlight-python"><pre>bento.info -&gt; PackageDescription -&gt; NodePackageDescription -&gt; OutputRegistry -&gt; InstalledSectionRegistry
+                                                                                                    ^
+                                                        Register in hook   ---------|</pre>
+</div>
+<p>Justification for the concepts:</p>
+<blockquote>
+<div><blockquote>
+<div><ul class="simple">
+<li>bento.info : obvious</li>
+<li>PackageDescription: python representation of a bento.info</li>
+</ul>
+</div></blockquote>
+<ul>
+<li><p class="first">NodePackageDescription: is made available in hooks. A node representation
+is much more reliable for recursive and out-of-tree support. Any node in
+a NodePackageDescription <em>must</em> be on the fs already.</p>
+<blockquote>
+<div><ul class="simple">
+<li>OutputRegistry: this is an adapter to InstdalledSectionRegistry. This
+is needed to provide a common interfance to InstalledSectionRegistry,
+whether entities are built (extension, compiled library, etc...) or
+directly taken from sources (modules, python packages, data files).
+Nodes may or may not exist when defined there</li>
+<li>InstalledSectionRegistry: at that point, any &#8220;entity&#8221; is simply a
+list of files + just enough metadata for install. Nodes must exists
+on the fs.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<p>Current handling:</p>
+<blockquote>
+<div><blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>build context initialization:</dt>
+<dd><ul class="first last simple">
+<li>PackageDescription -&gt; NodePackageDescription instance (used in pre/post/override hooks)</li>
+<li>Initialize Output Registry (per category + optionally name)</li>
+<li>Initialize Builder Registry (per category + optionally name)</li>
+<li>Initialize Installed Section Registry (per category + optionally name)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">execite pre_build hooks</p>
+</li>
+<li><dl class="first docutils">
+<dt>execute build command run:</dt>
+<dd><ul class="first last">
+<li><p class="first">register data, packages and modules into OutputRegistry</p>
+</li>
+<li><dl class="first docutils">
+<dt>run self.compile (overridable by context subclasses)</dt>
+<dd><ul class="first last simple">
+<li>build executables, and register to OutputRegistry</li>
+<li>build extensions and compiled libraries, and register
+to OutputRegistry</li>
+<li>build additional stuff</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<ul>
+<li><dl class="first docutils">
+<dt>execute build command post_compiled</dt>
+<dd><ul class="first last">
+<li><p class="first">Convert OutputRegistry objects into InstalledSectionRegistry</p>
+</li>
+<li><p class="first">post_build hooks</p>
+</li>
+<li><p class="first">context.shutdown</p>
+</li>
+<li><p class="first">pre_install hooks</p>
+</li>
+<li><dl class="first docutils">
+<dt>install run:</dt>
+<dd><ul class="first last simple">
+<li>load ipkg.info</li>
+<li>install each installed section with same installer</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">post_install hooks</p>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">Bento home</a>&nbsp;|&nbsp;</li>
+        <li><a href="contents.html">Documentation</a>
+          &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2011, David Cournapeau.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

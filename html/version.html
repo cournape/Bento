@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Version 0.0.6 &mdash; Bento v0.0.5-giteb8b312f51 documentation</title>
+    <title>Version 0.0.6 &mdash; Bento v0.0.6-git4833227b96 documentation</title>
     <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.5-giteb8b312f51',
+        VERSION:     '0.0.6-git4833227b96',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.5-giteb8b312f51 documentation" href="index.html" />
+    <link rel="top" title="Bento v0.0.6-git4833227b96 documentation" href="index.html" />
  
 <style type="text/css">
   table.right { float: right; margin-left: 20px; }
@@ -102,13 +102,28 @@ Main features:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Preliminary support for .mpkg (Mac OS X native packaging)</li>
+<li>More consistent API for extension/compiled library build registration</li>
+<li>Build directory is now customizable through bentomaker with
+&#8211;build-directory option</li>
+<li>Out of tree builds support (i.e. running bento in a directory which does
+not contain bento.info), with global &#8211;bento-info option</li>
+<li>Completely revamped distutils compatibility layer: it is now a thin layer
+around bento infrastructure, so that most bento packages should be
+pip-installable, while still remaining bento customization capabilities.</li>
+<li>Hook File can now be specified in recursed bento.info</li>
 </ul>
 </div></blockquote>
 <div class="section" id="internals">
 <h2>Internals<a class="headerlink" href="#internals" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
-<li>Significantly better code coverage of bento.commands</li>
+<li>Significantly better code coverage of bento commands.</li>
+<li>Use node-based representation of package description in build and install</li>
+<li>Cleanly separated source, cwd and build directories</li>
+<li>Rewrote distutils compatibility layer to use command contexts.
+Concretely, this means it works much closer to how bentomaker does, so
+there should be less surprises between bentomaker and distutils
+execution.</li>
 </ul>
 </div></blockquote>
 </div>
