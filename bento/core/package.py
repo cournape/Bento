@@ -71,6 +71,7 @@ def recurse_subentos(subentos, source_dir):
             d = raw_parse(fid.read(), f)
             kw, subentos = raw_to_subpkg_kw(d)
             subpackages[key] = SubPackageDescription(rdir, **kw)
+            filenames.extend([os.path.join(cwd, subento, h) for h in subpackages[key].hook_files])
             for s in subentos:
                 _recurse(s, os.path.join(cwd, subento))
         finally:
