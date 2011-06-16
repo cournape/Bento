@@ -58,6 +58,36 @@ Library:
 			<li>
 				<div class="group row">
 					<div class="col-1">
+						<p>If your package uses distutils/setuptools/distribute, you can <a href="html/transition.html">convert your setup.py</a> to bento format using the convert command</p>
+					</div>
+					<div class="col-2">
+<pre><code><span style="color: #AD5818;"># Run this in a project containing a setup.py</span>
+<span style="color: #e3d796;">$</span> bentomaker convert</code></pre>
+<pre><code><span style="color: #AD5818;"># You now have a bento.info file</span>
+<span style="color: #e3d796;">$</span> bentomaker configure ...</code></pre>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
+						<p>You don't have to give up your favorite packaging tools to benefit from bento, thanks to bento's
+						<a href="html/transition.html">distutils compatibiliy layer</a>. A simple 4-lines setup.py will make your bento package works with easy_install or pip:</p>
+					</div>
+					<div class="col-2">
+<pre><code>import setuptools
+import bento.distutils
+bento.distutils.monkey_patch()
+setuptools.setup()
+</code></pre>
+<pre><code><span style="color: #e3d796;">$</span> easy_install your-bento-package
+<span style="color: #e3d796;">$</span> pip your-bento-package</code></pre>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="group row">
+					<div class="col-1">
 						<p>To avoid addtional dependencies to your package, bento may be distributed as a <a href="html/singlefile.html">single file</a>.</p>
 					</div>
 					<div class="col-2">
@@ -80,13 +110,14 @@ Created self-contained script 'bentomaker' in ...
 					<div class="col-1">
 					<p>Bentomaker
 					also supports building source
-					distributions, windows installers and has
-					preliminary support for eggs.</p>
+					distributions, and preliminary support for windows installers,
+					eggs and Mac OS X .mpkg.</p>
 					</div>
 					<div class="col-2">
 <pre><code><span style="color: #e3d796;">$</span> bentomaker sdist
 <span style="color: #e3d796;">$</span> bentomaker build_wininst
 <span style="color: #e3d796;">$</span> bentomaker build_egg
+<span style="color: #e3d796;">$</span> bentomaker build_mpkg
 </code></pre>
 					</div>
 				</div>
@@ -133,35 +164,6 @@ ExtraSourceFiles:
 					</div>
 					<div class="col-2">
 <pre><code>from yourpackage.__bento_config import PDFDOC </code></pre>
-					</div>
-				</div>
-			</li>
-			<li>
-				<div class="group row">
-					<div class="col-1">
-						<p>If your package uses distutils/setuptools/distribute, you can <a href="html/transition.html">convert your setup.py</a> to bento format using the convert command</p>
-					</div>
-					<div class="col-2">
-<pre><code><span style="color: #AD5818;"># Run this in a project containing a setup.py</span>
-<span style="color: #e3d796;">$</span> bentomaker convert</code></pre>
-<pre><code><span style="color: #AD5818;"># You now have a bento.info file</span>
-<span style="color: #e3d796;">$</span> bentomaker configure ...</code></pre>
-					</div>
-				</div>
-			</li>
-			<li>
-				<div class="group row">
-					<div class="col-1">
-						<p>Even better, bento has a <a href="html/transition.html">distutils compatibiliy layer</a> so that you can write a simple setup.py which works under pip or easy_install.</p>
-					</div>
-					<div class="col-2">
-<pre><code>import setuptools
-import bento.distutils
-from setuptools import setup
-setup()
-</code></pre>
-<pre><code><span style="color: #e3d796;">$</span> easy_install your-bento-generated-tarball
-<span style="color: #e3d796;">$</span> pip your-bento-generated-tarball</code></pre>
 					</div>
 				</div>
 			</li>
