@@ -8,7 +8,7 @@ import os.path as op
 
 from bento.compat.api \
     import \
-        rename, CalledProcessError
+        rename, CalledProcessError, TarFile
 
 from bento.commands.errors \
     import \
@@ -56,7 +56,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
         os.chdir(distcheck_dir.abspath())
         try:
             pprint('PINK', "\t-> Extracting sdist...")
-            tarball = tarfile.TarFile.gzopen(tarname)
+            tarball = TarFile.gzopen(tarname)
             tarball.extractall()
             os.chdir(tardir)
 

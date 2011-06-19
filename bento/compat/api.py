@@ -57,3 +57,12 @@ else:
     from tempfile \
         import \
             NamedTemporaryFile
+
+if sys.version_info < (2, 5, 0):
+    from bento.compat.__tarfile_c \
+        import \
+            TarFile
+else:
+    from tarfile \
+        import \
+            TarFile
