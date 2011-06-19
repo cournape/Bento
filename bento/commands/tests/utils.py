@@ -53,6 +53,13 @@ int hello(void)
 }
 """
 
+class FakeGlobalContext(object):
+    def __init__(self):
+        self._cmd_opts = {}
+
+    def add_option(self, command_name, option, group=None):
+        self._cmd_opts[command_name].add_option(option, group)
+
 def prepare_configure(run_node, bento_info, context_klass=ConfigureYakuContext, cmd_argv=None):
     if cmd_argv is None:
         cmd_argv = []
@@ -74,9 +81,20 @@ def prepare_configure(run_node, bento_info, context_klass=ConfigureYakuContext, 
 
     return context, configure
 
+def prepare_options(cmd_name, cmd, context_klass):
+    opts = OptionsContext.from_command(cmd)
+    g_context = FakeGlobalContext()
+    g_context._cmd_opts[cmd_name] = opts
+    # FIXME: the way new options are registered for custom contexts sucks:
+    # there should be a context class independent way to do it
+    if context_klass.__name__ == "BuildWafContext":
+        from bento.commands.extras.waf import register_options
+        register_options(g_context)
+    return opts
+
 def prepare_build(run_node, pkg, context_klass=BuildYakuContext):
     build = BuildCommand()
-    opts = OptionsContext.from_command(build)
+    opts = prepare_options("build", build, context_klass)
 
     bld = context_klass([], opts, pkg, run_node)
     return bld, build

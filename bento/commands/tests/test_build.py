@@ -50,7 +50,7 @@ from yaku.context \
 from bento.commands.tests.utils \
     import \
         prepare_configure, create_fake_package, create_fake_package_from_bento_infos, \
-        prepare_build, create_fake_package_from_bento_info
+        prepare_build, create_fake_package_from_bento_info, prepare_options
 
 BENTO_INFO_WITH_EXT = """\
 Name: foo
@@ -100,7 +100,6 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
         self.save = os.getcwd()
         self.d = tempfile.mkdtemp()
-
         os.chdir(self.d)
 
         root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
@@ -133,8 +132,6 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
     def _prepare(self, bentos, bscripts=None):
         conf, configure, bld, build = self._create_contexts(bentos, bscripts)
-        configure.run(conf)
-        conf.shutdown()
 
         build.run(bld)
         build.shutdown(bld)
@@ -146,6 +143,8 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         create_fake_package_from_bento_infos(top_node, bentos, bscripts)
 
         conf, configure = prepare_configure(top_node, bentos["bento.info"], self._configure_context)
+        configure.run(conf)
+        conf.shutdown()
 
         bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
         return conf, configure, bld, build
@@ -277,6 +276,7 @@ class TestBuildWaf(_TestBuildSimpleExtension):
         from bento.commands.extras.waf import make_stream_logger
         from cStringIO import StringIO
         bld.waf_context.logger = make_stream_logger("build", StringIO())
+
         return conf, configure, bld, build
 
     @skip_no_waf
@@ -391,7 +391,8 @@ class TestBuildDirectory(unittest.TestCase):
 
     @skip_no_waf
     def test_simple_waf(self):
-        from bento.commands.extras.waf import ConfigureWafContext, BuildWafContext, make_stream_logger
+        from bento.commands.extras.waf import ConfigureWafContext, BuildWafContext, \
+                                              make_stream_logger, register_options
 
         top_node = self.top_node
 
@@ -401,7 +402,8 @@ class TestBuildDirectory(unittest.TestCase):
         conf.shutdown()
 
         build = BuildCommand()
-        opts = OptionsContext.from_command(build)
+        #opts = OptionsContext.from_command(build)
+        opts = prepare_options("build", build, BuildWafContext)
 
         def _run():
             bld = BuildWafContext([], opts, conf.pkg, top_node)
