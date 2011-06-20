@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import subprocess
 
 from cStringIO \
     import \
@@ -8,6 +9,9 @@ from cStringIO \
 
 import lib2to3.main
 
+from yaku.errors \
+    import \
+        TaskRunFailure
 from yaku.task \
     import \
         task_factory
@@ -25,21 +29,15 @@ def convert_func(self):
         raise ValueError("convert_func needs exactly one input")
     source, target = self.inputs[0], self.outputs[0]
 
-    #print source.abspath(), target.abspath()
-    _old_stdout, _old_stderr = sys.stdout, sys.stderr
-    try:
-        pprint('GREEN', "%-16s%s" % (self.name.upper(),
+    pprint('GREEN', "%-16s%s" % (self.name.upper(),
+           " ".join([s.srcpath() for s in self.inputs])))
+    cmd = ["2to3", "-w", "--no-diffs", "-n", source.abspath()]
+    st = subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if st != 0:
+        pprint('RED', "FAILED %-16s%s" % (self.name.upper(),
                " ".join([s.srcpath() for s in self.inputs])))
-        sys.stdout = StringIO()
-        sys.stderr = StringIO()
-        st = lib2to3.main.main("lib2to3.fixes", ['-w', '--no-diffs', '-n'] + 
-                                           [source.abspath()])
-        if st != 0:
-            pprint('RED', "FAILED %-16s%s" % (self.name.upper(),
-                   " ".join([s.srcpath() for s in self.inputs])))
-        target.write(source.read())
-    finally:
-        sys.stdout, sys.stderr = _old_stdout, _old_stderr
+        raise TaskRunFailure(cmd)
+    target.write(source.read())
 
 def copy_func(self):
     source, target = self.inputs[0], self.outputs[0]
