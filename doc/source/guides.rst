@@ -243,56 +243,17 @@ pre_command_name hook, a post_command_hook, and an override hook. Just defining
 hooks is not very useful, though - you need to be able to interact with bento
 to do interesting things.
 
-Each hook is a regular python function - its hook "status" is defined by the hook decorator(s)::
+Each hook is a regular python function - its hook "status" is defined by the
+hook decorator(s)::
 
     from bento.commands.hooks import post_configure
 
-    @post_configure()
-    def pconfigure(ctx):
+    @post_configure
+    def pconfigure(context):
         pass
 
-The function takes one parameter, ctx. Its class does not matter much at this
-point, but its members do. First, both the command instance (cmd) and the
-command options (cmd_opts) are always available. The command instance
-corresponds to the requested command (bentomaker configure ->
-bento.commands.configure.Configure class). cmd_opts is a simple list of the
-command line arguments::
-
-    from bento.commands.hooks import post_configure
-
-    @post_configure()
-    def pconfigure(ctx):
-        print ctx.cmd_opts
-
-Each ctx variable also has a pkg member, which is a
-PackageDescription instance, and contains most package information.
-Metadata, extensions, path options, executables are all available,
-which enables the following:
-
-    * access package information to generate new "targets" (new types
-      of binary installers)
-    * add extra source files whose location cannot be known at
-      configure time
-    * add/remove/modify extensions, packages dynamically
-
-For example::
-
-    from bento.commands.hooks import post_configure
-
-    @post_configure()
-    def pconfigure(ctx):
-        for ext_name in pkg.extensions:
-            # List the sources of every extension
-            print pkg.extensions[ext_name].sources
-
-This may not look like much, but this ability to query extensions
-inside your hook file makes integration with external build tools much
-easier.
-
-*Note: unfortunately, there is still no public API for safe
-PackageDescription instances access. Most read access should be safe,
-but modifying package description members is likely to break in the
-future*
+The function takes one parameter, context. Interaction with bento is done
+through the context object.
 
 Hook and recursive package definitions
 --------------------------------------
@@ -301,48 +262,6 @@ TODO
 
 Hook and yaku: customizing extensions compilation
 -------------------------------------------------
-
-*Note: this is almost guaranteed to change, I am still deeply
-unsatisfied with the API. This should illustrate a few core features
-of bento w.r.t. to building extension, though. IOW, the API will
-change, but the features will stay*
-
-Customizing compilation of extensions is a significant pain point in
-distutils. Bento includes by default a simple build tool, yaku. Bento
-has a few API to make interaction with yaku easier, in particular for
-compilation customization::
-
-    @pre_build()
-    def pbuild(ctx):
-        env = {"CFLAGS": ["-Os"]}
-        ctx.register_environment("foo", env)
-
-The register_environment will update the compilation environment for
-the foo extension. Each extension can register a different environment
-through this mechanism. Env can contain any key as used by yaku (that
-includes the compiler, compiler flags, etc...), but note that new
-flags are appended to existing values.
-
-You can also register an entirely new builder for a given extension. This
-requires dealing with yaku's relatively low-level API, but it enables
-basically any kind of transformation, like compiling each source
-differently, associating new tools to existing source suffix, etc....
-This is unfortunately the only way to override environments ATM::
-
-    @pre_build()
-    def pbuild(ctx):
-        def builder(bld, extension, verbose):
-            # Environments are attached to builders, and cloning a
-            # builder attach a fresh copied dictionary
-            _blder = bld.builders["pyext"].clone()
-            # Change in the blder.env will not affect any other
-            # extension
-            _blder.env["PYEXT_CC"] = ["clang"]
-            return _blder(extension.name, extension.sources)
-        ctx.register_builder("foo", builder)
-
-You should refer to yaku examples directory to get an idea of what's
-possible.
 
 Conditional packaging
 =====================
