@@ -30,6 +30,8 @@ PY3K_BUILD = os.path.join("build", "py3k")
 
 @hooks.command
 def _run_2to3(ctx):
+    njobs = int(os.environ.get("BENTO_2TO3_NJOBS", 1))
+
     bld = yaku.context.get_bld()
     if not "python_2to3" in bld.builders:
         raise ValueError("2to3 is not available")
@@ -44,7 +46,7 @@ def _run_2to3(ctx):
     builder.convert("bento_2to3", files)
 
     try:
-        yaku.scheduler.run_tasks(bld)
+        yaku.scheduler.run_tasks_parallel(bld, maxjobs=njobs)
     finally:
         bld.store()
 
