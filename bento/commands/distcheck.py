@@ -72,23 +72,28 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                 if p.returncode != 0:
                     raise CalledProcessError(p.returncode, cmd)
 
+            if sys.version_info[0] < 3:
+                bentomaker_script = _BENTOMAKER_SCRIPT
+            else:
+                bentomaker_script = [sys.executable, "-m", "bentomakerlib.bentomaker"]
+
             pprint('PINK', "\t-> Configuring from sdist...")
-            _call(_BENTOMAKER_SCRIPT + ["configure", "--prefix=%s" % os.path.abspath("tmp")])
+            _call(bentomaker_script + ["configure", "--prefix=%s" % os.path.abspath("tmp")])
 
             pprint('PINK', "\t-> Building from sdist...")
-            _call(_BENTOMAKER_SCRIPT + ["build", "-i"])
+            _call(bentomaker_script + ["build", "-i"])
 
             pprint('PINK', "\t-> Building egg from sdist...")
-            _call(_BENTOMAKER_SCRIPT + ["build_egg"])
+            _call(bentomaker_script + ["build_egg"])
 
             if sys.platform == "win32":
                 pprint('PINK', "\t-> Building wininst from sdist...")
-                _call(_BENTOMAKER_SCRIPT + ["build_wininst"])
+                _call(bentomaker_script + ["build_wininst"])
 
             if "test" in COMMANDS_REGISTRY.get_command_names():
                 pprint('PINK', "\t-> Testing from sdist...")
                 try:
-                    _call(_BENTOMAKER_SCRIPT + ["test"])
+                    _call(bentomaker_script + ["test"])
                 except CalledProcessError, e:
                     raise CommandExecutionFailure(
                             "test command failed")
