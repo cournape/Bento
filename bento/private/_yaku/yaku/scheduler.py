@@ -16,6 +16,14 @@ def run_tasks(ctx, tasks=None):
     s.start()
     s.run()
 
+def run_tasks_parallel(ctx, tasks=None, maxjobs=1):
+    if tasks is None:
+        tasks = ctx.tasks
+    task_manager = TaskManager(tasks)
+    r = ParallelRunner(ctx, task_manager, maxjobs)
+    r.start()
+    r.run()
+
 class SerialRunner(object):
     def __init__(self, ctx, task_manager):
         self.ctx = ctx
