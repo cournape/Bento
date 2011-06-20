@@ -116,8 +116,10 @@ class TestCommand(Command):
             nosetester = o.nosetester
         else:
             nosetester = "nosetester"
-
-        cmd = [nosetester]
+        if sys.version_info[:2] < (2, 5):
+            cmd = [nosetester]
+        else:
+            cmd = [sys.executable, "-m", "nose.core"]
         if not test_program_run(cmd + ["-h"]):
             raise CommandExecutionFailure(
                     "program %r not found - needed to test bento !" % cmd[0])
