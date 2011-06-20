@@ -98,15 +98,24 @@ Usage:   bentomaker test_py3k [OPTIONS]."""
             return p.returncode
 
 class TestCommand(Command):
-    def run(self, opts):
+    common_options = Command.common_options \
+                        + [Option("--nosetester",
+                                  help="Path to the nosetests to use", dest="nosetester")]
+    def run(self, ctx):
         pprint('BLUE', "Running test command....")
 
         if sys.platform == "win32":
             suffix = ".exe"
         else:
             suffix = ""
+        p = ctx.options_context.parser
+        o, a = p.parse_args(ctx.get_command_arguments())
+        if o.nosetester:
+            nosetester = o.nosetester
+        else:
+            nosetester = "nosetester"
 
-        cmd = ["nosetests-%s%s" % (".".join([str(i) for i in sys.version_info[:2]]), suffix)]
+        cmd = [nosetester]
         if not test_program_run(cmd + ["-h"]):
             raise CommandExecutionFailure(
                     "program %r not found - needed to test bento !" % cmd[0])
