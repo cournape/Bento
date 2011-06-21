@@ -7,8 +7,9 @@ from bento.core.package import \
 from bento.commands.errors \
     import \
         UsageException
-from bento.commands.core import \
-    Command
+from bento.commands.core \
+    import \
+        Command, Option
 from bento.core.utils \
     import \
         ensure_dir
@@ -26,6 +27,9 @@ class SdistCommand(Command):
 Purpose: create a tarball for the project
 Usage:   bentomaker sdist [OPTIONS]."""
     short_descr = "create a tarball."
+    common_options = Command.common_options \
+                        + [Option("--output-dir",
+                                  help="Output diretory", default="dist")]
     def __init__(self):
         Command.__init__(self)
         self.tarname = None
@@ -46,7 +50,7 @@ Usage:   bentomaker sdist [OPTIONS]."""
 
         pkg = PackageDescription.from_file(filename)
         tarname = tarball_basename(pkg.name, pkg.version) + ".tar.gz"
-        self.tarname = os.path.abspath(os.path.join("dist", tarname))
+        self.tarname = os.path.abspath(os.path.join(o.output_dir, tarname))
         self.topdir = "%s-%s" % (pkg.name, pkg.version)
         create_tarball(pkg, ctx.top_node, self.tarname, self.topdir)
 
