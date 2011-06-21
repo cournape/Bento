@@ -104,10 +104,6 @@ def _setup_options_parser(options_context, package_options):
     scheme, scheme_opts_d = get_scheme(sys.platform)
 
     p = options_context
-    p.add_group("build_customization", "Build customization")
-    opt = Option("--use-distutils", help="Build extensions with distutils",
-                 action="store_true")
-    p.add_option(opt, "build_customization")
 
     # Create default path options
     scheme_opts = {}
