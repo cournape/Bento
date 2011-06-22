@@ -13,9 +13,15 @@ from bento.compat.api \
 from bento.commands.errors \
     import \
         CommandExecutionFailure
+from bento.commands.wrapper_utils \
+    import \
+        run_cmd_in_context
 from bento.commands.core \
     import \
         Command, COMMANDS_REGISTRY
+from bento.commands.context \
+    import \
+        CONTEXT_REGISTRY
 from bento.core.utils \
     import \
         pprint
@@ -30,6 +36,16 @@ import bentomakerlib
 
 _BENTOMAKER_SCRIPT = [op.join(op.dirname(bentomakerlib.__file__), os.pardir, "bentomaker")]
 
+def run_sdist(context):
+    sdist_name = "sdist"
+    sdist_klass = COMMANDS_REGISTRY.get_command(sdist_name)
+    cmd_argv = []
+    sdist_context_klass = CONTEXT_REGISTRY.get(sdist_name)
+    sdist, sdist_context = run_cmd_in_context(sdist_klass,
+                        sdist_name, cmd_argv, sdist_context_klass,
+                        context.run_node, context.top_node, context.pkg)
+    return sdist
+
 class DistCheckCommand(Command):
     long_descr = """\
 Purpose: configure, build and test the project from sdist output
@@ -38,8 +54,8 @@ Usage:   bentomaker distcheck [OPTIONS]."""
     def run(self, ctx):
         pprint('BLUE', "Distcheck...")
         pprint('PINK', "\t-> Running sdist...")
-        sdist = COMMANDS_REGISTRY.get_command("sdist")()
-        sdist.run(ctx)
+
+        sdist = run_sdist(ctx)
         tarname = sdist.tarname
         tardir = sdist.topdir
 
