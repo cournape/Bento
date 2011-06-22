@@ -96,12 +96,14 @@ def try_task_maker(conf, task_maker, name, body, headers, env=None):
     succeed = False
     explanation = None
     try:
-        run_tasks(conf, tasks)
-        succeed = True
-    except TaskRunFailure, e:
-        explanation = str(e)
-
-    write_log(conf, conf.log, tasks, code, succeed, explanation)
+        try:
+            run_tasks(conf, tasks)
+            succeed = True
+        except TaskRunFailure, e:
+            explanation = str(e)
+            raise
+    finally:
+        write_log(conf, conf.log, tasks, code, succeed, explanation)
     return succeed
 
 def _merge_env(_env, new_env):
