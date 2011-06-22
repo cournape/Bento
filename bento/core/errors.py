@@ -4,5 +4,8 @@ class BentoError(Exception):
 class InvalidPackage(BentoError):
     pass
 
+class ConfigurationError(BentoError):
+    pass
+
 class BuildError(BentoError):
     pass

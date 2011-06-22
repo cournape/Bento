@@ -6,8 +6,12 @@ from bento.core.subpackage \
 from bento.commands.cmd_contexts \
     import \
         ConfigureContext, BuildContext
+from bento.core.errors \
+    import \
+        ConfigurationError
 
 import yaku.context
+import yaku.errors
 
 class ConfigureYakuContext(ConfigureContext):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
@@ -22,7 +26,11 @@ class ConfigureYakuContext(ConfigureContext):
 
         yaku_ctx = self.yaku_context
         if extensions or libraries:
-            yaku_ctx.use_tools(["ctasks", "pyext"])
+            for t in ["ctasks", "pyext"]:
+                try:
+                    yaku_ctx.use_tools([t])
+                except yaku.errors.ConfigurationFailure, e:
+                    raise ConfigurationError(str(e))
 
     def shutdown(self):
         super(ConfigureYakuContext, self).shutdown()

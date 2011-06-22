@@ -481,14 +481,18 @@ def noexc_main(argv=None):
         _print_debug()
         pprint('RED', "".join(e.args))
         sys.exit(4)
-    except bento.core.errors.BuildError, e:
+    except bento.core.errors.ConfigurationError, e:
         _print_debug()
         pprint('RED', e)
         sys.exit(8)
-    except bento.core.errors.InvalidPackage, e:
+    except bento.core.errors.BuildError, e:
         _print_debug()
         pprint('RED', e)
         sys.exit(16)
+    except bento.core.errors.InvalidPackage, e:
+        _print_debug()
+        pprint('RED', e)
+        sys.exit(32)
     except Exception, e:
         msg = """\
 %s: Error: %s crashed (uncaught exception %s: %s).
