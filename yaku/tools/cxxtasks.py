@@ -12,7 +12,7 @@ from yaku.task_manager \
         extension, CompiledTaskGen
 from yaku.utils \
     import \
-        find_deps, ensure_dir
+        find_deps, ensure_dir, get_exception
 from yaku.compiled_fun \
     import \
         compile_fun
@@ -129,7 +129,7 @@ class CXXBuilder(yaku.tools.Builder):
                             sys.stderr.write("yes\n")
                             detected = cxx_type
                             break
-                    except ImportError, e:
+                    except ImportError:
                         raise
                     except:
                         pass

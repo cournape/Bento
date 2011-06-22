@@ -6,13 +6,21 @@ except ImportError:
     from md5 import md5
 import subprocess
 
-from cPickle \
-    import \
-        dumps
+if sys.version_info[0] < 3:
+    from cPickle \
+        import \
+            dumps
+else:
+    from pickle \
+        import \
+            dumps
 
 from yaku.pprint \
     import \
         pprint
+from yaku.utils \
+    import \
+        get_exception, is_string, function_code
 from yaku.errors \
     import \
         TaskRunFailure, WindowsError
@@ -44,11 +52,11 @@ class _Task(object):
     before = []
     after = []
     def __init__(self, outputs, inputs, func=None, deps=None):
-        if isinstance(inputs, basestring):
+        if is_string(inputs):
             self.inputs = [inputs]
         else:
             self.inputs = inputs
-        if isinstance(outputs, basestring):
+        if is_string(outputs):
             self.outputs = [outputs]
         else:
             self.outputs = outputs
@@ -92,7 +100,7 @@ class _Task(object):
         for k in self.env_vars:
             m.update(dumps(self.env[k]))
         if self.func:
-            m.update(self.func.func_code.co_code)
+            m.update(function_code(self.func).co_code)
         return m.digest()
 
     def _sig_explicit_deps(self, m):
@@ -135,9 +143,11 @@ class _Task(object):
             else:
                 sys.stderr.write(stdout)
             self.gen.bld.set_stdout_cache(self, stdout)
-        except OSError, e:
+        except OSError:
+            e = get_exception()
             raise TaskRunFailure(cmd, str(e))
-        except WindowsError, e:
+        except WindowsError:
+            e = get_exception()
             raise TaskRunFailure(cmd, str(e))
 
     def __repr__(self):

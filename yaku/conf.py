@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 
 try:
@@ -6,9 +7,14 @@ try:
 except ImportError:
     from md5 import md5
 
-from cStringIO \
-    import \
-        StringIO
+if sys.version_info[0] < 3:
+    from cStringIO \
+        import \
+            StringIO
+else:
+    from io \
+        import \
+            StringIO
 
 from yaku.errors \
     import \

@@ -17,6 +17,9 @@ from yaku.scheduler \
 from yaku.conf \
     import \
         with_conf_blddir, create_file, write_log
+from yaku.utils \
+    import \
+        get_exception
 
 def import_tools(tool_list, tooldirs=None):
     old_sys = sys.path[:]
@@ -99,9 +102,10 @@ def try_task_maker(conf, task_maker, name, body, headers, env=None):
         try:
             run_tasks(conf, tasks)
             succeed = True
-        except TaskRunFailure, e:
+        except TaskRunFailure:
+            e = get_exception()
             explanation = str(e)
-            raise
+            #raise
     finally:
         write_log(conf, conf.log, tasks, code, succeed, explanation)
     return succeed

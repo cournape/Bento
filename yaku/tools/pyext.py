@@ -25,7 +25,7 @@ from yaku.task \
         task_factory
 from yaku.utils \
     import \
-        ensure_dir
+        ensure_dir, get_exception
 from yaku.environment \
     import \
         Environment
@@ -343,7 +343,8 @@ init_bar(void)
         try:
             self.try_compile("foo", pycode)
             ctx.end_message("yes")
-        except TaskRunFailure, e:
+        except TaskRunFailure:
+            e = get_exception()
             ctx.end_message("no")
             ctx.fail_configuration(str(e))
 
@@ -351,7 +352,8 @@ init_bar(void)
         try:
             self.try_extension("foo", pycode)
             ctx.end_message("yes")
-        except TaskRunFailure, e:
+        except TaskRunFailure:
+            e = get_exception()
             ctx.end_message("no")
             ctx.fail_configuration(str(e))
         self.configured = True
