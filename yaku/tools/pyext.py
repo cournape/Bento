@@ -340,16 +340,20 @@ init_bar(void)
 }
 """
         ctx.start_message("Checking whether %s can build python object code" % compiler_type)
-        if self.try_compile("foo", pycode):
+        try:
+            self.try_compile("foo", pycode)
             ctx.end_message("yes")
-        else:
-            raise ValueError()
+        except TaskRunFailure, e:
+            ctx.end_message("no")
+            ctx.fail_configuration(str(e))
 
         ctx.start_message("Checking whether %s can build python extension" % compiler_type)
-        if self.try_extension("foo", pycode):
+        try:
+            self.try_extension("foo", pycode)
             ctx.end_message("yes")
-        else:
-            raise ValueError()
+        except TaskRunFailure, e:
+            ctx.end_message("no")
+            ctx.fail_configuration(str(e))
         self.configured = True
 
 def get_builder(ctx):
