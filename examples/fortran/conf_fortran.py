@@ -16,7 +16,7 @@ from yaku.conftests.fconftests \
 def configure(ctx):
     ctx.use_tools(["ctasks", "cxxtasks"])
     ctx.load_tool("fortran")
-    ctx.builders["fortran"].configure(candidates=["ifort"])
+    ctx.builders["fortran"].configure(candidates=["gfortran"])
 
     check_fcompiler(ctx)
     check_fortran_verbose_flag(ctx)
