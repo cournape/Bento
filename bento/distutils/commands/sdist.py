@@ -4,7 +4,7 @@ from distutils.command.sdist \
     import \
         sdist as old_sdist
 
-from bento.distutils.utils \
+from bento.commands.wrapper_utils \
     import \
         run_cmd_in_context
 from bento.commands.sdist \

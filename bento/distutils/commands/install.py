@@ -29,7 +29,7 @@ from bento.commands.context \
 from bento.commands.options \
     import \
         OptionsContext
-from bento.distutils.utils \
+from bento.commands.wrapper_utils \
     import \
         run_cmd_in_context
 

@@ -5,7 +5,7 @@ from distutils.command.config \
 from bento.core.platforms \
     import \
         get_scheme
-from bento.distutils.utils \
+from bento.commands.wrapper_utils \
     import \
         run_cmd_in_context
 

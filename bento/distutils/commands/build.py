@@ -4,7 +4,7 @@ from distutils.command.build \
     import \
         build as old_build
 
-from bento.distutils.utils \
+from bento.commands.wrapper_utils \
     import \
         run_cmd_in_context
 from bento.commands.build \

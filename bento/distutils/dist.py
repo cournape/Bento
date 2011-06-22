@@ -12,6 +12,9 @@ else:
         import \
             Distribution
 
+from bento.commands.wrapper_utils \
+    import \
+        set_main
 from bento.conv \
     import \
         pkg_to_distutils_meta
@@ -98,7 +101,6 @@ class BentoDistribution(Distribution):
         self.build_node = root._ctx.bldnode
         self.run_node = root._ctx.srcnode
 
-        from bento.distutils.utils import set_main
         modules = set_main(self.top_node, self.build_node, self.pkg)
 
     def has_data_files(self):
