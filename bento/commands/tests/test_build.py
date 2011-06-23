@@ -50,7 +50,7 @@ from yaku.context \
 from bento.commands.tests.utils \
     import \
         prepare_configure, create_fake_package, create_fake_package_from_bento_infos, \
-        prepare_build, create_fake_package_from_bento_info, prepare_options
+        prepare_build, create_fake_package_from_bento_info, prepare_options, EncodedStringIO
 
 BENTO_INFO_WITH_EXT = """\
 Name: foo
@@ -243,24 +243,6 @@ def _not_has_waf():
 def skip_no_waf(f):
     return skipif(_not_has_waf, "waf not found")(f)
 
-def protect_streams_waf(func):
-    """Run the given function in an environment where standard streams are
-    directed to strings without making waf angry."""
-    # This is not thread safe...
-    set_stdout = False
-    set_stderr = False
-    try:
-        if not hasattr(sys.stdout, "encoding"):
-            sys.stdout.encoding = "ascii"
-        if not hasattr(sys.stderr, "encoding"):
-            sys.stderr.encoding = "ascii"
-        func()
-    finally:
-        if set_stdout:
-            del sys.stdout.encoding
-        if set_stderr:
-            del sys.stderr.encoding
-
 class TestBuildWaf(_TestBuildSimpleExtension):
     #def __init__(self, *a, **kw):
     #    super(TestBuildWaf, self).__init__(*a, **kw)
@@ -301,10 +283,8 @@ class TestBuildWaf(_TestBuildSimpleExtension):
         self._stdout = sys.stdout
         super(TestBuildWaf, self).setUp()
         # XXX: ugly stuff to make waf and nose happy together
-        if not hasattr(sys.stdout, "encoding"):
-            sys.stdout.encoding = "ascii"
-        if not hasattr(sys.stderr, "encoding"):
-            sys.stderr.encoding = "ascii"
+        sys.stdout = EncodedStringIO()
+        sys.stderr = EncodedStringIO()
 
         if _not_has_waf():
             return
@@ -346,7 +326,7 @@ class TestBuildCommand(unittest.TestCase):
         bld = BuildYakuContext([], opts, conf.pkg, top_node)
         build.run(bld)
 
-class TestBuildDirectory(unittest.TestCase):
+class TestBuildDirectoryBase(unittest.TestCase):
     def setUp(self):
         self.d = tempfile.mkdtemp()
 
@@ -361,6 +341,7 @@ class TestBuildDirectory(unittest.TestCase):
         os.chdir(self.old_dir)
         shutil.rmtree(self.d)
 
+class TestBuildDirectory(TestBuildDirectoryBase):
     def test_simple_yaku(self):
         top_node = self.top_node
 
@@ -389,6 +370,22 @@ class TestBuildDirectory(unittest.TestCase):
         bld = DistutilsBuildContext([], opts, conf.pkg, top_node)
         build.run(bld)
 
+class TestBuildDirectoryWaf(TestBuildDirectoryBase):
+    def setUp(self):
+        TestBuildDirectoryBase.setUp(self)
+
+        self._stderr = sys.stderr
+        self._stdout = sys.stdout
+
+        sys.stdout = EncodedStringIO()
+        sys.stderr = EncodedStringIO()
+
+    def tearDown(self):
+        sys.stderr = self._stderr
+        sys.stdout = self._stdout
+
+        TestBuildDirectoryBase.tearDown(self)
+
     @skip_no_waf
     def test_simple_waf(self):
         from bento.commands.extras.waf import ConfigureWafContext, BuildWafContext, \
@@ -405,8 +402,6 @@ class TestBuildDirectory(unittest.TestCase):
         #opts = OptionsContext.from_command(build)
         opts = prepare_options("build", build, BuildWafContext)
 
-        def _run():
-            bld = BuildWafContext([], opts, conf.pkg, top_node)
-            bld.waf_context.logger = make_stream_logger("build", StringIO())
-            build.run(bld)
-        protect_streams_waf(_run)
+        bld = BuildWafContext([], opts, conf.pkg, top_node)
+        bld.waf_context.logger = make_stream_logger("build", StringIO())
+        build.run(bld)

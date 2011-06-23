@@ -1,5 +1,9 @@
 import os
 
+from cStringIO \
+    import \
+        StringIO
+
 from bento.core \
     import \
         PackageDescription, PackageOptions
@@ -224,4 +228,18 @@ def flatten_packages(top_node, subpackage):
     d = top_node.find_dir(subpackage.rdir)
     parent_pkg = ".".join(subpackage.rdir.split("/"))
     return ["%s.%s" % (parent_pkg, p) for p in subpackage.packages]
+
+# Super ugly stuff to make waf and nose happy: nose happily override
+# sys.stdout/sys.stderr, and waf expects real files (with encoding and co). We
+# fake it until waf is happy
+class EncodedStringIO(object):
+    def __init__(self):
+        self._data = StringIO()
+        self.encoding = "ascii"
+
+    def read(self):
+        return self._data.read()
+
+    def write(self, data):
+        return self._data.write(data)
 
