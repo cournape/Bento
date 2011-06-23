@@ -34,9 +34,9 @@ class config(old_config):
         # complicated, but I see no way to install at the same location as unix
         # without recreating the whole distutils scheme logic madness.
         if os.name == "posix":
-            if install.install_layout:
+            if hasattr(install, "install_layout") and install.install_layout:
                 raise ValueError("install layout option not supported !")
-            elif (install.prefix_option and os.path.normpath(install.prefix) != '/usr/local') \
+            elif (hasattr(install, "prefix_option") and install.prefix_option and os.path.normpath(install.prefix) != '/usr/local') \
                 or 'PYTHONUSERBASE' in os.environ \
                 or 'real_prefix' in sys.__dict__:
                     scheme["prefix"] = scheme["exec_prefix"] = self.install_base
