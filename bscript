@@ -99,6 +99,12 @@ Usage:   bentomaker test_py3k [OPTIONS]."""
             pprint('RED', "=" * 79)
             return p.returncode
 
+def try_decode(s):
+    try:
+        return s.decode()
+    except UnicodeError:
+        return s
+
 class TestCommand(Command):
     def run(self, ctx):
         pprint('BLUE', "Running test command....")
@@ -123,11 +129,11 @@ class TestCommand(Command):
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
         stdout, stderr = p.communicate()
         if p.returncode != 0:
-            print(stderr.decode())
+            print(try_decode(stderr))
             return p.returncode
         else:
             for stream in [stdout, stderr]:
-                print(stream.decode())
+                print(try_decode(stream))
 
 @hooks.startup
 def startup(context):
