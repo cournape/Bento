@@ -1,0 +1,20 @@
+You can install bento as follows:
+
+	- using bento itself (recommended)::
+
+		python bootstrap.py
+		./bentomaker install
+
+	you can fine-tune installation directories using configure before
+	install::
+
+		# use bentomaker help configure for a list of options
+		./bentomaker configure --prefix=/opt
+		./bentomaker install
+
+	- using setup.py::
+
+		python setup.py install
+	
+	Using setup.py is not recommended: it is mostly here so that pip knows
+	how to install bento, as it expects a setup.py
