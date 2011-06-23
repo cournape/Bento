@@ -42,6 +42,10 @@ DataFiles: ply_data
     Files: parsetab
 
 ExtraSourceFiles:
+    LICENSE.txt,
+    PACKAGERS.txt,
+    README.rst,
+    THANKS,
     setup.py,
     setup_common.py,
     bootstrap.py,
