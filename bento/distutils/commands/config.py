@@ -1,3 +1,8 @@
+import os
+import sys
+
+import os.path as op
+
 from distutils.command.config \
     import \
         config as old_config
@@ -24,9 +29,24 @@ class config(old_config):
         install = self.get_finalized_command("install")
 
         scheme = {}
-        if hasattr(install, "install_dir"):
-            scheme["sitedir"] = install.install_dir
-        scheme["prefix"] = install.install_base
+
+        # This mess is taken from distutils.install. This is awfully
+        # complicated, but I see no way to install at the same location as unix
+        # without recreating the whole distutils scheme logic madness.
+        if os.name == "posix":
+            if install.install_layout:
+                raise ValueError("install layout option not supported !")
+            elif (install.prefix_option and os.path.normpath(install.prefix) != '/usr/local') \
+                or 'PYTHONUSERBASE' in os.environ \
+                or 'real_prefix' in sys.__dict__:
+                    scheme["prefix"] = scheme["exec_prefix"] = self.install_base
+                    scheme["sitedir"] = install.install_purelib
+                    scheme["includedir"] = install.install_headers
+            else:
+                scheme["prefix"] = op.join(install.install_base, "local")
+                scheme["exec-prefix"] = op.join(install.install_platbase, "local")
+                scheme["sitedir"] = install.install_purelib
+                scheme["includedir"] = install.install_headers
 
         return scheme
 
