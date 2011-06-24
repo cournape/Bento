@@ -91,11 +91,11 @@ Usage:   bentomaker test_py3k [OPTIONS]."""
         p = subprocess.Popen([python_interpreter, "-m", "bentomakerlib.bentomaker", "distcheck"],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=PY3K_BUILD)
         stdout, stderr = p.communicate()
-        print(stdout.decode())
+        print(try_decode(stdout))
         if p.returncode != 0:
             pprint('RED', "error while distchecking python 3 code: exception was")
             pprint('RED', "=" * 79)
-            pprint('RED', stderr.decode())
+            pprint('RED', try_decode(stderr))
             pprint('RED', "=" * 79)
             return p.returncode
 
