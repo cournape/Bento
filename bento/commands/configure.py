@@ -1,5 +1,6 @@
 import sys
 import os
+import os.path as op
 
 try:
     from cPickle import loads, dumps
@@ -58,7 +59,7 @@ class _ConfigureState(object):
     def from_dump(cls, node):
         return loads(node.read('rb'))
 
-def set_scheme_options(scheme, options):
+def set_scheme_options(scheme, options, pkg):
     """Set path variables given in options in scheme dictionary."""
     for k in scheme:
         if hasattr(options, k):
@@ -70,6 +71,26 @@ def set_scheme_options(scheme, options):
                           "given was '%s')" % (k, val)
                     raise UsageException(msg)
                 scheme[k] = val
+
+    if os.name == "posix":
+        if options.prefix is None:
+            from distutils.command.install import INSTALL_SCHEMES
+            if "unix_local" in INSTALL_SCHEMES:
+                dist_scheme = INSTALL_SCHEMES["unix_local"]
+                # This madness is used to support ubuntu/debian customization
+                prefix = "/usr/local"
+                base = "/usr"
+                py_version = sys.version.split()[0]
+                py_version_short = py_version[0:3]
+                dist_name = pkg.name
+                v = {"base": base, "py_version_short": py_version_short, "dist_name": dist_name}
+
+                scheme["prefix"] = scheme["eprefix"] = prefix
+                scheme["sitedir"] = subst_vars(dist_scheme["purelib"], v)
+                scheme["includedir"] = subst_vars(dist_scheme["headers"], v)
+            else:
+                raise NotImplementedError("No unix_local in INSTALL_SCHEMES ?")
+
     # XXX: define default somewhere and stick with it
     if options.prefix is not None and options.eprefix is None:
         scheme["eprefix"] = scheme["prefix"]
@@ -160,7 +181,7 @@ Usage: bentomaker configure [OPTIONS]"""
         venv_prefix = virtualenv_prefix()
         if venv_prefix is not None:
             self.scheme["prefix"] = self.scheme["eprefix"] = venv_prefix
-        set_scheme_options(self.scheme, o)
+        set_scheme_options(self.scheme, o, ctx.pkg)
         flag_vals = _get_flag_values(self.flags, o)
 
         ctx.setup()
