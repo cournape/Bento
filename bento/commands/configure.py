@@ -59,7 +59,77 @@ class _ConfigureState(object):
     def from_dump(cls, node):
         return loads(node.read('rb'))
 
-def set_scheme_options(scheme, options, pkg):
+def set_scheme_unix(scheme, options, package):
+    # This mess is the simplest solution I can think of to support:
+    #   - /usr/local as default for prefix while using debian/ubuntu changes
+    #   (dist-packages instead of site-packages)
+    #   - virtualenv support
+    #   - arbitrary python install
+    #
+    # Cases to consider:
+    #   - if prefix is given:
+    #       - prefix and exec_prefix are customized following their options
+    #   - if prefix is not given:
+    #       - if under virtualenv: prefix and exec_prefix are set to their sys.* values
+    #       - else on unix != darwin: using /usr/local
+    #       - else on darwin: using sys values
+    if options.prefix is not None:
+        scheme["prefix"] = options.prefix
+        if options.exec_prefix is None:
+            scheme["eprefix"] = scheme["prefix"]
+        else:
+            scheme["eprefix"] = options.exec_prefix
+    elif options.prefix is None and options.eprefix is not None:
+        raise NotImplementedError("Customizing exec_prefix without " \
+                                  "customizing prefix is not implemented yet")
+    elif options.prefix is None and options.eprefix is None:
+        # XXX: what is real_prefix used for
+        venv_prefix = virtualenv_prefix()
+        if venv_prefix is not None:
+            scheme["prefix"] = scheme["eprefix"] = venv_prefix
+        elif 'real_prefix' in sys.__dict__:
+            raise NotImplementedError("sys.__dict__['real_prefix'] == True not supported yet")
+        elif sys.platform == "darwin":
+            scheme["prefix"] = op.normpath(sys.prefix)
+            scheme["eprefix"] = op.normpath(sys.exec_prefix)
+        else:
+            # XXX: unix_local is an ubuntu/debian thing only ?
+            from distutils.command.install import INSTALL_SCHEMES
+            if "unix_local" in INSTALL_SCHEMES:
+                dist_scheme = INSTALL_SCHEMES["unix_local"]
+                # This madness is used to support ubuntu/debian customization
+                prefix = "/usr/local"
+                base = "/usr"
+                py_version = sys.version.split()[0]
+                py_version_short = py_version[0:3]
+                dist_name = package.name
+                v = {"base": base, "py_version_short": py_version_short, "dist_name": dist_name}
+
+                scheme["prefix"] = scheme["eprefix"] = prefix
+                scheme["sitedir"] = subst_vars(dist_scheme["purelib"], v)
+                scheme["includedir"] = subst_vars(dist_scheme["headers"], v)
+            else:
+                scheme["prefix"] = scheme["eprefix"] = "/usr/local"
+
+def set_scheme_win32(scheme, options, package):
+    if options.prefix is not None:
+        scheme["prefix"] = options.prefix
+        if options.exec_prefix is None:
+            scheme["eprefix"] = scheme["prefix"]
+        else:
+            scheme["eprefix"] = options.exec_prefix
+    elif options.prefix is None and options.eprefix is not None:
+        raise NotImplementedError("Customizing exec_prefix without " \
+                                  "customizing prefix is not implemented yet")
+    elif options.prefix is None and options.eprefix is None:
+        venv_prefix = virtualenv_prefix()
+        if venv_prefix is not None:
+            scheme["prefix"] = scheme["eprefix"] = venv_prefix
+        else:
+            scheme["prefix"] = op.normpath(sys.prefix)
+            scheme["eprefix"] = op.normpath(sys.exec_prefix)
+
+def set_scheme_options(scheme, options, package):
     """Set path variables given in options in scheme dictionary."""
     for k in scheme:
         if hasattr(options, k):
@@ -73,23 +143,11 @@ def set_scheme_options(scheme, options, pkg):
                 scheme[k] = val
 
     if os.name == "posix":
-        if options.prefix is None:
-            from distutils.command.install import INSTALL_SCHEMES
-            if "unix_local" in INSTALL_SCHEMES:
-                dist_scheme = INSTALL_SCHEMES["unix_local"]
-                # This madness is used to support ubuntu/debian customization
-                prefix = "/usr/local"
-                base = "/usr"
-                py_version = sys.version.split()[0]
-                py_version_short = py_version[0:3]
-                dist_name = pkg.name
-                v = {"base": base, "py_version_short": py_version_short, "dist_name": dist_name}
-
-                scheme["prefix"] = scheme["eprefix"] = prefix
-                scheme["sitedir"] = subst_vars(dist_scheme["purelib"], v)
-                scheme["includedir"] = subst_vars(dist_scheme["headers"], v)
-            else:
-                raise NotImplementedError("No unix_local in INSTALL_SCHEMES ?")
+        set_scheme_unix(scheme, options, package)
+    elif os.name == "win32":
+        set_scheme_win32(scheme, options, package)
+    else:
+        raise NotImplementedError("OS %s not supported" % os.name)
 
     # XXX: define default somewhere and stick with it
     if options.prefix is not None and options.eprefix is None:
@@ -178,9 +236,6 @@ Usage: bentomaker configure [OPTIONS]"""
             ctx.options_context.parser.print_help()
             return
 
-        venv_prefix = virtualenv_prefix()
-        if venv_prefix is not None:
-            self.scheme["prefix"] = self.scheme["eprefix"] = venv_prefix
         set_scheme_options(self.scheme, o, ctx.pkg)
         flag_vals = _get_flag_values(self.flags, o)
 
