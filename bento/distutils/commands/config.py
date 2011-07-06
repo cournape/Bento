@@ -39,7 +39,7 @@ class config(old_config):
             elif (hasattr(install, "prefix_option") and install.prefix_option and os.path.normpath(install.prefix) != '/usr/local') \
                 or 'PYTHONUSERBASE' in os.environ \
                 or 'real_prefix' in sys.__dict__:
-                    scheme["prefix"] = scheme["exec_prefix"] = self.install_base
+                    scheme["prefix"] = scheme["exec_prefix"] = install.install_base
                     scheme["sitedir"] = install.install_purelib
                     scheme["includedir"] = install.install_headers
             else:
@@ -59,6 +59,8 @@ class config(old_config):
         scheme = self._get_install_scheme()
         argv = []
         for k, v in scheme.iteritems():
+            if k == "exec_prefix":
+                k = "exec-prefix"
             argv.append("--%s=%s" % (k, v))
 
         run_cmd_in_context(ConfigureCommand, "configure", argv, ConfigureYakuContext,
