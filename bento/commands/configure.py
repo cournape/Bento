@@ -75,10 +75,10 @@ def set_scheme_unix(scheme, options, package):
     #       - else on darwin: using sys values
     if options.prefix is not None:
         scheme["prefix"] = options.prefix
-        if options.exec_prefix is None:
+        if options.eprefix is None:
             scheme["eprefix"] = scheme["prefix"]
         else:
-            scheme["eprefix"] = options.exec_prefix
+            scheme["eprefix"] = options.eprefix
     elif options.prefix is None and options.eprefix is not None:
         raise NotImplementedError("Customizing exec_prefix without " \
                                   "customizing prefix is not implemented yet")
@@ -114,10 +114,10 @@ def set_scheme_unix(scheme, options, package):
 def set_scheme_win32(scheme, options, package):
     if options.prefix is not None:
         scheme["prefix"] = options.prefix
-        if options.exec_prefix is None:
+        if options.eprefix is None:
             scheme["eprefix"] = scheme["prefix"]
         else:
-            scheme["eprefix"] = options.exec_prefix
+            scheme["eprefix"] = options.eprefix
     elif options.prefix is None and options.eprefix is not None:
         raise NotImplementedError("Customizing exec_prefix without " \
                                   "customizing prefix is not implemented yet")
