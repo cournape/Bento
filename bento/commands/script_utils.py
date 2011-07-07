@@ -140,7 +140,7 @@ def create_win32_script(name, executable, scripts_node):
     def _write(name, cnt, mode):
         target = scripts_node.make_node(name)
         target.safe_write(cnt, "w%s" % mode)
-        return nodes
+        return target
 
     nodes = []
     nodes.append(_write(name + ext, hdr + script_text, 't'))
