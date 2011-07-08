@@ -144,7 +144,7 @@ def set_scheme_options(scheme, options, package):
 
     if os.name == "posix":
         set_scheme_unix(scheme, options, package)
-    elif os.name == "win32":
+    elif os.name == "nt":
         set_scheme_win32(scheme, options, package)
     else:
         raise NotImplementedError("OS %s not supported" % os.name)
