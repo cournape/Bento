@@ -36,6 +36,13 @@ from bento.core.parser.errors \
 #    sys.path = old
 
 class TestParseError(unittest.TestCase):
+    def setUp(self):
+        self.f = NamedTemporaryFile(mode="w", delete=False)
+
+    def tearDown(self):
+        self.f.close()
+        os.remove(self.f.name)
+
     def test_simple(self):
         text = """\
 NName: foo
@@ -49,13 +56,13 @@ NName: foo
             self.assertEqual(str(e), "yacc: Syntax error at line 1, Token(WORD, 'NName')")
 
     def test_simple_filename(self):
-        f = NamedTemporaryFile(mode="w")
+        f = self.f
         f.write("NName: foo")
         f.flush()
         self.assertRaises(ParseError, lambda : PackageDescription.from_file(f.name))
 
     def test_error_string(self):
-        f = NamedTemporaryFile(mode="w")
+        f = self.f
         f.write("NName: foo")
         f.flush()
         try:
