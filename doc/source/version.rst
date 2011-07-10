@@ -12,7 +12,7 @@ Main features:
       not contain bento.info), with global --bento-info option
     - Completely revamped distutils compatibility layer: it is now a thin layer
       around bento infrastructure, so that most bento packages should be
-      pip-installable, while still remaining bento customization capabilities.
+      pip-installable, while still keeping bento customization capabilities.
     - Hook File can now be specified in recursed bento.info
 
 Internals
