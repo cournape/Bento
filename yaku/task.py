@@ -51,7 +51,7 @@ base = _TaskFakeMetaclass('__task_base', (object,), {})
 class _Task(object):
     before = []
     after = []
-    def __init__(self, outputs, inputs, func=None, deps=None):
+    def __init__(self, outputs, inputs, func=None, deps=None, env=None, env_vars=None):
         if is_string(inputs):
             self.inputs = [inputs]
         else:
@@ -67,8 +67,8 @@ class _Task(object):
         else:
             self.deps = deps
         self.cache = None
-        self.env = None
-        self.env_vars = None
+        self.env = env
+        self.env_vars = env_vars
         self.scan = None
         self.disable_output = False
         self.log = None

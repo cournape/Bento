@@ -51,14 +51,9 @@ def ccompile_task(self, node):
     target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
-    task = task_factory("cc")(inputs=[node], outputs=[target])
+    task = task_factory("cc")(inputs=[node], outputs=[target], func=ccompile, env=self.env)
     task.gen = self
     task.env_vars = cc_vars
-    #print find_deps("foo.c", ["."])
-    #task.scan = lambda : find_deps(node, ["."])
-    #task.deps.extend(task.scan())
-    task.env = self.env
-    task.func = ccompile
     return [task]
 
 def shared_c_hook(self, node):
@@ -71,11 +66,9 @@ def shared_ccompile_task(self, node):
     target = node.parent.declare(base)
     ensure_dir(target.abspath())
 
-    task = task_factory("shcc")(inputs=[node], outputs=[target])
+    task = task_factory("shcc")(inputs=[node], outputs=[target], func=shccompile, env=self.env)
     task.gen = self
     task.env_vars = cc_vars
-    task.env = self.env
-    task.func = shccompile
     return [task]
 
 def shlink_task(self, name):
@@ -86,10 +79,8 @@ def shlink_task(self, name):
     target = self.bld.bld_root.declare(tmp)
     ensure_dir(target.abspath())
 
-    task = task_factory("cc_shlink")(inputs=objects, outputs=[target])
+    task = task_factory("cc_shlink")(inputs=objects, outputs=[target], func=cshlink, env=self.env)
     task.gen = self
-    task.env = self.env
-    task.func = cshlink
     task.env_vars = cshlink_vars
     return [task]
 
@@ -101,10 +92,8 @@ def static_link_task(self, name):
     target = self.bld.bld_root.declare(tmp)
     ensure_dir(target.abspath())
 
-    task = task_factory("cc_stlink")(inputs=objects, outputs=[target])
+    task = task_factory("cc_stlink")(inputs=objects, outputs=[target], func=clink, env=self.env)
     task.gen = self
-    task.env = self.env
-    task.func = clink
     task.env_vars = clink_vars
     return [task]
 
@@ -117,10 +106,8 @@ def ccprogram_task(self, name):
     target = declare_target()
     ensure_dir(target.abspath())
 
-    task = task_factory("cc_program")(inputs=objects, outputs=[target])
+    task = task_factory("cc_program")(inputs=objects, outputs=[target], func=ccprogram, env=self.env)
     task.gen = self
-    task.env = self.env
-    task.func = ccprogram
     task.env_vars = ccprogram_vars
     return [task]
 
@@ -146,6 +133,7 @@ def apply_cpppath(task_gen):
     task_gen.env["INCPATH"] = [
             task_gen.env["CPPPATH_FMT"] % p
             for p in cpppaths]
+
 def apply_libs(task_gen):
     libs = task_gen.env["LIBS"]
     task_gen.env["APP_LIBS"] = [
