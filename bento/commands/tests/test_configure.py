@@ -45,3 +45,5 @@ class TestConfigureCommand(unittest.TestCase):
 
         conf, configure = prepare_configure(run_node, BENTO_INFO, ConfigureYakuContext)
         configure.run(conf)
+        configure.shutdown(conf)
+        conf.shutdown()
