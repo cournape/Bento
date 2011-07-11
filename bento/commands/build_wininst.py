@@ -49,11 +49,11 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
             p.print_help()
             return
 
-        n = ctx.top_node.bldnode.make_node(IPKG_PATH)
+        n = ctx.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
-        create_wininst(ipkg, src_root_dir, ctx.top_node.bldnode.abspath())
+        create_wininst(ipkg, src_root_node=ctx.build_node, build_node=ctx.build_node)
 
-def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
+def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None):
     meta = PackageMetadata.from_ipkg(ipkg)
     if egg_info is None:
         egg_info = EggInfo.from_ipkg(ipkg)
@@ -68,11 +68,11 @@ def create_wininst(ipkg, egg_info=None, src_root_dir=".", wininst=None):
     fid, arcname = tempfile.mkstemp(prefix="zip")
     zid = compat.ZipFile(arcname, "w", compat.ZIP_DEFLATED)
     try:
-        for filename, cnt in egg_info.iter_meta(ctx.build_node):
+        for filename, cnt in egg_info.iter_meta(build_node):
             zid.writestr(os.path.join(egg_info_dir, filename), cnt)
 
         ipkg.update_paths({"bindir": "SCRIPTS", "sitedir": "PURELIB", "gendatadir": "$sitedir"})
-        file_sections = ipkg.resolve_paths(src_root_dir)
+        file_sections = ipkg.resolve_paths(src_root_node.abspath())
 
         def write_content(source, target, kind):
             zid.write(source, target)
