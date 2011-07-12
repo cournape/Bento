@@ -71,7 +71,13 @@ def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None)
         for filename, cnt in egg_info.iter_meta(build_node):
             zid.writestr(os.path.join(egg_info_dir, filename), cnt)
 
-        ipkg.update_paths({"bindir": "SCRIPTS", "sitedir": "PURELIB", "gendatadir": "$sitedir"})
+        wininst_paths = compat.defaultdict(lambda: r"DATA\share\$pkgname")
+        wininst_paths.update({"bindir": "SCRIPTS", "sitedir": "PURELIB",
+                              "gendatadir": "$sitedir"})
+        d = {}
+        for k in ipkg._path_variables:
+            d[k] = wininst_paths[k]
+        ipkg.update_paths(d)
         file_sections = ipkg.resolve_paths(src_root_node.abspath())
 
         def write_content(source, target, kind):
