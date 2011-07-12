@@ -10,20 +10,17 @@ import bento
 try:
     from bento.__config_py \
         import \
-           DATADIR as DATA_DIR
+           PKGDATADIR
 except ImportError:
     # Arch-independent path
-    DATA_DIR = os.path.dirname(__file__)
-
-# Arch-dependent path
-ARCH_DATA_DIR = DATA_DIR
+    PKGDATADIR = os.path.dirname(__file__)
 
 # Windows binaries
-_CLI = os.path.join(ARCH_DATA_DIR, "commands", "cli.exe")
-WININST_DIR = os.path.join(ARCH_DATA_DIR, "commands", "wininst")
+_CLI = os.path.join(PKGDATADIR, "commands", "cli.exe")
+WININST_DIR = os.path.join(PKGDATADIR, "commands", "wininst")
 
 # Parser parameters
-_PICKLED_PARSETAB = os.path.join(DATA_DIR, "parsetab")
+_PICKLED_PARSETAB = os.path.join(PKGDATADIR, "parsetab")
 _OPTIMIZE_LEX = 0
 _DEBUG_YACC = 0
 

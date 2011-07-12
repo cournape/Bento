@@ -33,12 +33,12 @@ Flag: bundling
 
 DataFiles: windows_arch_data
     SourceDir: bento/commands
-    TargetDir: $sitedir/bento/commands/
+    TargetDir: $pkgdatadir/commands
     Files: cli.exe, wininst/*.exe
 
 DataFiles: ply_data
     SourceDir: bento
-    TargetDir: $datadir/bento
+    TargetDir: $pkgdatadir
     Files: parsetab
 
 ExtraSourceFiles:
