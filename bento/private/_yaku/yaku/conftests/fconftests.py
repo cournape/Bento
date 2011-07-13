@@ -26,6 +26,7 @@ def check_fcompiler(conf, msg=None):
         conf.end_message("yes")
     else:
         conf.end_message("no !")
+        conf.fail_configuration("")
     return ret
 
 def check_fortran_verbose_flag(conf):
@@ -55,6 +56,7 @@ def check_fortran_verbose_flag(conf):
         finally:
             conf.env["F77_LINKFLAGS"] = old
     conf.end_message("failed !")
+    conf.fail_configuration("")
     return False
 
 def check_fortran_runtime_flags(conf):
@@ -74,7 +76,7 @@ def _check_fortran_runtime_flags_win32(conf):
         raise NotImplementedError("GNU support on win32 not ready")
 
 def _check_fortran_runtime_flags(conf):
-    if not conf.env.has_key(FC_VERBOSE_FLAG):
+    if not FC_VERBOSE_FLAG in conf.env:
         raise ValueError("""\
 You need to call check_fortran_verbose_flag before getting runtime
 flags (or to define the %s variable)""" % FC_VERBOSE_FLAG)
@@ -190,8 +192,10 @@ def check_fortran_mangling(conf):
                     conf.end_message("%r %r %r" % (u, du, case))
                     return
             conf.end_message("failed !")
+            conf.fail_configuration(None)
         else:
             conf.end_message("failed !")
+            conf.fail_configuration(None)
 
     finally:
         for k in old:

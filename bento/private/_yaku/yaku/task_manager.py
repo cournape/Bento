@@ -55,16 +55,16 @@ class TaskManager(object):
         self.make_order()
 
     def set_order(self, a, b):
-        if not self.order.has_key(a):
+        if not a in self.order:
             self.order[a] = set()
         self.order[a].add(b)
 
     def make_order(self):
-        keys = self.groups.keys()
+        keys = list(self.groups.keys())
         max = len(keys)
-        for i in xrange(max):
+        for i in range(max):
             t1 = self.groups[keys[i]][0]
-            for j in xrange(i + 1, max):
+            for j in range(i + 1, max):
                 t2 = self.groups[keys[j]][0]
 
                 if t2.__class__.__name__ in t1.before:
@@ -85,7 +85,7 @@ class TaskManager(object):
         groups = self.groups
         for t in self.tasks:
             h = hash_task(t)
-            if groups.has_key(h):
+            if h in groups:
                 groups[h].append(t)
             else:
                 groups[h] = [t]

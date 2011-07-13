@@ -100,7 +100,7 @@ def compile_fun_noshell(name, line):
     buf = []
     dvars = []
     app = buf.append
-    for x in xrange(len(extr)):
+    for x in range(len(extr)):
         params[x] = params[x].strip()
         if params[x]:
             app("lst.extend(%r)" % params[x].split())

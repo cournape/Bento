@@ -12,7 +12,7 @@ from yaku.compiled_fun \
         compile_fun
 from yaku.utils \
     import \
-        ensure_dir
+        ensure_dir, get_exception
 from yaku.tools.ctasks \
     import \
         apply_libdir
@@ -73,7 +73,8 @@ class FortranBuilder(yaku.tools.Builder):
         try:
             run_tasks(conf, tasks)
             succeed = True
-        except TaskRunFailure, e:
+        except TaskRunFailure:
+            e = get_exception()
             explanation = str(e)
 
         write_log(conf, conf.log, tasks, code, succeed, explanation)

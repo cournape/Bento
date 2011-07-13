@@ -48,7 +48,7 @@ SPACE_OPTS = re.compile('^-[LRuYz]$')
 NOSPACE_OPTS = re.compile('^-[RL]')
 
 def _parse_f77link_line(line, final_flags):
-    line = line.encode("utf-8")
+    #line = line.encode("utf-8")
     lexer = shlex.shlex(line, posix = True)
     lexer.whitespace_split = True
 

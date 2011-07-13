@@ -1,9 +1,14 @@
 import os
 import sys
 
-from cPickle \
-    import \
-        load, dump, dumps
+if sys.version_info[0] < 3:
+    from cPickle \
+        import \
+            load, dump, dumps
+else:
+    from pickle \
+        import \
+            load, dump, dumps
 
 from yaku._config \
     import \
@@ -131,6 +136,7 @@ class ConfigureContext(object):
 
     def fail_configuration(self, msg):
         msg = "%s\nPlease look at the configuration log %r" % (msg, self.log.name)
+        self.log.flush()
         raise ConfigurationFailure(msg)
 
     def set_cmd_cache(self, task, cmd):
@@ -239,6 +245,7 @@ class BuildContext(object):
 
     def set_cmd_cache(self, task, stdout):
         pass
+
 def myopen(filename, mode="r"):
     if "w" in mode:
         ensure_dir(filename)
@@ -258,7 +265,7 @@ def get_cfg(src_path=None, build_path="build"):
 
     # XXX: how to reload existing environment ?
     env = Environment()
-    if not env.has_key("BLDDIR"):
+    if not "BLDDIR" in env:
         env["BLDDIR"] = build_path
     # FIXME: nothing to do here
     env["VERBOSE"] = False

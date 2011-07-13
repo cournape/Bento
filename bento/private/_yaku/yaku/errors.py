@@ -23,7 +23,8 @@ class TaskRunFailure(YakuError):
         self.explain = explain
 
     def __str__(self):
-        ret = "cmd %s failed: \n\n%s" % (" ".join(self.cmd), self.explain)
+        ret = "Command failed. Error was: \n\t%s\ncommand line was\n\t%r" % (self.explain.rstrip(),
+                                                                          " ".join(self.cmd))
         if sys.version_info < (3,):
             return ret.encode("utf-8")
         else:

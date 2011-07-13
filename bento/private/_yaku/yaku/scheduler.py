@@ -1,11 +1,17 @@
-import traceback
 import sys
-import Queue
+import traceback
+if sys.version_info[0] < 3:
+    import Queue as queue
+else:
+    import queue
 import threading
 
 from yaku.task_manager \
     import \
         run_task, order_tasks, TaskManager
+from yaku.utils \
+    import \
+        get_exception
 import yaku.errors
 
 def run_tasks(ctx, tasks=None):
@@ -46,8 +52,8 @@ class ParallelRunner(object):
         self.task_manager = task_manager
         self.ctx = ctx
 
-        self.worker_queue = Queue.Queue()
-        self.error_out = Queue.Queue()
+        self.worker_queue = queue.Queue()
+        self.error_out = queue.Queue()
         self.failure_lock = threading.Lock()
         self.stop = False
 
@@ -59,14 +65,16 @@ class ParallelRunner(object):
                 task = self.worker_queue.get()
                 try:
                     run_task(self.ctx, task)
-                except yaku.errors.TaskRunFailure, e:
+                except yaku.errors.TaskRunFailure:
+                    e = get_exception()
                     self.failure_lock.acquire()
                     self.stop = True
                     self.failure_lock.release()
                     task.error_msg = e.explain
                     task.error_cmd = e.cmd
                     self.error_out.put(task)
-                except Exception, e:
+                except Exception:
+                    e = get_exception()
                     exc_type, exc_value, tb = sys.exc_info()
                     lines = traceback.format_exception(exc_type, exc_value, tb)
                     self.failure_lock.acquire()

@@ -5,6 +5,9 @@ import os
 from yaku.compat.rename \
     import \
         rename
+from yaku.compat.py3k \
+    import \
+        get_exception
 
 def ensure_dir(path):
     dirname = os.path.dirname(path)
@@ -102,6 +105,10 @@ def find_program(program, path_list=None):
     return None
 
 if sys.version_info[0] < 3:
-    from yaku._utils_py2 import join_bytes
+    from yaku._utils_py2 import join_bytes, function_code
+    def is_string(s):
+        return isinstance(s, basestring)
 else:
-    from yaku._utils_py3 import join_bytes
+    from yaku._utils_py3 import join_bytes, function_code
+    def is_string(s):
+        return isinstance(s, str)
