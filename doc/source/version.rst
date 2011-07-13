@@ -1,7 +1,8 @@
 Version 0.0.6
 =============
 
-Released on .
+Released on 13th July 2011.
+
 Main features:
 
     - Preliminary support for .mpkg (Mac OS X native packaging)
