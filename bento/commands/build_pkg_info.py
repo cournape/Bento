@@ -5,6 +5,9 @@ from bento.core.package import \
 from bento.conv import \
         write_pkg_info
 
+from bento._config \
+    import \
+        BENTO_SCRIPT
 from bento.commands.errors \
     import \
         UsageException
@@ -27,17 +30,14 @@ Usage:   bentomaker build_pkg_info [OPTIONS]"""
         if o.help:
             p.print_help()
             return
-        if len(a) < 1:
-            raise UsageException("error: parse subcommand require an argument")
-        else:
-            filename = a[0]
+        bento_script = ctx.top_node.find_node(BENTO_SCRIPT)
 
         if not o.output:
             pkg_info = "PKG-INFO"
         else:
             pkg_info = o.output
 
-        pkg = PackageDescription.from_file(filename)
+        pkg = PackageDescription.from_file(bento_script.abspath())
 
         fid = open(pkg_info, "w")
         try:
