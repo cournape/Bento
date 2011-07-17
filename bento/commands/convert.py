@@ -282,7 +282,9 @@ def analyse_setup_py(filename, setup_args):
 
 def build_pkg(dist, live_objects, top_node):
     if dist.package_dir is not None:
-        raise ConvertionError("setup.py with package_dir arguments is not supported.")
+        for package, path in dist.package_dir.iteritems():
+            if not os.path.samefile(package.replace(".", os.sep), path):
+                raise ConvertionError("setup.py with package_dir arguments is not supported (was %r)." % dist.package_dir)
 
     pkg = distutils_to_package_description(dist)
     modules = []
