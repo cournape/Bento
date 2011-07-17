@@ -128,7 +128,9 @@ _DIST_CONV_DICT = {
     "contact_email": lambda meta: (meta.maintainer_email or
                                    meta.author_email or
                                    "UNKNOWN"),
-    "requires": lambda meta: meta.install_requires
+    "requires": lambda meta: meta.install_requires,
+    "provides": lambda meta: [],
+    "obsoletes": lambda meta: []
 }
 
 def to_distutils_meta(meta):
