@@ -184,7 +184,7 @@ def pylink_task(self, name):
     def declare_target():
         folder, base = os.path.split(name)
         tmp = folder + os.path.sep + self.env["PYEXT_FMT"] % base
-        return self.bld.src_root.declare(tmp)
+        return self.bld.path.declare(tmp)
     target = declare_target()
     ensure_dir(target.abspath())
 

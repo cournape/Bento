@@ -87,7 +87,7 @@ def try_task_maker(conf, task_maker, name, body, headers, env=None):
     task_gen = CompiledTaskGen("conf", conf, sources, name)
     task_gen.env.update(copy.deepcopy(conf.env))
     task_gen.env = _merge_env(task_gen.env, env)
-    task_gen.env.prepend("LIBDIR", os.curdir)
+    task_gen.env.prepend("LIBDIR", conf.path.declare(".").abspath())
 
     tasks = task_maker(task_gen, name)
     conf.last_task = tasks[-1]
