@@ -38,9 +38,11 @@ def with_conf_blddir(conf, name, body, func):
     old_root, new_root = create_conf_blddir(conf, name, body)
     try:
         conf.bld_root = new_root
+        conf.bld_root.ctx.bldnode = new_root
         return func()
     finally:
         conf.bld_root = old_root
+        conf.bld_root.ctx.bldnode = old_root
 
 def write_log(conf, log, tasks, code, succeed, explanation):
     for line in code.splitlines():
