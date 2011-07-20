@@ -142,7 +142,7 @@ class Node(object):
                 pass
 
             if not os.path.isdir(self.abspath()):
-                raise Errors.WafError('%s is not a directory' % self)
+                raise IOError('%s is not a directory' % self)
 
             try:
                 self.children
