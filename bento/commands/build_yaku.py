@@ -18,11 +18,9 @@ import yaku.context
 import yaku.scheduler
 import yaku.errors
 
-def build_extension(bld, extension, verbose, env=None):
+def build_extension(bld, extension, env=None):
     builder = bld.builders["pyext"]
     try:
-        if verbose:
-            builder.env["VERBOSE"] = True
         if env is None:
             env = {"PYEXT_CPPPATH": extension.include_dirs}
         else:
@@ -39,11 +37,9 @@ def build_extension(bld, extension, verbose, env=None):
               (extension.name, str(e))
         raise CommandExecutionFailure(msg)
 
-def build_compiled_library(bld, clib, verbose, env=None):
+def build_compiled_library(bld, clib, env=None):
     builder = bld.builders["ctasks"]
     try:
-        if verbose:
-            builder.env["VERBOSE"] = True
         for p in clib.include_dirs:
             builder.env["CPPPATH"].insert(0, p)
         outputs = builder.static_library(clib.name, clib.sources, env)

@@ -61,18 +61,14 @@ class BuildYakuContext(BuildContext):
             jobs = int(o.jobs)
         else:
             jobs = 1
-        if o.verbose:
-            verbose = int(o.verbose)
-        else:
-            verbose = 0
-        self.verbose = verbose
+        self.verbose = o.verbose
         self.jobs = jobs
 
         from bento.commands.build_yaku import build_extension, build_compiled_library
 
         def _builder_factory(category, builder):
             def _build(extension):
-                outputs = builder(self.yaku_context, extension, verbose)
+                outputs = builder(self.yaku_context, extension)
                 nodes = [self.build_node.make_node(o) for o in outputs]
 
                 p = self.build_node.find_node(nodes[0].parent.bldpath())
@@ -100,6 +96,7 @@ class BuildYakuContext(BuildContext):
 
         import yaku.task_manager
         bld = self.yaku_context
+        bld.env["VERBOSE"] = self.verbose
 
         reg = self.builder_registry
 
