@@ -7,6 +7,6 @@ HookFile:
     bscript
 
 Library:
-    Packages: foo
+    Packages: foo, foo.bar3
     Extension: _hello
         Sources: src/hellomodule.c

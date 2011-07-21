@@ -97,14 +97,16 @@ class NodeRepresentation(object):
         self._run_in_subpackage(pkg, _subpackage_compiled_libraries)
 
     def _update_py_packages(self, pkg):
-        def _resolve_package(package, ref_node):
-            init = os.path.join(*(package.split(".") + ["__init__.py"]))
+        def _resolve_package(package_name, ref_node):
+            init = os.path.join(*(package_name.split(".") + ["__init__.py"]))
             n = ref_node.find_node(init)
             if n is None:
-                raise IOError("init file for package %s not found !" % package)
+                raise IOError("init file for package %s not found !" % package_name)
             else:
                 p = n.parent
-                self._registry["packages"][package] = [p.find_node(f) for f in p.listdir() if f.endswith(".py")]
+                full_name = translate_name(package_name, ref_node, self.top_node)
+                self._registry["packages"][full_name] = [
+                    p.find_node(f) for f in p.listdir() if f.endswith(".py")]
         def _subpackage_resolve_package(sub_package, ref_node):
             for package in sub_package.packages:
                 _resolve_package(package, ref_node)
