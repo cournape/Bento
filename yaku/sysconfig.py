@@ -69,6 +69,7 @@ def get_configuration(compiler_type=None):
         "BASE_CFLAGS": [],
         "OPT": [],
         "SHARED": [],
+        "CFLAGS": [],
         "SHLINK": [],
         "LDFLAGS": [],
         "LIBDIR": [],
@@ -87,6 +88,7 @@ def get_configuration(compiler_type=None):
         env["LDFLAGS"] = sysconfig.get_config_var("LDFLAGS").split()
         if "-pthread" in sysconfig.get_config_var("LDFLAGS"):
             env["LDFLAGS"].insert(0, "-pthread")
+        env["CFLAGS"].extend(sysconfig.get_config_var("CFLAGS").split(" "))
         env["FRAMEWORKS"] = []
         setup_unix(env)
     elif compiler_type == "msvc":
