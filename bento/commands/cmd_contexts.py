@@ -122,7 +122,8 @@ class CmdContext(object):
             self.local_node = local_node
 
             def _get_sub_package():
-                k = local_node.find_node("bento.info").path_from(self.run_node)
+                local_bento = local_node.find_node("bento.info")
+                k = local_bento.path_from(self.run_node)
                 if k is None:
                     raise IOError("%r not found" % os.path.join(local_node.abspath(), "bento.info"))
                 else:
