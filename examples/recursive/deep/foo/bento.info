@@ -3,3 +3,5 @@ Recurse:
 
 Library:
     Packages: bar1, bar2
+    Extension: _yo
+        Sources: src/hellomodule.c

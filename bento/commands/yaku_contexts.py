@@ -1,5 +1,8 @@
 import os.path as op
 
+from bento.core.node_package \
+    import \
+        translate_name
 from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries
@@ -71,11 +74,15 @@ class BuildYakuContext(BuildContext):
             def _build(extension):
                 outputs = builder(self.yaku_context, extension, verbose)
                 nodes = [self.build_node.make_node(o) for o in outputs]
-                from_node = self.build_node
 
-                pkg_dir = op.dirname(extension.name.replace('.', op.sep))
+                p = self.build_node.find_node(nodes[0].parent.bldpath())
+                relative_name = extension.name.rsplit(".")[-1]
+                full_name = translate_name(relative_name, p, self.build_node)
+
+                from_node = p
+                pkg_dir = op.dirname(full_name.replace('.', op.sep))
                 target_dir = op.join('$sitedir', pkg_dir)
-                self.outputs_registry.register_outputs(category, extension.name, nodes,
+                self.outputs_registry.register_outputs(category, full_name, nodes,
                                                        from_node, target_dir)
             return _build
 

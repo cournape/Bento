@@ -39,18 +39,6 @@ class NodeExtension(object):
                 name = translate_name(self.name, self.ref_node, from_node)
                 return Extension(name, sources=[n.path_from(from_node) for n in self.nodes])
 
-def to_node_extension(extension, ref_node):
-    nodes = []
-    for s in extension.sources:
-        n = ref_node.find_node(s)
-        if n is None:
-            raise IOError("file %s" % s)
-        else:
-            nodes.append(n)
-    if extension.include_dirs:
-        raise NotImplementedError("include dirs translation not implemented yet")
-    return NodeExtension(extension.name, nodes, ref_node)
-
 class NodeRepresentation(object):
     """Node-based representation of a Package content."""
     def __init__(self, run_node, top_node):
@@ -64,6 +52,18 @@ class NodeRepresentation(object):
 
         self._extra_top_nodes = []
 
+    def to_node_extension(self, extension, ref_node):
+        nodes = []
+        for s in extension.sources:
+            n = ref_node.find_node(s)
+            if n is None:
+                raise IOError("file %s" % s)
+            else:
+                nodes.append(n)
+        if extension.include_dirs:
+            raise NotImplementedError("include dirs translation not implemented yet")
+        return NodeExtension(extension.name, nodes, ref_node)
+
     def _run_in_subpackage(self, pkg, func):
         for name, sub_pkg in pkg.subpackages.iteritems():
             ref_node = self.top_node.find_node(sub_pkg.rdir)
@@ -74,24 +74,26 @@ class NodeRepresentation(object):
 
     def _update_extensions(self, pkg):
         for name, extension in pkg.extensions.iteritems():
-            extension = to_node_extension(extension, self.top_node)
-            self._registry["extensions"][name] = extension
+            ref_node = self.top_node
+            extension = self.to_node_extension(extension, ref_node)
+            full_name = translate_name(name, ref_node, self.top_node)
+            self._registry["extensions"][full_name] = extension
 
         def _subpackage_extension(sub_package, ref_node):
             for name, extension in sub_package.extensions.iteritems():
-                extension = to_node_extension(extension, ref_node)
-                name = translate_name(name, ref_node, self.top_node)
-                self._registry["extensions"][name] = extension
+                extension = self.to_node_extension(extension, ref_node)
+                full_name = translate_name(name, ref_node, self.top_node)
+                self._registry["extensions"][full_name] = extension
         self._run_in_subpackage(pkg, _subpackage_extension)
 
     def _update_libraries(self, pkg):
         for name, compiled_library in pkg.compiled_libraries.iteritems():
-            compiled_library = to_node_extension(compiled_library, self.top_node)
+            compiled_library = self.to_node_extension(compiled_library, self.top_node)
             self._registry["compiled_libraries"][name] = compiled_library
 
         def _subpackage_compiled_libraries(sub_package, ref_node):
             for name, compiled_library in sub_package.compiled_libraries.iteritems():
-                compiled_library = to_node_extension(compiled_library, ref_node)
+                compiled_library = self.to_node_extension(compiled_library, ref_node)
                 name = translate_name(name, ref_node, self.top_node)
                 self._registry["compiled_libraries"][name] = compiled_library
         self._run_in_subpackage(pkg, _subpackage_compiled_libraries)

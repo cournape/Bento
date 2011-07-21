@@ -10,3 +10,5 @@ Library:
     Packages: foo, foo.bar3
     Extension: _hello
         Sources: src/hellomodule.c
+    Extension: foo.bar3._hello
+        Sources: src/hellomodule.c
