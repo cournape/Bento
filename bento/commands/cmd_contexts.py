@@ -232,6 +232,12 @@ class OutputRegistry(object):
             for name, nodes, from_node, target_dir in self.iter_category(category):
                 yield category, name, nodes, from_node, target_dir
 
+def _generic_iregistrer(category, name, nodes, from_node, target_dir):
+    source_dir = os.path.join("$_srcrootdir", from_node.bldpath())
+    files = [n.path_from(from_node) for n in nodes]
+    return InstalledSection.from_source_target_directories(
+        category, name, source_dir, target_dir, files)
+
 class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
         super(BuildContext, self).__init__(cmd_argv, options_context, pkg, run_node)
@@ -277,19 +283,22 @@ class BuildContext(_ContextWithBuildDirectory):
                       ("compiled_libraries", "compiled_libraries"))
         self.outputs_registry = OutputRegistry(categories)
 
-        def generic_iregistrer(category, name, nodes, from_node, target_dir):
-            source_dir = os.path.join("$_srcrootdir", from_node.bldpath())
-            files = [n.path_from(from_node) for n in nodes]
-            return InstalledSection.from_source_target_directories(
-                category, name, source_dir, target_dir, files)
-
         self.isection_registry = ISectionRegistry()
-        self.isection_registry.register_category("extensions", generic_iregistrer)
-        self.isection_registry.register_category("compiled_libraries", generic_iregistrer)
-        self.isection_registry.register_category("packages", generic_iregistrer)
-        self.isection_registry.register_category("modules", generic_iregistrer)
-        self.isection_registry.register_category("datafiles", generic_iregistrer)
-        self.isection_registry.register_category("scripts", generic_iregistrer)
+        self.isection_registry.register_category("extensions", _generic_iregistrer)
+        self.isection_registry.register_category("compiled_libraries", _generic_iregistrer)
+        self.isection_registry.register_category("packages", _generic_iregistrer)
+        self.isection_registry.register_category("modules", _generic_iregistrer)
+        self.isection_registry.register_category("datafiles", _generic_iregistrer)
+        self.isection_registry.register_category("scripts", _generic_iregistrer)
+
+    def register_category(self, category_name, category_type="pythonfiles"):
+        self.outputs_registry.register_category(category_name, category_type)
+        self.isection_registry.register_category(category_name, _generic_iregistrer)
+
+    def register_outputs(self, category_name, section_name, nodes, from_node=None, target_dir="$sitedir"):
+        if from_node is None:
+            from_node = self.build_node
+        self.outputs_registry.register_outputs(category_name, section_name, nodes, from_node, target_dir)
 
     def shutdown(self):
         CmdContext.shutdown(self)
