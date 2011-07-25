@@ -344,11 +344,14 @@ def _main(popts, run_node, top_node, build_node):
         else:
             run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node)
 
-def _get_package_with_user_flags(cmd_name, cmd_opts, package_options, top_node):
+def _get_package_with_user_flags(cmd_name, cmd_argv, package_options, top_node, build_node):
     from bento.commands.configure import _get_flag_values
 
-    p = OPTIONS_REGISTRY.get_options(cmd_name)
-    o, a = p.parser.parse_args(cmd_opts)
+    cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
+    configure_argv = _get_cmd_data_provider(cmd_data_db).get_argv("configure")
+
+    p = OPTIONS_REGISTRY.get_options("configure")
+    o, a = p.parser.parse_args(configure_argv)
     flag_values = _get_flag_values(package_options.flag_options.keys(), o)
 
     bento_info = top_node.find_node(BENTO_SCRIPT)
@@ -400,7 +403,7 @@ def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
         raise UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))
 
     package_options = __get_package_options(top_node)
-    pkg = _get_package_with_user_flags(cmd_name, cmd_opts, package_options, top_node)
+    pkg = _get_package_with_user_flags(cmd_name, cmd_opts, package_options, top_node, build_node)
     if is_help_only(cmd_name, cmd_opts):
         options_context = OPTIONS_REGISTRY.get_options(cmd_name)
         p = options_context.parser
