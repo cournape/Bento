@@ -9,7 +9,7 @@ from bento.compat.api import json
 from bento.core.platforms import \
     get_scheme
 from bento.core.utils import \
-    subst_vars, normalize_path, unnormalize_path, same_content, fix_kw
+    subst_vars, normalize_path, unnormalize_path, same_content, fix_kw, explode_path
 from bento.core.pkg_objects import \
     Executable
 
@@ -224,12 +224,19 @@ class InstalledPkgDescription(object):
         variables.update(self._variables)
         variables['_srcrootdir'] = src_root_dir
 
+        destdir = subst_vars("$destdir", variables)
+
         file_sections = {}
         for category in self.files:
             file_sections[category] = {}
             for name, section in self.files[category].items():
                 srcdir = subst_vars(section.source_dir, variables)
                 target = subst_vars(section.target_dir, variables)
+                if target:
+                    tail = explode_path(target)[1:]
+                else:
+                    tail = []
+                target = os.path.join(destdir, os.path.join(*tail))
 
                 file_sections[category][name] = \
                         [(os.path.join(srcdir, f), os.path.join(target, g))

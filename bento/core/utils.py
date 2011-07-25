@@ -491,3 +491,41 @@ def test_program_run(cmd, **kw):
             return False
         else:
             raise
+
+def find_root(p):
+    """Return the 'root' of the given path.
+
+    Example
+    -------
+    >>> find_root("/Users/joe")
+    '/'
+    """
+    while p != os.path.dirname(p):
+        p = os.path.dirname(p)
+    return p
+
+def explode_path(path):
+    """Split a path into its components.
+
+    If the path is absolute, the first value of the returned list will be '/',
+    or the drive letter for platforms where it is applicable.
+
+    Example
+    -------
+    >>> explode_path("/Users/joe")
+    ["/", "Users", "joe"]
+    """
+    ret = []
+    d, p = os.path.splitdrive(path)
+
+    head = p
+    while head:
+        head, tail = os.path.split(head)
+        if tail:
+            ret.append(tail)
+        else:
+            ret.append(head)
+            break
+    if d:
+        ret.append(d)
+    return ret[::-1]

@@ -1,10 +1,16 @@
+import os
 import sys
 import copy
+
+from bento.core.utils \
+    import \
+        find_root
 
 # Whenever you add a variable in _SCHEME, you should add one in _SCHEME_OPTS as
 # well, otherwise the it will not be customizable from configure.
 _SCHEME = {
     'unix': {
+        'destdir': find_root(sys.prefix),
         'prefix': sys.prefix,
         'eprefix': sys.exec_prefix,
         'bindir': '$eprefix/bin',
@@ -29,6 +35,7 @@ _SCHEME = {
         'pkgdatadir': '$datadir/$pkgname'
     },
     'win32': {
+        'destdir': find_root(sys.prefix),
         'prefix': sys.prefix,
         'eprefix': r'$prefix',
         'bindir': r'$eprefix\Scripts',
@@ -101,7 +108,9 @@ _SCHEME_OPTS = {
     'sitedir': {'opts': ['--sitedir'],
                 'help': 'python site-packages [%s]'},
     'pkgdatadir': {'opts': ['--pkgdatadir'],
-                'help': 'package-specific data dir [%s]'}
+                'help': 'package-specific data dir [%s]'},
+    'destdir': {'opts': ['--destdir'],
+                'help': 'alternate root to install to [%s]'}
 }
 
 
