@@ -108,9 +108,6 @@ def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
         for name, value in dist_env.items():
             pyenv["PYEXT_%s" % name] = value
         pyenv["PYEXT_FMT"] = "%%s%s" % dist_env["SO"]
-        pyenv["PYEXT_CFLAGS"] = pyenv["PYEXT_BASE_CFLAGS"] + \
-                pyenv["PYEXT_OPT"] + \
-                pyenv["PYEXT_SHARED"]
         pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
     else:
         old_env = ctx.env
@@ -184,7 +181,7 @@ def pylink_task(self, name):
     def declare_target():
         folder, base = os.path.split(name)
         tmp = folder + os.path.sep + self.env["PYEXT_FMT"] % base
-        return self.bld.src_root.declare(tmp)
+        return self.bld.path.declare(tmp)
     target = declare_target()
     ensure_dir(target.abspath())
 

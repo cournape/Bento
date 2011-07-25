@@ -76,7 +76,7 @@ def shlink_task(self, name):
 
     folder, base = os.path.split(name)
     tmp = folder + os.path.sep + self.env["SHAREDLIB_FMT"] % base
-    target = self.bld.bld_root.declare(tmp)
+    target = self.bld.path.declare(tmp)
     ensure_dir(target.abspath())
 
     task = task_factory("cc_shlink")(inputs=objects, outputs=[target], func=cshlink, env=self.env)
@@ -89,7 +89,7 @@ def static_link_task(self, name):
 
     folder, base = os.path.split(name)
     tmp = folder + os.path.sep + self.env["STATICLIB_FMT"] % base
-    target = self.bld.bld_root.declare(tmp)
+    target = self.bld.path.declare(tmp)
     ensure_dir(target.abspath())
 
     task = task_factory("cc_stlink")(inputs=objects, outputs=[target], func=clink, env=self.env)
@@ -102,7 +102,7 @@ def ccprogram_task(self, name):
     def declare_target():
         folder, base = os.path.split(name)
         tmp = folder + os.path.sep + self.env["PROGRAM_FMT"] % base
-        return self.bld.bld_root.declare(tmp)
+        return self.bld.path.declare(tmp)
     target = declare_target()
     ensure_dir(target.abspath())
 
@@ -325,17 +325,20 @@ class CCBuilder(yaku.tools.Builder):
         if self.try_compile("foo", "int foo() {return 0;}"):
             ctx.end_message("yes")
         else:
-            raise ValueError()
+            ctx.end_message("no")
+            ctx.fail_configuration("")
         ctx.start_message("Checking whether %s can build programs" % cc_type)
         if self.try_program("foo", "int main() {return 0;}"):
             ctx.end_message("yes")
         else:
-            raise ValueError()
+            ctx.end_message("no")
+            ctx.fail_configuration("")
         ctx.start_message("Checking whether %s can build static libraries" % cc_type)
         if self.try_static_library("foo", "int foo() {return 0;}"):
             ctx.end_message("yes")
         else:
-            raise ValueError()
+            ctx.end_message("no")
+            ctx.fail_configuration("")
         ctx.start_message("Checking whether %s can link static libraries to exe" % cc_type)
         def f():
             assert self.try_static_library_no_blddir("foo", "int foo() { return 0;}")
@@ -343,7 +346,8 @@ class CCBuilder(yaku.tools.Builder):
                                           env={"LIBS": ["foo"]}):
                 ctx.end_message("yes")
             else:
-                raise ValueError()
+                ctx.end_message("no")
+                ctx.fail_configuration("")
         with_conf_blddir(self.ctx, "exelib", "checking static link", f)
 
         shared_code = """\

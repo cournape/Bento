@@ -22,6 +22,7 @@ old_PYTHONPATH=$PYTHONPATH
 PYTHONPATH=$PWD:$PYTHONPATH
 
 PYTHON2=python2.6
+PYTHON3=python3.2
 
 for i in $tests; do
 	echo "======== TESTING $i ============="
@@ -35,14 +36,14 @@ for i in $tests; do
 	ntests=`expr $ntests + 1`;
 done
 
-python3.2 setup.py build
+$PYTHON3 setup.py build
 export PYTHONPATH=$PWD/build/py3k
 for i in $tests; do
 	echo "======== TESTING $i ============="
 	f=`basename $i`;
 	d=`dirname $i`;
 	rm -rf $d/build;
-	(cd $d &&  python3.1 $f);
+	(cd $d &&  $PYTHON3 $f);
 	if test $? -ne 0; then
 		nerrors3=`expr $nerrors3 + 1`;
 	fi
