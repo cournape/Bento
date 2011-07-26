@@ -1,3 +1,12 @@
+Version 0.0.7
+=============
+
+Released on .
+
+Main features:
+
+    - add support for DESTDIR-like feature to ease packaging
+
 Version 0.0.6
 =============
 
