@@ -2,7 +2,7 @@ import os
 
 from bento.core.utils \
     import \
-        resolve_glob, normalize_path
+        resolve_glob
 from bento.core.pkg_objects \
     import \
         Extension, CompiledLibrary
