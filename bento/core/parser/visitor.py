@@ -33,6 +33,7 @@ class Dispatcher(object):
             "empty": self.empty,
             "stmt_list": self.stmt_list,
             "description": self.description,
+            "description_from_file": self.description_from_file,
             "summary": self.summary,
             "author": self.author,
             "maintainer": self.author,
@@ -93,7 +94,7 @@ class Dispatcher(object):
                           "download_url", "author", "author_email",
                           "maintainer", "maintainer_email", "license",
                           "platforms", "classifiers", "hook_files",
-                          "config_py"]:
+                          "config_py", "description_from_file"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
                 if self._d.has_key("path_options"):
@@ -144,6 +145,9 @@ class Dispatcher(object):
             self._d["hook_files"] = node.value
 
     def config_py(self, node):
+        return node
+
+    def description_from_file(self, node):
         return node
 
     def description(self, node):

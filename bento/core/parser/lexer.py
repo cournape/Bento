@@ -24,7 +24,7 @@ tokens = ('COLON', 'DOUBLE_COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP',
           'BUILD_REQUIRES_ID', 'INSTALL_REQUIRES_ID',
           'DOWNLOAD_URL_ID', 'HOOK_FILE_ID', 'CONFIG_PY_ID', 'NOT_OP',
-          'SUBENTO_ID')
+          'SUBENTO_ID', 'DESCRIPTION_FROM_FILE_ID')
 
 ESCAPING_CHAR = dict([(t, False) for t in tokens])
 ESCAPING_CHAR["BACKSLASH"] = True
@@ -67,6 +67,7 @@ META_FIELDS_ID = {
     "HookFile": "HOOK_FILE_ID",
     "ConfigPy": "CONFIG_PY_ID",
     "Recurse": "SUBENTO_ID",
+    "DescriptionFromFile": "DESCRIPTION_FROM_FILE_ID",
 }
 
 CONDITIONAL_ID = {
@@ -86,6 +87,7 @@ FIELD_TYPE = {
     "VERSION_ID": "WORDS",
     "SUMMARY_ID": "LINE",
     "DESCRIPTION_ID": "MULTILINE",
+    "DESCRIPTION_FROM_FILE_ID": "WORD",
     "LIBRARY_ID": "WORD",
     "PACKAGES_ID": "WORDS",
     "MODULES_ID": "WORDS",
@@ -195,7 +197,7 @@ class MyLexer(object):
         if self._stage_level >= 4:
             token_stream = indent_generator(token_stream)
         if self._stage_level >= 5:
-            token_stream = post_process(token_stream)
+            token_stream = post_process(token_stream, self.lexer.lexdata)
         self.token_stream = token_stream
 
     def token(self, *a, **kw):
@@ -451,7 +453,7 @@ def words_tokenizer(token, state, stream, internal):
         tok = None
     return queue, tok, state
 
-def scan_field_id(token, state, stream, internal):
+def scan_field_id(token, state, stream, lexdata):
     # When a candidate is found, do as follows:
     # - save the candidate
     # - eat any whitespace
@@ -469,7 +471,7 @@ def scan_field_id(token, state, stream, internal):
     try:
         field_type = FIELD_TYPE[candidate.type]
     except KeyError:
-        data = candidate.lexer.lexdata.splitlines()
+        data = lexdata.splitlines()
         msg = ["Error while tokenizing %r (missing colon ?)" %  candidate.value]
         msg += ["    Line %d -> %r" % (candidate.lineno, data[candidate.lineno-1])]
         raise SyntaxError("\n".join(msg))
@@ -563,7 +565,7 @@ def find_next(token, stream, internal):
 
     return queue, tok
 
-def post_process(stream):
+def post_process(stream, lexdata):
     # XXX: this is awfully complicated...
     class _Internal(object):
         def __init__(self):
@@ -583,7 +585,7 @@ def post_process(stream):
                 for q in queue:
                     yield q
             elif i.value in META_FIELDS_ID.keys():
-                queue, i, state = scan_field_id(i, state, stream, None)
+                queue, i, state = scan_field_id(i, state, stream, lexdata)
                 for q in queue:
                     yield q
             else:

@@ -102,6 +102,7 @@ def p_meta_stmt(p):
     """meta_stmt : meta_name_stmt
                  | meta_summary_stmt
                  | meta_description_stmt
+                 | meta_description_from_file_stmt
                  | meta_version_stmt
                  | meta_url_stmt
                  | meta_download_url_stmt
@@ -162,6 +163,10 @@ def p_meta_license_stmt(p):
     """meta_license_stmt : LICENSE_ID COLON anyword
     """
     p[0] = Node("license", value=p[3].value)
+
+def p_meta_description_from_file_stmt(p):
+    """meta_description_from_file_stmt : DESCRIPTION_FROM_FILE_ID COLON anyword"""
+    p[0] = Node("description_from_file", value=p[3].value)
 
 def p_meta_platforms_stmt(p):
     """meta_platforms_stmt : PLATFORMS_ID COLON comma_list

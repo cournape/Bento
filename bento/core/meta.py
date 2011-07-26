@@ -1,13 +1,17 @@
+from bento.core.errors \
+    import \
+        InvalidPackage
+
 _METADATA_FIELDS = ["name", "version", "summary", "url", "author",
         "author_email", "maintainer", "maintainer_email", "license", "description",
         "platforms", "install_requires", "build_requires", "download_url",
-        "classifiers", "top_levels"]
+        "classifiers", "top_levels", "description_from_file"]
 
 def _set_metadata(obj, name, version=None, summary=None, url=None,
         author=None, author_email=None, maintainer=None,
         maintainer_email=None, license=None, description=None,
         platforms=None, install_requires=None, build_requires=None,
-        download_url=None, classifiers=None, top_levels=None):
+        download_url=None, classifiers=None, top_levels=None, description_from_file=None):
     obj.name = name
 
     obj.version = version
@@ -21,6 +25,7 @@ def _set_metadata(obj, name, version=None, summary=None, url=None,
     obj.maintainer_email = maintainer_email
     obj.license = license
     obj.description = description
+    obj.description_from_file = description_from_file
 
     if not install_requires:
         obj.install_requires = []
@@ -66,7 +71,7 @@ class PackageMetadata(object):
             author=None, author_email=None, maintainer=None,
             maintainer_email=None, license=None, description=None,
             platforms=None, install_requires=None, build_requires=None,
-            download_url=None, classifiers=None, top_levels=None):
+            download_url=None, classifiers=None, top_levels=None, description_from_file=None):
         # Package metadata
         _args = locals()
         kw = dict([(k, _args[k]) for k in _METADATA_FIELDS if k in _args])

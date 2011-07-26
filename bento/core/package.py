@@ -145,6 +145,21 @@ def raw_to_pkg_kw(raw_dict, user_flags, filename):
     # source files at the PackageDescription level ?
     kw["extra_source_files"].extend(files)
 
+    if not "name" in kw:
+        raise ValueError("class %s constructor requires a name" % (cls,))
+    if "description_from_file" in kw:
+        if filename:
+            description_file = os.path.join(os.path.dirname(filename), kw["description_from_file"])
+        else:
+            description_file = kw["description_from_file"]
+        if not os.path.exists(description_file):
+            raise IOError("Description file %r not found" % (description_file,))
+        else:
+            f = open(description_file)
+            try:
+                kw["description"] = f.read()
+            finally:
+                f.close()
     return kw, files
 
 class PackageDescription:
@@ -182,7 +197,7 @@ class PackageDescription:
             download_url=None, extra_source_files=None, data_files=None,
             classifiers=None, provides=None, obsoletes=None, executables=None,
             hook_files=None, config_py=None, compiled_libraries=None,
-            subpackages=None):
+            subpackages=None, description_from_file=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
