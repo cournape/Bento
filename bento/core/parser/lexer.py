@@ -171,24 +171,30 @@ class _Dummy(object):
 EOF = _Dummy()
 
 class MyLexer(object):
-    def __init__(self, stage=1, module=None, object=None, debug=0, optimize=0,
+    _stages = dict(zip(
+        ('raw', 'escape_detected', 'escape_merged', 'indent_generated', 'post_processed'),
+        range(1, 6)))
+    def __init__(self, stage="raw", module=None, object=None, debug=0, optimize=0,
                  lextab='lextab', reflags=0, nowarn=0, outputdir='',
                  debuglog=None, errorlog=None):
         self.lexer = lex(module, object, debug, optimize, lextab,
                          reflags, nowarn, outputdir, debuglog,
                          errorlog)
-        self._stage = stage
+        if not stage in self._stages:
+            raise ValueError("Unrecognized stage %r" % (stage,))
+        self.stage = stage
+        self._stage_level = self._stages[stage]
 
     def input(self, *a, **kw):
         self.lexer.input(*a, **kw)
         token_stream = iter(self.lexer.token, None)
-        if self._stage >= 2:
+        if self._stage_level >= 2:
             token_stream = detect_escaped(token_stream)
-        if self._stage >= 3:
+        if self._stage_level >= 3:
             token_stream = merge_escaped(token_stream)
-        if self._stage >= 4:
+        if self._stage_level >= 4:
             token_stream = indent_generator(token_stream)
-        if self._stage >= 5:
+        if self._stage_level >= 5:
             token_stream = post_process(token_stream)
         self.token_stream = token_stream
 

@@ -24,7 +24,7 @@ tokens = _tokens
 class Parser(object):
     def __init__(self, lexer=None):
         if lexer is None:
-            self.lexer = MyLexer(stage=5, optimize=_OPTIMIZE_LEX)
+            self.lexer = MyLexer(stage="post_processed", optimize=_OPTIMIZE_LEX)
         else:
             self.lexer = lexer
 
@@ -41,7 +41,7 @@ class Parser(object):
 
     def reset(self):
         # XXX: implements reset for lexer
-        self.lexer = MyLexer(stage=5, optimize=_OPTIMIZE_LEX)
+        self.lexer = MyLexer(stage="post_processed", optimize=_OPTIMIZE_LEX)
         # XXX: ply parser.reset method expects those attributes to
         # exist
         self.parser.statestack = []

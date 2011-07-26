@@ -54,7 +54,7 @@ class TestLexer(TestCase):
 # Test tokenizer stage before indentation generation
 class TestLexerStageOne(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage=1)
+        self.lexer = MyLexer(stage="raw")
 
     def test_single_line(self):
         data = """\
@@ -81,7 +81,7 @@ Library:
 
 class TestLexerStageTwo(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage=2)
+        self.lexer = MyLexer(stage="escape_detected")
 
     def test_simple(self):
         data = "yoyo"
@@ -120,7 +120,7 @@ class TestLexerStageTwo(TestLexer):
 
 class TestLexerStageThree(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage=3)
+        self.lexer = MyLexer(stage="escape_merged")
 
     def test_simple(self):
         data = "yoyo"
@@ -166,7 +166,7 @@ class TestLexerStageThree(TestLexer):
 
 class TestLexerStageFour(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage=4)
+        self.lexer = MyLexer(stage="indent_generated")
 
     def test_single_line(self):
         data = """\
@@ -357,7 +357,7 @@ WORD COLON WS WORD NEWLINE
 
 class TestLexerStageFive(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage=5)
+        self.lexer = MyLexer(stage='post_processed')
 
     def test_single_line(self):
         data = """\
@@ -740,7 +740,7 @@ DEDENT
 
 class TestNewLines(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage=5)
+        self.lexer = MyLexer(stage="post_processed")
 
     # Test we throw away NEWLINES except in literals
     def test_lastnewline(self):
