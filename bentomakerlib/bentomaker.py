@@ -11,11 +11,14 @@ from bento.compat.api \
     import \
         relpath
 
-from bento.core.utils import \
+from bento.core.utils \
+    import \
         pprint
-from bento.core.parser.api import \
+from bento.core.parser.api \
+    import \
         ParseError
-from bento._config import \
+from bento._config \
+    import \
         BENTO_SCRIPT, DB_FILE, _SUB_BUILD_DIR
 import bento.core.node
 
