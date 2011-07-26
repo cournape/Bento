@@ -9,7 +9,7 @@ from nose.tools import \
     assert_equal
 
 from bento.core.utils import \
-    validate_glob_pattern, expand_glob, subst_vars, to_camel_case
+    validate_glob_pattern, expand_glob, subst_vars, to_camel_case, explode_path
 
 class TestParseGlob(unittest.TestCase):
     def test_invalid(self):
@@ -65,3 +65,19 @@ def test_to_camel_case():
          ("_fubar_", "_Fubar_")]
     for lower, camel in d:
         assert_equal(to_camel_case(lower), camel)
+
+class TestExplodePath(unittest.TestCase):
+    def test_simple(self):
+        path = "/home/joe"
+        assert_equal(explode_path(path), ["/", "home", "joe"])
+
+        path = "home/joe"
+        assert_equal(explode_path(path), ["home", "joe"])
+
+    def test_ends_with_sep(self):
+        path = "/home/joe/"
+        assert_equal(explode_path(path), ["/", "home", "joe"])
+
+    def test_empty(self):
+        path = ""
+        assert_equal(explode_path(path), [])

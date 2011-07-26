@@ -518,14 +518,14 @@ def explode_path(path):
     ret = []
     d, p = os.path.splitdrive(path)
 
-    head = p
-    while head:
-        head, tail = os.path.split(head)
-        if tail:
-            ret.append(tail)
-        else:
+    while p:
+        head, tail = os.path.split(p)
+        if head == p:
             ret.append(head)
             break
+        if tail:
+            ret.append(tail)
+        p = head
     if d:
         ret.append(d)
     return ret[::-1]
