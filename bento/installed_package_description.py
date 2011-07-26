@@ -234,8 +234,10 @@ class InstalledPkgDescription(object):
                 target = subst_vars(section.target_dir, variables)
                 if target:
                     tail = explode_path(target)[1:]
+                    if not tail:
+                        raise ValueError("Invalid target directory in section %r (not absolute: %r)" % (name, section.target_dir))
                 else:
-                    tail = []
+                    raise ValueError("Invalid target directory in section %r: %r" % (name, section.target_dir))
                 target = os.path.join(destdir, os.path.join(*tail))
 
                 file_sections[category][name] = \

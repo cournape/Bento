@@ -12,6 +12,9 @@ import nose.tools
 from bento.core.package \
     import \
         PackageDescription
+from bento.core.utils \
+    import \
+        subst_vars
 from bento.installed_package_description \
     import \
         InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg, iter_files
@@ -44,7 +47,7 @@ class TestInstalledSection(unittest.TestCase):
 def create_simple_ipkg_args():
     files = ["scripts/foo.py", "scripts/bar.py"]
     section = InstalledSection.from_source_target_directories("pythonfiles",
-                    "section1", "source", "target", files)
+                    "section1", "source", "$prefix/target", files)
     sections = {"pythonfiles": {"section1": section}}
 
     meta = ipkg_meta_from_pkg(SPHINX_META_PKG)
@@ -80,6 +83,7 @@ class TestIterFiles(unittest.TestCase):
         ipkg = InstalledPkgDescription(self.sections, self.meta, {})
         sections = ipkg.resolve_paths()
         res = sorted([(kind, source, target) for kind, source, target in iter_files(sections)])
-        ref = [("pythonfiles", os.path.join("source", "scripts", "bar.py"), os.path.join("target", "scripts", "bar.py")),
-               ("pythonfiles", os.path.join("source", "scripts", "foo.py"), os.path.join("target", "scripts", "foo.py"))]
+        target_dir = ipkg.resolve_path(os.path.join("$prefix", "target"))
+        ref = [("pythonfiles", os.path.join("source", "scripts", "bar.py"), os.path.join(target_dir, "scripts", "bar.py")),
+               ("pythonfiles", os.path.join("source", "scripts", "foo.py"), os.path.join(target_dir, "scripts", "foo.py"))]
         self.assertEqual(res, ref)
