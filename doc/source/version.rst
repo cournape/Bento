@@ -7,6 +7,11 @@ Main features:
 
     - add support for DESTDIR-like feature to ease packaging
 
+Fixes:
+
+    - fix handling of customized flags when getting cached package information
+    - fix classifier handling
+
 Version 0.0.6
 =============
 
