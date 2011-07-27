@@ -4,7 +4,7 @@ from ply.lex \
 
 from bento.core.parser.utils \
     import \
-        Peeker
+        Peeker, BackwardGenerator
 __all__ = ["MyLexer"]
 
 #==============
@@ -138,7 +138,7 @@ t_SHARP = r"\#"
 
 def t_WORD(t):
     # Match everything but whitespace and special characters
-    r'([^:^,^\s^\\^(^).]|[.])+'
+    r'([^#^:^,^\s^\\^(^).]|[.])+'
     return t
 
 # Whitespace
@@ -174,8 +174,9 @@ EOF = _Dummy()
 
 class MyLexer(object):
     _stages = dict(zip(
-        ('raw', 'escape_detected', 'escape_merged', 'indent_generated', 'post_processed'),
-        range(1, 6)))
+        ('raw', 'escape_detected', 'escape_merged', 'indent_generated',
+         'comment_removed', 'post_processed'),
+        range(1, 7)))
     def __init__(self, stage="raw", module=None, object=None, debug=0, optimize=0,
                  lextab='lextab', reflags=0, nowarn=0, outputdir='',
                  debuglog=None, errorlog=None):
@@ -197,6 +198,8 @@ class MyLexer(object):
         if self._stage_level >= 4:
             token_stream = indent_generator(token_stream)
         if self._stage_level >= 5:
+            token_stream = remove_comments(token_stream)
+        if self._stage_level >= 6:
             token_stream = post_process(token_stream, self.lexer.lexdata)
         self.token_stream = token_stream
 
@@ -258,6 +261,28 @@ def merge_escaped(stream):
                 t.type = "WORD"
                 yield t
             return
+
+def skip_until_eol(stream, t):
+    try:
+        prev = stream.previous()
+    except ValueError:
+        prev = None
+    while t.type != "NEWLINE":
+        t = stream.next()
+    # FIXME: ideally, we would like to remove EOL for comments which span the
+    # full line, but we need access to the token before the comment delimiter
+    # to do so, as we don't want to remove EOL for inline commeng (e.g. 'foo #
+    # comment')
+    if prev and t.type == "NEWLINE" and prev.type in ('NEWLINE', 'INDENT'):
+        t = stream.next()
+    return t
+
+def remove_comments(stream):
+    stream = BackwardGenerator(stream)
+    for t in stream:
+        if t.type == "SHARP":
+            t = skip_until_eol(stream, t)
+        yield t
 
 def indent_generator(toks):
     """Post process the given stream of tokens to generate INDENT/DEDENT

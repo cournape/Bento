@@ -793,3 +793,34 @@ DEDENT
 
         ref_str = "NAME_ID COLON WORD"
         self._test(data, split(ref_str))
+
+class TestComment(TestLexer):
+    def setUp(self):
+        self.lexer = MyLexer(stage="post_processed")
+
+    def test_simple(self):
+        data = """\
+# Simple comment
+Name: foo
+"""
+
+        ref_str = "NAME_ID COLON WORD"
+        self._test(data, split(ref_str))
+
+    def test_simple_inline(self):
+        data = """\
+Name: foo # inline comment
+"""
+
+        ref_str = "NAME_ID COLON WORD"
+        self._test(data, split(ref_str))
+
+    def test_simple_inline(self):
+        data = """\
+ExtraSourceFiles:
+    # indented comment
+    foo
+"""
+
+        ref_str = "EXTRA_SOURCE_FILES_ID COLON INDENT WORD DEDENT"
+        self._test(data, split(ref_str))

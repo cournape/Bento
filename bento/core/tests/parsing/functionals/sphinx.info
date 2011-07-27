@@ -30,7 +30,7 @@ Description:
       and inclusion of appropriately formatted docstrings.
     
     A development egg can be found `here
-    <http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_.
+    <http://bitbucket.org/birkenfeld/sphinx/get/tip.gz\#egg=Sphinx-dev>`_.
 Author: Georg Brandl
 AuthorEmail: georg@python.org
 Maintainer: Georg Brandl

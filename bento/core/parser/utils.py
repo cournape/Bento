@@ -60,6 +60,28 @@ class Peeker(object):
     def __iter__(self):
         return self
 
+class BackwardGenerator(object):
+    def __init__(self, gen):
+        self._gen = gen
+        self._cache = []
+        self._previous = None
+
+    def next(self):
+        c = self._gen.next()
+        if len(self._cache) == 2:
+            old, new = self._cache
+            self._cache = [new]
+        self._cache.append(c)
+        return c
+
+    def previous(self):
+        if len(self._cache) < 2:
+            raise ValueError()
+        return self._cache[0]
+
+    def __iter__(self):
+        return self
+
 def print_tokens_simple(lexer):
     while True:
         tok = lexer.token()
