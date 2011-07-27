@@ -6,6 +6,9 @@ Released on .
 Main features:
 
     - add support for DESTDIR-like feature to ease packaging
+    - add suport for DescriptionFromFile field to get metadata from secondary
+      file
+    - add support for comment in bento.info
 
 Fixes:
 
