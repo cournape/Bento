@@ -178,38 +178,54 @@ def p_meta_config_py_stmt(p):
     """
     p[0] = Node("config_py", value=p[3].value)
 
-def p_meta_classifiers_stmt_single_line(p):
-    """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifier"""
-    p[0] = Node("classifiers", children=[p[3]])
-
-def p_meta_classifiers_stmt_indent(p):
-    """meta_classifiers_stmt : CLASSIFIERS_ID COLON NEWLINE INDENT \
-                               classifiers_list DEDENT
-    """
-    p[0] = Node("classifiers", children=[p[5]])
-
 def p_meta_classifiers_stmt(p):
-    """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifier NEWLINE \
-                               INDENT classifiers_list DEDENT
-    """
-    p[0] = Node("classifiers", children=[p[3], p[6]])
+    """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifiers_list"""
+    p[0] = Node("classifiers", value=p[3].value)
 
 def p_classifiers_list(p):
-    """classifiers_list : classifier NEWLINE classifiers_list
+    """classifiers_list : indented_classifiers_list
     """
-    p[0] = p[3]
-    p[0].children.insert(0, p[1])
+    p[0] = Node("classifiers", value=p[1].value)
 
 def p_classifiers_list_term(p):
-    """classifiers_list : classifier
+    """classifiers_list : classifiers
     """
-    p[0] = Node("classifiers_list", children=[p[1]])
+    p[0] = Node("classifiers", value=p[1].value)
+
+def p_indented_comma_list1(p):
+    """indented_classifiers_list : classifiers COMMA INDENT classifiers DEDENT
+    """
+    p[0] = p[1]
+    p[0].value.extend(p[4].value)
+
+def p_indented_comma_list2(p):
+    """indented_classifiers_list : INDENT classifiers DEDENT
+    """
+    p[0] = p[2]
+
+def p_classifiers(p):
+    """classifiers : classifiers COMMA classifier"""
+    p[0] = p[1]
+    p[0].value.append(p[3].value)
+
+def p_classifiers_term(p):
+    """classifiers : classifier"""
+    p[0] = Node("classifiers", value=[p[1].value])
 
 def p_classifier(p):
-    """classifier : literal_line"""
-    p[0] = p[1]
-    p[0].value = "".join(p[0].value)
-    p[0].type = "classifier"
+    """classifier : classifier classifier_atom"""
+    p[0] = Node("classifier", value=(p[1].value + p[2].value))
+
+def p_classifier_term(p):
+    """classifier : classifier_atom"""
+    p[0] = Node("classifier", value=p[1].value)
+
+def p_classifier_atom(p):
+    """classifier_atom : WORD
+                       | WS
+                       | DOUBLE_COLON
+    """
+    p[0] = Node("classifier", value=p[1])
 
 def p_dummy(p):
     """dummy : AND BACKSLASH"""
@@ -573,17 +589,6 @@ def p_comma_words_term(p):
     """
     p[0] = Node("comma_words", value=[p[1].value])
 
-# We produce a flat list here to speed things up (should do the same for
-# description field)
-def p_literal_line(p):
-    """literal_line : literal literal_line"""
-    p[0] = p[2]
-    p[2].value.insert(0, p[1].value)
-
-def p_literal_line_term(p):
-    """literal_line : literal"""
-    p[0] = Node("literal_line", value=[p[1].value])
-
 def p_single_line(p):
     """single_line_value : WS single_line"""
     p[0] = p[2]
@@ -681,6 +686,7 @@ def p_anyword_comma_list_term(p):
 def p_anytoken_no_comma(p):
     """anytoken_no_comma : WORD
                          | COLON
+                         | DOUBLE_COLON
                          | LPAR
                          | RPAR
                          | LESS

@@ -57,7 +57,7 @@ Classifiers:
     Programming Language :: Python,
     Topic :: Internet :: WWW/HTTP :: Dynamic Content,
     Topic :: Software Development :: Libraries :: Python Modules,
-    Topic :: Text Processing :: Markup :: HTML,
+    Topic :: Text Processing :: Markup :: HTML
 
 Path: gendatadir
     Description: Directory for datafiles obtained from distutils conversion

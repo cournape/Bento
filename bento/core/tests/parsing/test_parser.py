@@ -123,8 +123,19 @@ Node(type='stmt_list'):
         data = "Classifiers: yo"
         expected = """\
 Node(type='stmt_list'):
-    Node(type='classifiers'):
-        Node(type='classifier', value=' yo')\
+    Node(type='classifiers', value=['yo'])\
+"""
+
+        self._test(data, expected)
+
+    def test_meta_classifiers_multi_lines(self):
+        data = """\
+Classifiers: yo,
+    yeah
+"""
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='classifiers', value=['yo', 'yeah'])\
 """
 
         self._test(data, expected)
@@ -132,30 +143,24 @@ Node(type='stmt_list'):
     def test_meta_classifiers_indent_only(self):
         data = """\
 Classifiers:
-    yo1
+    yo1,
     yo2\
 """
         expected = """\
 Node(type='stmt_list'):
-    Node(type='classifiers'):
-        Node(type='classifiers_list'):
-            Node(type='classifier', value='yo1')
-            Node(type='classifier', value='yo2')\
+    Node(type='classifiers', value=['yo1', 'yo2'])\
 """
 
         self._test(data, expected)
 
     def test_meta_classifiers_full(self):
         data = """\
-Classifiers: yo1
+Classifiers: yo1,
     yo2\
 """
         expected = """\
 Node(type='stmt_list'):
-    Node(type='classifiers'):
-        Node(type='classifier', value=' yo1')
-        Node(type='classifiers_list'):
-            Node(type='classifier', value='yo2')\
+    Node(type='classifiers', value=['yo1', 'yo2'])\
 """
 
         self._test(data, expected)

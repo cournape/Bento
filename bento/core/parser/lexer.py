@@ -10,7 +10,7 @@ __all__ = ["MyLexer"]
 #==============
 #   Lexer
 #==============
-tokens = ('COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
+tokens = ('COLON', 'DOUBLE_COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'BACKSLASH', 'LPAR', 'RPAR', 'LESS',
           'GREATER', 'EQUAL', 'SHARP', 'NAME_ID',
           'SUMMARY_ID', 'DESCRIPTION_ID', 'INDENT', 'DEDENT', 'LIBRARY_ID',
@@ -105,7 +105,7 @@ FIELD_TYPE = {
     "MAINTAINER_EMAIL_ID": "WORDS",
     "LICENSE_ID": "WORDS",
     "PLATFORMS_ID": "WORDS",
-    "CLASSIFIERS_ID": "MULTILINE",
+    "CLASSIFIERS_ID": "COMMA_LIST",
     "PATH_ID": "WORD",
     "FLAG_ID": "WORD",
     "DEFAULT_ID": "WORDS",
@@ -122,6 +122,7 @@ FIELD_TYPE = {
 
 # Special characters: everytime one is added/changed, update t_WORD
 # regex if necessary
+t_DOUBLE_COLON = r'::'
 t_COLON = r':'
 t_COMMA = r','
 t_SLASH = r"\/"
@@ -162,6 +163,10 @@ class _Dummy(object):
     def __init__(self):
         self.type = "EOF"
         self.escaped = False
+        self.value = None
+
+    def __repr__(self):
+        return "DummyToken(EOF)"
 
 EOF = _Dummy()
 
@@ -340,7 +345,8 @@ _FIELD_TYPE_TO_STATE = {
     "WORD": "SCANNING_WORD_FIELD",
     "WORDS": "SCANNING_WORDS_FIELD",
     "LINE": "SCANNING_SINGLELINE_FIELD",
-    "MULTILINE": "SCANNING_MULTILINE_FIELD"
+    "MULTILINE": "SCANNING_MULTILINE_FIELD",
+    "COMMA_LIST": "SCANNING_COMMA_LIST_FIELD"
 }
 
 def singleline_tokenizer(token, state, stream):
@@ -493,6 +499,47 @@ def tokenize_conditional(stream, token):
 
     return ret, stream.next()
 
+def comma_list_tokenizer(token, state, stream, internal):
+    queue = []
+    state = "SCANNING_FIELD_ID"
+
+    def _filter_ws_before_comma(lst):
+        ret = []
+        for i, item in enumerate(lst):
+            if item.type == "WS":
+                if i < len(lst) and lst[i+1].type == "COMMA":
+                    pass
+                elif i > 0 and lst[i-1].type == "COMMA":
+                    pass
+                else:
+                    ret.append(item)
+            else:
+                ret.append(item)
+        return ret
+
+    try:
+        if token.type != "NEWLINE":
+            token, state = _skip_ws(token, stream, state, internal)
+        while token.type not in ("NEWLINE",):
+            queue.append(token)
+            token = stream.next()
+        # Eat newline
+        token = stream.next()
+        if token.type == "INDENT":
+            internal.stack.append(token)
+            while token.type != "DEDENT":
+                if token.type != "NEWLINE":
+                    queue.append(token)
+                token = stream.next()
+            if token.type == "DEDENT":
+                internal.stack.pop(0)
+            queue.append(token)
+        return _filter_ws_before_comma(queue), stream.next(), state
+    except StopIteration:
+        return _filter_ws_before_comma(queue), None, "EOF"
+
+    #return multiline_tokenizer(token, state, stream, internal)
+
 def find_next(token, stream, internal):
     queue = []
 
@@ -551,6 +598,10 @@ def post_process(stream):
                 yield t
         elif state == "SCANNING_WORDS_FIELD":
             queue, i, state = words_tokenizer(i, state, stream, internal)
+            for q in queue:
+                yield q
+        elif state == "SCANNING_COMMA_LIST_FIELD":
+            queue, i, state = comma_list_tokenizer(i, state, stream, internal)
             for q in queue:
                 yield q
         else:

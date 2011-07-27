@@ -46,7 +46,7 @@ Classifiers:
     Operating System :: OS Independent,
     Programming Language :: Python,
     Topic :: Documentation,
-    Topic :: Utilities,
+    Topic :: Utilities
 
 Path: gendatadir
     Description: Directory for dataFiles obtained from distutils conversion

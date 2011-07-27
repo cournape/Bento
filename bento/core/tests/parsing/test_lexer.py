@@ -726,7 +726,7 @@ Path: path
 """
 
         ref_str = """\
-CLASSIFIERS_ID COLON NEWLINE
+CLASSIFIERS_ID COLON
 INDENT
 WORD
 DEDENT
