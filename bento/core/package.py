@@ -145,8 +145,6 @@ def raw_to_pkg_kw(raw_dict, user_flags, filename):
     # source files at the PackageDescription level ?
     kw["extra_source_files"].extend(files)
 
-    if not "name" in kw:
-        raise ValueError("class %s constructor requires a name" % (cls,))
     if "description_from_file" in kw:
         if filename:
             description_file = os.path.join(os.path.dirname(filename), kw["description_from_file"])
@@ -189,7 +187,7 @@ class PackageDescription:
         finally:
             info_file.close()
 
-    def __init__(self, name, version=None, summary=None, url=None,
+    def __init__(self, name=None, version=None, summary=None, url=None,
             author=None, author_email=None, maintainer=None,
             maintainer_email=None, license=None, description=None,
             platforms=None, packages=None, py_modules=None, extensions=None,
