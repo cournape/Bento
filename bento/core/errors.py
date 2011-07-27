@@ -1,6 +1,9 @@
 class BentoError(Exception):
     pass
 
+class InternalBentoError(BentoError):
+    pass
+
 class InvalidPackage(BentoError):
     pass
 

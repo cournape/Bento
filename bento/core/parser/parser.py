@@ -11,6 +11,9 @@ from bento._config \
 from bento.core.parser.nodes \
     import \
         Node
+from bento.core.errors \
+    import \
+        InternalBentoError
 from bento.core.parser.errors \
     import \
         ParseError
@@ -741,9 +744,12 @@ def p_error(p):
     if _DEBUG_YACC:
         raise ParseError(error_msg(p, None))
     else:
-        msg = "yacc: Syntax error at line %d, Token(%s, %r)" % \
-                (p.lineno, p.type, p.value)
-        raise ParseError(msg, p)
+        if p is None:
+            raise InternalBentoError("Unknown parsing error (parser/lexer bug ? Please report this with your bento.info)")
+        else:
+            msg = "yacc: Syntax error at line %d, Token(%s, %r)" % \
+                    (p.lineno, p.type, p.value)
+            raise ParseError(msg, p)
 
 def error_msg(p, error_msg):
     if p is not None:
