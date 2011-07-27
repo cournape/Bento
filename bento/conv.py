@@ -72,7 +72,7 @@ def distutils_to_package_description(dist):
     data['maintainer'] = dist.get_contact()
     data['maintainer_email'] = dist.get_contact_email()
     data['summary'] = dist.get_description()
-    data['description'] = dist.get_long_description()
+    data['description'] = dist.get_long_description().replace("#", "\#")
     data['license'] = dist.get_license()
     data['platforms'] = dist.get_platforms()
 
