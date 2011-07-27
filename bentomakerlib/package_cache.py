@@ -50,7 +50,7 @@ class CachedPackage(object):
             cache.close()
 
 class _CachedPackageImpl(object):
-    __version__ = "1"
+    __version__ = "2"
     __magic__ = "CACHED_PACKAGE_BENTOMAGIC"
 
     def _has_valid_magic(self, db):
