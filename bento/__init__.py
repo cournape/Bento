@@ -18,6 +18,8 @@ The code is currently organized as follows:
 import sys
 import os
 
+import os.path as op
+
 from bento._config \
     import \
         USE_PRIVATE_MODULES
@@ -26,8 +28,9 @@ from bento._config \
 for bundled_pkg in ["_ply", "_simplejson", "_yaku"]:
     v = "BENTO_UNBUNDLE%s" % bundled_pkg.upper()
     if USE_PRIVATE_MODULES and not os.environ.get(v, False):
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__),
-                                        "private", bundled_pkg))
+        m_path = op.join(op.dirname(__file__), "private", bundled_pkg)
+        if op.exists(m_path):
+            sys.path.insert(0, m_path)
 
 from bento.core.package import \
         PackageDescription, static_representation
