@@ -27,8 +27,12 @@ Classifiers:
 ConfigPy: bento/__config_py.py
 HookFile: bscript
 
-Flag: bundling
-    Description: whether to install bundled modules or not
+Flag: bundle
+    Description: whether to install bundled upstream modules or not
+    Default: true
+
+Flag: bundle_yaku
+    Description: whether to install bundled yaku or not
     Default: true
 
 DataFiles: windows_arch_data
@@ -73,10 +77,12 @@ Library:
         bento.distutils.commands,
         bento.private,
         bentomakerlib
-    if flag(bundling):
+    if flag(bundle):
         Packages:
             bento.private._ply.ply,
-            bento.private._simplejson.simplejson,
+            bento.private._simplejson.simplejson
+    if flag(bundle_yaku):
+        Packages:
             bento.private._yaku.yaku,
             bento.private._yaku.yaku.tools,
             bento.private._yaku.yaku.compat,
