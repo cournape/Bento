@@ -29,7 +29,7 @@ Usage:   bentomaker sdist [OPTIONS]."""
     short_descr = "create a tarball."
     common_options = Command.common_options \
                         + [Option("--output-dir",
-                                  help="Output diretory", default="dist")]
+                                  help="Output directory", default="dist")]
     def __init__(self):
         Command.__init__(self)
         self.tarname = None
