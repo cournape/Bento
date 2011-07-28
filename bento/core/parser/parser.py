@@ -28,8 +28,16 @@ class Parser(object):
         else:
             self.lexer = lexer
 
+        picklefile = _PICKLED_PARSETAB
+        try:
+            fid = open(_PICKLED_PARSETAB, "wb")
+            fid.close()
+        except IOError, e:
+            # In case of read-only support (no write access, zip import,
+            # etc...)
+            picklefile = None
         self.parser = yacc.yacc(start="stmt_list",
-                                picklefile=_PICKLED_PARSETAB,
+                                picklefile=picklefile,
                                 debug=_DEBUG_YACC)
 
     def parse(self, data):
