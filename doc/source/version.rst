@@ -9,6 +9,7 @@ Main features:
     - add suport for DescriptionFromFile field to get metadata from secondary
       file
     - add support for comment in bento.info
+    - add support for zip archive in sdist
 
 Fixes:
 

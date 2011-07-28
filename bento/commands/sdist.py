@@ -14,6 +14,8 @@ from bento.commands.core \
     import \
         Command, Option
 
+import bento.compat.api as compat
+
 def archive_basename(pkg):
     if pkg.version:
         return "%s-%s" % (pkg.name, pkg.version)
@@ -28,7 +30,16 @@ def create_tarball(node_pkg, archive_root, archive_node):
     finally:
         tf.close()
 
-_FORMATS = {"tgz": {"ext": ".tar.gz", "func": create_tarball}}
+def create_zarchive(node_pkg, archive_root, archive_node):
+    zid = compat.ZipFile(archive_node.abspath(), "w", compat.ZIP_DEFLATED)
+    try:
+        for file in node_pkg.iter_files():
+            zid.write(file, op.join(archive_root, file))
+    finally:
+        zid.close()
+
+_FORMATS = {"gztar": {"ext": ".tar.gz", "func": create_tarball},
+            "zip": {"ext": ".zip", "func": create_zarchive}}
 
 def create_archive(pkg, top_node, run_node, format="tgz", output_directory="dist"):
     if not format in _FORMATS:
@@ -53,7 +64,7 @@ Usage:   bentomaker sdist [OPTIONS]."""
                         + [Option("--output-dir",
                                   help="Output directory", default="dist"),
                            Option("--format",
-                                  help="Archive format", default="tgz")]
+                                  help="Archive format (supported: 'gztar', 'zip')", default="gztar")]
     def __init__(self):
         Command.__init__(self)
         self.tarname = None
