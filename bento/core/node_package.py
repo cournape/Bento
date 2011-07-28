@@ -1,5 +1,7 @@
 import os
 
+import warnings
+
 from bento.core.pkg_objects \
     import \
         Extension
@@ -141,6 +143,8 @@ class NodeRepresentation(object):
     def _update_extra_sources(self, pkg):
         for s in pkg.extra_source_files:
             nodes = self.top_node.ant_glob(s)
+            if len(nodes) < 1:
+                warnings.warn("extra source files glob entry %r did not return any result" % (s,))
             self._extra_top_nodes.extend(nodes)
 
     def update_package(self, pkg):
@@ -164,3 +168,24 @@ class NodeRepresentation(object):
             self._registry[category][name] = entity
         else:
             raise ValueError("Category %r not registered" % category)
+
+    def iter_files(self):
+        for n in self._extra_top_nodes:
+            yield n.path_from(self.run_node)
+
+        for d in self._registry["datafiles"].itervalues():
+            for n in d.nodes:
+                yield n.path_from(self.run_node)
+
+        for m in self._registry["modules"].itervalues():
+            yield m.path_from(self.run_node)
+        for package in self._registry["packages"].itervalues():
+            for n in package:
+                yield n.path_from(self.run_node)
+
+        for extension in self._registry["extensions"].itervalues():
+            for n in extension.nodes:
+                yield n.path_from(self.run_node)
+        for compiled_library in self._registry["compiled_libraries"].itervalues():
+            for n in compiled_library.nodes:
+                yield n.path_from(self.run_node)

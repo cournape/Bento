@@ -1,4 +1,5 @@
 import os
+import warnings
 
 from copy \
     import \
@@ -281,11 +282,19 @@ class PackageDescription:
             self.config_py = config_py
 
 def file_list(pkg, top_node):
+    warnings.warn("Deprecated, use NodeRepresentation instead")
     root_src = top_node.abspath()
 
     files = []
     for entry in pkg.extra_source_files:
         try:
+            if "*" in entry:
+                ns = top_node.ant_glob(entry)
+            else:
+                n = top_node.find_node(entry)
+                if n is None:
+                    raise InvalidPackage("Error in ExtraSourceFiles entry: %r" % (entry,))
+                ns = [n]
             files.extend(expand_glob(entry, root_src))
         except IOError, e:
             raise InvalidPackage("Error in ExtraSourceFiles entry: %s" % e)
