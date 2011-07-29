@@ -188,7 +188,7 @@ def set_main(top_node, build_node):
 
     _set_cached_package(build_node.make_node(DB_FILE))
 
-    pkg = _get_cached_package().get_package(n.abspath())
+    pkg = _get_cached_package().get_package(n)
     #create_package_description(BENTO_SCRIPT)
 
     modules = []
@@ -358,7 +358,7 @@ def _get_package_with_user_flags(cmd_name, cmd_argv, package_options, top_node, 
     flag_values = _get_flag_values(package_options.flag_options.keys(), o)
 
     bento_info = top_node.find_node(BENTO_SCRIPT)
-    return _get_cached_package().get_package(bento_info.abspath(), flag_values)
+    return _get_cached_package().get_package(bento_info, flag_values)
 
 def _get_subpackage(pkg, top, local_node):
     rpath = local_node.path_from(top)

@@ -35,17 +35,17 @@ class CachedPackage(object):
     def __init__(self, db_node):
         self._db_location = db_node
 
-    def get_package(self, filename, user_flags=None):
+    def get_package(self, bento_info, user_flags=None):
         cache = _CachedPackageImpl(self._db_location.abspath())
         try:
-            return cache.get_package(filename, user_flags)
+            return cache.get_package(bento_info, user_flags)
         finally:
             cache.close()
 
-    def get_options(self, filename):
+    def get_options(self, bento_info):
         cache = _CachedPackageImpl(self._db_location.abspath())
         try:
-            return cache.get_options(filename)
+            return cache.get_options(bento_info)
         finally:
             cache.close()
 
@@ -101,32 +101,32 @@ class _CachedPackageImpl(object):
         else:
             return True
 
-    def get_package(self, filename, user_flags=None):
+    def get_package(self, bento_info, user_flags=None):
         if self._first_time:
             self._first_time = False
-            return _create_package_nocached(filename, user_flags, self.db)
+            return _create_package_nocached(bento_info, user_flags, self.db)
         else:
             if self._has_invalidated_cache():
-                return _create_package_nocached(filename, user_flags, self.db)
+                return _create_package_nocached(bento_info, user_flags, self.db)
             else:
                 r_user_flags = cPickle.loads(self.db["user_flags"])
                 if user_flags is None:
                     # FIXME: this case is wrong
                     return cPickle.loads(self.db["package_description"])
                 elif r_user_flags != user_flags:
-                    return _create_package_nocached(filename, user_flags, self.db)
+                    return _create_package_nocached(bento_info, user_flags, self.db)
                 else:
                     raw = cPickle.loads(self.db["parsed_dict"])
-                    pkg, files = _raw_to_pkg(raw, user_flags, filename)
+                    pkg, files = _raw_to_pkg(raw, user_flags, bento_info)
                     return pkg
 
-    def get_options(self, filename):
+    def get_options(self, bento_info):
         if self._first_time:
             self._first_time = False
-            return _create_options_nocached(filename, {}, self.db)
+            return _create_options_nocached(bento_info, {}, self.db)
         else:
             if self._has_invalidated_cache():
-                return _create_options_nocached(filename, {}, self.db)
+                return _create_options_nocached(bento_info, {}, self.db)
             else:
                 raw = cPickle.loads(self.db["parsed_dict"])
                 return _raw_to_options(raw)
@@ -134,31 +134,31 @@ class _CachedPackageImpl(object):
     def close(self):
         safe_write(self._location, lambda fd: cPickle.dump(self.db, fd))
 
-def _create_package_nocached(filename, user_flags, db):
-    pkg, options = _create_objects_no_cached(filename, user_flags, db)
+def _create_package_nocached(bento_info, user_flags, db):
+    pkg, options = _create_objects_no_cached(bento_info, user_flags, db)
     return pkg
 
-def _create_options_nocached(filename, user_flags, db):
-    pkg, options = _create_objects_no_cached(filename, user_flags, db)
+def _create_options_nocached(bento_info, user_flags, db):
+    pkg, options = _create_objects_no_cached(bento_info, user_flags, db)
     return options
 
 def _raw_to_options(raw):
     kw = raw_to_options_kw(raw)
     return PackageOptions(**kw)
 
-def _raw_to_pkg(raw, user_flags, filename):
-    kw, files = raw_to_pkg_kw(raw, user_flags, filename)
+def _raw_to_pkg(raw, user_flags, bento_info):
+    kw, files = raw_to_pkg_kw(raw, user_flags, bento_info)
     pkg = PackageDescription(**kw)
     return pkg, files
 
-def _create_objects_no_cached(filename, user_flags, db):
-    d = os.path.dirname(filename)
-    info_file = open(filename, 'r')
+def _create_objects_no_cached(bento_info, user_flags, db):
+    d = os.path.dirname(bento_info.abspath())
+    info_file = open(bento_info.abspath(), 'r')
     try:
         data = info_file.read()
-        raw = raw_parse(data, filename)
+        raw = raw_parse(data, bento_info.abspath())
 
-        pkg, files = _raw_to_pkg(raw, user_flags, filename)
+        pkg, files = _raw_to_pkg(raw, user_flags, bento_info)
         files = [os.path.join(d, f) for f in files]
         options = _raw_to_options(raw)
 

@@ -109,7 +109,7 @@ def raw_to_subpkg_kw(raw_dict):
 
     return kw, misc_d["subento"]
 
-def raw_to_pkg_kw(raw_dict, user_flags, filename):
+def raw_to_pkg_kw(raw_dict, user_flags, bento_info=None):
     d = build_ast_from_raw_dict(raw_dict, user_flags)
 
     meta_d, libraries_d, options_d, misc_d = extract_top_dicts(deepcopy(d))
@@ -127,28 +127,29 @@ def raw_to_pkg_kw(raw_dict, user_flags, filename):
     misc_d.pop("path_options")
     misc_d.pop("flag_options")
 
+    if bento_info is None:
+        source_dir = os.getcwd()
+    else:
+        source_dir = bento_info.parent.abspath()
+
     if misc_d.has_key("subento"):
         subentos = misc_d.pop("subento")
-        if filename is None:
-            source_dir = os.getcwd()
-        else:
-            source_dir = os.path.dirname(filename)
         subpackages, files = recurse_subentos(subentos, source_dir=source_dir)
         kw["subpackages"] = subpackages
     else:
         files = []
 
     kw.update(misc_d)
-    if filename is not None:
-        files.append(filename)
+    if bento_info is not None:
+        files.append(bento_info.srcpath())
     files.extend(misc_d["hook_files"])
     # XXX: Do we want to automatically add the hook and bento files in extra
     # source files at the PackageDescription level ?
     kw["extra_source_files"].extend(files)
 
     if "description_from_file" in kw:
-        if filename:
-            description_file = os.path.join(os.path.dirname(filename), kw["description_from_file"])
+        if bento_info:
+            description_file = os.path.join(source_dir, kw["description_from_file"])
         else:
             description_file = kw["description_from_file"]
         if not os.path.exists(description_file):
