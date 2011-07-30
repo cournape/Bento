@@ -110,6 +110,17 @@ def raw_to_subpkg_kw(raw_dict):
     return kw, misc_d["subento"]
 
 def raw_to_pkg_kw(raw_dict, user_flags, bento_info=None):
+    if bento_info is None:
+        source_dir = os.getcwd()
+    else:
+        # bento_info may be a string or a node
+        try:
+            source_dir = bento_info.parent.abspath()
+            bento_info_path = bento_info.srcpath()
+        except AttributeError:
+            source_dir = os.path.dirname(bento_info)
+            bento_info_path = os.path.abspath(bento_info)
+
     d = build_ast_from_raw_dict(raw_dict, user_flags)
 
     meta_d, libraries_d, options_d, misc_d = extract_top_dicts(deepcopy(d))
@@ -127,11 +138,6 @@ def raw_to_pkg_kw(raw_dict, user_flags, bento_info=None):
     misc_d.pop("path_options")
     misc_d.pop("flag_options")
 
-    if bento_info is None:
-        source_dir = os.getcwd()
-    else:
-        source_dir = bento_info.parent.abspath()
-
     if misc_d.has_key("subento"):
         subentos = misc_d.pop("subento")
         subpackages, files = recurse_subentos(subentos, source_dir=source_dir)
@@ -141,7 +147,7 @@ def raw_to_pkg_kw(raw_dict, user_flags, bento_info=None):
 
     kw.update(misc_d)
     if bento_info is not None:
-        files.append(bento_info.srcpath())
+        files.append(bento_info_path)
     files.extend(misc_d["hook_files"])
     # XXX: Do we want to automatically add the hook and bento files in extra
     # source files at the PackageDescription level ?

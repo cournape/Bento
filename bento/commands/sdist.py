@@ -54,6 +54,7 @@ def create_archive(pkg, top_node, run_node, format="tgz", output_directory="dist
     node_pkg.update_package(pkg)
 
     _FORMATS[format]["func"](node_pkg, archive_root, archive_node) 
+    return archive_root, archive_node
 
 class SdistCommand(Command):
     long_descr = """\
@@ -65,11 +66,6 @@ Usage:   bentomaker sdist [OPTIONS]."""
                                   help="Output directory", default="dist"),
                            Option("--format",
                                   help="Archive format (supported: 'gztar', 'zip')", default="gztar")]
-    def __init__(self):
-        Command.__init__(self)
-        self.tarname = None
-        self.topdir = None
-
     def run(self, ctx):
         argv = ctx.get_command_arguments()
         p = ctx.options_context.parser
@@ -82,4 +78,7 @@ Usage:   bentomaker sdist [OPTIONS]."""
         format = o.format
         output_directory = o.output_dir
 
-        create_archive(pkg, ctx.top_node, ctx.run_node, o.format, o.output_dir)
+        # XXX: find a better way to pass archive name from other commands (used
+        # by distcheck ATM)
+        self.archive_root, self.archive_node = create_archive(pkg,
+                ctx.top_node, ctx.run_node, o.format, o.output_dir)

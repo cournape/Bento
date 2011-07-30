@@ -56,8 +56,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
         pprint('PINK', "\t-> Running sdist...")
 
         sdist = run_sdist(ctx)
-        tarname = sdist.tarname
-        tardir = sdist.topdir
+        archive_root, archive_node = sdist.archive_root, sdist.archive_node
 
         saved = os.getcwd()
 
@@ -65,16 +64,16 @@ Usage:   bentomaker distcheck [OPTIONS]."""
         if os.path.exists(distcheck_dir.abspath()):
             shutil.rmtree(distcheck_dir.abspath())
         distcheck_dir.mkdir()
-        target = distcheck_dir.make_node(os.path.basename(tarname))
-        rename(tarname, target.abspath())
-        tarname = os.path.basename(target.abspath())
+        target = distcheck_dir.make_node(archive_node.name)
+        rename(archive_node.abspath(), target.abspath())
+        archive_node = os.path.basename(target.abspath())
 
         os.chdir(distcheck_dir.abspath())
         try:
             pprint('PINK', "\t-> Extracting sdist...")
-            tarball = TarFile.gzopen(tarname)
+            tarball = TarFile.gzopen(archive_node)
             tarball.extractall()
-            os.chdir(tardir)
+            os.chdir(archive_root)
 
             def _call(cmd):
                 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
