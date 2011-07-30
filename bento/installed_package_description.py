@@ -219,12 +219,29 @@ class InstalledPkgDescription(object):
         variables.update(self._variables)
         return subst_vars(path, variables)
 
+    def resolve_paths_with_destdir(self, src_root_dir="."):
+        """Same as resolve_paths, but prefix every path with $destdir."""
+        return self._resolve_paths(src_root_dir, use_destdir=True)
+
     def resolve_paths(self, src_root_dir="."):
+        return self._resolve_paths(src_root_dir, use_destdir=False)
+
+    def _resolve_paths(self, src_root_dir, use_destdir):
         variables = copy.copy(self._path_variables)
         variables.update(self._variables)
         variables['_srcrootdir'] = src_root_dir
 
-        destdir = subst_vars("$destdir", variables)
+        def _prefix_destdir(path):
+            destdir = subst_vars("$destdir", variables)
+            if path:
+                tail = explode_path(path)[1:]
+                if not tail:
+                    raise ValueError("Invalid target directory in section %r "
+                                     "(not absolute: %r)" % (name, path))
+                return os.path.join(destdir, os.path.join(*tail))
+            else:
+                raise ValueError("Invalid target directory in section "
+                                 "%r: %r" % (name, path))
 
         file_sections = {}
         for category in self.files:
@@ -232,13 +249,9 @@ class InstalledPkgDescription(object):
             for name, section in self.files[category].items():
                 srcdir = subst_vars(section.source_dir, variables)
                 target = subst_vars(section.target_dir, variables)
-                if target:
-                    tail = explode_path(target)[1:]
-                    if not tail:
-                        raise ValueError("Invalid target directory in section %r (not absolute: %r)" % (name, section.target_dir))
-                else:
-                    raise ValueError("Invalid target directory in section %r: %r" % (name, section.target_dir))
-                target = os.path.join(destdir, os.path.join(*tail))
+
+                if use_destdir:
+                    target = _prefix_destdir(target)
 
                 file_sections[category][name] = \
                         [(os.path.join(srcdir, f), os.path.join(target, g))
