@@ -138,9 +138,15 @@ def create_hook_module(target):
     module.root_path = main_file
     if not "startup" in __INIT_FUNCS:
         module.startup = dummy_startup
+    else:
+        module.startup = __INIT_FUNCS["startup"]
     if not "options" in __INIT_FUNCS:
         module.options = dummy_options
+    else:
+        module.options = __INIT_FUNCS["options"]
     if not "shutdown" in __INIT_FUNCS:
         module.shutdown = dummy_shutdown
+    else:
+        module.shutdown = __INIT_FUNCS["shutdown"]
 
     return module
