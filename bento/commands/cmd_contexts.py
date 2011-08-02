@@ -1,6 +1,13 @@
 import os
 import sys
+import re
 
+from bento.core.errors \
+    import \
+        InvalidPackage
+from bento.core.utils \
+    import \
+        is_string
 from bento.compat.api \
     import \
         defaultdict
@@ -10,6 +17,9 @@ from bento.core.node_package \
 from bento.commands.build \
     import \
         _config_content
+from bento.core.meta \
+    import \
+        PackageMetadata
 from bento.commands.script_utils \
     import \
         create_posix_script, create_win32_script
@@ -238,6 +248,36 @@ def _generic_iregistrer(category, name, nodes, from_node, target_dir):
     return InstalledSection.from_source_target_directories(
         category, name, source_dir, target_dir, files)
 
+def fill_metadata_template(content, pkg):
+    t = re.compile("\$(\w+)")
+    used_vars = t.findall(content)
+    meta = PackageMetadata.from_package(pkg)
+
+    def _safe_repr(val):
+        # FIXME: actually not safe at all. Needs to escape and all.
+        if is_string(val):
+            if len(val.splitlines()) > 1:
+                return '"""%s"""' % (val,)
+            else:
+                return '"%s"' % (val,)
+        else:
+            return val
+
+    var_defs = {}
+    var_regexes = {}
+    for v in used_vars:
+        if hasattr(meta, v.lower()):
+            val = getattr(meta, v.lower())
+            var_defs[v] = _safe_repr(val)
+            var_regexes[v] = re.compile("\$%s" % (v,))
+        else:
+            raise ValueError("Invalid variable %r for meta template" % (v,))
+
+    filled = content
+    for k, v in var_defs.iteritems():
+        filled = var_regexes[k].sub(v, filled)
+    return filled
+
 class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
         super(BuildContext, self).__init__(cmd_argv, options_context, pkg, run_node)
@@ -347,6 +387,20 @@ class BuildContext(_ContextWithBuildDirectory):
             self.outputs_registry.register_outputs("modules", "bento_config", [target_node],
                                                    self.build_node, "$sitedir")
 
+        if self.pkg.meta_template_file:
+            source = self.top_node.find_node(self.pkg.meta_template_file)
+            if source is None:
+                raise InvalidPackage("File %r not found (defined in 'MetaTemplateFile' field)" \
+                                     % (self.pkg.meta_template_file,))
+            content = source.read()
+            output = fill_metadata_template(content, self.pkg)
+
+            name = os.path.splitext(self.pkg.meta_template_file)[0]
+            target_node = self.build_node.make_node(name)
+            target_node.parent.mkdir()
+            target_node.safe_write(output)
+            self.outputs_registry.register_outputs("modules", "meta_from_template", [target_node],
+                                                   self.build_node, "$sitedir")
     def post_compile(self):
         # Do the output_registry -> installed sections registry convertion
         section_writer = self.section_writer

@@ -203,7 +203,7 @@ class PackageDescription:
             download_url=None, extra_source_files=None, data_files=None,
             classifiers=None, provides=None, obsoletes=None, executables=None,
             hook_files=None, config_py=None, compiled_libraries=None,
-            subpackages=None, description_from_file=None):
+            subpackages=None, description_from_file=None, meta_template_file=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -287,6 +287,11 @@ class PackageDescription:
             self.config_py = unnormalize_path(config_py)
         else:
             self.config_py = config_py
+
+        if meta_template_file is not None and os.sep != "/":
+            self.meta_template_file = unnormalize_path(meta_template_file)
+        else:
+            self.meta_template_file = meta_template_file
 
 def file_list(pkg, top_node):
     warnings.warn("Deprecated, use NodeRepresentation instead")

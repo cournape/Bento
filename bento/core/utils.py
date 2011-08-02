@@ -529,3 +529,6 @@ def explode_path(path):
     if d:
         ret.append(d)
     return ret[::-1]
+
+def is_string(s):
+    return isinstance(s, str) or isinstance(s, unicode)
