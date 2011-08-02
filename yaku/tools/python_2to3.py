@@ -57,7 +57,7 @@ class Py3kConverterBuilder(yaku.tools.Builder):
         dirs = []
         fs = []
         for e in excludes:
-            n = self.ctx.src_root.search(e)
+            n = self.ctx.src_root.find_node(e)
             if os.path.isdir(n.abspath()):
                 dirs.append(n)
             else:
