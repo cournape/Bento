@@ -211,6 +211,9 @@ class MyLexer(object):
         except StopIteration:
             return None
 
+    def __iter__(self):
+        return iter(self.token, None)
+
 def detect_escaped(stream):
     """Post process the given stream to generate escaped character for
     characters preceded by the escaping token."""
