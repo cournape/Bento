@@ -119,7 +119,7 @@ FIELD_TYPE = {
     "BUILD_REQUIRES_ID": "WORDS",
     "INSTALL_REQUIRES_ID": "WORDS",
     "HOOK_FILE_ID": "WORDS",
-    "CONFIG_PY_ID": "WORDS",
+    "CONFIG_PY_ID": "WORD",
     "SUBENTO_ID": "WORDS",
     "META_TEMPLATE_FILE_ID": "WORD",
 }
@@ -252,6 +252,7 @@ def merge_escaped(stream):
             else:
                 if queue:
                     queue[-1].value = "".join([c.value for c in queue])
+                    queue[-1].type = "WORD"
                     yield queue[-1]
                     queue = []
                 yield t
