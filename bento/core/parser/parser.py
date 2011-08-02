@@ -123,6 +123,7 @@ def p_meta_stmt(p):
                  | meta_classifiers_stmt
                  | meta_hook_file_stmt
                  | meta_config_py_stmt
+                 | meta_meta_template_file_stmt
                  | meta_subento_stmt
     """
     p[0] = p[1]
@@ -187,9 +188,14 @@ def p_meta_version_stmt(p):
     p[0] = Node("version", value=p[3].value)
 
 def p_meta_config_py_stmt(p):
-    """meta_config_py_stmt : CONFIG_PY_ID COLON anyword
+    """meta_config_py_stmt : CONFIG_PY_ID COLON word
     """
     p[0] = Node("config_py", value=p[3].value)
+
+def p_meta_meta_template_file_stmt(p):
+    """meta_meta_template_file_stmt : META_TEMPLATE_FILE_ID COLON word
+    """
+    p[0] = Node("meta_template_file", value=p[3].value)
 
 def p_meta_classifiers_stmt(p):
     """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifiers_list"""

@@ -39,6 +39,7 @@ class Dispatcher(object):
             "maintainer": self.author,
             "hook_files": self.hook_files,
             "config_py": self.config_py,
+            "meta_template_file": self.meta_template_file,
             "subento": self.subento,
             # Library
             "library": self.library,
@@ -94,7 +95,8 @@ class Dispatcher(object):
                           "download_url", "author", "author_email",
                           "maintainer", "maintainer_email", "license",
                           "platforms", "classifiers", "hook_files",
-                          "config_py", "description_from_file"]:
+                          "config_py", "description_from_file",
+                          "meta_template_file"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
                 if self._d.has_key("path_options"):
@@ -145,6 +147,9 @@ class Dispatcher(object):
             self._d["hook_files"] = node.value
 
     def config_py(self, node):
+        return node
+
+    def meta_template_file(self, node):
         return node
 
     def description_from_file(self, node):
