@@ -2,9 +2,9 @@ import os
 import sys
 import subprocess
 
-from bento.core.package \
+from bento.core.node_package \
     import \
-        file_list
+        NodeRepresentation
 from bento.commands.errors \
     import \
         CommandExecutionFailure
@@ -42,7 +42,9 @@ def _run_2to3(ctx):
         os.listdir(os.path.join("bento", "private", "_ply", "ply"))
         if f.endswith(".py")]
 
-    files = file_list(ctx.pkg, bld.src_root)
+    node_pkg = NodeRepresentation(ctx.run_node, ctx.top_node)
+    node_pkg.update_package(ctx.pkg)
+    files = list(node_pkg.iter_files())
     builder.convert("bento_2to3", files)
 
     try:
