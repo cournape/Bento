@@ -55,6 +55,8 @@ def _set_metadata(obj, name, version=None, summary=None, url=None,
     return obj
 
 class PackageMetadata(object):
+    metadata_attributes = _METADATA_FIELDS + ["fullname", "contact", "contact_email"]
+
     @classmethod
     def from_ipkg(cls, ipkg):
         return cls(**ipkg.meta)

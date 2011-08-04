@@ -1,6 +1,6 @@
 import os
 import sys
-import re
+import string
 
 from bento.core.errors \
     import \
@@ -249,8 +249,7 @@ def _generic_iregistrer(category, name, nodes, from_node, target_dir):
         category, name, source_dir, target_dir, files)
 
 def fill_metadata_template(content, pkg):
-    t = re.compile("\$(\w+)")
-    used_vars = t.findall(content)
+    tpl = string.Template(content)
     meta = PackageMetadata.from_package(pkg)
 
     def _safe_repr(val):
@@ -261,22 +260,11 @@ def fill_metadata_template(content, pkg):
             else:
                 return '"%s"' % (val,)
         else:
-            return val
+            return repr(val)
 
-    var_defs = {}
-    var_regexes = {}
-    for v in used_vars:
-        if hasattr(meta, v.lower()):
-            val = getattr(meta, v.lower())
-            var_defs[v] = _safe_repr(val)
-            var_regexes[v] = re.compile("\$%s" % (v,))
-        else:
-            raise ValueError("Invalid variable %r for meta template" % (v,))
+    meta_dict = dict([(k.upper(), _safe_repr(getattr(meta, k))) for k in meta.metadata_attributes])
 
-    filled = content
-    for k, v in var_defs.iteritems():
-        filled = var_regexes[k].sub(v, filled)
-    return filled
+    return tpl.substitute(meta_dict)
 
 class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
