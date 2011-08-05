@@ -19,7 +19,10 @@ Classifiers:
     Operating System :: POSIX,
     Operating System :: Unix,
     Operating System :: MacOS
+
 ConfigPy: bento/__config_py.py
+MetaTemplateFile: bento/__package_info.py.in
+
 HookFile: bscript
 
 Flag: bundle
