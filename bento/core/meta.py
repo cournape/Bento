@@ -1,11 +1,17 @@
+from bento.private.version \
+    import \
+        NormalizedVersion, is_valid_version
 from bento.core.errors \
     import \
         InvalidPackage
 
-_METADATA_FIELDS = ["name", "version", "summary", "url", "author",
+_METADATA_EXPLICIT = ["name", "version", "summary", "url", "author",
         "author_email", "maintainer", "maintainer_email", "license", "description",
         "platforms", "install_requires", "build_requires", "download_url",
         "classifiers", "top_levels", "description_from_file", "keywords"]
+
+_METADATA_FIELDS = _METADATA_EXPLICIT + ["version_major", "version_minor",
+                                         "version_micro", "version_postdev"]
 
 def _set_metadata(obj, name, version=None, summary=None, url=None,
         author=None, author_email=None, maintainer=None,
@@ -16,6 +22,28 @@ def _set_metadata(obj, name, version=None, summary=None, url=None,
     obj.name = name
 
     obj.version = version
+
+    if version is None:
+        obj.version_major = 0
+        obj.version_minor = 0
+        obj.version_micro = 0
+        obj.version_postdev = ""
+    else:
+        if not is_valid_version(version):
+            raise InvalidPackage("Invalid version: %r" % (version,))
+        v = NormalizedVersion(version)
+        obj.version_major = v.parts[0][0]
+        obj.version_minor = v.parts[0][1]
+        if len(v.parts[0]) > 2:
+            obj.version_micro = v.parts[0][2]
+        else:
+            obj.version_micro = 0
+        if v.parts[1] != ('f',):
+            raise InvalidPackage("Unsupported version: %r (prerelease part)" % (version,))
+        if v.parts[2] == ('f',):
+            obj.version_postdev = ""
+        else:
+            obj.version_postdev = "".join([str(i) for i in v.parts[2]])
 
     obj.summary = summary
     obj.url = url
@@ -70,7 +98,7 @@ class PackageMetadata(object):
     @classmethod
     def from_package(cls, pkg):
         kw = {}
-        for k in _METADATA_FIELDS:
+        for k in _METADATA_EXPLICIT:
             if hasattr(pkg, k):
                 kw[k] = getattr(pkg, k)
         return cls(**kw)
@@ -79,8 +107,8 @@ class PackageMetadata(object):
             author=None, author_email=None, maintainer=None,
             maintainer_email=None, license=None, description=None,
             platforms=None, install_requires=None, build_requires=None,
-            download_url=None, classifiers=None, top_levels=None, description_from_file=None,
-            keywords=None):
+            download_url=None, classifiers=None, top_levels=None,
+            description_from_file=None, keywords=None):
         # Package metadata
         _args = locals()
         kw = dict([(k, _args[k]) for k in _METADATA_FIELDS if k in _args])
