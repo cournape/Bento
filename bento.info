@@ -19,6 +19,7 @@ Classifiers:
     Operating System :: POSIX,
     Operating System :: Unix,
     Operating System :: MacOS
+Keywords: packaging
 
 ConfigPy: bento/__config_py.py
 MetaTemplateFile: bento/__package_info.py.in

@@ -5,13 +5,14 @@ from bento.core.errors \
 _METADATA_FIELDS = ["name", "version", "summary", "url", "author",
         "author_email", "maintainer", "maintainer_email", "license", "description",
         "platforms", "install_requires", "build_requires", "download_url",
-        "classifiers", "top_levels", "description_from_file"]
+        "classifiers", "top_levels", "description_from_file", "keywords"]
 
 def _set_metadata(obj, name, version=None, summary=None, url=None,
         author=None, author_email=None, maintainer=None,
         maintainer_email=None, license=None, description=None,
         platforms=None, install_requires=None, build_requires=None,
-        download_url=None, classifiers=None, top_levels=None, description_from_file=None):
+        download_url=None, classifiers=None, top_levels=None,
+        description_from_file=None, keywords=None):
     obj.name = name
 
     obj.version = version
@@ -52,6 +53,11 @@ def _set_metadata(obj, name, version=None, summary=None, url=None,
     else:
         obj.top_levels = top_levels
 
+    if not keywords:
+        obj.keywords = []
+    else:
+        obj.keywords = keywords
+
     return obj
 
 class PackageMetadata(object):
@@ -73,7 +79,8 @@ class PackageMetadata(object):
             author=None, author_email=None, maintainer=None,
             maintainer_email=None, license=None, description=None,
             platforms=None, install_requires=None, build_requires=None,
-            download_url=None, classifiers=None, top_levels=None, description_from_file=None):
+            download_url=None, classifiers=None, top_levels=None, description_from_file=None,
+            keywords=None):
         # Package metadata
         _args = locals()
         kw = dict([(k, _args[k]) for k in _METADATA_FIELDS if k in _args])
@@ -82,7 +89,6 @@ class PackageMetadata(object):
         # FIXME: not implemented yet
         self.provides = []
         self.obsoletes = []
-        self.keywords = []
 
     @property
     def fullname(self):

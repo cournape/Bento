@@ -12,7 +12,7 @@ __all__ = ["MyLexer"]
 #==============
 tokens = ('COLON', 'DOUBLE_COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'BACKSLASH', 'LPAR', 'RPAR', 'LESS',
-          'GREATER', 'EQUAL', 'SHARP', 'NAME_ID',
+          'GREATER', 'EQUAL', 'SHARP', 'NAME_ID', 'KEYWORDS_ID',
           'SUMMARY_ID', 'DESCRIPTION_ID', 'INDENT', 'DEDENT', 'LIBRARY_ID',
           'PACKAGES_ID', 'VERSION_ID', 'MODULES_ID', 'EXTENSION_ID',
           'COMPILED_LIBRARY_ID',
@@ -55,6 +55,7 @@ META_FIELDS_ID = {
     "License": "LICENSE_ID",
     "Platforms": "PLATFORMS_ID",
     "Classifiers": "CLASSIFIERS_ID",
+    "Keywords": "KEYWORDS_ID",
     "Path": "PATH_ID",
     "Flag": "FLAG_ID",
     "Default": "DEFAULT_ID",
@@ -122,6 +123,7 @@ FIELD_TYPE = {
     "CONFIG_PY_ID": "WORD",
     "SUBENTO_ID": "WORDS",
     "META_TEMPLATE_FILE_ID": "WORD",
+    "KEYWORDS_ID": "WORDS",
 }
 
 # Special characters: everytime one is added/changed, update t_WORD

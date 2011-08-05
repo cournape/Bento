@@ -203,7 +203,8 @@ class PackageDescription:
             download_url=None, extra_source_files=None, data_files=None,
             classifiers=None, provides=None, obsoletes=None, executables=None,
             hook_files=None, config_py=None, compiled_libraries=None,
-            subpackages=None, description_from_file=None, meta_template_file=None):
+            subpackages=None, description_from_file=None, meta_template_file=None,
+            keywords=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 

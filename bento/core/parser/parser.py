@@ -120,6 +120,7 @@ def p_meta_stmt(p):
                  | meta_maintainer_email_stmt
                  | meta_license_stmt
                  | meta_platforms_stmt
+                 | meta_keywords_stmt
                  | meta_classifiers_stmt
                  | meta_hook_file_stmt
                  | meta_config_py_stmt
@@ -181,6 +182,11 @@ def p_meta_platforms_stmt(p):
     """meta_platforms_stmt : PLATFORMS_ID COLON comma_list
     """
     p[0] = Node("platforms", value=p[3].value)
+
+def p_meta_keywords_stmt(p):
+    """meta_keywords_stmt : KEYWORDS_ID COLON comma_list
+    """
+    p[0] = Node("keywords", value=p[3].value)
 
 def p_meta_version_stmt(p):
     """meta_version_stmt : VERSION_ID COLON version

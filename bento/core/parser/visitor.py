@@ -96,7 +96,7 @@ class Dispatcher(object):
                           "maintainer", "maintainer_email", "license",
                           "platforms", "classifiers", "hook_files",
                           "config_py", "description_from_file",
-                          "meta_template_file"]:
+                          "meta_template_file", "keywords"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
                 if self._d.has_key("path_options"):
