@@ -10,6 +10,8 @@ Main features:
       file
     - add support for comment in bento.info
     - add support for zip archive in sdist
+    - add support for template file to be filled from bento metadata
+    - add support for 'Keywords' metadata field
 
 Fixes:
 
