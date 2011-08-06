@@ -294,6 +294,10 @@ class PackageDescription:
         else:
             self.meta_template_file = meta_template_file
 
+        for f in [self.meta_template_file]:
+            if f is not None:
+                self.extra_source_files.append(f)
+
 def file_list(pkg, top_node):
     warnings.warn("Deprecated, use NodeRepresentation instead")
     root_src = top_node.abspath()
