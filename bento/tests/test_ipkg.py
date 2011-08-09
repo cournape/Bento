@@ -1,5 +1,7 @@
 import os
 import unittest
+import tempfile
+import shutil
 
 from cStringIO \
     import \
@@ -15,6 +17,9 @@ from bento.core.package \
 from bento.core.utils \
     import \
         subst_vars
+from bento.core.node \
+    import \
+        create_root_with_source_tree
 from bento.installed_package_description \
     import \
         InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg, iter_files
@@ -44,18 +49,33 @@ class TestInstalledSection(unittest.TestCase):
 
         nose.tools.assert_equal(r_section.files, section.files)
 
-def create_simple_ipkg_args():
+def create_simple_ipkg_args(top_node):
     files = ["scripts/foo.py", "scripts/bar.py"]
+    srcdir = "source"
+
+    nodes = [top_node.make_node(os.path.join(srcdir, f)) for f in files]
+    for n in nodes:
+        n.parent.mkdir()
+        n.write("")
     section = InstalledSection.from_source_target_directories("pythonfiles",
-                    "section1", "source", "$prefix/target", files)
+                    "section1", os.path.join("$_srcrootdir", srcdir), "$prefix/target", files)
     sections = {"pythonfiles": {"section1": section}}
 
     meta = ipkg_meta_from_pkg(SPHINX_META_PKG)
-    return meta, sections
+    return meta, sections, nodes
 
 class TestIPKG(unittest.TestCase):
     def setUp(self):
-        self.meta, self.sections = create_simple_ipkg_args()
+        self.src_root = tempfile.mkdtemp()
+        self.bld_root = self.src_root
+
+        root = create_root_with_source_tree(self.src_root, self.bld_root)
+        self.top_node = root.find_node(self.src_root)
+
+        self.meta, self.sections, self.nodes = create_simple_ipkg_args(self.top_node)
+
+    def tearDown(self):
+        shutil.rmtree(self.top_node.abspath())
 
     def test_simple_create(self):
         ipkg = InstalledPkgDescription(self.sections, self.meta, {})
@@ -77,13 +97,27 @@ class TestIPKG(unittest.TestCase):
 
 class TestIterFiles(unittest.TestCase):
     def setUp(self):
-        self.meta, self.sections = create_simple_ipkg_args()
+        self.src_root = tempfile.mkdtemp()
+        self.bld_root = self.src_root
+
+        root = create_root_with_source_tree(self.src_root, self.bld_root)
+        self.top_node = root.find_node(self.src_root)
+
+        self.meta, self.sections, nodes = create_simple_ipkg_args(self.top_node)
+        for n in nodes:
+            print n.abspath()
+
+    def tearDown(self):
+        shutil.rmtree(self.top_node.abspath())
 
     def test_simple(self):
         ipkg = InstalledPkgDescription(self.sections, self.meta, {})
-        sections = ipkg.resolve_paths()
-        res = sorted([(kind, source, target) for kind, source, target in iter_files(sections)])
+        sections = ipkg.resolve_paths(self.top_node)
+        res = sorted([(kind, source.abspath(), target.abspath()) \
+                      for kind, source, target in iter_files(sections)])
         target_dir = ipkg.resolve_path(os.path.join("$prefix", "target"))
-        ref = [("pythonfiles", os.path.join("source", "scripts", "bar.py"), os.path.join(target_dir, "scripts", "bar.py")),
-               ("pythonfiles", os.path.join("source", "scripts", "foo.py"), os.path.join(target_dir, "scripts", "foo.py"))]
+        ref = [("pythonfiles", os.path.join(self.top_node.abspath(), "source", "scripts", "bar.py"),
+                               os.path.join(target_dir, "scripts", "bar.py")),
+               ("pythonfiles", os.path.join(self.top_node.abspath(), "source", "scripts", "foo.py"),
+                               os.path.join(target_dir, "scripts", "foo.py"))]
         self.assertEqual(res, ref)

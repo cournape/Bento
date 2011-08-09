@@ -39,11 +39,11 @@ Usage:   bentomaker build_egg [OPTIONS]"""
 
         n = ctx.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
-        build_egg(ipkg, ctx, ctx.build_node.abspath())
+        build_egg(ipkg, ctx, ctx.build_node)
 
 def build_egg(ipkg, ctx, source_root, path=None):
     meta = PackageMetadata.from_ipkg(ipkg)
-    egg_info = EggInfo.from_ipkg(ipkg)
+    egg_info = EggInfo.from_ipkg(ipkg, ctx.build_node)
 
     # FIXME: fix egg name
     if path is None:
@@ -52,28 +52,28 @@ def build_egg(ipkg, ctx, source_root, path=None):
         egg = egg_filename(os.path.join(path, meta.fullname))
     ensure_dir(egg)
 
-    egg_info = EggInfo.from_ipkg(ipkg)
-
     zid = compat.ZipFile(egg, "w", compat.ZIP_DEFLATED)
     try:
-        ipkg.update_paths({"prefix": ".", "eprefix": ".", "sitedir": "."})
+        ipkg.update_paths({"prefix": source_root.abspath(),
+                           "eprefix": source_root.abspath(),
+                           "sitedir": source_root.abspath()})
         for filename, cnt in egg_info.iter_meta(ctx.build_node):
             zid.writestr(os.path.join("EGG-INFO", filename), cnt)
 
         file_sections = ipkg.resolve_paths(source_root)
         for kind, source, target in iter_files(file_sections):
             if not kind in ["executables"]:
-                zid.write(source, target)
+                zid.write(source.abspath(), target.path_from(source_root))
 
         pprint("PINK", "Byte-compiling ...")
         for kind, source, target in iter_files(file_sections):
             if kind in ["pythonfiles"]:
                 try:
-                    bytecode = bcompile(source)
+                    bytecode = bcompile(source.abspath())
                 except PyCompileError, e:
-                    warnings.warn("Error byte-compiling %r" % source)
+                    warnings.warn("Error byte-compiling %r" % source.abspath())
                 else:
-                    zid.writestr("%sc" % target, bcompile(source))
+                    zid.writestr("%sc" % target.path_from(source_root), bcompile(source.abspath()))
     finally:
         zid.close()
 

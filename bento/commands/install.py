@@ -139,22 +139,22 @@ Usage:   bentomaker install [OPTIONS]."""
         ipkg = InstalledPkgDescription.from_file(n.abspath())
         scheme = ctx.get_paths_scheme()
         ipkg.update_paths(scheme)
-        file_sections = ipkg.resolve_paths_with_destdir(src_root_dir=ctx.build_node.abspath())
+        node_sections = ipkg.resolve_paths_with_destdir(ctx.build_node)
         if o.list_files:
             # XXX: this won't take into account action in post install scripts.
             # A better way would be to log install steps and display those, but
             # this will do for now.
-            for kind, source, target in iter_files(file_sections):
-                print target
+            for kind, source, target in iter_files(node_sections):
+                print target.abspath()
             return
 
         if o.transaction:
             trans = TransactionLog("transaction.log")
             try:
-                for kind, source, target in iter_files(file_sections):
-                    trans.copy(source, target, kind)
+                for kind, source, target in iter_files(node_sections):
+                    trans.copy(source.abspath(), target.abspath(), kind)
             finally:
                 trans.close()
         else:
-            for kind, source, target in iter_files(file_sections):
-                copy_installer(source, target, kind)
+            for kind, source, target in iter_files(node_sections):
+                copy_installer(source.abspath(), target.abspath(), kind)
