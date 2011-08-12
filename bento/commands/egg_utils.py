@@ -30,12 +30,12 @@ def egg_info_dirname(fullname, pyver=None):
 
 class EggInfo(object):
     @classmethod
-    def from_ipkg(cls, ipkg):
+    def from_ipkg(cls, ipkg, src_node):
         meta = PackageMetadata.from_ipkg(ipkg)
         executables = ipkg.executables
 
-        file_sections = ipkg.resolve_paths()
-        sources = list(iter_source_files(file_sections))
+        file_sections = ipkg.resolve_paths(src_node)
+        sources = list([n.abspath() for n in iter_source_files(file_sections)])
 
         ret = cls(meta, executables, sources)
         ret.ipkg = ipkg

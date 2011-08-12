@@ -567,3 +567,12 @@ def create_root_with_source_tree(source_path, build_path):
     NodeWithBuild._ctx = node_context
 
     return root
+
+def find_root(n):
+    while n.parent:
+        p = n.parent
+        if p is None:
+            break
+        else:
+            n = p
+    return n

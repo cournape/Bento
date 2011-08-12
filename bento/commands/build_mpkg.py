@@ -66,7 +66,7 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
         mpkg_name = "%s-%s-py%s.mpkg" % (name, version, py_short)
 
         categories = set()
-        file_sections = ipkg.resolve_paths(".")
+        file_sections = ipkg.resolve_paths(ctx.build_node)
         for kind, source, target in iter_files(file_sections):
             categories.add(kind)
 
@@ -110,12 +110,13 @@ def build_pkg_from_temp(ctx, ipkg, pkg_root, root_node, install_root, categories
         prefix_node = tmp_root.make_node(root_node.make_node(sys.exec_prefix).path_from(root_node))
         prefix = eprefix = prefix_node.abspath()
         ipkg.update_paths({"prefix": prefix, "eprefix": eprefix})
-        file_sections = ipkg.resolve_paths(ctx.build_node.abspath())
+        file_sections = ipkg.resolve_paths(ctx.build_node)
         for kind, source, target in iter_files(file_sections):
             if kind in categories:
-                if not os.path.exists(os.path.dirname(target)):
-                    os.makedirs(os.path.dirname(target))
-                shutil.copy(source, target)
+                #if not os.path.exists(target.parent.abspath()):
+                #    os.makedirs(os.path.dirname(target))
+                target.parent.mkdir()
+                shutil.copy(source.abspath(), target.abspath())
 
         pkg_name = os.path.splitext(os.path.basename(pkg_root))[0]
         pkg_info = PackageInfo(pkg_name=pkg_name,

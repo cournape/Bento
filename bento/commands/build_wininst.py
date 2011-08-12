@@ -56,7 +56,7 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
 def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None):
     meta = PackageMetadata.from_ipkg(ipkg)
     if egg_info is None:
-        egg_info = EggInfo.from_ipkg(ipkg)
+        egg_info = EggInfo.from_ipkg(ipkg, build_node)
 
     # XXX: do this correctly, maybe use same as distutils ?
     if wininst is None:
@@ -81,7 +81,7 @@ def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None)
         file_sections = ipkg.resolve_paths(src_root_node.abspath())
 
         def write_content(source, target, kind):
-            zid.write(source, target)
+            zid.write(source.abspath(), target.abspath())
 
         for kind, source, target in iter_files(file_sections):
             write_content(source, target, kind)

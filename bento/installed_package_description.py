@@ -5,15 +5,21 @@ import StringIO
 import warnings
 
 from bento.compat.api import json
-
-from bento.core.platforms import \
-    get_scheme
-from bento.core.utils import \
-    subst_vars, normalize_path, unnormalize_path, same_content, fix_kw, explode_path
-from bento.core.pkg_objects import \
-    Executable
-
 import bento.compat.api as compat
+
+from bento.core.node \
+    import \
+        find_root
+from bento.core.platforms \
+    import \
+        get_scheme
+from bento.core.utils \
+    import \
+        subst_vars, normalize_path, unnormalize_path, same_content, fix_kw, \
+        explode_path
+from bento.core.pkg_objects \
+    import \
+        Executable
 
 def ipkg_meta_from_pkg(pkg):
     """Return meta dict for Installed pkg from a PackageDescription
@@ -219,17 +225,19 @@ class InstalledPkgDescription(object):
         variables.update(self._variables)
         return subst_vars(path, variables)
 
-    def resolve_paths_with_destdir(self, src_root_dir="."):
+    def resolve_paths_with_destdir(self, src_root_node):
         """Same as resolve_paths, but prefix every path with $destdir."""
-        return self._resolve_paths(src_root_dir, use_destdir=True)
+        return self._resolve_paths(src_root_node, use_destdir=True)
 
-    def resolve_paths(self, src_root_dir="."):
-        return self._resolve_paths(src_root_dir, use_destdir=False)
+    def resolve_paths(self, src_root_node):
+        return self._resolve_paths(src_root_node, use_destdir=False)
 
-    def _resolve_paths(self, src_root_dir, use_destdir):
+    def _resolve_paths(self, src_root_node, use_destdir):
         variables = copy.copy(self._path_variables)
         variables.update(self._variables)
-        variables['_srcrootdir'] = src_root_dir
+        variables['_srcrootdir'] = src_root_node.abspath()
+
+        root = find_root(src_root_node)
 
         def _prefix_destdir(path):
             destdir = subst_vars("$destdir", variables)
@@ -243,9 +251,9 @@ class InstalledPkgDescription(object):
                 raise ValueError("Invalid target directory in section "
                                  "%r: %r" % (name, path))
 
-        file_sections = {}
+        node_sections = {}
         for category in self.files:
-            file_sections[category] = {}
+            node_sections[category] = {}
             for name, section in self.files[category].items():
                 srcdir = subst_vars(section.source_dir, variables)
                 target = subst_vars(section.target_dir, variables)
@@ -253,8 +261,12 @@ class InstalledPkgDescription(object):
                 if use_destdir:
                     target = _prefix_destdir(target)
 
-                file_sections[category][name] = \
-                        [(os.path.join(srcdir, f), os.path.join(target, g))
+                srcdir_node = root.find_node(srcdir)
+                if srcdir_node is None:
+                    raise IOError("directory %r not found !" % (srcdir,))
+                target_node = root.make_node(target)
+                node_sections[category][name] = \
+                        [(srcdir_node.find_node(f), target_node.make_node(g))
                          for f, g in section.files]
 
-        return file_sections 
+        return node_sections
