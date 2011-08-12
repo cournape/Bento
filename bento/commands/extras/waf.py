@@ -202,6 +202,13 @@ class BentoBuildContext(Build.BuildContext):
         outputs_registry.register_outputs(category, name, nodes, from_node, target_dir)
 
 @waflib.TaskGen.feature("bento")
+@waflib.TaskGen.before_method("apply_link")
+def apply_pyext_target_renaming(self):
+    if not self.target:
+        self.target = self.name
+    self.target = self.target.replace(".", os.sep)
+
+@waflib.TaskGen.feature("bento")
 @waflib.TaskGen.after_method("apply_link")
 def apply_register_outputs(self):
     for x in self.features:
@@ -283,17 +290,13 @@ class BuildWafContext(BuildContext):
         self.waf_context = waf_context
 
         def _default_extension_builder(extension):
-            # FIXME: should be handled in the waf builder itself maybe ?
-            target = extension.name.replace(".", os.sep)
             return self.waf_context(features='c cshlib pyext bento',
-                                    source=extension.sources, target=target,
+                                    source=extension.sources,
                                     name=extension.name)
 
         def _default_library_builder(library):
-            # FIXME: should be handled in the waf builder itself maybe ?
-            target = library.name.replace(".", os.sep)
             return self.waf_context(features='c cstlib pyext bento', source=library.sources,
-                                    target=target, name=library.name)
+                                    name=library.name)
 
         self.builder_registry.register_category("extensions", _default_extension_builder)
         self.builder_registry.register_category("compiled_libraries", _default_library_builder)
