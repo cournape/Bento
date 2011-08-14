@@ -289,10 +289,14 @@ class BuildWafContext(BuildContext):
         waf_context.bento_context = self
         self.waf_context = waf_context
 
-        def _default_extension_builder(extension):
-            return self.waf_context(features='c cshlib pyext bento',
-                                    source=extension.sources,
-                                    name=extension.name)
+        def _default_extension_builder(extension, **kw):
+            if not "features" in kw:
+                kw["features"] = "c cshlib pyext bento"
+            if not "source" in kw:
+                kw["source"] = extension.sources[:]
+            if not "name" in kw:
+                kw["name"] = extension.name
+            return self.waf_context(**kw)
 
         def _default_library_builder(library):
             return self.waf_context(features='c cstlib pyext bento', source=library.sources,

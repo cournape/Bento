@@ -12,6 +12,8 @@ Main features:
     - add support for zip archive in sdist
     - add support for template file to be filled from bento metadata
     - add support for 'Keywords' metadata field
+    - add support for arbitrary customization of extension builder in waf
+      BuildContext
 
 Fixes:
 
