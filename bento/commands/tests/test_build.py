@@ -11,13 +11,11 @@ from cStringIO \
     import \
         StringIO
 
-import nose
 import nose.config
 
-from nose.plugins.skip \
+from bento.core.testing\
     import \
-        SkipTest
-
+        knownfailureif, skipif
 from bento.core.node \
     import \
         create_root_with_source_tree
@@ -77,21 +75,6 @@ Library:
 """
 
 _NOSE_CONFIG = nose.config.Config()
-
-def skipif(condition, msg=None):
-    def skip_decorator(f):
-        if callable(condition):
-            skip_func = condition
-        else:
-            skip_func = lambda : condition()
-
-        if skip_func():
-            def g(*a, **kw):
-                raise SkipTest()
-        else:
-            g = f
-        return nose.tools.make_decorator(f)(g)
-    return skip_decorator
 
 class _TestBuildSimpleExtension(unittest.TestCase):
     def setUp(self):
