@@ -148,6 +148,33 @@ class _TestBuildSimpleExtension(unittest.TestCase):
             isection = self._resolve_isection(bld.run_node, sections[extension.name])
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
+    def test_disable_extension(self):
+        conf, configure, bld, build = self._create_contexts({"bento.info": BENTO_INFO_WITH_EXT})
+
+        bld.pre_recurse(self.top_node)
+        try:
+            bld.disable_extension("foo")
+        finally:
+            bld.post_recurse()
+        build.run(bld)
+        build.shutdown(bld)
+
+        assert "extensions" not in bld.section_writer.sections
+
+    @knownfailureif(True)
+    def test_disable_nonexisting_extension(self):
+        conf, configure, bld, build = self._create_contexts({"bento.info": BENTO_INFO_WITH_EXT})
+
+        bld.pre_recurse(self.top_node)
+        try:
+            bld.disable_extension("foo2")
+        finally:
+            bld.post_recurse()
+        build.run(bld)
+        build.shutdown(bld)
+
+        assert "extensions" not in bld.section_writer.sections
+
     def test_extension_registration(self):
         top_node = self.top_node
 
@@ -259,6 +286,14 @@ class TestBuildWaf(_TestBuildSimpleExtension):
     @skip_no_waf
     def test_extension_registration(self):
         super(TestBuildWaf, self).test_extension_registration()
+
+    @skip_no_waf
+    def test_disable_extension(self):
+        super(TestBuildWaf, self).test_disable_extension()
+
+    @skip_no_waf
+    def test_disable_nonexisting_extension(self):
+        super(TestBuildWaf, self).test_disable_extension()
 
     def setUp(self):
         self._fake_output = None
