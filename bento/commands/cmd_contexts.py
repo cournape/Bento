@@ -199,6 +199,12 @@ class _RegistryBase(object):
         else:
             return self._callbacks[category][name]
 
+    def default_callback(self, category, *a, **kw):
+        if not category in self._callbacks:
+            raise ValueError("Unregistered category %r" % category)
+        else:
+            return self._callbacks[category].default_factory()(*a, **kw)
+
 class BuilderRegistry(_RegistryBase):
     builder = _RegistryBase.callback
 
