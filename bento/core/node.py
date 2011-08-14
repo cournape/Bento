@@ -13,6 +13,9 @@ import os, shutil, re, sys
 from bento.compat.api \
     import \
         rename
+from bento.core.utils \
+    import \
+        is_string
 
 def to_list(sth):
     if isinstance(sth, str):
@@ -202,8 +205,7 @@ class Node(object):
 
     def find_node(self, lst):
         "read the file system, make the nodes as needed"
-
-        if isinstance(lst, str):
+        if is_string(lst):
             lst = [x for x in split_path(lst) if x and x != '.']
 
         cur = self
@@ -240,7 +242,7 @@ class Node(object):
 
     def make_node(self, lst):
         "make a branch of nodes"
-        if isinstance(lst, str):
+        if is_string(lst):
             lst = [x for x in split_path(lst) if x and x != '.']
 
         cur = self

@@ -20,16 +20,26 @@ def get_root():
 class TestNode(unittest.TestCase):
     def setUp(self):
         self.root = Node("", None)
-        self.cur = self.root.make_node(os.getcwd())
 
     def test_scratch_creation(self):
         root = Node("", None)
         assert_equal(root.abspath(), get_root())
 
     def test_find_node(self):
-        node_abspath = os.path.normpath(self.cur.abspath())
-        r_node_abspath = os.path.abspath(os.getcwd())
-        assert_true(node_abspath, r_node_abspath)
+        r_n = os.path.abspath(os.getcwd())
+
+        for f in [str, unicode]:
+            n = self.root.find_node(f(os.getcwd()))
+            assert_true(n)
+            assert n.abspath() == r_n
+
+    def test_make_node(self):
+        r_n = os.path.abspath(os.getcwd())
+
+        for f in [str, unicode]:
+            n = self.root.make_node(f(os.getcwd()))
+            assert_true(n)
+            assert n.abspath() == r_n, "%s vs %s" % (n.abspath(), r_n)
 
 class TestNodeWithBuild(unittest.TestCase):
     def setUp(self):
