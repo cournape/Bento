@@ -298,9 +298,14 @@ class BuildWafContext(BuildContext):
                 kw["name"] = extension.name
             return self.waf_context(**kw)
 
-        def _default_library_builder(library):
-            return self.waf_context(features='c cstlib pyext bento', source=library.sources,
-                                    name=library.name)
+        def _default_library_builder(library, **kw):
+            if not "features" in kw:
+                kw["features"] = "c cstlib pyext bento"
+            if not "source" in kw:
+                kw["source"] = library.sources[:]
+            if not "name" in kw:
+                kw["name"] = library.name
+            return self.waf_context(**kw)
 
         self.builder_registry.register_category("extensions", _default_extension_builder)
         self.builder_registry.register_category("compiled_libraries", _default_library_builder)
