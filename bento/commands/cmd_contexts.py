@@ -350,6 +350,18 @@ class BuildContext(_ContextWithBuildDirectory):
         full_name = self._compute_extension_name(extension_name)
         self.builder_registry.register_callback("extensions", full_name, builder)
 
+    def default_builder(self, extension, **kw):
+        return self.builder_registry.default_callback(
+                                        "extensions",
+                                        extension,
+                                        **kw)
+
+    def default_library_builder(self, library, **kw):
+        return self.builder_registry.default_callback(
+                                        "compiled_libraries",
+                                        library,
+                                        **kw)
+
     def disable_extension(self, extension_name):
         def nobuild(extension):
             pass
