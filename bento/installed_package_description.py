@@ -86,20 +86,11 @@ def iter_files(file_sections):
             else:
                 return True
 
-    if os.sep != "/":
-        for kind in file_sections:
-            for name, section in file_sections[kind].items():
-                for source, target in section:
-                    source = unnormalize_path(source)
-                    target = unnormalize_path(target)
-                    if not _is_redundant(source, target):
-                        yield kind, source, target
-    else:
-        for kind in file_sections:
-            for name, section in file_sections[kind].items():
-                for source, target in section:
-                    if not _is_redundant(source, target):
-                        yield kind, source, target
+    for kind in file_sections:
+        for name, section in file_sections[kind].items():
+            for source, target in section:
+                if not _is_redundant(source, target):
+                    yield kind, source, target
 
 class InstalledPkgDescription(object):
     @classmethod
