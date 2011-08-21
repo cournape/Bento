@@ -126,9 +126,8 @@ class ConfigureWafContext(ConfigureContext):
         _init(run_path=run_path, source_path=source_path, build_path=build_path)
 
         opts = OptionsContext()
-        opts.parse_args([])
         opts.load("compiler_c")
-        Options.options.check_c_compiler = "gcc"
+        opts.parse_args([])
         self.waf_options_context = opts
 
         waf_context = create_context("configure", run_dir=source_path)
