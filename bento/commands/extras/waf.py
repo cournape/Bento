@@ -110,6 +110,7 @@ def _init(run_path, source_path, build_path):
     Context.run_dir = run_path
     Context.out_dir = build_path
     Context.waf_dir = WAF_TOP
+    Context.launch_dir = run_path
 
 def register_options(global_context):
     opt = Option("-p", "--progress", help="Use progress bar", action="store_true", dest="progress_bar")
