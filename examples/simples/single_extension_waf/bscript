@@ -5,8 +5,14 @@ You need to define the WAFDIR environment variable, pointing to the root of waf 
 """
 from bento.commands.extras.waf \
     import \
-        ConfigureWafContext, BuildWafContext
+        ConfigureWafContext, BuildWafContext, register_options
+from bento.commands import hooks
 
+@hooks.startup
 def startup(context):
     context.register_context("configure", ConfigureWafContext)
     context.register_context("build", BuildWafContext)
+
+@hooks.options
+def options(context):
+    register_options(context)
