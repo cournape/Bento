@@ -59,10 +59,10 @@ def recurse_subentos(subentos, source_dir):
 
     # FIXME: this is damn ugly - using nodes would be good here
     def _recurse(subento, cwd):
-        f = os.path.join(cwd, subento, "bento.info")
+        f = os.path.normpath(os.path.join(cwd, subento, "bento.info"))
         if not os.path.exists(f):
             raise ValueError("%s not found !" % f)
-        filenames.append(f)
+        filenames.append(relpath(f, source_dir))
 
         fid = open(f)
         try:
@@ -72,7 +72,9 @@ def recurse_subentos(subentos, source_dir):
             d = raw_parse(fid.read(), f)
             kw, subentos = raw_to_subpkg_kw(d)
             subpackages[key] = SubPackageDescription(rdir, **kw)
-            filenames.extend([os.path.join(cwd, subento, h) for h in subpackages[key].hook_files])
+            hooks_as_abspaths = [os.path.normpath(os.path.join(cwd, subento, h)) \
+                                 for h in subpackages[key].hook_files]
+            filenames.extend([relpath(f, source_dir) for f in hooks_as_abspaths])
             for s in subentos:
                 _recurse(s, os.path.join(cwd, subento))
         finally:
