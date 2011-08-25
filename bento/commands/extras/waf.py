@@ -154,10 +154,6 @@ class ConfigureWafContext(ConfigureContext):
             conf.load("python")
             conf.check_python_version((2,4,2))
             conf.check_python_headers()
-
-            # HACK for mac os x
-            if sys.platform == "darwin":
-                conf.env["CC"] = ["/usr/bin/gcc-4.0"]
         self._old_path = None
 
     def pre_recurse(self, local_node):

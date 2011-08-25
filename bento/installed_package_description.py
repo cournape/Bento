@@ -75,14 +75,16 @@ def iter_files(file_sections):
     # category-specific post-processing during install)
     installed_files = {}
     def _is_redundant(source, target):
+        source_path = source.abspath()
+        target_path = target.abspath()
         # If this install already installs something @ target, we raise an
         # error unless the content is exactly the same
-        if not target in installed_files:
-            installed_files[target] = source
+        if not target_path in installed_files:
+            installed_files[target_path] = source_path
             return False
         else:
-            if not same_content(source, installed_files[target]):
-                raise IOError("Multiple source for same target %r !" % target)
+            if not same_content(source_path, installed_files[target_path]):
+                raise IOError("Multiple source_path for same target_path %r !" % target_path)
             else:
                 return True
 
