@@ -59,7 +59,8 @@ class NodeRepresentation(object):
         for s in extension.sources:
             n = ref_node.find_node(s)
             if n is None:
-                raise IOError("file %s" % s)
+                name = translate_name(extension.name, ref_node, self.top_node)
+                raise IOError("Missing file %s (for extension %s)" % (s, name))
             else:
                 nodes.append(n)
         if extension.include_dirs:
