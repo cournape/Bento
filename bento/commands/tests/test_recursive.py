@@ -9,9 +9,6 @@ from bento.core \
 from bento.core.node \
     import \
         create_root_with_source_tree
-from bento.commands.tests.utils \
-    import \
-        create_fake_package_from_bento_infos, prepare_configure
 from bento.commands.hooks \
     import \
         get_pre_hooks, create_hook_module, get_post_hooks
@@ -24,6 +21,13 @@ from bento.commands.context \
 from bento.commands.build \
     import \
         BuildCommand
+
+from bento.core.testing \
+    import \
+        create_fake_package_from_bento_infos
+from bento.commands.tests.utils \
+    import \
+        prepare_configure
 
 class TestRecurseBase(unittest.TestCase):
     def setUp(self):

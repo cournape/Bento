@@ -45,10 +45,12 @@ from yaku.context \
     import \
         get_bld, get_cfg
 
+from bento.core.testing \
+    import \
+        create_fake_package_from_bento_infos, create_fake_package_from_bento_info
 from bento.commands.tests.utils \
     import \
-        prepare_configure, create_fake_package, create_fake_package_from_bento_infos, \
-        prepare_build, create_fake_package_from_bento_info, prepare_options, EncodedStringIO
+        prepare_configure, prepare_build, prepare_options, EncodedStringIO
 
 BENTO_INFO_WITH_EXT = """\
 Name: foo

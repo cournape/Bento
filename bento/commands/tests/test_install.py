@@ -13,8 +13,7 @@ from bento.commands.context \
         BuildContext, BuildYakuContext, ConfigureYakuContext, CmdContext
 from bento.commands.tests.utils \
     import \
-        prepare_configure, create_fake_package, create_fake_package_from_bento_info, \
-        prepare_build
+        prepare_configure, prepare_build
 from bento.commands.build \
     import \
         BuildCommand
@@ -24,6 +23,10 @@ from bento.commands.install \
 from bento.commands.options \
     import \
         OptionsContext, Option
+
+from bento.core.testing \
+    import \
+        create_fake_package_from_bento_info
 
 class TestBuildCommand(unittest.TestCase):
     def setUp(self):
