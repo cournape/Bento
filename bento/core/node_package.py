@@ -57,12 +57,12 @@ class NodeRepresentation(object):
     def to_node_extension(self, extension, ref_node):
         nodes = []
         for s in extension.sources:
-            n = ref_node.find_node(s)
-            if n is None:
+            _nodes = ref_node.ant_glob(s)
+            if len(_nodes) < 1:
                 name = translate_name(extension.name, ref_node, self.top_node)
-                raise IOError("Missing file %s (for extension %s)" % (s, name))
+                raise IOError("Sources glob entry %r for extension %r did not return any result" % (s, name))
             else:
-                nodes.append(n)
+                nodes.extend(_nodes)
         if extension.include_dirs:
             raise NotImplementedError("include dirs translation not implemented yet")
         return NodeExtension(extension.name, nodes, ref_node)
