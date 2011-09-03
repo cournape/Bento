@@ -61,11 +61,11 @@ class install(old_install):
             ipkg = InstalledPkgDescription.from_file(n.abspath())
             scheme = context.get_paths_scheme()
             ipkg.update_paths(scheme)
-            file_sections = ipkg.resolve_paths(src_root_dir=context.build_node.abspath())
+            file_sections = ipkg.resolve_paths(src_root_node=context.build_node)
 
             fid = open(self.record, "w")
             try:
                 for kind, source, target in iter_files(file_sections):
-                    fid.write("%s\n" % target)
+                    fid.write("%s\n" % target.abspath())
             finally:
                 fid.close()
