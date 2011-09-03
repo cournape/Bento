@@ -47,6 +47,9 @@ class config(old_config):
                 scheme["exec-prefix"] = op.join(install.install_platbase, "local")
                 scheme["sitedir"] = install.install_purelib
                 scheme["includedir"] = install.install_headers
+        for k, v in scheme.items():
+            if not op.isabs(v):
+                scheme[k] = op.join(os.getcwd(), v)
 
         return scheme
 
