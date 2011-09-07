@@ -227,22 +227,6 @@ class PackageDescription:
         else:
             self.py_modules = py_modules
 
-        def normalize_paths(compiled_modules):
-            if not compiled_modules:
-                return {}
-            else:
-                for ext in compiled_modules.values():
-                    sources = []
-                    for s in ext.sources:
-                        if isinstance(s, basestring):
-                            sources.extend(expand_glob(s))
-                        else:
-                            print s
-                    if os.sep != "/":
-                        sources = [unnormalize_path(s) for s in ext.sources]
-                    ext.sources = sources
-                return compiled_modules
-
         if extensions:
             self.extensions = extensions
         else:
@@ -299,45 +283,6 @@ class PackageDescription:
         for f in [self.meta_template_file]:
             if f is not None:
                 self.extra_source_files.append(f)
-
-def file_list(pkg, top_node):
-    warnings.warn("Deprecated, use NodeRepresentation instead")
-    root_src = top_node.abspath()
-
-    files = []
-    for entry in pkg.extra_source_files:
-        try:
-            if "*" in entry:
-                ns = top_node.ant_glob(entry)
-            else:
-                n = top_node.find_node(entry)
-                if n is None:
-                    raise InvalidPackage("Error in ExtraSourceFiles entry: %r" % (entry,))
-                ns = [n]
-            files.extend(expand_glob(entry, root_src))
-        except IOError, e:
-            raise InvalidPackage("Error in ExtraSourceFiles entry: %s" % e)
-
-    for p in get_packages(pkg, top_node):
-        files.extend(find_package(p, top_node))
-
-    for m in pkg.py_modules:
-        m_node = top_node.find_node("%s.py" % m)
-        files.append(m_node.path_from(top_node))
-
-    extensions = get_extensions(pkg, top_node)
-    libraries = get_compiled_libraries(pkg, top_node)
-    for e in extensions.values() + libraries.values():
-        for source in e.sources:
-            node = top_node.find_node(source)
-            files.append(node.path_from(top_node))
-    for section in pkg.data_files.values():
-        for entry in section.files:
-            for f in expand_glob(entry, os.path.join(root_src, section.source_dir)):
-                node = top_node.find_node(os.path.join(section.source_dir, f))
-                files.append(node.path_from(top_node))
-
-    return files
 
 def static_representation(pkg, options={}):
     """Return the static representation of the given PackageDescription
