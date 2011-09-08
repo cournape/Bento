@@ -288,7 +288,7 @@ class BuildWafContext(BuildContext):
 
         def _default_extension_builder(extension, **kw):
             if not "features" in kw:
-                kw["features"] = "c cloadable pyext bento"
+                kw["features"] = "c cshlib pyext bento"
             if not "source" in kw:
                 kw["source"] = extension.sources[:]
             if not "name" in kw:
