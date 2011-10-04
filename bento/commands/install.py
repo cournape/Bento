@@ -126,6 +126,9 @@ Usage:   bentomaker install [OPTIONS]."""
                                 help="Do a transaction-based install", action="store_true"),
                          Option("--list-files",
                                 help="List installed files (do not install anything)",
+                                action="store_true"),
+                         Option("--dry-run",
+                                help="Do nothing (do not install anything)",
                                 action="store_true")]
     def run(self, ctx):
         argv = ctx.get_command_arguments()
@@ -134,12 +137,15 @@ Usage:   bentomaker install [OPTIONS]."""
         if o.help:
             p.print_help()
             return
+        if o.dry_run:
+            return
 
         n = ctx.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
         scheme = ctx.get_paths_scheme()
         ipkg.update_paths(scheme)
         node_sections = ipkg.resolve_paths_with_destdir(ctx.build_node)
+
         if o.list_files:
             # XXX: this won't take into account action in post install scripts.
             # A better way would be to log install steps and display those, but

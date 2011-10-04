@@ -43,10 +43,12 @@ class install(old_install):
     def run(self):
         self.run_command("build")
         dist = self.distribution
+        args = []
 
-        run_cmd_in_context(InstallCommand, "install", [], CmdContext,
+        if self.dry_run == 1:
+            args.append("--dry-run")
+        run_cmd_in_context(InstallCommand, "install", args, CmdContext,
                            dist.run_node, dist.top_node, dist.pkg)
-
         if self.record:
             self.write_record()
 
