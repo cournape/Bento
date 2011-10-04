@@ -124,7 +124,7 @@ Usage:   bentomaker install [OPTIONS]."""
     common_options = Command.common_options + \
                         [Option("-t", "--transaction",
                                 help="Do a transaction-based install", action="store_true"),
-                         Option("-n", "--list-files",
+                         Option("--list-files",
                                 help="List installed files (do not install anything)",
                                 action="store_true")]
     def run(self, ctx):
