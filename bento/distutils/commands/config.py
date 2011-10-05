@@ -26,7 +26,14 @@ class config(old_config):
 
     def _get_install_scheme(self):
         pkg = self.distribution.pkg
-        install = self.get_finalized_command("install")
+
+        # XXX: we cannot use get_finalized_command("install"), because we need
+        # to override scheme when --root is given, and this is done in the
+        # __init__method of install.
+        install = self.distribution.get_command_obj("install")
+        install.change_roots = lambda *args: None
+        self.reinitialize_command("install")
+        install.ensure_finalized()
 
         scheme = {}
 
@@ -47,6 +54,9 @@ class config(old_config):
                 scheme["exec-prefix"] = op.join(install.install_platbase, "local")
                 scheme["sitedir"] = install.install_purelib
                 scheme["includedir"] = install.install_headers
+
+        if install.root:
+            scheme["destdir"] = install.root
         for k, v in scheme.items():
             if not op.isabs(v):
                 scheme[k] = op.join(os.getcwd(), v)
