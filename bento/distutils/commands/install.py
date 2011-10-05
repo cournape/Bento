@@ -19,6 +19,9 @@ from bento.installed_package_description \
 from bento.compat.api \
     import \
         relpath
+from bento.core.utils \
+    import \
+        safe_write
 
 from bento.commands.install \
     import \
@@ -58,16 +61,14 @@ class install(old_install):
         install = InstallCommand()
         options_context = OptionsContext.from_command(install)
         context = CmdContext([], options_context, dist.pkg, dist.run_node)
-        if self.record:
-            n = context.build_node.make_node(IPKG_PATH)
-            ipkg = InstalledPkgDescription.from_file(n.abspath())
-            scheme = context.get_paths_scheme()
-            ipkg.update_paths(scheme)
-            file_sections = ipkg.resolve_paths(src_root_node=context.build_node)
 
-            fid = open(self.record, "w")
-            try:
-                for kind, source, target in iter_files(file_sections):
-                    fid.write("%s\n" % target.abspath())
-            finally:
-                fid.close()
+        n = context.build_node.make_node(IPKG_PATH)
+        ipkg = InstalledPkgDescription.from_file(n.abspath())
+        scheme = context.get_paths_scheme()
+        ipkg.update_paths(scheme)
+        file_sections = ipkg.resolve_paths_with_destdir(src_root_node=context.build_node)
+
+        def writer(fid):
+            for kind, source, target in iter_files(file_sections):
+                fid.write("%s\n" % target.abspath())
+        safe_write(self.record, writer, "w")
