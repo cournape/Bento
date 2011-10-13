@@ -1,14 +1,13 @@
-from bento.distutils.utils \
+import sys
+import os
+import os.path as op
+
+from distutils.cmd \
     import \
-        _is_setuptools_activated
-if _is_setuptools_activated():
-    from setuptools.command.install \
-        import \
-            install as old_install
-else:
-    from distutils.command.install \
-        import \
-            install as old_install
+        Command
+from distutils.command.install \
+    import \
+        INSTALL_SCHEMES
 
 from bento._config \
     import \
@@ -21,7 +20,7 @@ from bento.compat.api \
         relpath
 from bento.core.utils \
     import \
-        safe_write
+        safe_write, subst_vars
 
 from bento.commands.install \
     import \
@@ -36,12 +35,89 @@ from bento.commands.wrapper_utils \
     import \
         run_cmd_in_context
 
-class install(old_install):
+class install(Command):
+    description = "Install wrapper to install bento package"
+
+    user_options = [
+        ('prefix=', None, "installation prefix"),
+        ('exec-prefix=', None, "prefix for platform-specific files"),
+
+        ('record=', None, "Record file containing every path created by install command"),
+        ('root=', None, "(Unix-only) Alternative root (equivalent to destdir option in bento)"),
+
+        ('dry-run', 'n', "(Unix-only) Alternative root (equivalent to destdir option in bento)"),
+    ]
+
     def initialize_options(self):
-        old_install.initialize_options(self)
+        self.prefix = None
+        self.exec_prefix = None
+        self.record = None
+        self.root = None
+        self.dry_run = None
+
+        self.scheme = {}
 
     def finalize_options(self):
-        old_install.finalize_options(self)
+        if os.name == "posix":
+            self._finalize_unix()
+        else:
+            self._finalize_other()
+
+    def _finalize_other(self):
+        scheme = self.scheme
+
+        if self.root:
+            raise ValueError("Option root is meaningless on non-posix platforms !")
+
+        scheme['prefix'] = self.prefix
+        scheme['exec_prefix'] = self.exec_prefix
+
+    def _finalize_unix(self):
+        scheme = self.scheme
+
+        if self.root:
+            scheme["destdir"] = self.root
+
+        # TODO: user and home schemes
+
+        if self.prefix is None:
+            prefix_customized = False
+        else:
+            prefix_customized = True
+
+        if self.prefix is None:
+            if self.exec_prefix is not None:
+                raise DistutilsOptionError("must not supply exec-prefix without prefix")
+
+            self.prefix = os.path.normpath(sys.prefix)
+            self.exec_prefix = os.path.normpath(sys.exec_prefix)
+        else:
+            if self.exec_prefix is None:
+                self.exec_prefix = self.prefix
+
+        py_version_short = ".".join(map(str, sys.version_info[:2]))
+        dist_name = self.distribution.pkg.name
+
+        if prefix_customized:
+            if op.normpath(self.prefix) != '/usr/local':
+                # unix prefix
+                scheme['prefix'] = self.prefix
+                scheme['exec_prefix'] = self.exec_prefix
+            else:
+                scheme['prefix'] = self.prefix
+                scheme['exec_prefix'] = self.exec_prefix
+                # use deb_system on debian-like systems
+                if 'deb_system' in INSTALL_SCHEMES:
+                    v = {'py_version_short': py_version_short, 'dist_name': dist_name, 'base': self.prefix}
+                    scheme['includedir'] = subst_vars(INSTALL_SCHEMES['deb_system']['headers'], v)
+                    scheme['sitedir'] = subst_vars(INSTALL_SCHEMES['deb_system']['purelib'], v)
+        else:
+            scheme['prefix'] = scheme['exec_prefix'] = '/usr/local'
+            # use unix_local on debian-like systems
+            if 'unix_local' in INSTALL_SCHEMES:
+                v = {'py_version_short': py_version_short, 'dist_name': dist_name, 'base': self.prefix}
+                scheme['includedir'] = subst_vars(INSTALL_SCHEMES['unix_local']['headers'], v)
+                scheme['sitedir'] = subst_vars(INSTALL_SCHEMES['unix_local']['purelib'], v)
 
     def run(self):
         self.run_command("build")
