@@ -112,10 +112,23 @@ class install(Command):
                     scheme['includedir'] = subst_vars(INSTALL_SCHEMES['deb_system']['headers'], v)
                     scheme['sitedir'] = subst_vars(INSTALL_SCHEMES['deb_system']['purelib'], v)
         else:
-            scheme['prefix'] = scheme['exec_prefix'] = '/usr/local'
+            # If no prefix is specified, we'd like to avoid installing anything
+            # in /usr by default (i.e. like autotools, everything in
+            # /usr/local).  If prefix is not /usr, then we can't really guess
+            # the best default location.
+            if hasattr(sys, 'real_prefix'): # run under virtualenv
+                prefix = sys.prefix
+                exec_prefix = sys.exec_prefix
+            elif sys.prefix == '/usr':
+                prefix = exec_prefix = '/usr/local'
+            else:
+                prefix = sys.prefix
+                exec_prefix = sys.exec_prefix
+            scheme['prefix'] = prefix
+            scheme['exec_prefix'] = exec_prefix
             # use unix_local on debian-like systems
             if 'unix_local' in INSTALL_SCHEMES:
-                v = {'py_version_short': py_version_short, 'dist_name': dist_name, 'base': self.prefix}
+                v = {'py_version_short': py_version_short, 'dist_name': dist_name, 'base': prefix}
                 scheme['includedir'] = subst_vars(INSTALL_SCHEMES['unix_local']['headers'], v)
                 scheme['sitedir'] = subst_vars(INSTALL_SCHEMES['unix_local']['purelib'], v)
 
