@@ -1,6 +1,7 @@
 import sys
 import os
 import os.path as op
+import warnings
 
 from distutils.cmd \
     import \
@@ -46,6 +47,8 @@ class install(Command):
         ('root=', None, "(Unix-only) Alternative root (equivalent to destdir option in bento)"),
 
         ('dry-run', 'n', "(Unix-only) Alternative root (equivalent to destdir option in bento)"),
+        ('single-version-externally-managed', None, "Do nothing. For compatibility with pip only."),
+        ('install-headers=', None, "Do nothing. For compatibility with pip only."),
     ]
 
     def initialize_options(self):
@@ -54,10 +57,14 @@ class install(Command):
         self.record = None
         self.root = None
         self.dry_run = None
+        self.install_headers = None
+        self.single_version_externally_managed = None
 
         self.scheme = {}
 
     def finalize_options(self):
+        if self.install_headers is not None:
+            warnings.warn("--install-headers option is ignored.")
         if os.name == "posix":
             self._finalize_unix()
         else:
