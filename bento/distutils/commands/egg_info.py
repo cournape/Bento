@@ -29,7 +29,7 @@ class egg_info(old_egg_info):
         n = dist.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
 
-        egg_info = EggInfo.from_ipkg(ipkg)
+        egg_info = EggInfo.from_ipkg(ipkg, dist.build_node)
 
         egg_info_dir = op.join(self.egg_base, "%s.egg-info" % dist.pkg.name)
         try:
