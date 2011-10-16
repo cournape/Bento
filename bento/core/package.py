@@ -120,8 +120,13 @@ def raw_to_pkg_kw(raw_dict, user_flags, bento_info=None):
             source_dir = bento_info.parent.abspath()
             bento_info_path = bento_info.srcpath()
         except AttributeError:
-            source_dir = os.path.dirname(bento_info)
-            bento_info_path = os.path.abspath(bento_info)
+            if os.path.isabs(bento_info):
+                source_dir = os.path.dirname(bento_info)
+                bento_info_path = os.path.basename(bento_info)
+            else:
+                source_dir = os.getcwd()
+                bento_info_path = os.path.basename(bento_info)
+                assert bento_info_path == bento_info
 
     d = build_ast_from_raw_dict(raw_dict, user_flags)
 
