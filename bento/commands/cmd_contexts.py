@@ -1,13 +1,14 @@
 import os
 import sys
 import string
+import shutil
 
 from bento.core.errors \
     import \
         InvalidPackage
 from bento.core.utils \
     import \
-        is_string
+        is_string, subst_vars
 from bento.compat.api \
     import \
         defaultdict
@@ -28,10 +29,13 @@ from bento._config \
         CONFIGURED_STATE_DUMP
 from bento.commands.configure \
     import \
-        _ConfigureState
+        _ConfigureState, _compute_scheme
 from bento.commands.build \
     import \
         SectionWriter
+from bento.commands.install \
+    import \
+        copy_installer
 from bento.installed_package_description \
     import \
         InstalledSection
@@ -278,6 +282,11 @@ class BuildContext(_ContextWithBuildDirectory):
         self.builder_registry = BuilderRegistry()
         self.section_writer = SectionWriter()
 
+        o, a = self.options_context.parser.parse_args(cmd_argv)
+        if o.inplace:
+            self.inplace = True
+        else:
+            self.inplace = False
         # Builders signature:
         #   - first argument: name, str. Name of the entity to be built
         #   - second argument: object. Value returned by
@@ -419,3 +428,15 @@ class BuildContext(_ContextWithBuildDirectory):
                 sections = section_writer.sections[installed_category] = {}
             registrer = self.isection_registry.registrer(category, name)
             sections[name] = registrer(installed_category, name, nodes, from_node, target_dir)
+
+        # FIXME: this is quite stupid.
+        if self.inplace:
+            scheme = _compute_scheme(self.package_options)
+            scheme["prefix"] = scheme["eprefix"] = self.top_node.abspath()
+            scheme["sitedir"] = self.top_node.abspath()
+            for category, name, nodes, from_node, target_dir in self.outputs_registry.iter_over_category():
+                for node in nodes:
+                    if node.is_bld():
+                        installed_path = subst_vars(target_dir, scheme)
+                        target = os.path.join(installed_path, node.path_from(from_node))
+                        copy_installer(node.srcpath(), target, category)
