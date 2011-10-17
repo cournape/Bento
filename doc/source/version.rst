@@ -5,15 +5,15 @@ Released on .
 
 Main features:
 
-    - add support for DESTDIR-like feature to ease packaging
-    - add suport for DescriptionFromFile field to get metadata from secondary
-      file
-    - add support for comment in bento.info
-    - add support for zip archive in sdist
-    - add support for template file to be filled from bento metadata
-    - add support for 'Keywords' metadata field
-    - add support for arbitrary customization of extension builder in waf
-      BuildContext
+    - New bento.info fields:
+        - 'DescriptionFromFile': pointer to a file to read description from.
+        - 'Keywords' metadata field
+        - 'MetaTemplateFile': pointer to template files to be filled with bento
+          metadata
+    - Support for DESTDIR-like feature to ease downstream packaging
+    - Comment support in bento.info
+    - Sdist now has a format option, and supports zip archive as well
+    - Builders in waf context now support arbitrary customization
 
 Fixes:
 
