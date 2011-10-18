@@ -93,6 +93,7 @@ Usage:   bentomaker test_py3k [OPTIONS]."""
         else:
             python_interpreter = "python3"
 
+        print(python_interpreter)
         pprint("BLUE", "running distcheck on python 3 code...")
         p = subprocess.Popen([python_interpreter, "-m", "bentomakerlib.bentomaker", "distcheck"],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=PY3K_BUILD)
@@ -151,5 +152,5 @@ def startup(context):
 
 @hooks.options
 def options(context):
-    opt = Option("-j", help="Number of threads to use", dest="njobs", type="int")
+    opt = Option("-j", help="Number of threads to use", dest="njobs", type="int", default=1)
     context.add_option("run_2to3", opt)
