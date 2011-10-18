@@ -28,10 +28,8 @@ def pre_configure(ctx):
 
 PY3K_BUILD = os.path.join("build", "py3k")
 
-@hooks.command
-def _run_2to3(ctx):
-    njobs = int(os.environ.get("BENTO_2TO3_NJOBS", 1))
-
+#@hooks.command
+def _run_2to3(ctx, njobs):
     bld = yaku.context.get_bld()
     if not "python_2to3" in bld.builders:
         raise ValueError("2to3 is not available")
@@ -57,6 +55,12 @@ def run_2to3(ctx):
     """\
 Purpose: run 2to3 on bento.
 Usage: bentomaker run_2to3 [OPTIONS]"""
+    p = ctx.options_context.parser
+    o, a = p.parse_args(ctx.cmd_argv)
+
+    njobs = o.njobs
+    _run_2to3(ctx, njobs)
+
     msg = """\
 ===============================================================================
 python 3 version of bento is now available in build/py3k. You can install bento
@@ -142,6 +146,10 @@ def startup(context):
     context.register_command("test", TestCommand)
     context.register_command("test_py3k", TestPy3kCommand)
 
-    context.set_before("_run_2to3", "configure")
-    context.set_before("run_2to3", "_run_2to3")
-    context.set_before("test_py3k", "_run_2to3")
+    context.set_before("run_2to3", "configure")
+    context.set_before("test_py3k", "run_2to3")
+
+@hooks.options
+def options(context):
+    opt = Option("-j", help="Number of threads to use", dest="njobs", type="int")
+    context.add_option("run_2to3", opt)
