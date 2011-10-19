@@ -542,6 +542,22 @@ class NodeWithBuild(Node):
             cur = cur.parent
         return False
 
+    def get_bld(self):
+        """for a src node, will return the equivalent bld node (or self if not possible)"""
+        cur = self
+        x = id(self._ctx.srcnode)
+        y = id(self._ctx.bldnode)
+        lst = []
+        while cur.parent:
+            if id(cur) == y:
+                return self
+            if id(cur) == x:
+                lst.reverse()
+                return self._ctx.bldnode.make_node(lst)
+            lst.append(cur.name)
+            cur = cur.parent
+        return self
+
     def bldpath(self):
         "Path seen from the build directory default/src/foo.cpp"
         return self.path_from(self._ctx.bldnode)
@@ -549,6 +565,39 @@ class NodeWithBuild(Node):
     def srcpath(self):
         "Path seen from the source directory ../src/foo.cpp"
         return self.path_from(self._ctx.srcnode)
+
+    def declare(self, lst):
+        """
+        if 'self' is in build directory, try to return an existing node
+        if no node is found, create it in the build directory
+        """
+        if isinstance(lst, str):
+            lst = [x for x in split_path(lst) if x and x != '.']
+
+        node = self.get_bld().search(lst)
+        if node:
+            if not os.path.isfile(node.abspath()):
+                node.sig = None
+                try:
+                    node.parent.mkdir()
+                except:
+                    pass
+            return node
+        node = self.get_bld().make_node(lst)
+        node.parent.mkdir()
+        return node
+
+    def change_ext(self, ext):
+        "node of the same path, but with a different extension."
+        name = self.name
+        # XXX: is using name.find(".") as done in waf a bug ?
+        k = name.rfind('.')
+        if k >= 0:
+            name = name[:k] + ext
+        else:
+            name = name + ext
+
+        return self.parent.declare([name])
 
 class _NodeContext(object):
     __slot__ = ("srcnode", "bldnode")
