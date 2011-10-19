@@ -39,23 +39,26 @@ To install bento for python 3::
 
 and follows the given instructions.
 
-Main Features
-=============
+Why you should use bento ?
+==========================
 
-    * Package description in a simple, indentation-based format. Supports most
-      distutils/setuptools metadata as well as packages and extensions.
-      Recursive support for deeply-nested packages.
-    * Supports all python versions >= 2.4 (including 3.x)
-    * Convert command to create a bento package from a setup.py
+    * Straightfoward package description, in an indentation-based syntax
+      similar to python
+    * Simple packages can have their setup.py automatically converted through
+      the 'convert' command
     * Distutils compatibility mode so that a bento package can be installed
       through pip
-    * Designed with reproducibility in mind: re-running the same command twice
-      should produce the same result (idempotency)
+    * Adding new commands is simple
+    * Pluggable build-backend: you can build your C extensions with a real
+      build system such as waf or scons.
     * Easy to customize install paths from the command line, with sensible
       defaults on every platform
+    * Installing data files such as manpages, configuration, etc... is
+      straightforward and customizable through the command line
+    * Supports all python versions >= 2.4 (including 3.x)
+    * Designed with reproducibility in mind: re-running the same command twice
+      should produce the same result (idempotency)
     * Preliminary support for windows installers (.exe), eggs and mpkg.
-    * Pluggable build backend, so that one can use an advanced build tool such
-      as waf to build complex C extensions.
 
 But bento does more:
 
@@ -82,6 +85,7 @@ But bento does more:
 
 Planned features:
 
+    * Reliable and fast (parallel) 2->3 convertion.
     * Support for msi packages
     * Reliable conversion between packaging formats on the platforms where it
       makes sense (egg <-> wininst, mpkg <-> egg, etc...)
