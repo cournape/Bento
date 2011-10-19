@@ -469,35 +469,39 @@ def noexc_main(argv=None):
         if BENTOMAKER_DEBUG:
             tb = sys.exc_info()[2]
             traceback.print_tb(tb)
+    def _print_error(msg):
+        pprint('RED', msg)
+        pprint('RED', "(You can see the traceback by setting the " \
+                      "BENTOMAKER_DEBUG=1 environment variable)")
+
     try:
         ret = main(argv)
     except UsageException, e:
         _print_debug()
-        pprint('RED', e)
         sys.exit(1)
     except ParseError, e:
         _print_debug()
-        pprint('RED', str(e))
+        _print_error(str(e))
         sys.exit(2)
     except ConvertionError, e:
         _print_debug()
-        pprint('RED', "".join(e.args))
+        _print_error("".join(e.args))
         sys.exit(3)
     except CommandExecutionFailure, e:
         _print_debug()
-        pprint('RED', "".join(e.args))
+        _print_error("".join(e.args))
         sys.exit(4)
     except bento.core.errors.ConfigurationError, e:
         _print_debug()
-        pprint('RED', e)
+        _print_error(e)
         sys.exit(8)
     except bento.core.errors.BuildError, e:
         _print_debug()
-        pprint('RED', e)
+        _print_error(e)
         sys.exit(16)
     except bento.core.errors.InvalidPackage, e:
         _print_debug()
-        pprint('RED', e)
+        _print_error(e)
         sys.exit(32)
     except Exception, e:
         msg = """\
