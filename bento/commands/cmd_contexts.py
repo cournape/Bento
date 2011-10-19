@@ -5,7 +5,7 @@ import shutil
 
 from bento.core.errors \
     import \
-        InvalidPackage
+        InvalidPackage, BuildError
 from bento.core.utils \
     import \
         is_string, subst_vars
@@ -439,4 +439,6 @@ class BuildContext(_ContextWithBuildDirectory):
                     if node.is_bld():
                         installed_path = subst_vars(target_dir, scheme)
                         target = os.path.join(installed_path, node.path_from(from_node))
+                        if os.path.exists(target):
+                            raise BuildError("in-place build would override file %r" % (target,))
                         copy_installer(node.srcpath(), target, category)
