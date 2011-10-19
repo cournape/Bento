@@ -432,13 +432,21 @@ class BuildContext(_ContextWithBuildDirectory):
         # FIXME: this is quite stupid.
         if self.inplace:
             scheme = _compute_scheme(self.package_options)
-            scheme["prefix"] = scheme["eprefix"] = self.top_node.abspath()
-            scheme["sitedir"] = self.top_node.abspath()
-            for category, name, nodes, from_node, target_dir in self.outputs_registry.iter_over_category():
-                for node in nodes:
-                    if node.is_bld():
-                        installed_path = subst_vars(target_dir, scheme)
-                        target = os.path.join(installed_path, node.path_from(from_node))
-                        if os.path.exists(target):
-                            raise BuildError("in-place build would override file %r" % (target,))
-                        copy_installer(node.srcpath(), target, category)
+            scheme["prefix"] = scheme["eprefix"] = self.run_node.abspath()
+            scheme["sitedir"] = self.run_node.abspath()
+
+            def _install_node(category, node, from_node, target_dir):
+                installed_path = subst_vars(target_dir, scheme)
+                target = os.path.join(installed_path, node.path_from(from_node))
+                copy_installer(node.srcpath(), target, category)
+
+            intree = (self.top_node == self.run_node)
+            if intree:
+                for category, name, nodes, from_node, target_dir in self.outputs_registry.iter_over_category():
+                    for node in nodes:
+                        if node.is_bld():
+                            _install_node(category, node, from_node, target_dir)
+            else:
+                for category, name, nodes, from_node, target_dir in self.outputs_registry.iter_over_category():
+                    for node in nodes:
+                        _install_node(category, node, from_node, target_dir)
