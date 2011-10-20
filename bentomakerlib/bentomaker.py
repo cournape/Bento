@@ -27,7 +27,7 @@ from bento.commands.api \
         HelpCommand, ConfigureCommand, BuildCommand, InstallCommand, \
         ParseCommand, ConvertCommand, SdistCommand, DetectTypeCommand, \
         BuildPkgInfoCommand, BuildEggCommand, BuildWininstCommand, \
-        DistCheckCommand, COMMANDS_REGISTRY, ConvertionError, UsageException, \
+        COMMANDS_REGISTRY, ConvertionError, UsageException, \
         CommandExecutionFailure
 from bento.commands.dependency \
     import \
@@ -126,7 +126,6 @@ def register_commands():
     COMMANDS_REGISTRY.register_command("sdist", SdistCommand)
     COMMANDS_REGISTRY.register_command("build_egg", BuildEggCommand)
     COMMANDS_REGISTRY.register_command("build_wininst", BuildWininstCommand)
-    COMMANDS_REGISTRY.register_command("distcheck", DistCheckCommand)
 
     COMMANDS_REGISTRY.register_command("build_pkg_info", BuildPkgInfoCommand, public=False)
     COMMANDS_REGISTRY.register_command("parse", ParseCommand, public=False)

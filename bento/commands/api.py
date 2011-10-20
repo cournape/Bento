@@ -31,9 +31,6 @@ from bento.commands.build_egg \
 from bento.commands.build_wininst \
     import \
         BuildWininstCommand
-from bento.commands.distcheck \
-    import \
-        DistCheckCommand
 
 from bento.commands.core \
     import \
