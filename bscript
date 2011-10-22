@@ -40,6 +40,8 @@ from bento.commands import hooks
 import yaku.context
 import yaku.scheduler
 
+_BENTOMAKER_SCRIPT = [op.join(op.dirname(bento.__file__), os.pardir, "bentomaker")]
+
 def try_decode(s):
     try:
         return s.decode()
