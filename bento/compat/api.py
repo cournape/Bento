@@ -2,12 +2,12 @@ import os
 import sys
 
 if os.name == "posix":
-    from posix_path \
+    from bento.compat.posix_path \
         import \
             relpath
     rename = os.rename
 elif os.name == "nt":
-    from nt_path \
+    from bento.compa.nt_path \
         import \
             relpath
     from rename import rename

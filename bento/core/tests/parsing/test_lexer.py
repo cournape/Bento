@@ -5,6 +5,9 @@ from nose.tools \
     import \
         assert_equal, assert_raises
 
+from bento.core.utils \
+    import \
+        extract_exception, is_string
 from bento.core.parser.lexer \
     import \
         MyLexer, indent_generator, post_process
@@ -14,9 +17,6 @@ def split(s):
     for i in s.split(" "):
         ret.extend(i.splitlines())
     return ret
-
-def isstring(s):
-    return issubclass(s.__class__, basestring)
 
 class TestLexer(TestCase):
     def setUp(self):
@@ -34,17 +34,18 @@ class TestLexer(TestCase):
                 break
             res.append(tok.type)
 
-        if isstring(ref):
+        if is_string(ref):
             ref = split(ref)
         try:
             assert_equal(res, ref)
-        except AssertionError, e:
+        except AssertionError:
+            e = extract_exception()
             cnt = 0
             for i, j in zip(res, ref):
                 if not i == j:
                     break
                 cnt += 1
-            print "Break at index", cnt
+            print("Break at index %d" % cnt)
             raise e
 
     def _get_tokens(self, data):

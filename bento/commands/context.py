@@ -27,7 +27,7 @@ class ContextRegistry(object):
         return name in self._contexts
 
     def register(self, name, context):
-        if self._contexts.has_key(name):
+        if name in self._contexts:
             raise ValueError("context for command %r already registered !" % name)
         else:
             self._contexts[name] = context

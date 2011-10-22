@@ -106,7 +106,7 @@ def knownfailureif(fail_condition, msg=None):
         # import time overhead at actual test-time.
         def knownfailer(*args, **kwargs):
             if fail_val():
-                raise KnownFailureTest, msg
+                raise KnownFailureTest(msg)
             else:
                 return f(*args, **kwargs)
         return nose.tools.make_decorator(f)(knownfailer)
@@ -160,11 +160,11 @@ def create_fake_package_from_bento_info(top_node, bento_info):
 def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
     if bscripts is None:
         bscripts = {}
-    for loc, content in bento_infos.iteritems():
+    for loc, content in bento_infos.items():
         n = top_node.make_node(loc)
         n.parent.mkdir()
         n.write(content)
-    for loc, content in bscripts.iteritems():
+    for loc, content in bscripts.items():
         n = top_node.make_node(loc)
         n.parent.mkdir()
         n.write(content)
@@ -183,7 +183,7 @@ def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
     else:
         compiled_libraries = []
     packages = _kw.get("packages", [])
-    for name, spkg in subpackages.iteritems():
+    for name, spkg in subpackages.items():
         n = top_node.search(name)
         n.write(bento_infos[name])
         d = n.parent

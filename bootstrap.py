@@ -1,13 +1,12 @@
 import sys
 import os
-import stat
 
 from bento.core \
     import \
         PackageDescription
 from bento.core.utils \
     import \
-        pprint
+        pprint, MODE_755
 
 from bento.core.node \
     import \
@@ -15,10 +14,6 @@ from bento.core.node \
 from bento.commands.script_utils \
     import \
         create_posix_script, create_win32_script
-
-# We cannot use octal literal for compat with python 3.x
-MODE_755 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | \
-    stat.S_IROTH | stat.S_IXOTH
 
 root = create_root_with_source_tree(os.getcwd(), os.path.join(os.getcwd(), "build"))
 

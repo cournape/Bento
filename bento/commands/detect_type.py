@@ -1,5 +1,14 @@
 import optparse
-import StringIO
+import sys
+
+if sys.version_info[0] < 3:
+    from StringIO \
+        import \
+            StringIO
+else:
+    from io \
+        import \
+            StringIO
 
 from bento.core.utils import \
         pprint
@@ -27,7 +36,7 @@ Usage:   bentomaker detect_type [OPTIONS]."""
             p.print_help()
             return
 
-        log = StringIO.StringIO()
+        log = StringIO()
         pprint("PINK",
                "=================================================================")
         pprint("PINK",

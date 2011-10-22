@@ -56,7 +56,7 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             p.print_help()
             return
         if len(a) < 1:
-            print get_simple_usage()
+            print(get_simple_usage())
             return
 
         # Parse the options for help command itself
@@ -159,7 +159,7 @@ class CommandRegistry(object):
         self._privates = {}
 
     def register_command(self, name, cmd_klass, public=True):
-        if self._klasses.has_key(name):
+        if name in self._klasses:
             raise ValueError("context for command %r already registered !" % name)
         else:
             self._klasses[name] = cmd_klass
@@ -177,7 +177,7 @@ class CommandRegistry(object):
         return self._klasses.keys()
 
     def get_public_command_names(self):
-        return [k for k in self._klasses.keys() if not self._privates.has_key(k)]
+        return [k for k in self._klasses.keys() if not k in self._privates]
 
     def get_command_name(self, klass):
         for k, v in self._klasses.iteritems():

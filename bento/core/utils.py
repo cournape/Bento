@@ -1,17 +1,18 @@
 import os
 import sys
+import stat
 import re
 import glob
 import shutil
 import errno
 import subprocess
+import traceback
 
 try:
     from hashlib import md5
 except ImportError:
     from md5 import md5
 
-from itertools import izip, imap
 from copy import deepcopy
 
 from os.path import \
@@ -159,8 +160,8 @@ def subst_vars (s, local_vars):
 
     try:
         return _do_subst(s)
-    except KeyError, var:
-        raise ValueError("invalid variable '$%s'" % var)
+    except KeyError:
+        raise ValueError("invalid variable '$%s'" % ex_stack())
 
 # Taken from multiprocessing code
 def cpu_count():
@@ -188,9 +189,6 @@ def cpu_count():
     else:
         return 1
         #raise NotImplementedError('cannot determine number of cpus')
-
-if __name__ == "__main__":
-    print expand_glob("*.py", dirname(__file__))
 
 def validate_package(pkg_name, base_node):
     """Given a python package name, check whether it is indeed an existing
@@ -246,7 +244,8 @@ def resolve_glob(files, reference_path=None):
 def rename(source, target):
     try:
         _rename(source, target)
-    except OSError, e:
+    except OSError:
+        e = extract_exception()
         if e.errno == errno.EXDEV:
             shutil.move(source, target)
         else:
@@ -340,7 +339,7 @@ def to_camel_case(s):
 def fix_kw(kw):
     """Make sure the given dictionary may be used as a kw dict independently on
     the python version and encoding of kw's keys."""
-    return dict([(str(k), v) for k, v in kw.iteritems()])
+    return dict([(str(k), v) for k, v in kw.items()])
 
 def test_program_run(cmd, **kw):
     """Test whether the given command can work.
@@ -357,7 +356,8 @@ def test_program_run(cmd, **kw):
         p = subprocess.Popen(cmd, **kw)
         p.communicate()
         return p.returncode == 0
-    except OSError, e:
+    except OSError:
+        e = extract_exception()
         if e.errno == 2:
             return False
         else:
@@ -401,5 +401,43 @@ def explode_path(path):
         ret.append(d)
     return ret[::-1]
 
-def is_string(s):
-    return isinstance(s, str) or isinstance(s, unicode)
+if sys.version_info[0] < 3:
+    def is_string(s):
+        return isinstance(s, str) or isinstance(s, unicode)
+else:
+    def is_string(s):
+        return isinstance(s, str)
+
+def extract_exception():
+    """Extract the last exception.
+
+    Used to avoid the except ExceptionType as e, which cannot be written the
+    same across supported versions. I.e::
+
+        try:
+            ...
+        except Exception, e:
+            ...
+
+    becomes:
+
+        try:
+            ...
+        except Exception:
+            e = extract_exception()
+    """
+    return sys.exc_info()[1]
+
+if sys.version_info[0] < 3:
+    def gen_next(g):
+        return g.next()
+else:
+    def gen_next(g):
+        return next(g)
+
+# We cannot use octal literal for compat with python 3.x
+MODE_755 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | \
+    stat.S_IROTH | stat.S_IXOTH
+MODE_777 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | \
+    stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | \
+    stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH

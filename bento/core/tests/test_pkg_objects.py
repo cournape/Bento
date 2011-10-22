@@ -6,10 +6,10 @@ import sys
 from nose.tools import \
     assert_equal
 
-try:
+if sys.version_info[0] < 3:
     from cStringIO import StringIO
-finally:
-    from StringIO import StringIO
+else:
+    from io import StringIO
 
 from bento.core.pkg_objects import \
     DataFiles, Executable

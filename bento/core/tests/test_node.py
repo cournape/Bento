@@ -21,6 +21,11 @@ class TestNode(unittest.TestCase):
     def setUp(self):
         self.root = Node("", None)
 
+        if sys.version_info[0] < 3:
+            self._string_classes = [str, unicode]
+        else:
+            self._string_classes = [str]
+
     def test_scratch_creation(self):
         root = Node("", None)
         assert_equal(root.abspath(), get_root())
@@ -28,7 +33,7 @@ class TestNode(unittest.TestCase):
     def test_find_node(self):
         r_n = os.path.abspath(os.getcwd())
 
-        for f in [str, unicode]:
+        for f in self._string_classes:
             n = self.root.find_node(f(os.getcwd()))
             assert_true(n)
             assert n.abspath() == r_n
@@ -36,7 +41,7 @@ class TestNode(unittest.TestCase):
     def test_make_node(self):
         r_n = os.path.abspath(os.getcwd())
 
-        for f in [str, unicode]:
+        for f in self._string_classes:
             n = self.root.make_node(f(os.getcwd()))
             assert_true(n)
             assert n.abspath() == r_n, "%s vs %s" % (n.abspath(), r_n)

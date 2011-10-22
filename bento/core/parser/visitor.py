@@ -99,27 +99,27 @@ class Dispatcher(object):
                           "meta_template_file", "keywords"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
-                if self._d.has_key("path_options"):
+                if "path_options" in self._d:
                     self._d["path_options"].update({c.value["name"]: c.value})
                 else:
                     self._d["path_options"] = {c.value["name"]: c.value}
             elif c.type == "flag":
-                if self._d.has_key("flag_options"):
+                if "flag_options" in self._d:
                     self._d["flag_options"].update({c.value["name"]: c.value})
                 else:
                     self._d["flag_options"] = {c.value["name"]: c.value}
             elif c.type == "library":
-                if self._d.has_key("libraries"):
+                if "libraries" in self._d:
                     self._d["libraries"].update({c.value["name"]: c.value})
                 else:
                     self._d["libraries"] = {c.value["name"]: c.value}
             elif c.type == "executable":
-                if self._d.has_key("executables"):
+                if "executables" in self._d:
                     self._d["executables"].update({c.value["name"]: c.value})
                 else:
                     self._d["executables"] = {c.value["name"]: c.value}
             elif c.type == "data_files":
-                if self._d.has_key("data_files"):
+                if "data_files" in self._d:
                     self._d["data_files"].update({c.value["name"]: c.value})
                 else:
                     self._d["data_files"] = {c.value["name"]: c.value}
@@ -141,7 +141,7 @@ class Dispatcher(object):
         return node
 
     def hook_files(self, node):
-        if self._d.has_key("hook_files"):
+        if "hook_files" in self._d:
             self._d["hook_files"].extend(node.value)
         else:
             self._d["hook_files"] = node.value
@@ -199,29 +199,29 @@ class Dispatcher(object):
             elif c.type == "name":
                 library_dict["name"] = c.value
             elif c.type == "modules":
-                if library_dict.has_key("modules"):
+                if "modules" in library_dict:
                     library_dict["py_modules"].extend(c.value)
                 else:
                     library_dict["py_modules"] = c.value
             elif c.type == "packages":
-                if library_dict.has_key("packages"):
+                if "packages" in library_dict:
                     library_dict["packages"].extend(c.value)
                 else:
                     library_dict["packages"] = c.value
             elif c.type in ("build_requires", "install_requires"):
-                if library_dict.has_key(c.type):
+                if c.type in library_dict:
                     library_dict[c.type].extend(c.value)
                 else:
                     library_dict[c.type] = c.value
             elif c.type == "extension":
                 name = c.value["name"]
-                if library_dict.has_key("extensions"):
+                if "extensions" in library_dict:
                     library_dict["extensions"][name] = c.value
                 else:
                     library_dict["extensions"] = {name: c.value}
             elif c.type == "compiled_library":
                 name = c.value["name"]
-                if library_dict.has_key("compiled_libraries"):
+                if "compiled_libraries" in library_dict:
                     library_dict["compiled_libraries"][name] = c.value
                 else:
                     library_dict["compiled_libraries"] = {name: c.value}
@@ -251,12 +251,12 @@ class Dispatcher(object):
             elif c.type == "name":
                 ret["name"] = c.value
             elif c.type == "sources":
-                if ret.has_key("sources"):
+                if "sources" in ret:
                     ret["sources"].extend(c.value)
                 else:
                     ret["sources"] = c.value
             elif c.type == "include_dirs":
-                if ret.has_key("include_dirs"):
+                if "include_dirs" in ret:
                     ret["include_dirs"].extend(c.value)
                 else:
                     ret["include_dirs"] = c.value
@@ -394,13 +394,13 @@ class Dispatcher(object):
             return _LIT_BOOL[value]
 
     def extra_source_files(self, node):
-        if self._d.has_key("extra_source_files"):
+        if "extra_source_files" in self._d:
             self._d["extra_source_files"].extend(node.value)
         else:
             self._d["extra_source_files"] = node.value
 
     def subento(self, node):
-        if self._d.has_key("subento"):
+        if "subento" in self._d:
             self._d["subento"].extend(node.value)
         else:
             self._d["subento"] = node.value

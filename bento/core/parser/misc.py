@@ -1,3 +1,6 @@
+from bento.core.utils \
+    import \
+        extract_exception
 from bento.core.parser.parser \
     import \
         parse as _parse
@@ -15,7 +18,8 @@ def raw_parse(data, filename=None):
     try:
         ret = _parse(data)
         return ret
-    except ParseError, e:
+    except ParseError:
+        e = extract_exception()
         e.filename = filename
         raise
 

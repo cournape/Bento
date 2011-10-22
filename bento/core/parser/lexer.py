@@ -2,6 +2,9 @@ from ply.lex \
     import \
         LexToken, lex
 
+from bento.core.utils \
+    import \
+        gen_next
 from bento.core.parser.utils \
     import \
         Peeker, BackwardGenerator
@@ -209,7 +212,7 @@ class MyLexer(object):
 
     def token(self, *a, **kw):
         try:
-            return self.token_stream.next()
+            return gen_next(self.token_stream)
         except StopIteration:
             return None
 
@@ -222,7 +225,7 @@ def detect_escaped(stream):
     for t in stream:
         if ESCAPING_CHAR[t.type]:
             try:
-                t = stream.next()
+                t = gen_next(stream)
             except StopIteration:
                 raise SyntaxError("EOF while escaping token %r (line %d)" %
                                   (t.value, t.lineno-1))
@@ -235,7 +238,7 @@ def merge_escaped(stream):
     stream = Peeker(stream, EOF)
     queue = []
 
-    t = stream.next()
+    t = gen_next(stream)
     while t:
         if t.escaped:
             queue.append(t)
@@ -262,7 +265,7 @@ def merge_escaped(stream):
                     queue = []
                 yield t
         try:
-            t = stream.next()
+            t = gen_next(stream)
         except StopIteration:
             if queue:
                 t.value = "".join([c.value for c in queue])
@@ -276,13 +279,13 @@ def skip_until_eol(stream, t):
     except ValueError:
         prev = None
     while t.type != "NEWLINE":
-        t = stream.next()
+        t = gen_next(stream)
     # FIXME: ideally, we would like to remove EOL for comments which span the
     # full line, but we need access to the token before the comment delimiter
     # to do so, as we don't want to remove EOL for inline commeng (e.g. 'foo #
     # comment')
     if prev and t.type == "NEWLINE" and prev.type in ('NEWLINE', 'INDENT'):
-        t = stream.next()
+        t = gen_next(stream)
     return t
 
 def remove_comments(stream):
@@ -326,7 +329,7 @@ def indent_generator(toks):
             if indent == stack[0]:
                 former = token
                 if indent > 0:
-                    token = toks.next()
+                    token = gen_next(toks)
                     former = token
                     yield token
                 else:
@@ -343,7 +346,7 @@ def indent_generator(toks):
                     former = generate_dedent(stack, token)
                     yield former
                 if stack[0] > 0:
-                    former = toks.next()
+                    former = gen_next(toks)
                     yield former
                 else:
                     former = token
@@ -398,7 +401,7 @@ def singleline_tokenizer(token, state, stream):
         queue = [token]
 
     try:
-        tok = stream.next()
+        tok = gen_next(stream)
     except StopIteration:
         tok = None
 
@@ -430,7 +433,7 @@ def multiline_tokenizer(token, state, stream, internal):
         elif stream.peek().type == "DEDENT":
             try:
                 while stream.peek().type == "DEDENT":
-                    token = stream.next()
+                    token = gen_next(stream)
                     queue.insert(0, token)
                     stack.pop()
             except StopIteration:
@@ -446,7 +449,7 @@ def multiline_tokenizer(token, state, stream, internal):
         queue.insert(0, token)
 
     try:
-        token = stream.next()
+        token = gen_next(stream)
     except StopIteration:
         token = None
     return queue, token, state
@@ -459,7 +462,7 @@ def word_tokenizer(token, state, stream):
         while token.type != "NEWLINE":
             if token.type == "WORD":
                 queue.append(token)
-            token = stream.next()
+            token = gen_next(stream)
     except StopIteration:
         token = None
 
@@ -481,7 +484,7 @@ def words_tokenizer(token, state, stream, internal):
     else:
         queue = []
     try:
-        tok = stream.next()
+        tok = gen_next(stream)
     except StopIteration:
         tok = None
     return queue, tok, state
@@ -514,8 +517,8 @@ def scan_field_id(token, state, stream, lexdata):
         raise ValueError("Unknown state transition for type %s" % field_type)
 
     queue = [candidate]
-    queue.append(stream.next())
-    nxt = stream.next()
+    queue.append(gen_next(stream))
+    nxt = gen_next(stream)
     return queue, nxt, state
 
 def tokenize_conditional(stream, token):
@@ -530,7 +533,7 @@ def tokenize_conditional(stream, token):
         while nxt.type not in ["COLON", "NEWLINE"]:
             if nxt.type not in ["WS"]:
                 queue.append(nxt)
-            nxt = stream.next()
+            nxt = gen_next(stream)
         queue.append(nxt)
 
     for q in queue:
@@ -538,7 +541,7 @@ def tokenize_conditional(stream, token):
             q.type = CONDITIONAL_ID[q.value]
         ret.append(q)
 
-    return ret, stream.next()
+    return ret, gen_next(stream)
 
 def comma_list_tokenizer(token, state, stream, internal):
     queue = []
@@ -563,19 +566,19 @@ def comma_list_tokenizer(token, state, stream, internal):
             token, state = _skip_ws(token, stream, state, internal)
         while token.type not in ("NEWLINE",):
             queue.append(token)
-            token = stream.next()
+            token = gen_next(stream)
         # Eat newline
-        token = stream.next()
+        token = gen_next(stream)
         if token.type == "INDENT":
             internal.stack.append(token)
             while token.type != "DEDENT":
                 if token.type != "NEWLINE":
                     queue.append(token)
-                token = stream.next()
+                token = gen_next(stream)
             if token.type == "DEDENT":
                 internal.stack.pop(0)
             queue.append(token)
-        return _filter_ws_before_comma(queue), stream.next(), state
+        return _filter_ws_before_comma(queue), gen_next(stream), state
     except StopIteration:
         return _filter_ws_before_comma(queue), None, "EOF"
 
@@ -592,7 +595,7 @@ def find_next(token, stream, internal):
         queue.append(token)
 
     try:
-        tok = stream.next()
+        tok = gen_next(stream)
     except StopIteration:
         tok = None
 
@@ -610,7 +613,7 @@ def post_process(stream, lexdata):
     state = "SCANNING_FIELD_ID"
 
     stream = Peeker(stream)
-    i = stream.next()
+    i = gen_next(stream)
     while i:
         if state == "SCANNING_FIELD_ID":
             if i.value in CONDITIONAL_ID.keys():
@@ -655,7 +658,7 @@ def _skip_ws(tok, stream, state, internal):
             if not nxt.type == "INDENT":
                 state = "SCANNING_FIELD_ID"
             else:
-                tok = stream.next()
+                tok = gen_next(stream)
             return tok, state
-        tok = stream.next()
+        tok = gen_next(stream)
     return tok, state

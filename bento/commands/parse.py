@@ -11,6 +11,9 @@ from bento.commands.core import \
 from bento.core.parser.api \
     import \
         build_ast_from_data, ParseError
+from bento.core.utils \
+    import \
+        extract_exception
 
 class ParseCommand(Command):
     long_descr = """\
@@ -46,7 +49,8 @@ Usage:   bentomaker parse [OPTIONS]"""
             data = f.read()
             try:
                 parsed = build_ast_from_data(data)
-            except ParseError, e:
+            except ParseError:
+                e = extract_exception()
                 msg = "Error while parsing file %s\n" % filename
                 e.args = (msg,) +  e.args
                 raise e
@@ -54,20 +58,20 @@ Usage:   bentomaker parse [OPTIONS]"""
                 try:
                     flags = parsed["flags"]
                     for flag in flags:
-                        print flags[flag]
+                        print(flags[flag])
                 except KeyError:
                     pass
             elif o.path:
                 try:
                     paths = parsed["paths"]
                     for path in paths:
-                        print paths[path]
+                        print(paths[path])
                 except KeyError:
                     pass
             elif o.meta_field:
                 try:
-                    print parsed[o.meta_field]
-                except KeyError, e:
+                    print(parsed[o.meta_field])
+                except KeyError:
                     raise ValueError("Field %s not found in metadata" % o.meta_field)
             else:
                 pprint(parsed)

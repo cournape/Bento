@@ -13,7 +13,7 @@ from bento.compat.api \
 
 from bento.core.utils \
     import \
-        pprint
+        pprint, extract_exception
 from bento.core.parser.api \
     import \
         ParseError
@@ -131,11 +131,11 @@ def register_commands():
     COMMANDS_REGISTRY.register_command("parse", ParseCommand, public=False)
     COMMANDS_REGISTRY.register_command("detect_type", DetectTypeCommand, public=False)
  
-    if sys.platform == "darwin":
-        import bento.commands.build_mpkg
-        COMMANDS_REGISTRY.register_command("build_mpkg",
-            bento.commands.build_mpkg.BuildMpkgCommand)
-        CMD_SCHEDULER.set_before("build_mpkg", "build")
+    #if sys.platform == "darwin":
+    #    import bento.commands.build_mpkg
+    #    COMMANDS_REGISTRY.register_command("build_mpkg",
+    #        bento.commands.build_mpkg.BuildMpkgCommand)
+    #    CMD_SCHEDULER.set_before("build_mpkg", "build")
 
 def register_options(cmd_name):
     cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
@@ -148,7 +148,7 @@ def register_options_special():
     # (e.g. 'commands')
     context = OptionsContext()
     def print_usage():
-        print get_usage()
+        print(get_usage())
     context.parser.print_help = print_usage
     OPTIONS_REGISTRY.register_command("commands", context)
 
@@ -156,7 +156,7 @@ def register_options_special():
     def print_help():
         global_options = OPTIONS_REGISTRY.get_options("")
         p = global_options.parser
-        return p.print_help()
+        return(p.print_help())
     context.parser.print_help = print_help
     OPTIONS_REGISTRY.register_command("globals", context)
 
@@ -192,7 +192,7 @@ def set_main(top_node, build_node):
 
     modules = []
     hook_files = pkg.hook_files
-    for name, spkg in pkg.subpackages.iteritems():
+    for name, spkg in pkg.subpackages.items():
         hook_files.extend([os.path.join(spkg.rdir, h) for h in spkg.hook_files])
     # TODO: find doublons
     for f in hook_files:
@@ -322,11 +322,11 @@ def parse_global_options(argv):
 
 def _main(popts, run_node, top_node, build_node):
     if popts["show_version"]:
-        print bento.__version__
+        print(bento.__version__)
         return 0
 
     if popts["show_full_version"]:
-        print bento.__version__ + "git" + bento.__git_revision__
+        print(bento.__version__ + "git" + bento.__git_revision__)
         return 0
 
     if popts["show_usage"]:
@@ -338,7 +338,7 @@ def _main(popts, run_node, top_node, build_node):
     cmd_opts = popts["cmd_opts"]
 
     if not cmd_name:
-        print "Type '%s help' for usage." % SCRIPT_NAME
+        print("Type '%s help' for usage." % SCRIPT_NAME)
         return 1
     else:
         if not cmd_name in COMMANDS_REGISTRY.get_command_names():
@@ -475,34 +475,40 @@ def noexc_main(argv=None):
 
     try:
         ret = main(argv)
-    except UsageException, e:
+    except UsageException:
         _print_debug()
         sys.exit(1)
-    except ParseError, e:
+    except ParseError:
         _print_debug()
+        e = extract_exception()
         _print_error(str(e))
         sys.exit(2)
-    except ConvertionError, e:
+    except ConvertionError:
         _print_debug()
+        e = extract_exception()
         _print_error("".join(e.args))
         sys.exit(3)
-    except CommandExecutionFailure, e:
+    except CommandExecutionFailure:
         _print_debug()
+        e = extract_exception()
         _print_error("".join(e.args))
         sys.exit(4)
-    except bento.core.errors.ConfigurationError, e:
+    except bento.core.errors.ConfigurationError:
         _print_debug()
+        e = extract_exception()
         _print_error(e)
         sys.exit(8)
-    except bento.core.errors.BuildError, e:
+    except bento.core.errors.BuildError:
         _print_debug()
+        e = extract_exception()
         _print_error(e)
         sys.exit(16)
-    except bento.core.errors.InvalidPackage, e:
+    except bento.core.errors.InvalidPackage:
         _print_debug()
+        e = extract_exception()
         _print_error(e)
         sys.exit(32)
-    except Exception, e:
+    except Exception:
         msg = """\
 %s: Error: %s crashed (uncaught exception %s: %s).
 Please report this on bento issue tracker:
@@ -511,6 +517,7 @@ Please report this on bento issue tracker:
             msg += "\nYou can get a full traceback by setting BENTOMAKER_DEBUG=1"
         else:
             _print_debug()
+        e = extract_exception()
         pprint('RED',  msg % (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e)))
         sys.exit(1)
     sys.exit(ret)

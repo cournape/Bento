@@ -68,7 +68,7 @@ class NodeRepresentation(object):
         return NodeExtension(extension.name, nodes, ref_node)
 
     def _run_in_subpackage(self, pkg, func):
-        for name, sub_pkg in pkg.subpackages.iteritems():
+        for name, sub_pkg in pkg.subpackages.items():
             ref_node = self.top_node.find_node(sub_pkg.rdir)
             if ref_node is None:
                 raise IOError("directory %s relative to %s not found !" % (sub_pkg.rdir,
@@ -76,26 +76,26 @@ class NodeRepresentation(object):
             func(sub_pkg, ref_node)
 
     def _update_extensions(self, pkg):
-        for name, extension in pkg.extensions.iteritems():
+        for name, extension in pkg.extensions.items():
             ref_node = self.top_node
             extension = self.to_node_extension(extension, ref_node)
             full_name = translate_name(name, ref_node, self.top_node)
             self._registry["extensions"][full_name] = extension
 
         def _subpackage_extension(sub_package, ref_node):
-            for name, extension in sub_package.extensions.iteritems():
+            for name, extension in sub_package.extensions.items():
                 extension = self.to_node_extension(extension, ref_node)
                 full_name = translate_name(name, ref_node, self.top_node)
                 self._registry["extensions"][full_name] = extension
         self._run_in_subpackage(pkg, _subpackage_extension)
 
     def _update_libraries(self, pkg):
-        for name, compiled_library in pkg.compiled_libraries.iteritems():
+        for name, compiled_library in pkg.compiled_libraries.items():
             compiled_library = self.to_node_extension(compiled_library, self.top_node)
             self._registry["compiled_libraries"][name] = compiled_library
 
         def _subpackage_compiled_libraries(sub_package, ref_node):
-            for name, compiled_library in sub_package.compiled_libraries.iteritems():
+            for name, compiled_library in sub_package.compiled_libraries.items():
                 compiled_library = self.to_node_extension(compiled_library, ref_node)
                 name = translate_name(name, ref_node, self.top_node)
                 self._registry["compiled_libraries"][name] = compiled_library
@@ -122,7 +122,7 @@ class NodeRepresentation(object):
         self._run_in_subpackage(pkg, _subpackage_resolve_package)
 
     def _update_data_files(self, pkg):
-        for name, data_section in pkg.data_files.iteritems():
+        for name, data_section in pkg.data_files.items():
             ref_node = self.top_node.find_node(data_section.source_dir)
             nodes = []
             for f in data_section.files:
@@ -160,7 +160,7 @@ class NodeRepresentation(object):
 
     def iter_category(self, category):
         if category in self._registry:
-            return self._registry[category].iteritems()
+            return self._registry[category].items()
         else:
             raise ValueError("Unknown category %s" % category)
 
@@ -174,19 +174,19 @@ class NodeRepresentation(object):
         for n in self._extra_top_nodes:
             yield n.path_from(self.run_node)
 
-        for d in self._registry["datafiles"].itervalues():
+        for d in self._registry["datafiles"].values():
             for n in d.nodes:
                 yield n.path_from(self.run_node)
 
-        for m in self._registry["modules"].itervalues():
+        for m in self._registry["modules"].values():
             yield m.path_from(self.run_node)
-        for package in self._registry["packages"].itervalues():
+        for package in self._registry["packages"].values():
             for n in package:
                 yield n.path_from(self.run_node)
 
-        for extension in self._registry["extensions"].itervalues():
+        for extension in self._registry["extensions"].values():
             for n in extension.nodes:
                 yield n.path_from(self.run_node)
-        for compiled_library in self._registry["compiled_libraries"].itervalues():
+        for compiled_library in self._registry["compiled_libraries"].values():
             for n in compiled_library.nodes:
                 yield n.path_from(self.run_node)

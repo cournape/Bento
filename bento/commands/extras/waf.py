@@ -4,7 +4,7 @@ import shutil
 import logging
 import collections
 
-if os.environ.has_key("WAFDIR"):
+if "WAFDIR" in os.environ:
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
 else:
     WAFDIR = os.path.join(os.getcwd(), "waflib")

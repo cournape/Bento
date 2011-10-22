@@ -1,11 +1,13 @@
 import os
+import sys
 import unittest
 import tempfile
 import shutil
 
-from cStringIO \
-    import \
-        StringIO
+if sys.version_info[0] < 3:
+    from cStringIO import StringIO
+else:
+    from io import StringIO
 
 from bento.compat.api import json
 
@@ -105,7 +107,7 @@ class TestIterFiles(unittest.TestCase):
 
         self.meta, self.sections, nodes = create_simple_ipkg_args(self.top_node)
         for n in nodes:
-            print n.abspath()
+            print(n.abspath())
 
     def tearDown(self):
         shutil.rmtree(self.top_node.abspath())

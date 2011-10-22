@@ -244,7 +244,7 @@ class OutputRegistry(object):
         if not category in self.categories:
             raise ValueError("Unknown category %r" % category)
         else:
-            for k, v in self.categories[category].iteritems():
+            for k, v in self.categories[category].items():
                 yield k, v[0], v[1], v[2]
 
     def iter_over_category(self):
@@ -389,7 +389,7 @@ class BuildContext(_ContextWithBuildDirectory):
                 self.outputs_registry.register_outputs(category, name, nodes, from_node, target_dir)
 
         category = "scripts"
-        for name, executable in self.pkg.executables.iteritems():
+        for name, executable in self.pkg.executables.items():
             builder = self.builder_registry.builder(category, name)
             name, nodes, from_node, target_dir = builder(name, executable)
             self.outputs_registry.register_outputs(category, name, nodes, from_node, target_dir)

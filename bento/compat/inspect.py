@@ -30,7 +30,10 @@ def isclass(object):
     Class objects provide these attributes:
         __doc__         documentation string
         __module__      name of module in which this class was defined"""
-    return isinstance(object, types.ClassType) or hasattr(object, '__bases__')
+    if sys.version_info[0] < 3:
+        return isinstance(object, types.ClassType) or hasattr(object, '__bases__')
+    else:
+        return isinstance(object, type) or hasattr(object, '__bases__')
 
 def ismethod(object):
     """Return true if the object is an instance method.
@@ -365,8 +368,9 @@ def findsource(object):
 def getmoduleinfo(path):
     """Get the module name, suffix, mode, and module type for a given file."""
     filename = os.path.basename(path)
-    suffixes = map(lambda (suffix, mode, mtype):
-                   (-len(suffix), suffix, mode, mtype), imp.get_suffixes())
+    def _f(suffix, mode, mtype):
+       return (-len(suffix), suffix, mode, mtype)
+    suffixes = map(_f, imp.get_suffixes())
     suffixes.sort() # try longest suffixes first, in case they overlap
     for neglen, suffix, mode, mtype in suffixes:
         if filename[neglen:] == suffix:
@@ -461,11 +465,11 @@ if __name__ == '__main__':
     def foo(x, y, z=None):
         return None
 
-    print inspect.getargs(foo.func_code)
-    print getargs(foo.func_code)
+    print(inspect.getargs(foo.func_code))
+    print(getargs(foo.func_code))
 
-    print inspect.getargspec(foo)
-    print getargspec(foo)
+    print(inspect.getargspec(foo))
+    print(getargspec(foo))
 
-    print inspect.formatargspec(*inspect.getargspec(foo))
-    print formatargspec(*getargspec(foo))
+    print(inspect.formatargspec(*inspect.getargspec(foo)))
+    print(formatargspec(*getargspec(foo)))

@@ -8,6 +8,9 @@ from bento.compat \
 from bento.commands.core \
     import \
         command
+from bento.core.utils \
+    import \
+        extract_exception
 
 SAFE_MODULE_NAME = re.compile("[^a-zA-Z_]")
 
@@ -133,7 +136,8 @@ def create_hook_module(target):
         try:
             exec(compile(code, main_file, 'exec'), module.__dict__)
             sys.modules[module_name] = module
-        except SyntaxError, e:
+        except SyntaxError:
+            e = extract_exception()
             raise SyntaxError("Invalid syntax in hook file %s, line %s" % (main_file, e.lineno))
     finally:
         sys.path.pop(0)

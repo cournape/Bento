@@ -1,8 +1,11 @@
 import os
+import sys
 
-from cStringIO \
-    import \
-        StringIO
+if sys.version_info[0] < 3:
+    from cStringIO import StringIO
+else:
+    from io import StringIO
+
 
 from bento.core \
     import \

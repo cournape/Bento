@@ -216,9 +216,9 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                 stdout = stdout.strip()
                 stderr = stderr.strip()
                 if stdout:
-                    print stdout.decode()
+                    print(stdout.decode())
                 if stderr:
-                    print stderr.decode()
+                    print(stderr.decode())
                 if p.returncode != 0:
                     raise CalledProcessError(p.returncode, cmd)
 
@@ -246,7 +246,8 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                 pprint('PINK', "\t-> Testing from sdist...")
                 try:
                     _call(bentomaker_script + ["test"])
-                except CalledProcessError, e:
+                except CalledProcessError:
+                    e = extract_exception()
                     raise CommandExecutionFailure(
                             "test command failed")
             else:
