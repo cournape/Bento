@@ -32,7 +32,7 @@ class Parser(object):
         try:
             fid = open(_PICKLED_PARSETAB, "wb")
             fid.close()
-        except IOError, e:
+        except IOError:
             # In case of read-only support (no write access, zip import,
             # etc...)
             picklefile = None

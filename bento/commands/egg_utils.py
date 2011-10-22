@@ -2,10 +2,14 @@ import sys
 import os
 import zipfile
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+if sys.version_info[0] < 3:
+    from StringIO \
+        import \
+            StringIO
+else:
+    from io \
+        import \
+            StringIO
 
 from bento.installed_package_description import \
         iter_source_files, InstalledPkgDescription

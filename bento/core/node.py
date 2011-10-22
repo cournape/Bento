@@ -15,7 +15,7 @@ from bento.compat.api \
         rename
 from bento.core.utils \
     import \
-        is_string
+        is_string, extract_exception
 
 def to_list(sth):
     if isinstance(sth, str):
@@ -451,7 +451,8 @@ class Node(object):
                         try:
                             #print "pattern", k
                             accu.append(re.compile(k))
-                        except Exception, e:
+                        except Exception:
+                            e = extract_exception()
                             raise ValueError("Invalid pattern: %s" % k, e)
                 ret.append(accu)
             return ret

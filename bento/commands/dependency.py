@@ -1,8 +1,14 @@
 import os
+import sys
 
-from cPickle \
-    import \
-        dump, load
+if sys.version_info[0] < 3:
+    from cPickle \
+        import \
+            dump, load
+else:
+    from pickle \
+        import \
+            dump, load
 
 from bento.compat.api \
     import \

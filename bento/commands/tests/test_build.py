@@ -7,9 +7,10 @@ import types
 
 import os.path as op
 
-from cStringIO \
-    import \
-        StringIO
+if sys.version_info[0] < 3:
+    from cStringIO import StringIO
+else:
+    from io import StringIO
 
 import nose.config
 
@@ -249,7 +250,7 @@ def _not_has_waf():
         import bento.commands.extras.waf
         bento.commands.extras.waf.disable_output()
         return False
-    except RuntimeError, e:
+    except RuntimeError:
         return True
 
 def skip_no_waf(f):

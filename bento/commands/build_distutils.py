@@ -1,6 +1,9 @@
 import os
 import errno
 
+from bento.core.utils \
+    import \
+        extract_exception
 from bento.compat.api \
     import \
         relpath
@@ -90,7 +93,8 @@ class DistutilsBuilder(object):
             base, filename = os.path.split(self._extension_filename(extension.name, bld_cmd))
             fullname = os.path.join(bld_cmd.build_lib, base, filename)
             return [relpath(fullname, self._build_base)]
-        except distutils.errors.DistutilsError, e:
+        except distutils.errors.DistutilsError:
+            e = extract_exception()
             raise BuildError(str(e))
 
     def build_compiled_library(self, library):
@@ -115,13 +119,15 @@ class DistutilsBuilder(object):
                 target = os.path.join(old_build_clib, base, filename)
                 try:
                     os.remove(target)
-                except OSError, e:
+                except OSError:
+                    e = extract_exception()
                     if e.errno != errno.ENOENT:
                         raise
                 bld_cmd.run()
 
                 return [relpath(target, self._build_base)]
-            except distutils.errors.DistutilsError, e:
+            except distutils.errors.DistutilsError:
+                e = extract_exception()
                 raise BuildError(str(e))
         finally:
             bld_cmd.build_clib = old_build_clib

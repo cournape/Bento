@@ -8,7 +8,7 @@ from optparse \
         Option
 
 from bento.core.utils import \
-        pprint, find_package
+        pprint, find_package, extract_exception
 from bento.core.package import \
         static_representation
 from bento.conv import \
@@ -208,7 +208,8 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
                                "Catching monkey (this may take a while) ...")
                         tp = detect_monkeys(filename, show_output, log)
                         pprint("PINK", "Detected mode: %s" % tp)
-                    except ValueError, e:
+                    except ValueError:
+                        e = extract_exception()
                         raise UsageException("Error while detecting setup.py type " \
                                              "(original error: %s)" % str(e))
 
@@ -227,9 +228,10 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
                         fid.write(out)
                     finally:
                         fid.close()
-            except ConvertionError, e:
+            except ConvertionError:
                 raise
-            except Exception, e:
+            except Exception:
+                e = extract_exception()
                 log.write("Error while converting - traceback:\n")
                 tb = sys.exc_info()[2]
                 traceback.print_tb(tb, file=log)
@@ -264,7 +266,8 @@ def analyse_setup_py(filename, setup_args):
             execfile(filename, exec_globals)
             if type == "distutils" and "setuptools" in sys.modules:
                 pprint("YELLOW", "Setuptools detected in distutils mode !!!")
-        except Exception, e:
+        except Exception:
+            e = extract_exception()
             pprint('RED', "Got exception: %s" % e)
             raise e
     finally:

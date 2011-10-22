@@ -4,10 +4,14 @@ import string
 import zipfile
 import tempfile
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+if sys.version_info[0] < 3:
+    from StringIO \
+        import \
+            StringIO
+else:
+    from io \
+        import \
+            StringIO
 
 from bento.private.bytecode import \
         bcompile

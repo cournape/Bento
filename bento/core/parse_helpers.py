@@ -18,14 +18,14 @@ def extract_top_dicts(d):
     options = {}
 
     for k in _METADATA_FIELDS:
-        if d.has_key(k):
+        if k in d:
             meta[k] = d.pop(k)
-    if d.has_key("libraries"):
+    if "libraries" in d:
         libraries = d.pop("libraries")
     else:
         libraries = {}
     for k in misc.keys():
-        if d.has_key(k):
+        if k in d:
             misc[k] = d.pop(k)
 
     if len(d) > 0:
@@ -40,12 +40,12 @@ def extract_top_dicts_subento(d):
     This function should be used for subentos"""
     misc = {"subento": [], "hook_files": []}
 
-    if d.has_key("libraries"):
+    if "libraries" in d:
         libraries = d.pop("libraries")
     else:
         libraries = {}
     for k in misc.keys():
-        if d.has_key(k):
+        if k in d:
             misc[k] = d.pop(k)
 
     if len(d) > 0:

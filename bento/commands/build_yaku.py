@@ -10,7 +10,7 @@ from bento.commands.errors \
         CommandExecutionFailure
 from bento.core.utils \
     import \
-        cpu_count
+        cpu_count, extract_exception
 import bento.core.errors
 
 import yaku.task_manager
@@ -32,7 +32,8 @@ def build_extension(bld, extension, env=None):
         else:
             outputs = []
         return [n.bldpath() for n in outputs]
-    except RuntimeError, e:
+    except RuntimeError:
+        e = extract_exception()
         msg = "Building extension %s failed: %s" % \
               (extension.name, str(e))
         raise CommandExecutionFailure(msg)
@@ -44,6 +45,7 @@ def build_compiled_library(bld, clib, env=None):
             builder.env["CPPPATH"].insert(0, p)
         outputs = builder.static_library(clib.name, clib.sources, env)
         return [n.bldpath() for n in outputs]
-    except RuntimeError, e:
+    except RuntimeError:
+        e = extract_exception()
         msg = "Building library %s failed: %s" % (clib.name, str(e))
         raise CommandExecutionFailure(msg)

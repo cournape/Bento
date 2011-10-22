@@ -9,16 +9,19 @@ from os.path import \
 from nose.tools import \
     assert_equal, raises
 
-try:
+if sys.version_info[0] < 3:
     from cStringIO import StringIO
-finally:
-    from StringIO import StringIO
+else:
+    from io import StringIO
 
 from bento.core.pkg_objects import \
     PathOption, FlagOption, Executable, DataFiles
 from bento.core.options import \
     PackageOptions
 
+from bento.core.utils \
+    import \
+        extract_exception
 from bento \
     import PackageDescription, static_representation
 from bento.compat.api \
@@ -52,7 +55,8 @@ NName: foo
         try:
             PackageDescription.from_string(text)
             raise AssertionError("Should raise here !")
-        except ParseError, e:
+        except ParseError:
+            e = extract_exception()
             self.assertEqual(str(e), "yacc: Syntax error at line 1, Token(WORD, 'NName')")
 
     def test_simple_filename(self):
@@ -68,7 +72,8 @@ NName: foo
         try:
             PackageDescription.from_file(f.name)
             raise AssertionError("Should raise here !")
-        except ParseError, e:
+        except ParseError:
+            e = extract_exception()
             self.assertEqual(str(e), """\
   File "%s", line 1
 NName: foo

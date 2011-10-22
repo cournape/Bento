@@ -3,9 +3,15 @@ import os
 import string
 import time
 
-from cStringIO \
-    import \
-        StringIO
+if sys.version_info[0] < 3:
+    from StringIO \
+        import \
+            StringIO
+else:
+    from io \
+        import \
+            StringIO
+
 from distutils.util import \
         get_platform
 from distutils.sysconfig import \

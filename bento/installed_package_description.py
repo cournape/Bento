@@ -1,7 +1,6 @@
 import os
 import sys
 import copy
-import StringIO
 import warnings
 
 from bento.compat.api import json
@@ -204,7 +203,7 @@ class InstalledPkgDescription(object):
                 for i in value.values():
                     file_sections.append(section_to_json(i))
         data["file_sections"] = file_sections
-        if os.environ.has_key("BENTOMAKER_PRETTY"):
+        if "BENTOMAKER_PRETTY" in os.environ:
             json.dump(data, fid, sort_keys=True, indent=4)
         else:
             json.dump(data, fid, separators=(',', ':'))

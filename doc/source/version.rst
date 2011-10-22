@@ -14,6 +14,8 @@ Main features:
     - Comment support in bento.info
     - Sdist now has a format option, and supports zip archive as well
     - Builders in waf context now support arbitrary customization
+    - python 2 and 3 are supported from the same codebase to avoid
+      bootstrapping issues.
 
 Fixes:
 

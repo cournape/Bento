@@ -16,6 +16,6 @@ if sys.version_info[0] < 3:
         import \
             bcompile
 else:
-    from _bytecode_3 \
+    from bento.private._bytecode_3 \
         import \
             bcompile

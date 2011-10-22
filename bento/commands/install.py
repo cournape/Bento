@@ -15,14 +15,16 @@ from bento.commands.errors \
 from bento.commands.core import \
     Command, Option
 from bento.core.utils import \
-    pprint
+    pprint, extract_exception, MODE_755, MODE_777
 
 def _rollback_operation(line):
     operation, arg = line.split()
     if operation == "MKDIR":
         try:
             os.rmdir(arg)
-        except OSError, e:
+        except OSError:
+            e = extract_exception()
+            # FIXME: hardcoded errno !!
             if e.errno != 66:
                 raise
     elif operation == "COPY":
@@ -65,23 +67,24 @@ class TransactionLog(object):
         self.f.write("COPY %s\n" % target)
         shutil.copy(source, target)
         if category == "executables":
-            os.chmod(target, 0755)
+            os.chmod(target, MODE_755)
 
-    def makedirs(self, name, mode=0777):
+    def makedirs(self, name, mode=MODE_777):
         head, tail = os.path.split(name)
         if not tail:
             head, tail = os.path.split(head)
         if head and tail and not os.path.exists(head):
             try:
                 self.makedirs(head, mode)
-            except OSError, e:
+            except OSError:
+                e = extract_exception()
                 if e.errno != errno.EEXIST:
                     raise
             if tail == os.curdir:
                 return
         self.mkdir(name, mode)
 
-    def mkdir(self, name, mode=0777):
+    def mkdir(self, name, mode=MODE_777):
         self.f.write("MKDIR %s\n" % name) 
         self.f.flush()
         os.mkdir(name, mode)
@@ -102,7 +105,7 @@ def copy_installer(source, target, kind):
         os.makedirs(dtarget)
     shutil.copy(source, target)
     if kind == "executables":
-        os.chmod(target, 0755)
+        os.chmod(target, MODE_755)
 
 def unix_installer(source, target, kind):
     if kind in ["executables"]:
@@ -151,7 +154,7 @@ Usage:   bentomaker install [OPTIONS]."""
             # A better way would be to log install steps and display those, but
             # this will do for now.
             for kind, source, target in iter_files(node_sections):
-                print target.abspath()
+                print(target.abspath())
             return
 
         if o.transaction:

@@ -33,13 +33,13 @@ from bento.core.errors \
 def _parse_libraries(libraries):
     ret = {}
     if len(libraries) > 0:
-        if not libraries.keys() == ["default"]:
+        if not list(libraries.keys()) == ["default"]:
             raise NotImplementedError(
                     "Non default library not yet supported")
 
         default = libraries["default"]
         for k in ["packages", "py_modules", "install_requires"]:
-            if default.has_key(k):
+            if k in default:
                 ret[k] = default[k]
 
         ret["extensions"] = {}
@@ -145,7 +145,7 @@ def raw_to_pkg_kw(raw_dict, user_flags, bento_info=None):
     misc_d.pop("path_options")
     misc_d.pop("flag_options")
 
-    if misc_d.has_key("subento"):
+    if "subento" in misc_d:
         subentos = misc_d.pop("subento")
         subpackages, files = recurse_subentos(subentos, source_dir=source_dir)
         kw["subpackages"] = subpackages

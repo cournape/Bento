@@ -1,6 +1,9 @@
-from cStringIO \
-    import \
-        StringIO
+import sys
+
+if sys.version_info[0] < 3:
+    from cStringIO import StringIO
+else:
+    from io import StringIO
 
 from unittest \
     import \
@@ -25,7 +28,7 @@ class _TestGrammar(TestCase):
 
         try:
             assert_equal(s.getvalue(), expected)
-        except AssertionError, e:
+        except AssertionError:
             msg = s.getvalue()
             msg += "\n%s" % str(expected)
             raise AssertionError("assertion error:\n%s" % msg)

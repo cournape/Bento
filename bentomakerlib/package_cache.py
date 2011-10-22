@@ -11,7 +11,12 @@ db["parsed_dict"]: pickled raw parsed dictionary (as returned by
                    raw_parse, before having been seen by the visitor)
 """
 import os
-import cPickle
+import sys
+if sys.version_info[0] < 3:
+    import cPickle as pickle
+else:
+    import pickle
+
 try:
     from hashlib import md5
 except ImportError:
@@ -78,7 +83,7 @@ class _CachedPackageImpl(object):
         else:
             fid = open(db_location, "rb")
             try:
-                self.db = cPickle.load(fid)
+                self.db = pickle.load(fid)
                 if not self._has_valid_magic(self.db):
                     warnings.warn("Resetting invalid cached db")
                     self._reset()
@@ -91,8 +96,8 @@ class _CachedPackageImpl(object):
                 self._reset()
 
     def _has_invalidated_cache(self):
-        if self.db.has_key("bentos_checksums"):
-            r_checksums = cPickle.loads(self.db["bentos_checksums"])
+        if "bentos_checksums" in self.db:
+            r_checksums = pickle.loads(self.db["bentos_checksums"])
             for f in r_checksums:
                 checksum = md5(open(f, "rb").read()).hexdigest()
                 if checksum != r_checksums[f]:
@@ -109,14 +114,14 @@ class _CachedPackageImpl(object):
             if self._has_invalidated_cache():
                 return _create_package_nocached(bento_info, user_flags, self.db)
             else:
-                r_user_flags = cPickle.loads(self.db["user_flags"])
+                r_user_flags = pickle.loads(self.db["user_flags"])
                 if user_flags is None:
                     # FIXME: this case is wrong
-                    return cPickle.loads(self.db["package_description"])
+                    return pickle.loads(self.db["package_description"])
                 elif r_user_flags != user_flags:
                     return _create_package_nocached(bento_info, user_flags, self.db)
                 else:
-                    raw = cPickle.loads(self.db["parsed_dict"])
+                    raw = pickle.loads(self.db["parsed_dict"])
                     pkg, files = _raw_to_pkg(raw, user_flags, bento_info)
                     return pkg
 
@@ -128,11 +133,11 @@ class _CachedPackageImpl(object):
             if self._has_invalidated_cache():
                 return _create_options_nocached(bento_info, {}, self.db)
             else:
-                raw = cPickle.loads(self.db["parsed_dict"])
+                raw = pickle.loads(self.db["parsed_dict"])
                 return _raw_to_options(raw)
 
     def close(self):
-        safe_write(self._location, lambda fd: cPickle.dump(self.db, fd))
+        safe_write(self._location, lambda fd: pickle.dump(self.db, fd))
 
 def _create_package_nocached(bento_info, user_flags, db):
     pkg, options = _create_objects_no_cached(bento_info, user_flags, db)
@@ -163,10 +168,10 @@ def _create_objects_no_cached(bento_info, user_flags, db):
         options = _raw_to_options(raw)
 
         checksums = [md5(open(f, "rb").read()).hexdigest() for f in files]
-        db["bentos_checksums"] = cPickle.dumps(dict(zip(files, checksums)))
-        db["package_description"] = cPickle.dumps(pkg)
-        db["user_flags"] = cPickle.dumps(user_flags)
-        db["parsed_dict"] = cPickle.dumps(raw)
+        db["bentos_checksums"] = pickle.dumps(dict(zip(files, checksums)))
+        db["package_description"] = pickle.dumps(pkg)
+        db["user_flags"] = pickle.dumps(user_flags)
+        db["parsed_dict"] = pickle.dumps(raw)
 
         return pkg, options
     finally:

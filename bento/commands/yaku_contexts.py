@@ -1,5 +1,8 @@
 import os.path as op
 
+from bento.core.utils \
+    import \
+        extract_exception
 from bento.core.node_package \
     import \
         translate_name
@@ -32,7 +35,8 @@ class ConfigureYakuContext(ConfigureContext):
             for t in ["ctasks", "pyext"]:
                 try:
                     yaku_ctx.use_tools([t])
-                except yaku.errors.ConfigurationFailure, e:
+                except yaku.errors.ConfigurationFailure:
+                    e = extract_exception()
                     raise ConfigurationError(str(e))
 
     def shutdown(self):
@@ -51,6 +55,8 @@ class ConfigureYakuContext(ConfigureContext):
 
 class BuildYakuContext(BuildContext):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
+        from bento.commands.build_yaku import build_extension, build_compiled_library
+
         super(BuildYakuContext, self).__init__(cmd_argv, options_context, pkg, run_node)
         build_path = run_node._ctx.bldnode.path_from(run_node)
         source_path = run_node._ctx.srcnode.path_from(run_node)
@@ -63,8 +69,6 @@ class BuildYakuContext(BuildContext):
             jobs = 1
         self.verbose = o.verbose
         self.jobs = jobs
-
-        from bento.commands.build_yaku import build_extension, build_compiled_library
 
         def _builder_factory(category, builder):
             def _build(extension):

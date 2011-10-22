@@ -2,10 +2,14 @@ import os
 import sys
 import tempfile
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+if sys.version_info[0] < 3:
+    from StringIO \
+        import \
+            StringIO
+else:
+    from io \
+        import \
+            StringIO
 
 from subprocess import \
         PIPE, call, STDOUT, Popen
@@ -259,10 +263,10 @@ def whole_test(setup_py, verbose, log):
     pprint("YELLOW", "--- Testing numpy.distutils patched by setuptools ----")
     use_setuptools_numpy = test_setuptools_numpy(setup_py, show_output, log)
     if verbose:
-        print "Is distutils ?", use_distutils
-        print "Is setuptools ?", use_setuptools
-        print "Is numpy distutils ?", use_numpy
-        print "Is setuptools numpy ?", use_setuptools_numpy
+        print("Is distutils ? %d" % use_distutils)
+        print("Is setuptools ? %d" % use_setuptools)
+        print("Is numpy distutils ? %d" % use_numpy)
+        print("Is setuptools numpy ? %d" % use_setuptools_numpy)
 
     if use_distutils and not (use_setuptools or use_numpy or use_setuptools_numpy):
         return "distutils converter"
