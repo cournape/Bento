@@ -1,19 +1,21 @@
 
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Version 0.0.6 &mdash; Bento v0.0.6-git4833227b96 documentation</title>
-    <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
+    <title>Version 0.0.7 &mdash; Bento 0.0.7-gita5f7bdbd9d documentation</title>
+    
+    <link rel="stylesheet" href="static/nature.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.6-git4833227b96',
+        VERSION:     '0.0.7-gita5f7bdbd9d',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +24,7 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.6-git4833227b96 documentation" href="index.html" />
+    <link rel="top" title="Bento 0.0.7-gita5f7bdbd9d documentation" href="index.html" />
  
 <style type="text/css">
   table.right { float: right; margin-left: 20px; }
@@ -43,62 +45,55 @@
           &raquo;</li>
  
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="contents.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Version 0.0.6</a><ul>
-<li><a class="reference internal" href="#internals">Internals</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#version-0-0-5">Version 0.0.5</a><ul>
-<li><a class="reference internal" href="#id1">Internals</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#version-0-0-4">Version 0.0.4</a></li>
-<li><a class="reference internal" href="#version-0-0-3">Version 0.0.3</a><ul>
-<li><a class="reference internal" href="#toydist-renamed-to-bento">Toydist renamed to bento</a></li>
-<li><a class="reference internal" href="#hook-mechanism">Hook mechanism</a></li>
-<li><a class="reference internal" href="#yaku-build-mini-framework">Yaku, build mini-framework</a></li>
-<li><a class="reference internal" href="#one-file-distribution">One file distribution</a></li>
-<li><a class="reference internal" href="#improved-command-line-interface">Improved command line interface</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#version-0-0-2">Version 0.0.2</a></li>
-<li><a class="reference internal" href="#version-0-0-1">Version 0.0.1</a></li>
-</ul>
-
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/version.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="version-0-0-6">
+  <div class="section" id="version-0-0-7">
+<h1>Version 0.0.7<a class="headerlink" href="#version-0-0-7" title="Permalink to this headline">¶</a></h1>
+<p>Released on .</p>
+<p>Main features:</p>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>New bento.info fields:</dt>
+<dd><ul class="first last simple">
+<li>&#8216;DescriptionFromFile&#8217;: pointer to a file to read description from.</li>
+<li>&#8216;Keywords&#8217; metadata field</li>
+<li>&#8216;MetaTemplateFile&#8217;: pointer to template files to be filled with bento
+metadata</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Support for DESTDIR-like feature to ease downstream packaging</p>
+</li>
+<li><p class="first">Comment support in bento.info</p>
+</li>
+<li><p class="first">Sdist now has a format option, and supports zip archive as well</p>
+</li>
+<li><p class="first">Builders in waf context now support arbitrary customization</p>
+</li>
+<li><p class="first">python 2 and 3 are supported from the same codebase to avoid
+bootstrapping issues.</p>
+</li>
+</ul>
+</div></blockquote>
+<p>Fixes:</p>
+<blockquote>
+<div><ul class="simple">
+<li>fix handling of customized flags when getting cached package information</li>
+<li>fix classifier handling</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="version-0-0-6">
 <h1>Version 0.0.6<a class="headerlink" href="#version-0-0-6" title="Permalink to this headline">¶</a></h1>
-<p>Released on .
-Main features:</p>
+<p>Released on 13th July 2011.</p>
+<p>Main features:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Preliminary support for .mpkg (Mac OS X native packaging)</li>
@@ -109,7 +104,7 @@ Main features:</p>
 not contain bento.info), with global &#8211;bento-info option</li>
 <li>Completely revamped distutils compatibility layer: it is now a thin layer
 around bento infrastructure, so that most bento packages should be
-pip-installable, while still remaining bento customization capabilities.</li>
+pip-installable, while still keeping bento customization capabilities.</li>
 <li>Hook File can now be specified in recursed bento.info</li>
 </ul>
 </div></blockquote>
@@ -286,6 +281,52 @@ most of their implementation</li>
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Version 0.0.7</a></li>
+<li><a class="reference internal" href="#version-0-0-6">Version 0.0.6</a><ul>
+<li><a class="reference internal" href="#internals">Internals</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-0-5">Version 0.0.5</a><ul>
+<li><a class="reference internal" href="#id1">Internals</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-0-4">Version 0.0.4</a></li>
+<li><a class="reference internal" href="#version-0-0-3">Version 0.0.3</a><ul>
+<li><a class="reference internal" href="#toydist-renamed-to-bento">Toydist renamed to bento</a></li>
+<li><a class="reference internal" href="#hook-mechanism">Hook mechanism</a></li>
+<li><a class="reference internal" href="#yaku-build-mini-framework">Yaku, build mini-framework</a></li>
+<li><a class="reference internal" href="#one-file-distribution">One file distribution</a></li>
+<li><a class="reference internal" href="#improved-command-line-interface">Improved command line interface</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#version-0-0-2">Version 0.0.2</a></li>
+<li><a class="reference internal" href="#version-0-0-1">Version 0.0.1</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/version.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related">
@@ -302,7 +343,7 @@ most of their implementation</li>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2011, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
     </div>
   </body>
 </html>

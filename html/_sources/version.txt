@@ -1,7 +1,32 @@
-Version 0.0.6
+Version 0.0.7
 =============
 
 Released on .
+
+Main features:
+
+    - New bento.info fields:
+        - 'DescriptionFromFile': pointer to a file to read description from.
+        - 'Keywords' metadata field
+        - 'MetaTemplateFile': pointer to template files to be filled with bento
+          metadata
+    - Support for DESTDIR-like feature to ease downstream packaging
+    - Comment support in bento.info
+    - Sdist now has a format option, and supports zip archive as well
+    - Builders in waf context now support arbitrary customization
+    - python 2 and 3 are supported from the same codebase to avoid
+      bootstrapping issues.
+
+Fixes:
+
+    - fix handling of customized flags when getting cached package information
+    - fix classifier handling
+
+Version 0.0.6
+=============
+
+Released on 13th July 2011.
+
 Main features:
 
     - Preliminary support for .mpkg (Mac OS X native packaging)
@@ -12,7 +37,7 @@ Main features:
       not contain bento.info), with global --bento-info option
     - Completely revamped distutils compatibility layer: it is now a thin layer
       around bento infrastructure, so that most bento packages should be
-      pip-installable, while still remaining bento customization capabilities.
+      pip-installable, while still keeping bento customization capabilities.
     - Hook File can now be specified in recursed bento.info
 
 Internals

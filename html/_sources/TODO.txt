@@ -2,99 +2,41 @@
 TODO
 ====
 
-Here is a non exhaustive list of things to do before bento can be a realistic
-alternative to distutils.
+Here is a non exhaustive list of things to do for a 1.0 release.
 
 TODO:
 
+    - make bento+waf bundable (make it possible to bentofy a package with a
+      single file)
+
+        - needs bento.info versioning
+
+    - add 2to3 command
+    - think about integration with sphinx for doc
+    - test command support
+    - specify hook mechanism
     - add msi support
     - add proper egg support
     - namespace packages: how to deal with them (file description and runtime
       support) ?
     - port stdeb to bento
-    - specify hook mechanism
-    - test command support
-    - distcheck support
-    - think about integration with sphinx for doc
-    - integration with at least one real build tool (Scons or waf)
     - handle reliable install/uninstall
+    - fix messy lexer/parser code
 
 Not well thought out yet:
     - supporting everything that pkg_resources does (namespace
       package), except multiple-version installs.
 
-Milestone
-=========
-
-Release 0.0.6
--------------
-
-    - Fix package + parser cache mess
-    - Acceptance tests ?
-    - Rethink API for installing
-        - Register new categories ?
-        - How to make sure everything is handled correctly by specialized
-          installers/packagers ? (e.g. declaring new category in bscript, which
-          should automatically be handled by msi/mpkg/etc... without the
-          bscript writer to be even aware of it)
-    - Rethink API for contexts:
-        - Do command context really need command instance ?
-        - Do we really need a singleton for command registry ?
-        - Build contexts: extension-specific builder registration ?
-        - Add recurse hook for contexts (called before going into each subento)
-    - Polish mpkg support
-    - Polish numpy + scipy waf+bento build
-    - Ideally, have a look at a few more packages
-
-Release 0.0.5
--------------
-
-0.0.5 goals:
-
-    - clean up command / bentomaker interaction:
-        - clean API for command context, add command context registration
-        - add API for option handling in command (customization in bscript)
-    - start acceptance test suite with a couple of projects: sphinx, jinja,
-      twisted. Goal is to get exact same install state as with
-      distutils/setuptools
-    - add simple command API to define new commands in one function
-    - specify commands dependencies with after/before
-    - Fix package + parser cache mess
-    - add an option to hooks to avoid running during help
-    - egg <-> wininst lossless conversion (on windows)
-    - specify hook mechanism: document contexts + command flow in bento
-    - add compatibility code for distutils
-
-Post 0.0.5
-----------
-
-    - dynamic version (e.g. svn version appended to the build, etc...)
-    - fixing yaku Parallel runner
-    - add basic distutils support
-    - add tool specification to yaku
-    - test and distcheck support: in particular, add virtualenv-like (or
-      virtual proper) to bootstrap environment to install and test packages
-      which cannot be tested without being installed)
-
-Start working on scipi (nest ?). First proto could be purely static,
-file-based. An index easy to parse/update is all we need, really.
-
 Syntax and features of the package description file
 ===================================================
 
+The parser and lexer need to be seriously cleaned-up.
+
 Missing features:
 
-    - Versioning
-    - Multiple libraries
-    - Recursive declaration ?
+    - Format-Versioning
     - Options declaration besides boolean ?
     - Unicode support
-
-Extending the simple build
-==========================
-
-    - this is yaku in the short term, maybe something like fbuild in the long
-      term
 
 Install-Reinstall-Rebuild-Clean problem
 =======================================

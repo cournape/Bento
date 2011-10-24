@@ -1,19 +1,21 @@
 
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Guides &mdash; Bento v0.0.6-git4833227b96 documentation</title>
-    <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
+    <title>Guides &mdash; Bento 0.0.7-gita5f7bdbd9d documentation</title>
+    
+    <link rel="stylesheet" href="static/nature.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.6-git4833227b96',
+        VERSION:     '0.0.7-gita5f7bdbd9d',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +24,7 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.6-git4833227b96 documentation" href="index.html" />
+    <link rel="top" title="Bento 0.0.7-gita5f7bdbd9d documentation" href="index.html" />
     <link rel="next" title="Reference" href="reference/index.html" />
     <link rel="prev" title="Tutorial" href="tutorial.html" />
  
@@ -51,64 +53,7 @@
           &raquo;</li>
  
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="contents.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Guides</a><ul>
-<li><a class="reference internal" href="#specifiying-data-files">Specifiying data files</a><ul>
-<li><a class="reference internal" href="#flexible-install-scheme">Flexible install scheme</a></li>
-<li><a class="reference internal" href="#custom-data-paths">Custom data paths</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#retrieving-data-files-at-runtime">Retrieving data files at runtime</a><ul>
-<li><a class="reference internal" href="#example">Example</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#recursive-package-description">Recursive package description</a><ul>
-<li><a class="reference internal" href="#simple-example">Simple example</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#hook-files">Hook files</a><ul>
-<li><a class="reference internal" href="#simple-example-hello-world">Simple example: hello world</a></li>
-<li><a class="reference internal" href="#command-hook-and-bento-context">Command hook and bento context</a></li>
-<li><a class="reference internal" href="#hook-and-recursive-package-definitions">Hook and recursive package definitions</a></li>
-<li><a class="reference internal" href="#hook-and-yaku-customizing-extensions-compilation">Hook and yaku: customizing extensions compilation</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#conditional-packaging">Conditional packaging</a></li>
-<li><a class="reference internal" href="#adding-new-commands">Adding new commands</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="tutorial.html"
-                        title="previous chapter">Tutorial</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="reference/index.html"
-                        title="next chapter">Reference</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/guides.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -285,162 +230,58 @@ subdirectory only sees the libraries, modules, etc... defined in the
 corresponding bento.info by default (see hook section).</p>
 </div>
 </div>
-<div class="section" id="hook-files">
-<h2>Hook files<a class="headerlink" href="#hook-files" title="Permalink to this headline">¶</a></h2>
-<p><em>Note: the hook API is still in flux, and should not be relied on. It is
-documented to give an idea of where bento is going, but I still reserve myself
-the right to change things in fundamental ways.</em></p>
-<p>Although many typical python softwares can be entirely described in bento.info,
-complex packages may require a more advanced configuration, e.g.:</p>
-<blockquote>
-<div><ul class="simple">
-<li>Conditionally define libraries depending on systems configuration
-(addition features if you have the C library libfoo, etc...)</li>
-<li>Define new bento commands</li>
-<li>Customization of the build process (e.g. compiler flags, linked
-libraries, etc...)</li>
-<li>Add new tools in the build process (cython, source code generator,
-etc...)</li>
-<li>Use of a different build tool than the one included in bento (waf, scons
-or even make).</li>
-<li>add new options to an existing command</li>
-</ul>
-</div></blockquote>
-<p>Instead of cramming too many features in the bento.info, bento allows you to
-add one (or more) &#8220;hook&#8221; files, which are regular python modules, but under the
-control of bento.</p>
-<div class="section" id="simple-example-hello-world">
-<h3>Simple example: hello world<a class="headerlink" href="#simple-example-hello-world" title="Permalink to this headline">¶</a></h3>
-<p>The hello world for bento hook system is simple: it prints &#8220;yummy bento&#8221;
-everytime you execute bentomaker. Assuming the following bento.info file:</p>
-<div class="highlight-python"><pre>Name: foo
-HookFile: bscript</pre>
-</div>
-<p>the hook file will look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@hooks.startup</span>
-<span class="k">def</span> <span class="nf">startup</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
-    <span class="k">print</span> <span class="s">&quot;Yummy bento&quot;</span>
-</pre></div>
-</div>
-<p>As its name suggests, the startup method is executed before running any
-command, and before bentomaker itself parses the command line. As such, you do
-not want to do to many things there &#8211; typically register new commands.</p>
-</div>
-<div class="section" id="command-hook-and-bento-context">
-<h3>Command hook and bento context<a class="headerlink" href="#command-hook-and-bento-context" title="Permalink to this headline">¶</a></h3>
-<p>Each command (configure, build, install, etc...) in bento has a
-pre_command_name hook, a post_command_hook, and an override hook. Just defining
-hooks is not very useful, though - you need to be able to interact with bento
-to do interesting things.</p>
-<p>Each hook is a regular python function - its hook &#8220;status&#8221; is defined by the hook decorator(s):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">bento.commands.hooks</span> <span class="kn">import</span> <span class="n">post_configure</span>
-
-<span class="nd">@post_configure</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">pconfigure</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-    <span class="k">pass</span>
-</pre></div>
-</div>
-<p>The function takes one parameter, ctx. Its class does not matter much at this
-point, but its members do. First, both the command instance (cmd) and the
-command options (cmd_opts) are always available. The command instance
-corresponds to the requested command (bentomaker configure -&gt;
-bento.commands.configure.Configure class). cmd_opts is a simple list of the
-command line arguments:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">bento.commands.hooks</span> <span class="kn">import</span> <span class="n">post_configure</span>
-
-<span class="nd">@post_configure</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">pconfigure</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-    <span class="k">print</span> <span class="n">ctx</span><span class="o">.</span><span class="n">cmd_opts</span>
-</pre></div>
-</div>
-<p>Each ctx variable also has a pkg member, which is a
-PackageDescription instance, and contains most package information.
-Metadata, extensions, path options, executables are all available,
-which enables the following:</p>
-<blockquote>
-<div><ul class="simple">
-<li>access package information to generate new &#8220;targets&#8221; (new types
-of binary installers)</li>
-<li>add extra source files whose location cannot be known at
-configure time</li>
-<li>add/remove/modify extensions, packages dynamically</li>
-</ul>
-</div></blockquote>
-<p>For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">bento.commands.hooks</span> <span class="kn">import</span> <span class="n">post_configure</span>
-
-<span class="nd">@post_configure</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">pconfigure</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">ext_name</span> <span class="ow">in</span> <span class="n">pkg</span><span class="o">.</span><span class="n">extensions</span><span class="p">:</span>
-        <span class="c"># List the sources of every extension</span>
-        <span class="k">print</span> <span class="n">pkg</span><span class="o">.</span><span class="n">extensions</span><span class="p">[</span><span class="n">ext_name</span><span class="p">]</span><span class="o">.</span><span class="n">sources</span>
-</pre></div>
-</div>
-<p>This may not look like much, but this ability to query extensions
-inside your hook file makes integration with external build tools much
-easier.</p>
-<p><em>Note: unfortunately, there is still no public API for safe
-PackageDescription instances access. Most read access should be safe,
-but modifying package description members is likely to break in the
-future</em></p>
-</div>
-<div class="section" id="hook-and-recursive-package-definitions">
-<h3>Hook and recursive package definitions<a class="headerlink" href="#hook-and-recursive-package-definitions" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-</div>
-<div class="section" id="hook-and-yaku-customizing-extensions-compilation">
-<h3>Hook and yaku: customizing extensions compilation<a class="headerlink" href="#hook-and-yaku-customizing-extensions-compilation" title="Permalink to this headline">¶</a></h3>
-<p><em>Note: this is almost guaranteed to change, I am still deeply
-unsatisfied with the API. This should illustrate a few core features
-of bento w.r.t. to building extension, though. IOW, the API will
-change, but the features will stay</em></p>
-<p>Customizing compilation of extensions is a significant pain point in
-distutils. Bento includes by default a simple build tool, yaku. Bento
-has a few API to make interaction with yaku easier, in particular for
-compilation customization:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@pre_build</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">pbuild</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-    <span class="n">env</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;CFLAGS&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;-Os&quot;</span><span class="p">]}</span>
-    <span class="n">ctx</span><span class="o">.</span><span class="n">register_environment</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The register_environment will update the compilation environment for
-the foo extension. Each extension can register a different environment
-through this mechanism. Env can contain any key as used by yaku (that
-includes the compiler, compiler flags, etc...), but note that new
-flags are appended to existing values.</p>
-<p>You can also register an entirely new builder for a given extension. This
-requires dealing with yaku&#8217;s relatively low-level API, but it enables
-basically any kind of transformation, like compiling each source
-differently, associating new tools to existing source suffix, etc....
-This is unfortunately the only way to override environments ATM:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nd">@pre_build</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">pbuild</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">builder</span><span class="p">(</span><span class="n">bld</span><span class="p">,</span> <span class="n">extension</span><span class="p">,</span> <span class="n">verbose</span><span class="p">):</span>
-        <span class="c"># Environments are attached to builders, and cloning a</span>
-        <span class="c"># builder attach a fresh copied dictionary</span>
-        <span class="n">_blder</span> <span class="o">=</span> <span class="n">bld</span><span class="o">.</span><span class="n">builders</span><span class="p">[</span><span class="s">&quot;pyext&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-        <span class="c"># Change in the blder.env will not affect any other</span>
-        <span class="c"># extension</span>
-        <span class="n">_blder</span><span class="o">.</span><span class="n">env</span><span class="p">[</span><span class="s">&quot;PYEXT_CC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;clang&quot;</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">_blder</span><span class="p">(</span><span class="n">extension</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">extension</span><span class="o">.</span><span class="n">sources</span><span class="p">)</span>
-    <span class="n">ctx</span><span class="o">.</span><span class="n">register_builder</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="n">builder</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>You should refer to yaku examples directory to get an idea of what&#8217;s
-possible.</p>
-</div>
-</div>
-<div class="section" id="conditional-packaging">
-<h2>Conditional packaging<a class="headerlink" href="#conditional-packaging" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="adding-new-commands">
-<h2>Adding new commands<a class="headerlink" href="#adding-new-commands" title="Permalink to this headline">¶</a></h2>
-</div>
 </div>
 
 
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Guides</a><ul>
+<li><a class="reference internal" href="#specifiying-data-files">Specifiying data files</a><ul>
+<li><a class="reference internal" href="#flexible-install-scheme">Flexible install scheme</a></li>
+<li><a class="reference internal" href="#custom-data-paths">Custom data paths</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#retrieving-data-files-at-runtime">Retrieving data files at runtime</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#recursive-package-description">Recursive package description</a><ul>
+<li><a class="reference internal" href="#simple-example">Simple example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="previous chapter">Tutorial</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference/index.html"
+                        title="next chapter">Reference</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/guides.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -465,7 +306,7 @@ possible.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2011, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
     </div>
   </body>
 </html>

@@ -1,19 +1,21 @@
 
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial &mdash; Bento v0.0.6-git4833227b96 documentation</title>
-    <link rel="stylesheet" href="static/sphinxdoc.css" type="text/css" />
+    <title>Tutorial &mdash; Bento 0.0.7-gita5f7bdbd9d documentation</title>
+    
+    <link rel="stylesheet" href="static/nature.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0.6-git4833227b96',
+        VERSION:     '0.0.7-gita5f7bdbd9d',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +24,7 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento v0.0.6-git4833227b96 documentation" href="index.html" />
+    <link rel="top" title="Bento 0.0.7-gita5f7bdbd9d documentation" href="index.html" />
     <link rel="next" title="Guides" href="guides.html" />
     <link rel="prev" title="Installing bento" href="install.html" />
  
@@ -51,56 +53,7 @@
           &raquo;</li>
  
       </ul>
-    </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="contents.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Tutorial</a><ul>
-<li><a class="reference internal" href="#packaging-a-python-module">Packaging a python module</a><ul>
-<li><a class="reference internal" href="#bentomaker">Bentomaker</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#adding-packages">Adding packages</a></li>
-<li><a class="reference internal" href="#adding-data-files">Adding data files</a><ul>
-<li><a class="reference internal" href="#installed-vs-non-installed-files">Installed vs non-installed files</a></li>
-<li><a class="reference internal" href="#installed-data-files-datafiles-section">Installed data files: DataFiles section</a></li>
-<li><a class="reference internal" href="#extra-source-files">Extra source files</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#adding-extensions">Adding extensions</a></li>
-<li><a class="reference internal" href="#adding-compiled-libraries">Adding compiled libraries</a></li>
-<li><a class="reference internal" href="#adding-executables">Adding executables</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="install.html"
-                        title="previous chapter">Installing bento</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="guides.html"
-                        title="next chapter">Guides</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/tutorial.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" size="18" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -162,23 +115,30 @@ bentomaker build_wininst</pre>
 <h2>Adding packages<a class="headerlink" href="#adding-packages" title="Permalink to this headline">¶</a></h2>
 <p>Adding a package (a directory with a __init__.py file) is simple as
 well.  Assuming the following source tree:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">fubar</span><span class="o">/</span><span class="n">hello</span><span class="o">.</span><span class="n">py</span>
-<span class="n">fubar</span><span class="o">/</span><span class="n">foo</span><span class="o">/</span><span class="n">__init__</span><span class="o">.</span><span class="n">py</span>
-<span class="n">fubar</span><span class="o">/</span><span class="n">foo</span><span class="o">/</span><span class="n">bar</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">hello</span><span class="o">.</span><span class="n">py</span>
+<span class="n">foo</span><span class="o">/</span><span class="n">__init__</span><span class="o">.</span><span class="n">py</span>
+<span class="n">foo</span><span class="o">/</span><span class="n">bar</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>You simply write:</p>
 <div class="highlight-python"><pre>Library:
     Packages: foo</pre>
 </div>
-<p>Packages should be a comma separated list, and respect indentation:</p>
+<p>Multiple packages are specified through a comma separated list, and respect
+indentation:</p>
 <div class="highlight-python"><pre>Library:
      Packages: foo, bar</pre>
 </div>
-<p>works, as well as:</p>
+<p>or:</p>
 <div class="highlight-python"><pre>Library:
     Packages:
         foo, bar</pre>
+</div>
+<p>or:</p>
+<div class="highlight-python"><pre>Library:
+    Packages:
+        foo,
+        bar</pre>
 </div>
 </div>
 <div class="section" id="adding-data-files">
@@ -189,7 +149,7 @@ files.  Bento has a simple but powerful way to install arbitrary data
 in arbitrary locations.</p>
 <div class="section" id="installed-vs-non-installed-files">
 <h3>Installed vs non-installed files<a class="headerlink" href="#installed-vs-non-installed-files" title="Permalink to this headline">¶</a></h3>
-<p>Bento has two distinct categories of data files:</p>
+<p>Bento makes the distinction between the two following categories:</p>
 <blockquote>
 <div><ul class="simple">
 <li>installed files (data files): those files are part of the
@@ -205,22 +165,22 @@ whereas data files are installed and needed to use the software.</p>
 <div class="section" id="installed-data-files-datafiles-section">
 <h3>Installed data files: DataFiles section<a class="headerlink" href="#installed-data-files-datafiles-section" title="Permalink to this headline">¶</a></h3>
 <p>Say our fubar software has one manpage fubar.1:</p>
-<div class="highlight-python"><pre>fubar/fubar.1</pre>
+<div class="highlight-python"><pre>fubar.1</pre>
 </div>
 <p>We need to add the following to bento.info:</p>
 <div class="highlight-python"><pre>DataFiles: manpage
     TargetDir: $mandir
-    Files: fubar/fubar.1</pre>
+    Files: fubar.1</pre>
 </div>
-<p>This will install the file fubar/fubar.1 into $mandir (as
-$mandir/fubar/fubar.1). $mandir is expanded by bento to a sensible default on
-every support platform, and can be customized at configuration time. You can of
+<p>This will install the file fubar.1 into $mandir (as $mandir/fubar.1). $mandir
+is expanded by bento to a sensible default on every support platform, and can
+be customized at configuration time through the &#8211;mandir option. You can of
 course hardcode the install directory, e.g.:</p>
 <div class="highlight-python"><pre>DataFiles: manpage
     TargetDir: /usr/share/man/man1
-    Files: fubar/fubar.1</pre>
+    Files: fubar.1</pre>
 </div>
-<p>but this is generally not recommended as it is not portable, makes native
+<p>but this is generally not recommended as it is not portable and makes native
 packaging more difficult. Bento has a simple mechanism so that you can add your
 own paths.</p>
 </div>
@@ -285,14 +245,63 @@ both unix and windows systems:</p>
 <p>This tells bento to create a script called foomaker (foomaker.exe on
 windows), which calls the main function from the foomakerlib.foomaker
 python module. Those scripts are automatically installed in $bindir
-(which translates to /usr/local/bin by default on unix, and
-C:Python*/Scripts on windows, both values which may be changed by the
-user at the configure stage).</p>
+(which translates to /usr/local/bin by default on unix, and C:Python*Scripts
+on windows, both values which may be changed by the user at the configure stage
+through the &#8211;bindir option).</p>
 </div>
 </div>
 
 
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#packaging-a-python-module">Packaging a python module</a><ul>
+<li><a class="reference internal" href="#bentomaker">Bentomaker</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#adding-packages">Adding packages</a></li>
+<li><a class="reference internal" href="#adding-data-files">Adding data files</a><ul>
+<li><a class="reference internal" href="#installed-vs-non-installed-files">Installed vs non-installed files</a></li>
+<li><a class="reference internal" href="#installed-data-files-datafiles-section">Installed data files: DataFiles section</a></li>
+<li><a class="reference internal" href="#extra-source-files">Extra source files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#adding-extensions">Adding extensions</a></li>
+<li><a class="reference internal" href="#adding-compiled-libraries">Adding compiled libraries</a></li>
+<li><a class="reference internal" href="#adding-executables">Adding executables</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="previous chapter">Installing bento</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="guides.html"
+                        title="next chapter">Guides</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tutorial.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -317,7 +326,7 @@ user at the configure stage).</p>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2011, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.
     </div>
   </body>
 </html>

@@ -4,7 +4,7 @@ Features
 Main features currently implemented
 -----------------------------------
 
-* Package descriptions are done in a declarative file (inspired from Cabal_ and
+* Package are described in a declarative file (inspired from Cabal_ and
   RPM_ .spec files), so you can easily introspect basic features of packages
   without running any python code (besides bento).
 * A command line interface to configure, build, install projects.
@@ -15,7 +15,8 @@ Main features currently implemented
   dependency tracking, and parallel build support.
 * Recursive package description support
 * Hooks for customizing arbitrary stages (configure, build, etc...)
-* Windows installer support and basic egg building support.
+* Easy to implement new commands
+* Windows installer support and basic egg support.
 
 Future features
 ---------------
