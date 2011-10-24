@@ -191,80 +191,80 @@ through command hooks and overrides. In that case, the hook file defined in a
 subdirectory only sees the libraries, modules, etc... defined in the
 corresponding bento.info by default (see hook section).
 
-Hook files
-==========
-
-*Note: the hook API is still in flux, and should not be relied on. It is
-documented to give an idea of where bento is going, but I still reserve myself
-the right to change things in fundamental ways.*
-
-Although many typical python softwares can be entirely described in bento.info,
-complex packages may require a more advanced configuration, e.g.:
-
-    * Conditionally define libraries depending on systems configuration
-      (addition features if you have the C library libfoo, etc...)
-    * Define new bento commands
-    * Customization of the build process (e.g. compiler flags, linked
-      libraries, etc...)
-    * Add new tools in the build process (cython, source code generator,
-      etc...)
-    * Use of a different build tool than the one included in bento (waf, scons
-      or even make).
-    * add new options to an existing command
-
-Instead of cramming too many features in the bento.info, bento allows you to
-add one (or more) "hook" files, which are regular python modules, but under the
-control of bento.
-
-Simple example: hello world
----------------------------
-
-The hello world for bento hook system is simple: it prints "yummy bento"
-everytime you execute bentomaker. Assuming the following bento.info file::
-
-    Name: foo
-    HookFile: bscript
-
-the hook file will look like::
-
-    @hooks.startup
-    def startup(context):
-        print "Yummy bento"
-
-As its name suggests, the startup method is executed before running any
-command, and before bentomaker itself parses the command line. As such, you do
-not want to do to many things there -- typically register new commands.
-
-Command hook and bento context
-------------------------------
-
-Each command (configure, build, install, etc...) in bento has a
-pre_command_name hook, a post_command_hook, and an override hook. Just defining
-hooks is not very useful, though - you need to be able to interact with bento
-to do interesting things.
-
-Each hook is a regular python function - its hook "status" is defined by the
-hook decorator(s)::
-
-    from bento.commands.hooks import post_configure
-
-    @post_configure
-    def pconfigure(context):
-        pass
-
-The function takes one parameter, context. Interaction with bento is done
-through the context object.
-
-Hook and recursive package definitions
---------------------------------------
-
-TODO
-
-Hook and yaku: customizing extensions compilation
--------------------------------------------------
-
-Conditional packaging
-=====================
-
-Adding new commands
-===================
+.. Hook files
+.. ==========
+.. 
+.. *Note: the hook API is still in flux, and should not be relied on. It is
+.. documented to give an idea of where bento is going, but I still reserve myself
+.. the right to change things in fundamental ways.*
+.. 
+.. Although many typical python softwares can be entirely described in bento.info,
+.. complex packages may require a more advanced configuration, e.g.:
+.. 
+..     * Conditionally define libraries depending on systems configuration
+..       (addition features if you have the C library libfoo, etc...)
+..     * Define new bento commands
+..     * Customization of the build process (e.g. compiler flags, linked
+..       libraries, etc...)
+..     * Add new tools in the build process (cython, source code generator,
+..       etc...)
+..     * Use of a different build tool than the one included in bento (waf, scons
+..       or even make).
+..     * add new options to an existing command
+.. 
+.. Instead of cramming too many features in the bento.info, bento allows you to
+.. add one (or more) "hook" files, which are regular python modules, but under the
+.. control of bento.
+.. 
+.. Simple example: hello world
+.. ---------------------------
+.. 
+.. The hello world for bento hook system is simple: it prints "yummy bento"
+.. everytime you execute bentomaker. Assuming the following bento.info file::
+.. 
+..     Name: foo
+..     HookFile: bscript
+.. 
+.. the hook file will look like::
+.. 
+..     @hooks.startup
+..     def startup(context):
+..         print "Yummy bento"
+.. 
+.. As its name suggests, the startup method is executed before running any
+.. command, and before bentomaker itself parses the command line. As such, you do
+.. not want to do to many things there -- typically register new commands.
+.. 
+.. Command hook and bento context
+.. ------------------------------
+.. 
+.. Each command (configure, build, install, etc...) in bento has a
+.. pre_command_name hook, a post_command_hook, and an override hook. Just defining
+.. hooks is not very useful, though - you need to be able to interact with bento
+.. to do interesting things.
+.. 
+.. Each hook is a regular python function - its hook "status" is defined by the
+.. hook decorator(s)::
+.. 
+..     from bento.commands.hooks import post_configure
+.. 
+..     @post_configure
+..     def pconfigure(context):
+..         pass
+.. 
+.. The function takes one parameter, context. Interaction with bento is done
+.. through the context object.
+.. 
+.. Hook and recursive package definitions
+.. --------------------------------------
+.. 
+.. TODO
+.. 
+.. Hook and yaku: customizing extensions compilation
+.. -------------------------------------------------
+.. 
+.. Conditional packaging
+.. =====================
+.. 
+.. Adding new commands
+.. ===================
