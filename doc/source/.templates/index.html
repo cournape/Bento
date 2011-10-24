@@ -16,15 +16,12 @@
         and package content are described in a simple format.
       <li><b>Flexible installation scheme</b>: you can install any file
         anywhere.</li>
-      <li><b>Simple data files handling</b>: only one simple but flexible way
-      to install data files, which can be retrieved by simply importing one
-      python module. </li>
       <li><b>Layered internal architecture</b>: core functionalities, command
         line interface are clearly separated: bento is designed as a library
         from the ground-up.</li>
       <li><b>Hackable and extensible</b>: bento is designed to be extensible:
-      commands are not hardly coupled and can be extended without
-      monkey-patching.
+      commands are not hardly coupled, and new ones can be inserted between
+      existing ones without the need for monkey-patching.
         </li>
       <li><b>Scale down</b>: a core principle of bento is to make software
       easier to package, and avoid too many choices for packages with simple
@@ -34,8 +31,8 @@
       code than distutils.
           </li>
       <li><b>Distutils Compatibility Layer</b>: bento can convert an existing
-      distutils package into the bento format, and can optionally "behave" like
-      a distutils project to help transition with tools such as pip.
+      distutils package into the bento format. Bento packages can be installed
+      with tools which normally expect a setup.py (pip, easy_install, etc...).
           </li>
   </ul>
   <h2>User Sections</h2>

@@ -69,25 +69,33 @@ Adding packages
 Adding a package (a directory with a __init__.py file) is simple as
 well.  Assuming the following source tree::
 
-    fubar/hello.py
-    fubar/foo/__init__.py
-    fubar/foo/bar.py
+    hello.py
+    foo/__init__.py
+    foo/bar.py
 
 You simply write::
 
     Library:
         Packages: foo
 
-Packages should be a comma separated list, and respect indentation::
+Multiple packages are specified through a comma separated list, and respect
+indentation::
 
     Library:
          Packages: foo, bar
 
-works, as well as::
+or::
 
     Library:
         Packages:
             foo, bar
+
+or::
+
+    Library:
+        Packages:
+            foo,
+	    bar
 
 Adding data files
 =================
@@ -100,7 +108,7 @@ in arbitrary locations.
 Installed vs non-installed files
 --------------------------------
 
-Bento has two distinct categories of data files:
+Bento makes the distinction between the two following categories:
 
     * installed files (data files): those files are part of the
       installed package
@@ -116,24 +124,24 @@ Installed data files: DataFiles section
 
 Say our fubar software has one manpage fubar.1::
 
-    fubar/fubar.1
+    fubar.1
 
 We need to add the following to bento.info::
 
     DataFiles: manpage
         TargetDir: $mandir
-        Files: fubar/fubar.1
+        Files: fubar.1
 
-This will install the file fubar/fubar.1 into $mandir (as
-$mandir/fubar/fubar.1). $mandir is expanded by bento to a sensible default on
-every support platform, and can be customized at configuration time. You can of
+This will install the file fubar.1 into $mandir (as $mandir/fubar.1). $mandir
+is expanded by bento to a sensible default on every support platform, and can
+be customized at configuration time through the --mandir option. You can of
 course hardcode the install directory, e.g.::
 
     DataFiles: manpage
         TargetDir: /usr/share/man/man1
-        Files: fubar/fubar.1
+        Files: fubar.1
 
-but this is generally not recommended as it is not portable, makes native
+but this is generally not recommended as it is not portable and makes native
 packaging more difficult. Bento has a simple mechanism so that you can add your
 own paths.
 
@@ -205,6 +213,6 @@ both unix and windows systems::
 This tells bento to create a script called foomaker (foomaker.exe on
 windows), which calls the main function from the foomakerlib.foomaker
 python module. Those scripts are automatically installed in $bindir
-(which translates to /usr/local/bin by default on unix, and
-C:\Python*/Scripts on windows, both values which may be changed by the
-user at the configure stage).
+(which translates to /usr/local/bin by default on unix, and C:\Python*\Scripts
+on windows, both values which may be changed by the user at the configure stage
+through the --bindir option).
