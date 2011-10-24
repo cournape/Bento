@@ -10,7 +10,7 @@ elif os.name == "nt":
     from bento.compat.nt_path \
         import \
             relpath
-    from rename \
+    from bento.compat.rename \
         import \
             rename
 else:
