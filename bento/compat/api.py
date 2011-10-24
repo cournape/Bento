@@ -7,10 +7,12 @@ if os.name == "posix":
             relpath
     rename = os.rename
 elif os.name == "nt":
-    from bento.compa.nt_path \
+    from bento.compat.nt_path \
         import \
             relpath
-    from rename import rename
+    from rename \
+        import \
+            rename
 else:
     raise ImportError("relpath implementation for os %s not included" \
                       % os.name)
