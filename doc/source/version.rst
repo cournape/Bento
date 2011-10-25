@@ -1,7 +1,7 @@
 Version 0.0.7
 =============
 
-Released on .
+Released on 25th October 2011.
 
 Main features:
 
