@@ -155,6 +155,8 @@ def create_fake_package_from_bento_info(top_node, bento_info):
         kw["packages"] = _kw["packages"]
     if "compiled_libraries" in _kw:
         kw["compiled_libraries"] = _kw["compiled_libraries"]
+    if "extra_source_files" in _kw:
+        kw["extra_source_files"] = _kw["extra_source_files"]
     return create_fake_package(top_node, **kw)
 
 def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
@@ -182,6 +184,11 @@ def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
         compiled_libraries = _kw["compiled_libraries"].values()
     else:
         compiled_libraries = []
+    if "extra_source_files" in _kw:
+        extra_source_files = _kw["extra_source_files"]
+    else:
+        extra_source_files = []
+
     packages = _kw.get("packages", [])
     for name, spkg in subpackages.items():
         n = top_node.search(name)
@@ -195,9 +202,11 @@ def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
         compiled_libraries.extend(flatten_compiled_libraries(top_node, spkg))
         packages.extend(flatten_packages(top_node, spkg))
 
-    return create_fake_package(top_node, packages, py_modules, extensions, compiled_libraries)
+    return create_fake_package(top_node, packages, py_modules, extensions, compiled_libraries,
+                               extra_source_files)
 
-def create_fake_package(top_node, packages=None, modules=None, extensions=None, compiled_libraries=None):
+def create_fake_package(top_node, packages=None, modules=None, extensions=None, compiled_libraries=None,
+                        extra_source_files=None):
     if packages is None:
         packages = []
     if modules is None:
@@ -206,6 +215,8 @@ def create_fake_package(top_node, packages=None, modules=None, extensions=None, 
         extensions = []
     if compiled_libraries is None:
         compiled_libraries = []
+    if extra_source_files is None:
+        extra_source_files = []
 
     for p in packages:
         d = p.replace(".", os.sep)
@@ -233,6 +244,15 @@ def create_fake_package(top_node, packages=None, modules=None, extensions=None, 
         n.write(DUMMY_CLIB % {"name": library.name.split(".")[-1]})
         for s in library.sources[1:]:
             n = top_node.make_node(s)
+            n.write("")
+    for f in extra_source_files:
+        n = top_node.find_node(f)
+        # FIXME: we don't distinguish between extra_source_files as specified
+        # in the bento files and the final extra source file list which contain
+        # extra files (including the bento files themselves). We need to create
+        # fake files in the former case, but not in the latter.
+        if n is None:
+            n = top_node.make_node(f)
             n.write("")
 
 # FIXME: Those flatten extensions are almost redundant with the ones in
