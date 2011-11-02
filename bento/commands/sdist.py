@@ -41,17 +41,12 @@ def create_zarchive(node_pkg, archive_root, archive_node):
 _FORMATS = {"gztar": {"ext": ".tar.gz", "func": create_tarball},
             "zip": {"ext": ".zip", "func": create_zarchive}}
 
-def create_archive(pkg, top_node, run_node, format="tgz", output_directory="dist"):
+def create_archive(archive_name, archive_root, node_pkg, top_node, run_node, format="tgz", output_directory="dist"):
     if not format in _FORMATS:
         raise ValueError("Unknown format: %r" % (format,))
 
-    archive_root = "%s-%s" % (pkg.name, pkg.version)
-    archive_name = archive_basename(pkg) + _FORMATS[format]["ext"]
     archive_node = top_node.make_node(op.join(output_directory, archive_name))
     archive_node.parent.mkdir()
-
-    node_pkg = NodeRepresentation(run_node, top_node)
-    node_pkg.update_package(pkg)
 
     _FORMATS[format]["func"](node_pkg, archive_root, archive_node) 
     return archive_root, archive_node
@@ -65,7 +60,10 @@ Usage:   bentomaker sdist [OPTIONS]."""
                         + [Option("--output-dir",
                                   help="Output directory", default="dist"),
                            Option("--format",
-                                  help="Archive format (supported: 'gztar', 'zip')", default="gztar")]
+                                  help="Archive format (supported: 'gztar', 'zip')", default="gztar"),
+                           Option("--output-file",
+                                  help="Archive filename (default: $pkgname-$version.$archive_extension)")]
+
     def run(self, ctx):
         argv = ctx.get_command_arguments()
         p = ctx.options_context.parser
@@ -78,7 +76,19 @@ Usage:   bentomaker sdist [OPTIONS]."""
         format = o.format
         output_directory = o.output_dir
 
+        archive_root = "%s-%s" % (pkg.name, pkg.version)
+        if not o.output_file:
+            archive_name = archive_basename(pkg) + _FORMATS[format]["ext"]
+        else:
+            output = op.basename(o.output_file)
+            if output != o.output_file:
+                raise BentoError("Invalid output file: should not contain any directory")
+            archive_name = output
+
+        node_pkg = NodeRepresentation(ctx.run_node, ctx.top_node)
+        node_pkg.update_package(ctx.pkg)
+
         # XXX: find a better way to pass archive name from other commands (used
         # by distcheck ATM)
-        self.archive_root, self.archive_node = create_archive(pkg,
+        self.archive_root, self.archive_node = create_archive(archive_name, archive_root, node_pkg,
                 ctx.top_node, ctx.run_node, o.format, o.output_dir)

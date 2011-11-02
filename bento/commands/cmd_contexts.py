@@ -288,6 +288,18 @@ def fill_metadata_template(content, pkg):
 
     return tpl.substitute(meta_dict)
 
+def write_template(top_node, pkg):
+    source = top_node.find_node(pkg.meta_template_file)
+    if source is None:
+        raise InvalidPackage("File %r not found (defined in 'MetaTemplateFile' field)" \
+                             % (pkg.meta_template_file,))
+    source_content = source.read()
+    output_content = fill_metadata_template(source_content, pkg)
+
+    output = source.change_ext("")
+    output.safe_write(output_content)
+    return output
+
 class BuildContext(_ContextWithBuildDirectory):
     def __init__(self, cmd_argv, options_context, pkg, run_node):
         super(BuildContext, self).__init__(cmd_argv, options_context, pkg, run_node)
@@ -415,17 +427,7 @@ class BuildContext(_ContextWithBuildDirectory):
                                                    self.build_node, "$sitedir")
 
         if self.pkg.meta_template_file:
-            source = self.top_node.find_node(self.pkg.meta_template_file)
-            if source is None:
-                raise InvalidPackage("File %r not found (defined in 'MetaTemplateFile' field)" \
-                                     % (self.pkg.meta_template_file,))
-            content = source.read()
-            output = fill_metadata_template(content, self.pkg)
-
-            name = os.path.splitext(self.pkg.meta_template_file)[0]
-            target_node = self.build_node.make_node(name)
-            target_node.parent.mkdir()
-            target_node.safe_write(output)
+            target_node = write_template(self.top_node, pkg)
             self.outputs_registry.register_outputs("modules", "meta_from_template", [target_node],
                                                    self.build_node, "$sitedir")
     def post_compile(self):
