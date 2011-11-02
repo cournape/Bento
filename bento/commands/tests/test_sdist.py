@@ -140,3 +140,38 @@ Library:
             if not f in z.namelist():
                 self.failUnless(op.join("foo-1.0", f) in files)
 
+    def test_template_filling(self):
+        bento_info = """\
+Name: foo
+Version: 1.0
+
+MetaTemplateFile: release.py.in
+
+Library:
+    Modules: fubar
+"""
+        archive_list = [op.join("foo-1.0", f) for f in ["fubar.py", "release.py.in", "release.py"]]
+
+        template = self.top_node.make_node("release.py.in")
+        template.write("""\
+NAME = $NAME
+VERSION = $VERSION
+""")
+
+        create_fake_package_from_bento_info(self.top_node, bento_info)
+        package = PackageDescription.from_string(bento_info)
+
+        sdist = SdistCommand()
+        opts = OptionsContext.from_command(sdist)
+        cmd_argv = ["--output-file=foo.zip", "--format=zip"]
+
+        context = SdistContext(cmd_argv, opts, package, self.run_node)
+        sdist.run(context)
+        sdist.shutdown(context)
+        context.shutdown()
+
+        archive = self.run_node.find_node(op.join("dist", "foo.zip"))
+        z = zipfile.ZipFile(archive.abspath(), "r")
+        for f in archive_list:
+            if not f in z.namelist():
+                self.fail("File %s not found in archive" % (f,))

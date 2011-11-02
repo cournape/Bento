@@ -472,6 +472,10 @@ class SdistContext(CmdContext):
         self._node_pkg = NodeRepresentation(run_node, self.top_node)
         self._node_pkg.update_package(pkg)
 
+        if self.pkg.meta_template_file:
+            output = write_template(self.top_node, pkg)
+            self.register_source_node(output, output.bldpath())
+
     def register_source_node(self, node, archive_name=None):
         """Register a node into the source distribution.
 
