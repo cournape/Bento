@@ -83,6 +83,18 @@ class CmdContext(object):
         self.local_node = None
         self.local_pkg = None
 
+    def make_source_node(self, path):
+        n = self.top_node.find_node(path)
+        if n is None:
+            raise IOError("file %s not found" % (op.join(self.top_node.abspath(), path)))
+        else:
+            return n
+
+    def make_build_node(self, path):
+        n = self.build_node.make_node(path)
+        n.parent.mkdir()
+        return n
+
     def get_command_arguments(self):
         return self.cmd_argv
 
