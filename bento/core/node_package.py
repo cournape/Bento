@@ -170,23 +170,27 @@ class NodeRepresentation(object):
         else:
             raise ValueError("Category %r not registered" % category)
 
-    def iter_files(self):
+    def iter_source_nodes(self):
         for n in self._extra_source_nodes:
-            yield n.path_from(self.run_node)
+            yield n
 
         for d in self._registry["datafiles"].values():
             for n in d.nodes:
-                yield n.path_from(self.run_node)
+                yield n
 
         for m in self._registry["modules"].values():
-            yield m.path_from(self.run_node)
+            yield m
         for package in self._registry["packages"].values():
             for n in package:
-                yield n.path_from(self.run_node)
+                yield n
 
         for extension in self._registry["extensions"].values():
             for n in extension.nodes:
-                yield n.path_from(self.run_node)
+                yield n
         for compiled_library in self._registry["compiled_libraries"].values():
             for n in compiled_library.nodes:
-                yield n.path_from(self.run_node)
+                yield n
+
+    def iter_source_files(self):
+        for n in self.iter_source_nodes():
+            yield n.path_from(self.run_node)
