@@ -7,7 +7,7 @@ from bento.core.subpackage \
         get_extensions, get_compiled_libraries
 from bento.commands.cmd_contexts \
     import \
-        CmdContext, ConfigureContext, BuildContext
+        CmdContext, ConfigureContext, BuildContext, SdistContext
 from bento.commands.yaku_contexts \
     import \
         ConfigureYakuContext, BuildYakuContext
