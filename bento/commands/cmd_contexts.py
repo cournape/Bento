@@ -427,7 +427,7 @@ class BuildContext(_ContextWithBuildDirectory):
                                                    self.build_node, "$sitedir")
 
         if self.pkg.meta_template_file:
-            target_node = write_template(self.top_node, pkg)
+            target_node = write_template(self.top_node, self.pkg)
             self.outputs_registry.register_outputs("modules", "meta_from_template", [target_node],
                                                    self.build_node, "$sitedir")
     def post_compile(self):
