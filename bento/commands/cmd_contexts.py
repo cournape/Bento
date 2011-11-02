@@ -464,3 +464,10 @@ class BuildContext(_ContextWithBuildDirectory):
                 for category, name, nodes, from_node, target_dir in self.outputs_registry.iter_over_category():
                     for node in nodes:
                         _install_node(category, node, from_node, target_dir)
+
+class SdistContext(CmdContext):
+    def __init__(self, cmd_args, option_context, pkg, run_node):
+        super(SdistContext, self).__init__(cmd_args, option_context, pkg, run_node)
+
+        self._node_pkg = NodeRepresentation(run_node, self.top_node)
+        self._node_pkg.update_package(pkg)

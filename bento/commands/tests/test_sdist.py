@@ -16,7 +16,7 @@ from bento.commands.options \
         OptionsContext
 from bento.commands.cmd_contexts \
     import \
-        CmdContext
+        SdistContext
 from bento.commands.sdist \
     import \
         SdistCommand
@@ -65,7 +65,7 @@ Library:
         opts = OptionsContext.from_command(sdist)
         cmd_argv = ["--output-file=foo.zip", "--format=zip"]
 
-        context = CmdContext(cmd_argv, opts, package, self.run_node)
+        context = SdistContext(cmd_argv, opts, package, self.run_node)
         sdist.run(context)
         sdist.shutdown(context)
         context.shutdown()

@@ -85,10 +85,7 @@ Usage:   bentomaker sdist [OPTIONS]."""
                 raise BentoError("Invalid output file: should not contain any directory")
             archive_name = output
 
-        node_pkg = NodeRepresentation(ctx.run_node, ctx.top_node)
-        node_pkg.update_package(ctx.pkg)
-
         # XXX: find a better way to pass archive name from other commands (used
         # by distcheck ATM)
-        self.archive_root, self.archive_node = create_archive(archive_name, archive_root, node_pkg,
+        self.archive_root, self.archive_node = create_archive(archive_name, archive_root, ctx._node_pkg,
                 ctx.top_node, ctx.run_node, o.format, o.output_dir)

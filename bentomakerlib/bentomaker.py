@@ -42,7 +42,7 @@ from bento.commands.hooks \
 from bento.commands.context \
     import \
         CmdContext, BuildYakuContext, ConfigureYakuContext, CONTEXT_REGISTRY, \
-        HelpContext, GlobalContext
+        HelpContext, GlobalContext, SdistContext
 import bento.core.errors
 
 from bentomakerlib.package_cache \
@@ -166,6 +166,8 @@ def register_command_contexts():
         CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
     if not CONTEXT_REGISTRY.is_registered("build"):
         CONTEXT_REGISTRY.register("build", BuildYakuContext)
+    if not CONTEXT_REGISTRY.is_registered("sdist"):
+        CONTEXT_REGISTRY.register("sdist", SdistContext)
     if not CONTEXT_REGISTRY.is_registered("help"):
         CONTEXT_REGISTRY.register("help", HelpContext)
 
