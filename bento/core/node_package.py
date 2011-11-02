@@ -53,6 +53,7 @@ class NodeRepresentation(object):
             self._registry[category] = {}
 
         self._extra_source_nodes = []
+        self._aliased_source_nodes = {}
 
     def to_node_extension(self, extension, ref_node):
         nodes = []
@@ -193,4 +194,6 @@ class NodeRepresentation(object):
 
     def iter_source_files(self):
         for n in self.iter_source_nodes():
-            yield n.path_from(self.run_node)
+            filename = n.path_from(self.run_node)
+            alias = self._aliased_source_nodes.get(n, filename)
+            yield filename, alias

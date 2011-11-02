@@ -25,16 +25,16 @@ def archive_basename(pkg):
 def create_tarball(node_pkg, archive_root, archive_node):
     tf = tarfile.open(archive_node.abspath(), "w:gz")
     try:
-        for file in node_pkg.iter_source_files():
-            tf.add(file, op.join(archive_root, file))
+        for filename, alias in node_pkg.iter_source_files():
+            tf.add(filename, op.join(archive_root, alias))
     finally:
         tf.close()
 
 def create_zarchive(node_pkg, archive_root, archive_node):
     zid = compat.ZipFile(archive_node.abspath(), "w", compat.ZIP_DEFLATED)
     try:
-        for file in node_pkg.iter_source_files():
-            zid.write(file, op.join(archive_root, file))
+        for filename, alias in node_pkg.iter_source_files():
+            zid.write(filename, op.join(archive_root, alias))
     finally:
         zid.close()
 
