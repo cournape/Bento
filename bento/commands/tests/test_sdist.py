@@ -75,3 +75,35 @@ Library:
         for f in archive_list:
             if not f in z.namelist():
                 self.failUnless(op.join("foo-1.0", f) in files)
+
+    def test_extra_source_registration(self):
+        bento_info = """\
+Name: foo
+Version: 1.0
+
+Library:
+    Modules: fubar
+"""
+        archive_list = [op.join("foo-1.0", f) for f in ["fubar.py", "yeah.info"]]
+
+        extra_node = self.top_node.make_node("yeah.info")
+        extra_node.write("")
+
+        create_fake_package_from_bento_info(self.top_node, bento_info)
+        package = PackageDescription.from_string(bento_info)
+
+        sdist = SdistCommand()
+        opts = OptionsContext.from_command(sdist)
+        cmd_argv = ["--output-file=foo.zip", "--format=zip"]
+
+        context = SdistContext(cmd_argv, opts, package, self.run_node)
+        context.register_source_node(self.top_node.find_node("yeah.info"))
+        sdist.run(context)
+        sdist.shutdown(context)
+        context.shutdown()
+
+        archive = self.run_node.find_node(op.join("dist", "foo.zip"))
+        z = zipfile.ZipFile(archive.abspath(), "r")
+        for f in archive_list:
+            if not f in z.namelist():
+                self.failUnless(op.join("foo-1.0", f) in files)

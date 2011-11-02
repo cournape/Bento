@@ -471,3 +471,6 @@ class SdistContext(CmdContext):
 
         self._node_pkg = NodeRepresentation(run_node, self.top_node)
         self._node_pkg.update_package(pkg)
+
+    def register_source_node(self, node):
+        self._node_pkg._extra_source_nodes.append(node)

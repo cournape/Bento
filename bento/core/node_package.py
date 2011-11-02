@@ -52,7 +52,7 @@ class NodeRepresentation(object):
                          "compiled_libraries", "datafiles"):
             self._registry[category] = {}
 
-        self._extra_top_nodes = []
+        self._extra_source_nodes = []
 
     def to_node_extension(self, extension, ref_node):
         nodes = []
@@ -146,7 +146,7 @@ class NodeRepresentation(object):
             nodes = self.top_node.ant_glob(s)
             if len(nodes) < 1:
                 warnings.warn("extra source files glob entry %r did not return any result" % (s,))
-            self._extra_top_nodes.extend(nodes)
+            self._extra_source_nodes.extend(nodes)
 
     def update_package(self, pkg):
         self._update_py_packages(pkg)
@@ -171,7 +171,7 @@ class NodeRepresentation(object):
             raise ValueError("Category %r not registered" % category)
 
     def iter_files(self):
-        for n in self._extra_top_nodes:
+        for n in self._extra_source_nodes:
             yield n.path_from(self.run_node)
 
         for d in self._registry["datafiles"].values():
