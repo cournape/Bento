@@ -134,7 +134,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                 if stderr:
                     print(stderr.decode())
                 if p.returncode != 0:
-                    raise CalledProcessError(p.returncode, cmd)
+                    raise subprocess.CalledProcessError(p.returncode, cmd)
 
             if sys.version_info[0] < 3:
                 bootstrap = os.path.join(os.getcwd(), "bootstrap.py")
