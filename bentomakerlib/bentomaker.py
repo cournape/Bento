@@ -423,15 +423,19 @@ def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
         cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
         _set_cmd_data_provider(cmd_name, cmd_opts, cmd_data_db)
 
-def run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg):
+def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
+    package_options = __get_package_options(top_node)
+
     cmd = cmd_klass()
     options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
-    ctx = ctx_klass(cmd_opts, options_ctx, pkg, run_node)
+
+    ctx = ctx_klass(cmd_argv, options_ctx, pkg, run_node)
     # FIXME: hack to pass package_options to configure command - most likely
     # this needs to be known in option context ?
-    ctx.package_options = __get_package_options(top_node)
+    ctx.package_options = package_options
+
     if get_command_override(cmd_name):
         cmd_funcs = get_command_override(cmd_name)
     else:
