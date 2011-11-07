@@ -49,11 +49,17 @@ class GlobalContext(object):
         self._options_registry = options_registry
         self._scheduler = commands_scheduler
 
-    def register_command(self, name, klass):
-        self._commands_registry.register_command(name, klass)
+    def register_command(self, cmd_name, klass):
+        self._commands_registry.register_command(cmd_name, klass)
 
-    def register_context(self, name, klass):
-        self._contexts_registry.register(name, klass)
+    def get_command(self, cmd_name):
+        return self._commands_registry.get(cmd_name)
+
+    def register_context(self, cmd_name, klass):
+        self._contexts_registry.register(cmd_name, klass)
+
+    def get_context(self, cmd_name):
+        return self._contexts_registry.get(cmd_name)
 
     def add_option_group(self, cmd_name, name, title):
         ctx = self._options_registry.get_options(cmd_name)
