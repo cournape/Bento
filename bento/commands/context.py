@@ -23,20 +23,20 @@ class ContextRegistry(object):
     def set_default(self, default):
         self._default = default
 
-    def is_registered(self, name):
-        return name in self._contexts
+    def is_registered(self, cmd_name):
+        return cmd_name in self._contexts
 
-    def register(self, name, context):
-        if name in self._contexts:
-            raise ValueError("context for command %r already registered !" % name)
+    def register(self, cmd_name, context):
+        if cmd_name in self._contexts:
+            raise ValueError("context for command %r already registered !" % cmd_name)
         else:
-            self._contexts[name] = context
+            self._contexts[cmd_name] = context
 
-    def get(self, name):
-        context = self._contexts.get(name, None)
+    def retrieve(self, cmd_name):
+        context = self._contexts.get(cmd_name, None)
         if context is None:
             if self._default is None:
-                raise ValueError("No context registered for command %r" % name)
+                raise ValueError("No context registered for command %r" % cmd_name)
             else:
                 return self._default
         else:
@@ -50,25 +50,47 @@ class GlobalContext(object):
         self._scheduler = commands_scheduler
 
     def register_command(self, cmd_name, klass):
-        self._commands_registry.register_command(cmd_name, klass)
+        self._commands_registry.register(cmd_name, klass)
 
-    def get_command(self, cmd_name):
-        return self._commands_registry.get_command(cmd_name)
+    def retrieve_command(self, cmd_name):
+        return self._commands_registry.retrieve(cmd_name)
 
     def register_context(self, cmd_name, klass):
         self._contexts_registry.register(cmd_name, klass)
 
-    def get_context(self, cmd_name):
-        return self._contexts_registry.get(cmd_name)
+    def retrieve_context(self, cmd_name):
+        return self._contexts_registry.retrieve(cmd_name)
 
-    def get_options_context(self, cmd_name):
-        return self._options_registry.get_options(cmd_name)
+    def retrieve_options_context(self, cmd_name):
+        return self._options_registry.retrieve(cmd_name)
 
     def add_option_group(self, cmd_name, name, title):
+        """Add a new option group for the given command.
+        
+        Parameters
+        ----------
+        cmd_name: str
+            name of the command
+        name: str
+            name of the group option
+        title: str
+            title of the group
+        """
         ctx = self._options_registry.get_options(cmd_name)
         ctx.add_group(name, title)
 
     def add_option(self, cmd_name, option, group=None):
+        """Add a new option for the given command.
+
+        Parameters
+        ----------
+        cmd_name: str
+            name of the command
+        option: str
+            name of the option
+        group: str, None
+            group to associated with
+        """
         ctx = self._options_registry.get_options(cmd_name)
         ctx.add_option(option, group)
 

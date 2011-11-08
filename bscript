@@ -87,9 +87,9 @@ class TestCommand(Command):
 
 def run_sdist(context):
     sdist_name = "sdist"
-    sdist_klass = COMMANDS_REGISTRY.get_command(sdist_name)
+    sdist_klass = COMMANDS_REGISTRY.retrieve(sdist_name)
     cmd_argv = []
-    sdist_context_klass = CONTEXT_REGISTRY.get(sdist_name)
+    sdist_context_klass = CONTEXT_REGISTRY.retrieve(sdist_name)
     sdist, sdist_context = run_cmd_in_context(sdist_klass,
                         sdist_name, cmd_argv, sdist_context_klass,
                         context.run_node, context.top_node, context.pkg)
@@ -156,7 +156,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                 pprint('PINK', "\t-> Building wininst from sdist...")
                 _call(bentomaker_script + ["build_wininst"])
 
-            if "test" in COMMANDS_REGISTRY.get_command_names():
+            if COMMANDS_REGISTRY.is_registered("test"):
                 pprint('PINK', "\t-> Testing from sdist...")
                 try:
                     _call(bentomaker_script + ["test"])

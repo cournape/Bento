@@ -118,18 +118,18 @@ def __get_package_options(top_node):
 #   Create the command line UI
 #================================
 def register_commands():
-    COMMANDS_REGISTRY.register_command("help", HelpCommand)
-    COMMANDS_REGISTRY.register_command("configure", ConfigureCommand)
-    COMMANDS_REGISTRY.register_command("build", BuildCommand)
-    COMMANDS_REGISTRY.register_command("install", InstallCommand)
-    COMMANDS_REGISTRY.register_command("convert", ConvertCommand)
-    COMMANDS_REGISTRY.register_command("sdist", SdistCommand)
-    COMMANDS_REGISTRY.register_command("build_egg", BuildEggCommand)
-    COMMANDS_REGISTRY.register_command("build_wininst", BuildWininstCommand)
+    COMMANDS_REGISTRY.register("help", HelpCommand)
+    COMMANDS_REGISTRY.register("configure", ConfigureCommand)
+    COMMANDS_REGISTRY.register("build", BuildCommand)
+    COMMANDS_REGISTRY.register("install", InstallCommand)
+    COMMANDS_REGISTRY.register("convert", ConvertCommand)
+    COMMANDS_REGISTRY.register("sdist", SdistCommand)
+    COMMANDS_REGISTRY.register("build_egg", BuildEggCommand)
+    COMMANDS_REGISTRY.register("build_wininst", BuildWininstCommand)
 
-    COMMANDS_REGISTRY.register_command("build_pkg_info", BuildPkgInfoCommand, public=False)
-    COMMANDS_REGISTRY.register_command("parse", ParseCommand, public=False)
-    COMMANDS_REGISTRY.register_command("detect_type", DetectTypeCommand, public=False)
+    COMMANDS_REGISTRY.register("build_pkg_info", BuildPkgInfoCommand, public=False)
+    COMMANDS_REGISTRY.register("parse", ParseCommand, public=False)
+    COMMANDS_REGISTRY.register("detect_type", DetectTypeCommand, public=False)
  
     #if sys.platform == "darwin":
     #    import bento.commands.build_mpkg
@@ -138,10 +138,10 @@ def register_commands():
     #    CMD_SCHEDULER.set_before("build_mpkg", "build")
 
 def register_options(cmd_name):
-    cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
+    cmd_klass = COMMANDS_REGISTRY.retrieve(cmd_name)
     usage = cmd_klass.long_descr.splitlines()[1]
     context = OptionsContext.from_command(cmd_klass, usage=usage)
-    OPTIONS_REGISTRY.register_command(cmd_name, context)
+    OPTIONS_REGISTRY.register(cmd_name, context)
 
 def register_options_special():
     # Register options for special topics not attached to a "real" command
@@ -150,7 +150,7 @@ def register_options_special():
     def print_usage():
         print(get_usage())
     context.parser.print_help = print_usage
-    OPTIONS_REGISTRY.register_command("commands", context)
+    OPTIONS_REGISTRY.register("commands", context)
 
     context = OptionsContext()
     def print_help():
@@ -158,7 +158,7 @@ def register_options_special():
         p = global_options.parser
         return(p.print_help())
     context.parser.print_help = print_help
-    OPTIONS_REGISTRY.register_command("globals", context)
+    OPTIONS_REGISTRY.register("globals", context)
 
 def register_command_contexts():
     CONTEXT_REGISTRY.set_default(CmdContext)
@@ -174,7 +174,7 @@ def register_command_contexts():
 # All the global state/registration stuff goes here
 def register_stuff():
     register_commands()
-    for cmd_name in COMMANDS_REGISTRY.get_command_names():
+    for cmd_name in COMMANDS_REGISTRY.command_names():
         register_options(cmd_name)
     register_options_special()
     register_command_contexts()
@@ -250,7 +250,7 @@ def _wrapped_main(popts, run_node, top_node, build_node):
         n = top_node.find_node(BENTO_SCRIPT)
         if n:
             package_options = __get_package_options(top_node)
-            _setup_options_parser(OPTIONS_REGISTRY.get_options("configure"), package_options)
+            _setup_options_parser(OPTIONS_REGISTRY.retrieve("configure"), package_options)
         else:
             import warnings
             warnings.warn("No %r file in current directory - not all options "
@@ -269,7 +269,7 @@ def _wrapped_main(popts, run_node, top_node, build_node):
 
     # FIXME: this registered options for new commands registered in hook. It
     # should be made all in one place (hook and non-hook)
-    for cmd_name in COMMANDS_REGISTRY.get_command_names():
+    for cmd_name in COMMANDS_REGISTRY.command_names():
         if not OPTIONS_REGISTRY.is_registered(cmd_name):
             register_options(cmd_name)
 
@@ -294,7 +294,7 @@ def parse_global_options(argv):
                               help="Display help and exit"))
     context.parser.set_defaults(show_version=False, show_full_version=False, show_help=False,
                                 build_directory="build", bento_info="bento.info")
-    OPTIONS_REGISTRY.register_command("", context)
+    OPTIONS_REGISTRY.register("", context)
 
     global_args, cmd_args = [], []
     for i, a in enumerate(argv):
@@ -343,7 +343,7 @@ def _main(popts, run_node, top_node, build_node):
         print("Type '%s help' for usage." % SCRIPT_NAME)
         return 1
     else:
-        if not cmd_name in COMMANDS_REGISTRY.get_command_names():
+        if not COMMANDS_REGISTRY.is_registered(cmd_name):
             raise UsageException("%s: Error: unknown command %r" % (SCRIPT_NAME, cmd_name))
         else:
             run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node)
@@ -354,7 +354,7 @@ def _get_package_with_user_flags(cmd_name, cmd_argv, package_options, top_node, 
     cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
     configure_argv = _get_cmd_data_provider(cmd_data_db).get_argv("configure")
 
-    p = OPTIONS_REGISTRY.get_options("configure")
+    p = OPTIONS_REGISTRY.retrieve("configure")
     o, a = p.parser.parse_args(configure_argv)
     flag_values = _get_flag_values(package_options.flag_options.keys(), o)
 
@@ -377,18 +377,18 @@ def run_dependencies(cmd_name, run_node, top_node, build_node, pkg):
 
     deps = CMD_SCHEDULER.order(cmd_name)
     for cmd_name in deps:
-        cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
+        cmd_klass = COMMANDS_REGISTRY.retrieve(cmd_name)
         cmd_argv = _get_cmd_data_provider(cmd_data_db).get_argv(cmd_name)
-        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+        ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg)
 
 def is_help_only(cmd_name, cmd_argv):
-    p = OPTIONS_REGISTRY.get_options(cmd_name)
+    p = OPTIONS_REGISTRY.retrieve(cmd_name)
     o, a = p.parser.parse_args(cmd_argv)
     return o.help is True
 
 def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
-    cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
+    cmd_klass = COMMANDS_REGISTRY.retrieve(cmd_name)
 
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:
@@ -409,7 +409,7 @@ def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
     package_options = __get_package_options(top_node)
     pkg = _get_package_with_user_flags(cmd_name, cmd_opts, package_options, top_node, build_node)
     if is_help_only(cmd_name, cmd_opts):
-        options_context = OPTIONS_REGISTRY.get_options(cmd_name)
+        options_context = OPTIONS_REGISTRY.retrieve(cmd_name)
         p = options_context.parser
         o, a = p.parse_args(cmd_opts)
         if o.help:
@@ -417,7 +417,7 @@ def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
     else:
         run_dependencies(cmd_name, run_node, top_node, build_node, pkg)
 
-        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+        ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
         run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg)
 
         cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
@@ -429,7 +429,7 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, run_node, top_n
     package_options = __get_package_options(top_node)
 
     cmd = cmd_klass()
-    options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
+    options_ctx = OPTIONS_REGISTRY.retrieve(cmd_name)
 
     ctx = ctx_klass(cmd_argv, options_ctx, pkg, run_node)
     # FIXME: hack to pass package_options to configure command - most likely

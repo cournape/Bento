@@ -30,17 +30,17 @@ class TestHelpCommand(unittest.TestCase):
         registry = copy.deepcopy(bento.commands.core.COMMANDS_REGISTRY)
 
         # help command assumes those always exist
-        registry.register_command("configure", Command)
-        registry.register_command("build", Command)
-        registry.register_command("install", Command)
-        registry.register_command("sdist", Command)
-        registry.register_command("build_wininst", Command)
-        registry.register_command("build_egg", Command)
+        registry.register("configure", Command)
+        registry.register("build", Command)
+        registry.register("install", Command)
+        registry.register("sdist", Command)
+        registry.register("build_wininst", Command)
+        registry.register("build_egg", Command)
 
         bento.commands.core.COMMANDS_REGISTRY = registry
 
         self.options_registry = bento.commands.options.OptionsRegistry()
-        self.options_registry.register_command("configure", OptionsContext())
+        self.options_registry.register("configure", OptionsContext())
 
     def tearDown(self):
         bento.commands.core.COMMANDS_REGISTRY = self.old_registry

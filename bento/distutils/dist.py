@@ -83,11 +83,11 @@ def global_context_factory():
     cmd_scheduler = CommandScheduler()
     register_commands()
     register_command_contexts()
-    for cmd_name in COMMANDS_REGISTRY.get_command_names():
+    for cmd_name in COMMANDS_REGISTRY.command_names():
         if not options_registry.is_registered(cmd_name):
-            cmd_klass = COMMANDS_REGISTRY.get_command(cmd_name)
+            cmd_klass = COMMANDS_REGISTRY.retrieve(cmd_name)
             options_context = OptionsContext.from_command(cmd_klass)
-            options_registry.register_command(cmd_name, options_context)
+            options_registry.register(cmd_name, options_context)
     global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY,
                                    options_registry, cmd_scheduler)
     return global_context
@@ -102,10 +102,10 @@ def register_command_contexts():
         CONTEXT_REGISTRY.register("sdist", SdistContext)
 
 def register_commands():
-    COMMANDS_REGISTRY.register_command("configure", ConfigureCommand)
-    COMMANDS_REGISTRY.register_command("build", BuildCommand)
-    COMMANDS_REGISTRY.register_command("install", InstallCommand)
-    COMMANDS_REGISTRY.register_command("sdist", SdistCommand)
+    COMMANDS_REGISTRY.register("configure", ConfigureCommand)
+    COMMANDS_REGISTRY.register("build", BuildCommand)
+    COMMANDS_REGISTRY.register("install", InstallCommand)
+    COMMANDS_REGISTRY.register("sdist", SdistCommand)
 
 class BentoDistribution(Distribution):
     def get_command_class(self, command):

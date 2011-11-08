@@ -147,8 +147,8 @@ class install(Command):
 
         if self.dry_run == 1:
             args.append("--dry-run")
-        cmd_context_klass = dist.global_context.get_context(self.cmd_name)
-        cmd_klass = dist.global_context.get_command(self.cmd_name)
+        cmd_context_klass = dist.global_context.retrieve_context(self.cmd_name)
+        cmd_klass = dist.global_context.retrieve_command(self.cmd_name)
         run_cmd_in_context(cmd_klass, self.cmd_name, args, cmd_context_klass,
                            dist.run_node, dist.top_node, dist.pkg)
         if self.record:
@@ -157,9 +157,9 @@ class install(Command):
     def write_record(self):
         dist = self.distribution
 
-        install = dist.global_context.get_command(self.cmd_name)()
-        options_context = dist.global_context.get_options_context(self.cmd_name)
-        cmd_context_klass = dist.global_context.get_context(self.cmd_name)
+        install = dist.global_context.retrieve_command(self.cmd_name)()
+        options_context = dist.global_context.retrieve_options_context(self.cmd_name)
+        cmd_context_klass = dist.global_context.retrieve_context(self.cmd_name)
         context = cmd_context_klass([], options_context, dist.pkg, dist.run_node)
 
         n = context.build_node.make_node(IPKG_PATH)

@@ -73,7 +73,7 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             help_args = _args
             cmd_name = cmd_args[0]
 
-        options_context = ctx.options_registry.get_options(cmd_name)
+        options_context = ctx.options_registry.retrieve(cmd_name)
         if ctx.options_registry.is_registered(cmd_name):
             p = options_context.parser
             p.print_help()
@@ -94,7 +94,7 @@ def get_simple_usage():
 
     def add_group(cmd_names):
         for name in cmd_names:
-            v = COMMANDS_REGISTRY.get_command(name)
+            v = COMMANDS_REGISTRY.retrieve(name)
             doc = v.short_descr
             if doc is None:
                 doc = "undocumented"
@@ -158,7 +158,7 @@ class CommandRegistry(object):
         # command line name -> None for private commands
         self._privates = {}
 
-    def register_command(self, name, cmd_klass, public=True):
+    def register(self, name, cmd_klass, public=True):
         if name in self._klasses:
             raise ValueError("context for command %r already registered !" % name)
         else:
@@ -166,30 +166,21 @@ class CommandRegistry(object):
             if not public:
                 self._privates[name] = None
 
-    def get_command(self, name):
+    def retrieve(self, name):
         cmd_klass = self._klasses.get(name, None)
         if cmd_klass is None:
             raise ValueError("No command class registered for name %r" % name)
         else:
             return cmd_klass
 
-    def get_command_names(self):
+    def is_registered(self, name):
+        return name in self._klasses
+
+    def command_names(self):
         return self._klasses.keys()
 
-    def get_public_command_names(self):
+    def public_command_names(self):
         return [k for k in self._klasses.keys() if not k in self._privates]
-
-    def get_command_name(self, klass):
-        for k, v in self._klasses.iteritems():
-            if v == klass:
-                return k
-        raise ValueError("Unregistered class %r" % klass)
-
-    def get_command_name_from_class_name(self, class_name):
-        for k, v in self._klasses.iteritems():
-            if v.__name__ == class_name:
-                return k
-        raise ValueError("Unregistered class %r" % class_name)
 
 # FIXME: singleton
 COMMANDS_REGISTRY = CommandRegistry()
