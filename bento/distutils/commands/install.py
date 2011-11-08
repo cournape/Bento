@@ -37,6 +37,7 @@ from bento.commands.wrapper_utils \
         run_cmd_in_context
 
 class install(Command):
+    cmd_name = "install"
     description = "Install wrapper to install bento package"
 
     user_options = [
@@ -146,7 +147,9 @@ class install(Command):
 
         if self.dry_run == 1:
             args.append("--dry-run")
-        run_cmd_in_context(InstallCommand, "install", args, CmdContext,
+        cmd_context_klass = dist.global_context.get_context(self.cmd_name)
+        cmd_klass = dist.global_context.get_command(self.cmd_name)
+        run_cmd_in_context(cmd_klass, self.cmd_name, args, cmd_context_klass,
                            dist.run_node, dist.top_node, dist.pkg)
         if self.record:
             self.write_record()
@@ -154,9 +157,10 @@ class install(Command):
     def write_record(self):
         dist = self.distribution
 
-        install = InstallCommand()
-        options_context = OptionsContext.from_command(install)
-        context = CmdContext([], options_context, dist.pkg, dist.run_node)
+        install = dist.global_context.get_command(self.cmd_name)()
+        options_context = dist.global_context.get_options_context(self.cmd_name)
+        cmd_context_klass = dist.global_context.get_context(self.cmd_name)
+        context = cmd_context_klass([], options_context, dist.pkg, dist.run_node)
 
         n = context.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())

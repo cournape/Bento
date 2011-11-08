@@ -27,6 +27,9 @@ class sdist(old_sdist):
     def run(self):
         dist = self.distribution
 
+        cmd_name = "sdist"
         cmd_argv = ["--output-dir=%s" % self.dist_dir]
-        run_cmd_in_context(SdistCommand, "sdist", cmd_argv, CmdContext,
+        cmd_context_klass = dist.global_context.get_context(cmd_name)
+        cmd_klass = dist.global_context.get_command(cmd_name)
+        run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, cmd_context_klass,
                            dist.run_node, dist.top_node, dist.pkg)

@@ -15,6 +15,7 @@ from bento.commands.context \
         BuildYakuContext
 
 class build(old_build):
+    cmd_name = "build"
     def __init__(self, *a, **kw):
         old_build.__init__(self, *a, **kw)
 
@@ -28,5 +29,7 @@ class build(old_build):
         self.run_command("config")
 
         dist = self.distribution
-        run_cmd_in_context(BuildCommand, "build", [], BuildYakuContext,
+
+        cmd_context_klass = dist.global_context.get_context(self.cmd_name)
+        run_cmd_in_context(BuildCommand, self.cmd_name, [], cmd_context_klass,
                            dist.run_node, dist.top_node, dist.pkg)
