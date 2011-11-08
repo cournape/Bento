@@ -153,5 +153,5 @@ Usage:   bentomaker distcheck [OPTIONS]."""
 
 @hooks.startup
 def startup(context):
-    context.register_command("distcheck", DistCheckCommand)
-    context.register_command("test", TestCommand)
+    context.register_command("distcheck", DistCheckCommand())
+    context.register_command("test", TestCommand())

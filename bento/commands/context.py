@@ -49,8 +49,17 @@ class GlobalContext(object):
         self._options_registry = options_registry
         self._scheduler = commands_scheduler
 
-    def register_command(self, cmd_name, klass):
-        self._commands_registry.register(cmd_name, klass)
+    def register_command(self, cmd_name, cmd):
+        """Register a command name to a command instance.
+
+        Parameters
+        ----------
+        cmd_name: str
+            name of the command
+        cmd: object
+            instance from a subclass of Command
+        """
+        self._commands_registry.register(cmd_name, cmd)
 
     def retrieve_command(self, cmd_name):
         return self._commands_registry.retrieve(cmd_name)

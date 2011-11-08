@@ -118,18 +118,18 @@ def __get_package_options(top_node):
 #   Create the command line UI
 #================================
 def register_commands():
-    COMMANDS_REGISTRY.register("help", HelpCommand)
-    COMMANDS_REGISTRY.register("configure", ConfigureCommand)
-    COMMANDS_REGISTRY.register("build", BuildCommand)
-    COMMANDS_REGISTRY.register("install", InstallCommand)
-    COMMANDS_REGISTRY.register("convert", ConvertCommand)
-    COMMANDS_REGISTRY.register("sdist", SdistCommand)
-    COMMANDS_REGISTRY.register("build_egg", BuildEggCommand)
-    COMMANDS_REGISTRY.register("build_wininst", BuildWininstCommand)
+    COMMANDS_REGISTRY.register("help", HelpCommand())
+    COMMANDS_REGISTRY.register("configure", ConfigureCommand())
+    COMMANDS_REGISTRY.register("build", BuildCommand())
+    COMMANDS_REGISTRY.register("install", InstallCommand())
+    COMMANDS_REGISTRY.register("convert", ConvertCommand())
+    COMMANDS_REGISTRY.register("sdist", SdistCommand())
+    COMMANDS_REGISTRY.register("build_egg", BuildEggCommand())
+    COMMANDS_REGISTRY.register("build_wininst", BuildWininstCommand())
 
-    COMMANDS_REGISTRY.register("build_pkg_info", BuildPkgInfoCommand, public=False)
-    COMMANDS_REGISTRY.register("parse", ParseCommand, public=False)
-    COMMANDS_REGISTRY.register("detect_type", DetectTypeCommand, public=False)
+    COMMANDS_REGISTRY.register("build_pkg_info", BuildPkgInfoCommand(), public=False)
+    COMMANDS_REGISTRY.register("parse", ParseCommand(), public=False)
+    COMMANDS_REGISTRY.register("detect_type", DetectTypeCommand(), public=False)
  
     #if sys.platform == "darwin":
     #    import bento.commands.build_mpkg
@@ -377,10 +377,10 @@ def run_dependencies(cmd_name, run_node, top_node, build_node, pkg):
 
     deps = CMD_SCHEDULER.order(cmd_name)
     for cmd_name in deps:
-        cmd_klass = COMMANDS_REGISTRY.retrieve(cmd_name)
+        cmd = COMMANDS_REGISTRY.retrieve(cmd_name)
         cmd_argv = _get_cmd_data_provider(cmd_data_db).get_argv(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
-        run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg)
+        run_cmd_in_context(cmd, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg)
 
 def is_help_only(cmd_name, cmd_argv):
     p = OPTIONS_REGISTRY.retrieve(cmd_name)
@@ -388,11 +388,10 @@ def is_help_only(cmd_name, cmd_argv):
     return o.help is True
 
 def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
-    cmd_klass = COMMANDS_REGISTRY.retrieve(cmd_name)
+    cmd = COMMANDS_REGISTRY.retrieve(cmd_name)
 
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:
-        cmd = cmd_klass()
         options_ctx = OPTIONS_REGISTRY.retrieve(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
         ctx = ctx_klass(cmd_opts, options_ctx, None, run_node)
@@ -418,17 +417,16 @@ def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
         run_dependencies(cmd_name, run_node, top_node, build_node, pkg)
 
         ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
-        run_cmd_in_context(cmd_klass, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg)
+        run_cmd_in_context(cmd, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg)
 
         cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
         _set_cmd_data_provider(cmd_name, cmd_opts, cmd_data_db)
 
-def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg):
+def run_cmd_in_context(cmd, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
     package_options = __get_package_options(top_node)
 
-    cmd = cmd_klass()
     options_ctx = OPTIONS_REGISTRY.retrieve(cmd_name)
 
     ctx = ctx_klass(cmd_argv, options_ctx, pkg, run_node)
