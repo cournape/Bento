@@ -9,25 +9,16 @@ import bento
 
 from bento._config \
     import \
-        BENTO_SCRIPT, DISTCHECK_DIR
+        DISTCHECK_DIR
 from bento.core.errors \
     import \
         BentoError
-from bento.core.node_package \
-    import \
-        NodeRepresentation
 from bento.commands.errors \
     import \
         CommandExecutionFailure
 from bento.commands.core \
     import \
-        Command, Option, COMMANDS_REGISTRY
-from bento.commands.wrapper_utils \
-    import \
-        run_cmd_in_context
-from bento.commands.context \
-    import \
-        CONTEXT_REGISTRY
+        Command
 from bento.core.utils \
     import \
         pprint, test_program_run
@@ -36,9 +27,6 @@ from bento.compat.api \
         rename, TarFile
 
 from bento.commands import hooks
-
-import yaku.context
-import yaku.scheduler
 
 _BENTOMAKER_SCRIPT = [op.join(op.dirname(bento.__file__), os.pardir, "bentomaker")]
 
@@ -85,16 +73,6 @@ class TestCommand(Command):
             for stream in [stdout, stderr]:
                 print(try_decode(stream))
 
-def run_sdist(context):
-    sdist_name = "sdist"
-    sdist_klass = COMMANDS_REGISTRY.retrieve(sdist_name)
-    cmd_argv = []
-    sdist_context_klass = CONTEXT_REGISTRY.retrieve(sdist_name)
-    sdist, sdist_context = run_cmd_in_context(sdist_klass,
-                        sdist_name, cmd_argv, sdist_context_klass,
-                        context.run_node, context.top_node, context.pkg)
-    return sdist
-
 class DistCheckCommand(Command):
     long_descr = """\
 Purpose: configure, build and test the project from sdist output
@@ -102,21 +80,47 @@ Usage:   bentomaker distcheck [OPTIONS]."""
     short_descr = "check that sdist output is buildable."
     def run(self, ctx):
         pprint('BLUE', "Distcheck...")
+
+        def _call(cmd):
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = p.communicate()
+            stdout = stdout.strip()
+            stderr = stderr.strip()
+            if stdout:
+                print(stdout.decode())
+            if stderr:
+                print(stderr.decode())
+            if p.returncode != 0:
+                raise subprocess.CalledProcessError(p.returncode, cmd)
+
+        def _ensure_bootstrap_script():
+            if sys.version_info[0] < 3:
+                bootstrap = os.path.join(os.getcwd(), "bootstrap.py")
+                _call([sys.executable, bootstrap])
+                bentomaker_script = _BENTOMAKER_SCRIPT
+            else:
+                bentomaker_script = [sys.executable, "-m", "bentomakerlib.bentomaker"]
+            return bentomaker_script
+
         pprint('PINK', "\t-> Running sdist...")
+        bentomaker_script = _ensure_bootstrap_script()
 
-        sdist = run_sdist(ctx)
-        archive_root, archive_node = sdist.archive_root, sdist.archive_node
-
-        saved = os.getcwd()
+        archive_name = "foo.tar.gz"
+        archive_dest = "dist"
+        archive_root = "%s-%s" % (ctx.pkg.name, ctx.pkg.version)
+        archive_fullpath = os.path.join(os.getcwd(), archive_dest,
+                archive_name)
+        _call(bentomaker_script + ["sdist", "--output-file=%s" % archive_name])
 
         distcheck_dir = ctx.build_node.make_node(DISTCHECK_DIR)
         if os.path.exists(distcheck_dir.abspath()):
             shutil.rmtree(distcheck_dir.abspath())
         distcheck_dir.mkdir()
-        target = distcheck_dir.make_node(archive_node.name)
-        rename(archive_node.abspath(), target.abspath())
+        target = distcheck_dir.make_node(archive_name)
+        rename(archive_fullpath, target.abspath())
         archive_node = os.path.basename(target.abspath())
 
+        saved = os.getcwd()
         os.chdir(distcheck_dir.abspath())
         try:
             pprint('PINK', "\t-> Extracting sdist...")
@@ -124,24 +128,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
             tarball.extractall()
             os.chdir(archive_root)
 
-            def _call(cmd):
-                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                stdout, stderr = p.communicate()
-                stdout = stdout.strip()
-                stderr = stderr.strip()
-                if stdout:
-                    print(stdout.decode())
-                if stderr:
-                    print(stderr.decode())
-                if p.returncode != 0:
-                    raise subprocess.CalledProcessError(p.returncode, cmd)
-
-            if sys.version_info[0] < 3:
-                bootstrap = os.path.join(os.getcwd(), "bootstrap.py")
-                _call([sys.executable, bootstrap])
-                bentomaker_script = _BENTOMAKER_SCRIPT
-            else:
-                bentomaker_script = [sys.executable, "-m", "bentomakerlib.bentomaker"]
+            bentomaker_script = _ensure_bootstrap_script()
 
             pprint('PINK', "\t-> Configuring from sdist...")
             _call(bentomaker_script + ["configure", "--prefix=%s" % os.path.abspath("tmp")])
@@ -156,16 +143,11 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                 pprint('PINK', "\t-> Building wininst from sdist...")
                 _call(bentomaker_script + ["build_wininst"])
 
-            if COMMANDS_REGISTRY.is_registered("test"):
-                pprint('PINK', "\t-> Testing from sdist...")
-                try:
-                    _call(bentomaker_script + ["test"])
-                except CalledProcessError:
-                    e = extract_exception()
-                    raise CommandExecutionFailure(
-                            "test command failed")
-            else:
-                pprint('YELLOW', "\t-> No test command defined, no testing")
+            pprint('PINK', "\t-> Testing from sdist...")
+            try:
+                _call(bentomaker_script + ["test"])
+            except CalledProcessError:
+                raise CommandExecutionFailure("test command failed")
         finally:
             os.chdir(saved)
 
