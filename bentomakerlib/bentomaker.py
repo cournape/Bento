@@ -344,7 +344,7 @@ def _main(popts, run_node, top_node, build_node):
         return 1
     else:
         if not cmd_name in COMMANDS_REGISTRY.get_command_names():
-            raise UsageException("%s: Error: unknown command %s" % (SCRIPT_NAME, cmd_name))
+            raise UsageException("%s: Error: unknown command %r" % (SCRIPT_NAME, cmd_name))
         else:
             run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node)
 
@@ -479,6 +479,8 @@ def noexc_main(argv=None):
         ret = main(argv)
     except UsageException:
         _print_debug()
+        e = extract_exception()
+        _print_error(str(e))
         sys.exit(1)
     except ParseError:
         _print_debug()
