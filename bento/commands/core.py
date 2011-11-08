@@ -133,9 +133,9 @@ def command(f):
         klass = _CmdFakeMetaclass(klass_name, (Command,), {})
 
         if f.__name__.startswith("_"):
-            COMMANDS_REGISTRY.register_command(f.__name__, klass, public=False)
+            COMMANDS_REGISTRY.register(f.__name__, klass, public=False)
         else:
-            COMMANDS_REGISTRY.register_command(f.__name__, klass)
+            COMMANDS_REGISTRY.register(f.__name__, klass)
         if bypass_help:
             def run(self, ctx):
                 o, a = ctx.options_context.parser.parse_args(ctx.get_command_arguments())
