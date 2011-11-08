@@ -154,7 +154,7 @@ def register_options_special():
 
     context = OptionsContext()
     def print_help():
-        global_options = OPTIONS_REGISTRY.get_options("")
+        global_options = OPTIONS_REGISTRY.retrieve("")
         p = global_options.parser
         return(p.print_help())
     context.parser.print_help = print_help
@@ -332,8 +332,8 @@ def _main(popts, run_node, top_node, build_node):
         return 0
 
     if popts["show_usage"]:
-        cmd = COMMANDS_REGISTRY.get_command('help')()
-        cmd.run(CmdContext([], OPTIONS_REGISTRY.get_options('help'), None, None))
+        cmd = COMMANDS_REGISTRY.retrieve('help')()
+        cmd.run(CmdContext([], OPTIONS_REGISTRY.retrieve('help'), None, None))
         return 0
 
     cmd_name = popts["cmd_name"]
@@ -393,8 +393,8 @@ def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:
         cmd = cmd_klass()
-        options_ctx = OPTIONS_REGISTRY.get_options(cmd_name)
-        ctx_klass = CONTEXT_REGISTRY.get(cmd_name)
+        options_ctx = OPTIONS_REGISTRY.retrieve(cmd_name)
+        ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
         ctx = ctx_klass(cmd_opts, options_ctx, None, run_node)
         # XXX: hack for help command to get option context for any command
         # without making help depends on bentomakerlib
