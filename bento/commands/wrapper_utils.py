@@ -31,7 +31,7 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, context_klass, run_node, t
     options_context = OptionsContext.from_command(cmd)
     _setup_options_parser(options_context, package_options)
 
-    context = context_klass(cmd_argv, options_context, package, run_node)
+    context = context_klass(None, cmd_argv, options_context, package, run_node)
     # FIXME: hack to pass package_options to configure command - most likely
     # this needs to be known in option context ?
     context.package_options = package_options

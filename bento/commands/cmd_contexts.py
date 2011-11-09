@@ -52,7 +52,8 @@ class DummyContextManager(object):
         self.post()
 
 class CmdContext(object):
-    def __init__(self, cmd_argv, options_context, pkg, run_node):
+    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
+        self._global_context = global_context
         self.pkg = pkg
 
         self.options_context = options_context
@@ -175,8 +176,8 @@ class _ContextWithBuildDirectory(CmdContext):
         self.build_root = self.run_node.make_node("build")
 
 class ConfigureContext(_ContextWithBuildDirectory):
-    def __init__(self, cmd_argv, options_context, pkg, run_node):
-        CmdContext.__init__(self, cmd_argv, options_context, pkg, run_node)
+    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
+        CmdContext.__init__(self, global_context, cmd_argv, options_context, pkg, run_node)
 
     def setup(self):
         pass
@@ -301,8 +302,8 @@ def write_template(top_node, pkg):
     return output
 
 class BuildContext(_ContextWithBuildDirectory):
-    def __init__(self, cmd_argv, options_context, pkg, run_node):
-        super(BuildContext, self).__init__(cmd_argv, options_context, pkg, run_node)
+    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
+        super(BuildContext, self).__init__(global_context, cmd_argv, options_context, pkg, run_node)
         self.builder_registry = BuilderRegistry()
         self.section_writer = SectionWriter()
 
@@ -466,8 +467,8 @@ class BuildContext(_ContextWithBuildDirectory):
                         _install_node(category, node, from_node, target_dir)
 
 class SdistContext(CmdContext):
-    def __init__(self, cmd_args, option_context, pkg, run_node):
-        super(SdistContext, self).__init__(cmd_args, option_context, pkg, run_node)
+    def __init__(self, global_context, cmd_args, option_context, pkg, run_node):
+        super(SdistContext, self).__init__(global_context, cmd_args, option_context, pkg, run_node)
 
         self._node_pkg = NodeRepresentation(run_node, self.top_node)
         self._node_pkg.update_package(pkg)

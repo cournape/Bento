@@ -279,7 +279,7 @@ def _wrapped_main(popts, run_node, top_node, build_node):
             register_options(cmd_name)
 
     try:
-        return _main(popts, run_node, top_node, build_node)
+        return _main(global_context, popts, run_node, top_node, build_node)
     finally:
         if mods:
             mods[0].shutdown()
@@ -327,7 +327,7 @@ def parse_global_options(argv):
 
     return ret
 
-def _main(popts, run_node, top_node, build_node):
+def _main(global_context, popts, run_node, top_node, build_node):
     if popts["show_version"]:
         print(bento.__version__)
         return 0
@@ -338,7 +338,7 @@ def _main(popts, run_node, top_node, build_node):
 
     if popts["show_usage"]:
         cmd = COMMANDS_REGISTRY.retrieve('help')()
-        cmd.run(CmdContext([], OPTIONS_REGISTRY.retrieve('help'), None, None))
+        cmd.run(CmdContext(global_context, [], OPTIONS_REGISTRY.retrieve('help'), None, None))
         return 0
 
     cmd_name = popts["cmd_name"]
@@ -351,7 +351,7 @@ def _main(popts, run_node, top_node, build_node):
         if not COMMANDS_REGISTRY.is_registered(cmd_name):
             raise UsageException("%s: Error: unknown command %r" % (SCRIPT_NAME, cmd_name))
         else:
-            run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node)
+            run_cmd(global_context, cmd_name, cmd_opts, run_node, top_node, build_node)
 
 def _get_package_with_user_flags(cmd_name, cmd_argv, package_options, top_node, build_node):
     from bento.commands.configure import _get_flag_values
@@ -377,7 +377,7 @@ def _get_subpackage(pkg, top, local_node):
         else:
             return None
 
-def run_dependencies(cmd_name, run_node, top_node, build_node, pkg):
+def run_dependencies(global_context, cmd_name, run_node, top_node, build_node, pkg):
     cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
 
     deps = CMD_SCHEDULER.order(cmd_name)
@@ -385,21 +385,21 @@ def run_dependencies(cmd_name, run_node, top_node, build_node, pkg):
         cmd = COMMANDS_REGISTRY.retrieve(cmd_name)
         cmd_argv = _get_cmd_data_provider(cmd_data_db).get_argv(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
-        run_cmd_in_context(cmd, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg)
+        run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg)
 
 def is_help_only(cmd_name, cmd_argv):
     p = OPTIONS_REGISTRY.retrieve(cmd_name)
     o, a = p.parser.parse_args(cmd_argv)
     return o.help is True
 
-def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
+def run_cmd(global_ctx, cmd_name, cmd_opts, run_node, top_node, build_node):
     cmd = COMMANDS_REGISTRY.retrieve(cmd_name)
 
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:
         options_ctx = OPTIONS_REGISTRY.retrieve(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
-        ctx = ctx_klass(cmd_opts, options_ctx, None, run_node)
+        ctx = ctx_klass(global_ctx, cmd_opts, options_ctx, None, run_node)
         # XXX: hack for help command to get option context for any command
         # without making help depends on bentomakerlib
         ctx.options_registry = OPTIONS_REGISTRY
@@ -419,22 +419,22 @@ def run_cmd(cmd_name, cmd_opts, run_node, top_node, build_node):
         if o.help:
             p.print_help()
     else:
-        run_dependencies(cmd_name, run_node, top_node, build_node, pkg)
+        run_dependencies(global_ctx, cmd_name, run_node, top_node, build_node, pkg)
 
         ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
-        run_cmd_in_context(cmd, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg)
+        run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg)
 
         cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
         _set_cmd_data_provider(cmd_name, cmd_opts, cmd_data_db)
 
-def run_cmd_in_context(cmd, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg):
+def run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
     package_options = __get_package_options(top_node)
 
     options_ctx = OPTIONS_REGISTRY.retrieve(cmd_name)
 
-    ctx = ctx_klass(cmd_argv, options_ctx, pkg, run_node)
+    ctx = ctx_klass(global_ctx, cmd_argv, options_ctx, pkg, run_node)
     # FIXME: hack to pass package_options to configure command - most likely
     # this needs to be known in option context ?
     ctx.package_options = package_options

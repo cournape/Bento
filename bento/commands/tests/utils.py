@@ -49,7 +49,7 @@ def prepare_configure(run_node, bento_info, context_klass=ConfigureYakuContext, 
     # FIXME: this emulates the big ugly hack inside bentomaker.
     _setup_options_parser(opts, package_options)
 
-    context = context_klass(cmd_argv, opts, package, run_node)
+    context = context_klass(None, cmd_argv, opts, package, run_node)
     context.package_options = package_options
 
     return context, configure
@@ -69,7 +69,7 @@ def prepare_build(run_node, pkg, context_klass=BuildYakuContext):
     build = BuildCommand()
     opts = prepare_options("build", build, context_klass)
 
-    bld = context_klass([], opts, pkg, run_node)
+    bld = context_klass(None, [], opts, pkg, run_node)
     return bld, build
 
 # Super ugly stuff to make waf and nose happy: nose happily override

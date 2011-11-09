@@ -20,8 +20,8 @@ import yaku.context
 import yaku.errors
 
 class ConfigureYakuContext(ConfigureContext):
-    def __init__(self, cmd_argv, options_context, pkg, run_node):
-        super(ConfigureYakuContext, self).__init__(cmd_argv, options_context, pkg, run_node)
+    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
+        super(ConfigureYakuContext, self).__init__(global_context, cmd_argv, options_context, pkg, run_node)
         build_path = run_node._ctx.bldnode.path_from(run_node)
         source_path = run_node._ctx.srcnode.path_from(run_node)
         self.yaku_context = yaku.context.get_cfg(src_path=source_path, build_path=build_path)
@@ -54,10 +54,10 @@ class ConfigureYakuContext(ConfigureContext):
         super(ConfigureYakuContext, self).post_recurse()
 
 class BuildYakuContext(BuildContext):
-    def __init__(self, cmd_argv, options_context, pkg, run_node):
+    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
         from bento.commands.build_yaku import build_extension, build_compiled_library
 
-        super(BuildYakuContext, self).__init__(cmd_argv, options_context, pkg, run_node)
+        super(BuildYakuContext, self).__init__(global_context, cmd_argv, options_context, pkg, run_node)
         build_path = run_node._ctx.bldnode.path_from(run_node)
         source_path = run_node._ctx.srcnode.path_from(run_node)
         self.yaku_context = yaku.context.get_bld(src_path=source_path, build_path=build_path)

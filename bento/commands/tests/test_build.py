@@ -344,7 +344,7 @@ class TestBuildCommand(unittest.TestCase):
         build = BuildCommand()
         opts = OptionsContext.from_command(build)
 
-        bld = BuildYakuContext([], opts, conf.pkg, top_node)
+        bld = BuildYakuContext(None, [], opts, conf.pkg, top_node)
         build.run(bld)
 
 class TestBuildDirectoryBase(unittest.TestCase):
@@ -374,7 +374,7 @@ class TestBuildDirectory(TestBuildDirectoryBase):
         build = BuildCommand()
         opts = OptionsContext.from_command(build)
 
-        bld = BuildYakuContext([], opts, conf.pkg, top_node)
+        bld = BuildYakuContext(None, [], opts, conf.pkg, top_node)
         build.run(bld)
 
     def test_simple_distutils(self):
@@ -388,7 +388,7 @@ class TestBuildDirectory(TestBuildDirectoryBase):
         build = BuildCommand()
         opts = OptionsContext.from_command(build)
 
-        bld = DistutilsBuildContext([], opts, conf.pkg, top_node)
+        bld = DistutilsBuildContext(None, [], opts, conf.pkg, top_node)
         build.run(bld)
 
 class TestBuildDirectoryWaf(TestBuildDirectoryBase):
@@ -423,6 +423,6 @@ class TestBuildDirectoryWaf(TestBuildDirectoryBase):
         #opts = OptionsContext.from_command(build)
         opts = prepare_options("build", build, BuildWafContext)
 
-        bld = BuildWafContext([], opts, conf.pkg, top_node)
+        bld = BuildWafContext(None, [], opts, conf.pkg, top_node)
         bld.waf_context.logger = make_stream_logger("build", StringIO())
         build.run(bld)

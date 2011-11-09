@@ -160,7 +160,7 @@ class install(Command):
         install = dist.global_context.retrieve_command(self.cmd_name)()
         options_context = dist.global_context.retrieve_options_context(self.cmd_name)
         cmd_context_klass = dist.global_context.retrieve_context(self.cmd_name)
-        context = cmd_context_klass([], options_context, dist.pkg, dist.run_node)
+        context = cmd_context_klass(None, [], options_context, dist.pkg, dist.run_node)
 
         n = context.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())

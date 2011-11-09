@@ -82,7 +82,7 @@ Library:
         opts = OptionsContext.from_command(build)
 
         cmd_argv = []
-        bld = BuildYakuContext(cmd_argv, opts, conf.pkg, run_node)
+        bld = BuildYakuContext(None, cmd_argv, opts, conf.pkg, run_node)
         build.run(bld)
 
     def test_hook(self):
