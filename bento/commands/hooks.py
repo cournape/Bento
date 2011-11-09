@@ -20,14 +20,6 @@ __POST_HOOK_REGISTRY = {}
 __COMMANDS_OVERRIDE = {}
 __INIT_FUNCS = {}
 
-def add_to_registry(func, category):
-    global __HOOK_REGISTRY
-
-    if not category in __HOOK_REGISTRY:
-        __HOOK_REGISTRY[category] = [func]
-    else:
-        __HOOK_REGISTRY[category].append(func)
-
 def override_command(command, func):
     global __COMMANDS_OVERRIDE
     local_dir = os.path.dirname(compat_inspect.stack()[2][1])
@@ -53,16 +45,6 @@ def add_to_post_registry(func, cmd_name):
     else:
         __POST_HOOK_REGISTRY[cmd_name].append(func)
 
-def get_registry_categories():
-    global __HOOK_REGISTRY
-
-    return __HOOK_REGISTRY.keys()
-
-def get_registry_category(categorie):
-    global __HOOK_REGISTRY
-
-    return __HOOK_REGISTRY[categorie]
-
 def get_pre_hooks(cmd_name):
     global __PRE_HOOK_REGISTRY
     return __PRE_HOOK_REGISTRY.get(cmd_name, [])
@@ -80,7 +62,6 @@ def _make_hook_decorator(command_name, kind):
     help_bypass = False
     def decorator(f):
         local_dir = os.path.dirname(compat_inspect.stack()[1][1])
-        add_to_registry((f, local_dir, help_bypass), name)
         if kind == "post":
             add_to_post_registry((f, local_dir, help_bypass), command_name)
         elif kind == "pre":
