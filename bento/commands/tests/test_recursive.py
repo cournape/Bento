@@ -118,8 +118,8 @@ def configure(ctx):
 
         hook = top_node.search("bar/bscript")
         m = create_hook_module(hook.abspath())
-        for hook, local_dir, help_bypass in get_pre_hooks("configure"):
-            conf.pre_recurse(root.find_dir(local_dir))
+        for hook in get_pre_hooks("configure"):
+            conf.pre_recurse(root.find_dir(hook.local_dir))
             try:
                 hook(conf)
             finally:

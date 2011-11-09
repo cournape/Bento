@@ -41,9 +41,9 @@ def run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, context_klass, r
         cmd_funcs = [(cmd.run, top_node.abspath())]
 
     try:
-        def _run_hooks(hook_iter):
-            for hook, local_dir, help_bypass in hook_iter:
-                local_node = top_node.find_dir(relpath(local_dir, top_node.abspath()))
+        def _run_hooks(hooks):
+            for hook in hooks:
+                local_node = top_node.find_dir(relpath(hook.local_dir, top_node.abspath()))
                 context.pre_recurse(local_node)
                 try:
                     if not context.help:

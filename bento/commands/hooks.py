@@ -14,9 +14,31 @@ from bento.core.utils \
 
 SAFE_MODULE_NAME = re.compile("[^a-zA-Z_]")
 
-__HOOK_REGISTRY = {}
-__PRE_HOOK_REGISTRY = {}
-__POST_HOOK_REGISTRY = {}
+class HookRegistry(object):
+    def __init__(self):
+        self._pre_hooks = {}
+        self._post_hooks = {}
+
+    def add_pre_hook(self, hook, cmd_name):
+        if cmd_name in self._pre_hooks:
+            self._pre_hooks[cmd_name].append(hook)
+        else:
+            self._pre_hooks[cmd_name] = [hook]
+
+    def add_post_hook(self, hook, cmd_name):
+        if cmd_name in self._post_hooks:
+            self._post_hooks[cmd_name].append(hook)
+        else:
+            self._post_hooks[cmd_name] = [hook]
+
+    def retrieve_pre_hooks(self, cmd_name):
+        return self._pre_hooks.get(cmd_name, [])
+
+    def retrieve_post_hooks(self, cmd_name):
+        return self._post_hooks.get(cmd_name, [])
+
+__HOOK_REGISTRY = HookRegistry()
+
 __COMMANDS_OVERRIDE = {}
 __INIT_FUNCS = {}
 
@@ -30,32 +52,39 @@ def override_command(command, func):
         __COMMANDS_OVERRIDE[command] = [(func, local_dir)]
 
 def add_to_pre_registry(func, cmd_name):
-    global __PRE_HOOK_REGISTRY
-
-    if not cmd_name in __PRE_HOOK_REGISTRY:
-        __PRE_HOOK_REGISTRY[cmd_name] = [func]
-    else:
-        __PRE_HOOK_REGISTRY[cmd_name].append(func)
+    __HOOK_REGISTRY.add_pre_hook(func, cmd_name)
 
 def add_to_post_registry(func, cmd_name):
-    global __POST_HOOK_REGISTRY
-
-    if not cmd_name in __POST_HOOK_REGISTRY:
-        __POST_HOOK_REGISTRY[cmd_name] = [func]
-    else:
-        __POST_HOOK_REGISTRY[cmd_name].append(func)
+    __HOOK_REGISTRY.add_post_hook(func, cmd_name)
 
 def get_pre_hooks(cmd_name):
-    global __PRE_HOOK_REGISTRY
-    return __PRE_HOOK_REGISTRY.get(cmd_name, [])
+    return __HOOK_REGISTRY.retrieve_pre_hooks(cmd_name)
 
 def get_post_hooks(cmd_name):
-    global __POST_HOOK_REGISTRY
-    return __POST_HOOK_REGISTRY.get(cmd_name, [])
+    return __HOOK_REGISTRY.retrieve_post_hooks(cmd_name)
 
 def get_command_override(cmd_name):
     global __COMMANDS_OVERRIDE
     return __COMMANDS_OVERRIDE.get(cmd_name, [])
+
+class _HookWrapperBase(object):
+    def __init__(self, func, cmd_name, local_dir):
+        self._func = func
+        self.local_dir = local_dir
+        self.cmd_name = cmd_name
+        self.name = func.__name__
+
+    def __call__(self, ctx):
+        return self._func(ctx)
+
+    def __getattr__(self, k):
+        return getattr(self._func, k)
+
+class PreHookWrapper(_HookWrapperBase):
+    pass
+
+class PostHookWrapper(_HookWrapperBase):
+    pass
 
 def _make_hook_decorator(command_name, kind):
     name = "%s_%s" % (kind, command_name)
@@ -63,12 +92,14 @@ def _make_hook_decorator(command_name, kind):
     def decorator(f):
         local_dir = os.path.dirname(compat_inspect.stack()[1][1])
         if kind == "post":
-            add_to_post_registry((f, local_dir, help_bypass), command_name)
+            hook = PostHookWrapper(f, command_name, local_dir)
+            add_to_post_registry(hook, command_name)
         elif kind == "pre":
-            add_to_pre_registry((f, local_dir, help_bypass), command_name)
+            hook = PreHookWrapper(f, command_name, local_dir)
+            add_to_pre_registry(hook, command_name)
         else:
             raise ValueError("invalid hook kind %s" % kind)
-        return f
+        return hook
     return decorator
 
 post_configure = _make_hook_decorator("configure", "post")
