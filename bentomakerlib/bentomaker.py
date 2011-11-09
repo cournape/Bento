@@ -29,6 +29,9 @@ from bento.commands.api \
         BuildPkgInfoCommand, BuildEggCommand, BuildWininstCommand, \
         COMMANDS_REGISTRY, ConvertionError, UsageException, \
         CommandExecutionFailure
+from bento.commands.core \
+    import \
+        find_hook_commands
 from bento.commands.dependency \
     import \
         CommandScheduler, CommandDataProvider
@@ -262,6 +265,8 @@ def _wrapped_main(popts, run_node, top_node, build_node):
     mods = set_main(top_node, build_node)
     if mods:
         mods[0].startup(global_context)
+    for command in find_hook_commands(mods):
+        global_context.register_command(command.name, command)
     register_stuff()
     _big_ugly_hack()
     if mods:

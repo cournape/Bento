@@ -43,6 +43,21 @@ Usage: command's usage (default description)
     def shutdown(self, ctx):
         pass
 
+class WrappedCommand(Command):
+    def __init__(self, func):
+        super(WrappedCommand, self).__init__()
+        self._func = func
+        self.name = func.__name__
+
+    def __call__(self, ctx):
+        return self.run(ctx)
+
+    def run(self, ctx):
+        return self._func(ctx)
+
+    def __getattr__(self, k):
+        return getattr(self._func, k)
+
 class HelpCommand(Command):
     long_descr = """\
 Purpose: Show help on a command or other topic.
@@ -119,37 +134,38 @@ def get_simple_usage():
         ret.append(fill_string(header, minlen) + hlp)
     return "\n".join(ret)
 
-# Decorator to create a new command class from a simple function
 def command(f):
-    bypass_help = True
-    def _dec(f):
-        klass_name = "%sCommand" % to_camel_case(f.__name__)
+    """Decorator to create a new command from a simple function
 
-        class _CmdFakeMetaclass(type):
-            def __init__(cls, name, bases, d):
-                super(_CmdFakeMetaclass, cls).__init__(name, bases, d)
-                name = cls.__name__
+    The function should take one CommandContext instance
 
-        klass = _CmdFakeMetaclass(klass_name, (Command,), {})
+    Example
+    -------
+ 
+    A simple command may be defined as follows::
 
-        if f.__name__.startswith("_"):
-            COMMANDS_REGISTRY.register(f.__name__, klass, public=False)
-        else:
-            COMMANDS_REGISTRY.register(f.__name__, klass)
-        if bypass_help:
-            def run(self, ctx):
-                o, a = ctx.options_context.parser.parse_args(ctx.get_command_arguments())
-                if o.help:
-                    ctx.options_context.parser.print_help()
-                    return
-                return f(ctx)
-        else:
-            run = lambda self, ctx: f(ctx)
-        klass.run = run
-        if f.__doc__:
-            klass.long_descr = f.__doc__
-        return f
-    return _dec(f)
+        @command
+        def hello(context):
+            print "hello"
+    """
+    return WrappedCommand(f)
+
+def find_hook_commands(modules):
+    """Retrieve all command instances defined in given modules list.
+
+    This should be used to find commands defined through the hook.command. This
+    works by looking for all WrappedCommand instances in the modules.
+
+    Parameters
+    ----------
+    modules: seq
+        list of modules to look into
+    """
+    commands = []
+    for module in modules:
+        commands.extend([f for f in vars(module).values() if isinstance(f,
+            WrappedCommand)])
+    return commands
 
 class CommandRegistry(object):
     def __init__(self):
