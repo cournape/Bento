@@ -26,8 +26,7 @@ import bento.commands.core
 
 class TestHelpCommand(unittest.TestCase):
     def setUp(self):
-        self.old_registry = bento.commands.core.COMMANDS_REGISTRY
-        registry = copy.deepcopy(bento.commands.core.COMMANDS_REGISTRY)
+        registry = bento.commands.core.CommandRegistry()
 
         # help command assumes those always exist
         registry.register("configure", Command)
@@ -36,21 +35,17 @@ class TestHelpCommand(unittest.TestCase):
         registry.register("sdist", Command)
         registry.register("build_wininst", Command)
         registry.register("build_egg", Command)
-
-        bento.commands.core.COMMANDS_REGISTRY = registry
+        self.registry = registry
 
         self.options_registry = bento.commands.options.OptionsRegistry()
         self.options_registry.register("configure", OptionsContext())
-
-    def tearDown(self):
-        bento.commands.core.COMMANDS_REGISTRY = self.old_registry
 
     def test_simple(self):
         help = HelpCommand()
         options = OptionsContext()
         for option in HelpCommand.common_options:
             options.add_option(option)
-        global_context = GlobalContext(bento.commands.core.COMMANDS_REGISTRY, None, None, None)
+        global_context = GlobalContext(self.registry, None, None, None)
         context = HelpContext(global_context, [], options, None, None)
 
         help.run(context)

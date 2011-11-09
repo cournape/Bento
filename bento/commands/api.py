@@ -32,10 +32,6 @@ from bento.commands.build_wininst \
     import \
         BuildWininstCommand
 
-from bento.commands.core \
-    import \
-        COMMANDS_REGISTRY
-
 from bento.commands.errors \
     import \
         ConvertionError, UsageException, CommandExecutionFailure

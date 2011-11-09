@@ -31,5 +31,6 @@ class build(old_build):
         dist = self.distribution
 
         cmd_context_klass = dist.global_context.retrieve_context(self.cmd_name)
-        run_cmd_in_context(BuildCommand, self.cmd_name, [], cmd_context_klass,
+        cmd = dist.global_context.retrieve_command(self.cmd_name)
+        run_cmd_in_context(dist.global_context, cmd, self.cmd_name, [], cmd_context_klass,
                            dist.run_node, dist.top_node, dist.pkg)

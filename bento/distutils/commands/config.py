@@ -45,5 +45,6 @@ class config(old_config):
             argv.append("--%s=%s" % (k, v))
 
         cmd_context_klass = dist.global_context.retrieve_context(self.cmd_name)
-        run_cmd_in_context(ConfigureCommand, self.cmd_name, argv, cmd_context_klass,
+        cmd = dist.global_context.retrieve_command(self.cmd_name)
+        run_cmd_in_context(dist.global_context, cmd, self.cmd_name, argv, cmd_context_klass,
                            dist.run_node, dist.top_node, dist.pkg)

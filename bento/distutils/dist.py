@@ -39,7 +39,7 @@ from bento.commands.dependency \
         CommandScheduler
 from bento.commands.api \
     import \
-        COMMANDS_REGISTRY, ConfigureCommand, BuildCommand, InstallCommand, SdistCommand
+        ConfigureCommand, BuildCommand, InstallCommand, SdistCommand
 from bento.commands.options \
     import \
         OptionsRegistry, OptionsContext
@@ -81,14 +81,15 @@ def global_context_factory():
     options_registry = OptionsRegistry()
     # This is a dummy for now, to fulfill global_context API
     cmd_scheduler = CommandScheduler()
-    register_commands()
+    commands_registry = CommandRegistry()
+    register_commands(commands_registry)
     register_command_contexts()
-    for cmd_name in COMMANDS_REGISTRY.command_names():
+    for cmd_name in commands_registry.command_names():
         if not options_registry.is_registered(cmd_name):
-            cmd_klass = COMMANDS_REGISTRY.retrieve(cmd_name)
-            options_context = OptionsContext.from_command(cmd_klass)
+            cmd = commands_registry.retrieve(cmd_name)
+            options_context = OptionsContext.from_command(cmd)
             options_registry.register(cmd_name, options_context)
-    global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY,
+    global_context = GlobalContext(commands_registry, CONTEXT_REGISTRY,
                                    options_registry, cmd_scheduler)
     return global_context
 
@@ -101,11 +102,11 @@ def register_command_contexts():
     if not CONTEXT_REGISTRY.is_registered("sdist"):
         CONTEXT_REGISTRY.register("sdist", SdistContext)
 
-def register_commands():
-    COMMANDS_REGISTRY.register("configure", ConfigureCommand)
-    COMMANDS_REGISTRY.register("build", BuildCommand)
-    COMMANDS_REGISTRY.register("install", InstallCommand)
-    COMMANDS_REGISTRY.register("sdist", SdistCommand)
+def register_commands(commands_registry):
+    commands_registry.register("configure", ConfigureCommand())
+    commands_registry.register("build", BuildCommand())
+    commands_registry.register("install", InstallCommand())
+    commands_registry.register("sdist", SdistCommand())
 
 class BentoDistribution(Distribution):
     def get_command_class(self, command):

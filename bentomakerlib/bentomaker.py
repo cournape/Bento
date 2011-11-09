@@ -27,11 +27,10 @@ from bento.commands.api \
         HelpCommand, ConfigureCommand, BuildCommand, InstallCommand, \
         ParseCommand, ConvertCommand, SdistCommand, DetectTypeCommand, \
         BuildPkgInfoCommand, BuildEggCommand, BuildWininstCommand, \
-        COMMANDS_REGISTRY, ConvertionError, UsageException, \
-        CommandExecutionFailure
+        ConvertionError, UsageException, CommandExecutionFailure
 from bento.commands.core \
     import \
-        find_hook_commands
+        find_hook_commands, CommandRegistry
 from bento.commands.dependency \
     import \
         CommandScheduler, CommandDataProvider
@@ -120,19 +119,19 @@ def __get_package_options(top_node):
 #================================
 #   Create the command line UI
 #================================
-def register_commands():
-    COMMANDS_REGISTRY.register("help", HelpCommand())
-    COMMANDS_REGISTRY.register("configure", ConfigureCommand())
-    COMMANDS_REGISTRY.register("build", BuildCommand())
-    COMMANDS_REGISTRY.register("install", InstallCommand())
-    COMMANDS_REGISTRY.register("convert", ConvertCommand())
-    COMMANDS_REGISTRY.register("sdist", SdistCommand())
-    COMMANDS_REGISTRY.register("build_egg", BuildEggCommand())
-    COMMANDS_REGISTRY.register("build_wininst", BuildWininstCommand())
+def register_commands(global_context):
+    global_context.register_command("help", HelpCommand())
+    global_context.register_command("configure", ConfigureCommand())
+    global_context.register_command("build", BuildCommand())
+    global_context.register_command("install", InstallCommand())
+    global_context.register_command("convert", ConvertCommand())
+    global_context.register_command("sdist", SdistCommand())
+    global_context.register_command("build_egg", BuildEggCommand())
+    global_context.register_command("build_wininst", BuildWininstCommand())
 
-    COMMANDS_REGISTRY.register("build_pkg_info", BuildPkgInfoCommand(), public=False)
-    COMMANDS_REGISTRY.register("parse", ParseCommand(), public=False)
-    COMMANDS_REGISTRY.register("detect_type", DetectTypeCommand(), public=False)
+    global_context.register_command("build_pkg_info", BuildPkgInfoCommand(), public=False)
+    global_context.register_command("parse", ParseCommand(), public=False)
+    global_context.register_command("detect_type", DetectTypeCommand(), public=False)
  
     #if sys.platform == "darwin":
     #    import bento.commands.build_mpkg
@@ -140,8 +139,8 @@ def register_commands():
     #        bento.commands.build_mpkg.BuildMpkgCommand)
     #    CMD_SCHEDULER.set_before("build_mpkg", "build")
 
-def register_options(cmd_name):
-    cmd_klass = COMMANDS_REGISTRY.retrieve(cmd_name)
+def register_options(global_context, cmd_name):
+    cmd_klass = global_context.retrieve_command(cmd_name)
     usage = cmd_klass.long_descr.splitlines()[1]
     context = OptionsContext.from_command(cmd_klass, usage=usage)
     OPTIONS_REGISTRY.register(cmd_name, context)
@@ -176,9 +175,9 @@ def register_command_contexts():
 
 # All the global state/registration stuff goes here
 def register_stuff(global_context):
-    register_commands()
-    for cmd_name in COMMANDS_REGISTRY.command_names():
-        register_options(cmd_name)
+    register_commands(global_context)
+    for cmd_name in global_context.command_names():
+        register_options(global_context, cmd_name)
     register_options_special(global_context)
     register_command_contexts()
 
@@ -236,7 +235,7 @@ def main(argv=None):
     if run_node != build_node and run_node.is_bld():
         raise UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
 
-    global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY,
+    global_context = GlobalContext(CommandRegistry(), CONTEXT_REGISTRY,
                                    OPTIONS_REGISTRY, CMD_SCHEDULER)
     if cmd_name and cmd_name not in ["convert"] or not cmd_name:
         return _wrapped_main(global_context, popts, run_node, top_node, build_node)
@@ -274,9 +273,9 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
 
     # FIXME: this registered options for new commands registered in hook. It
     # should be made all in one place (hook and non-hook)
-    for cmd_name in COMMANDS_REGISTRY.command_names():
+    for cmd_name in global_context.command_names(public_only=False):
         if not OPTIONS_REGISTRY.is_registered(cmd_name):
-            register_options(cmd_name)
+            register_options(global_context, cmd_name)
 
     try:
         return _main(global_context, popts, run_node, top_node, build_node)
@@ -348,7 +347,7 @@ def _main(global_context, popts, run_node, top_node, build_node):
         print("Type '%s help' for usage." % SCRIPT_NAME)
         return 1
     else:
-        if not COMMANDS_REGISTRY.is_registered(cmd_name):
+        if not global_context.is_command_registered(cmd_name):
             raise UsageException("%s: Error: unknown command %r" % (SCRIPT_NAME, cmd_name))
         else:
             run_cmd(global_context, cmd_name, cmd_opts, run_node, top_node, build_node)
@@ -382,7 +381,7 @@ def run_dependencies(global_context, cmd_name, run_node, top_node, build_node, p
 
     deps = CMD_SCHEDULER.order(cmd_name)
     for cmd_name in deps:
-        cmd = COMMANDS_REGISTRY.retrieve(cmd_name)
+        cmd = global_context.retrieve_command(cmd_name)
         cmd_argv = _get_cmd_data_provider(cmd_data_db).get_argv(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
         run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg)
@@ -393,7 +392,7 @@ def is_help_only(cmd_name, cmd_argv):
     return o.help is True
 
 def run_cmd(global_ctx, cmd_name, cmd_opts, run_node, top_node, build_node):
-    cmd = COMMANDS_REGISTRY.retrieve(cmd_name)
+    cmd = global_ctx.retrieve_command(cmd_name)
 
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:

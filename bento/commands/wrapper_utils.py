@@ -22,16 +22,15 @@ from bento.commands.configure \
         _setup_options_parser
 
 # FIXME: consolidate this code with bentomakerlib
-def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, context_klass, run_node, top_node, package):
+def run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, context_klass, run_node, top_node, package):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
     package_options = PackageOptions.from_file(BENTO_SCRIPT)
 
-    cmd = cmd_klass()
     options_context = OptionsContext.from_command(cmd)
     _setup_options_parser(options_context, package_options)
 
-    context = context_klass(None, cmd_argv, options_context, package, run_node)
+    context = context_klass(global_context, cmd_argv, options_context, package, run_node)
     # FIXME: hack to pass package_options to configure command - most likely
     # this needs to be known in option context ?
     context.package_options = package_options

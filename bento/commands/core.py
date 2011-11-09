@@ -200,6 +200,3 @@ class CommandRegistry(object):
 
     def public_command_names(self):
         return [k for k in self._klasses.keys() if not k in self._privates]
-
-# FIXME: singleton
-COMMANDS_REGISTRY = CommandRegistry()
