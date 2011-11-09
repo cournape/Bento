@@ -18,7 +18,7 @@ from bento.commands.core \
         HelpCommand, Command
 from bento.commands.context \
     import \
-        CmdContext
+        HelpContext, CmdContext, GlobalContext
 from bento.commands.options \
     import \
         OptionsContext
@@ -50,7 +50,8 @@ class TestHelpCommand(unittest.TestCase):
         options = OptionsContext()
         for option in HelpCommand.common_options:
             options.add_option(option)
-        context = CmdContext(None, [], options, None, None)
+        global_context = GlobalContext(bento.commands.core.COMMANDS_REGISTRY, None, None, None)
+        context = HelpContext(global_context, [], options, None, None)
 
         help.run(context)
 

@@ -70,6 +70,12 @@ class GlobalContext(object):
     def retrieve_context(self, cmd_name):
         return self._contexts_registry.retrieve(cmd_name)
 
+    def command_names(self, public_only=True):
+        if public_only:
+            return self._commands_registry.public_command_names()
+        else:
+            return self._commands_registry.command_names()
+
     def retrieve_options_context(self, cmd_name):
         return self._options_registry.retrieve(cmd_name)
 
@@ -112,6 +118,11 @@ class GlobalContext(object):
         self._scheduler.set_after(cmd_name, cmd_name_after)
 
 class HelpContext(CmdContext):
-    pass
+    def __init__(self, *a, **kw):
+        super(HelpContext, self).__init__(*a, **kw)
+        self.short_descriptions = {}
+        for cmd_name in self._global_context.command_names(public_only=False):
+            cmd = self._global_context.retrieve_command(cmd_name)
+            self.short_descriptions[cmd_name] = cmd.short_descr
 
 CONTEXT_REGISTRY = ContextRegistry()

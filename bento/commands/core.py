@@ -71,7 +71,7 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             p.print_help()
             return
         if len(a) < 1:
-            print(get_simple_usage())
+            print(get_simple_usage(ctx))
             return
 
         # Parse the options for help command itself
@@ -100,7 +100,11 @@ def fill_string(s, minlen):
         s += " " * (minlen - len(s))
     return s
 
-def get_simple_usage():
+def get_simple_usage(context):
+    """Return simple usage as a string.
+
+    Expects an HelpContext instance.
+    """
     ret = [USAGE % {"name": "bentomaker",
                     "version": bento.__version__}]
     ret.append("Basic Commands:")
@@ -109,8 +113,7 @@ def get_simple_usage():
 
     def add_group(cmd_names):
         for name in cmd_names:
-            v = COMMANDS_REGISTRY.retrieve(name)
-            doc = v.short_descr
+            doc = context.short_descriptions[name]
             if doc is None:
                 doc = "undocumented"
             header = "  %(script)s %(cmd_name)s" % \
