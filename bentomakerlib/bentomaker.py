@@ -43,7 +43,7 @@ from bento.commands.hooks \
         get_pre_hooks, get_post_hooks, get_command_override, create_hook_module
 from bento.commands.context \
     import \
-        CmdContext, BuildYakuContext, ConfigureYakuContext, CONTEXT_REGISTRY, \
+        CmdContext, BuildYakuContext, ConfigureYakuContext, ContextRegistry, \
         HelpContext, GlobalContext, SdistContext
 import bento.core.errors
 
@@ -60,6 +60,8 @@ else:
     BENTOMAKER_DEBUG = False
 
 SCRIPT_NAME = 'bentomaker'
+
+CONTEXT_REGISTRY = ContextRegistry()
 
 CMD_SCHEDULER = CommandScheduler()
 CMD_SCHEDULER.set_before("build", "configure")

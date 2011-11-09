@@ -26,10 +26,13 @@ from bento.core.package \
         PackageDescription
 from bento.commands.context \
     import \
-        GlobalContext, CONTEXT_REGISTRY
+        GlobalContext, ContextRegistry
 from bento.commands.cmd_contexts \
     import \
         CmdContext, SdistContext
+from bento.commands.core \
+    import \
+        CommandRegistry
 from bento.commands.yaku_contexts \
     import \
         ConfigureYakuContext, BuildYakuContext
@@ -75,6 +78,8 @@ def _setup_cmd_classes(attrs):
             cmdclass[klass] = _BENTO_MONKEYED_CLASSES[klass]
     attrs["cmdclass"] = cmdclass
     return attrs
+
+CONTEXT_REGISTRY = ContextRegistry()
 
 def global_context_factory():
     # FIXME: factor this out with the similar code in bentomakerlib

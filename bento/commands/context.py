@@ -141,5 +141,3 @@ class HelpContext(CmdContext):
         for cmd_name in self._global_context.command_names(public_only=False):
             cmd = self._global_context.retrieve_command(cmd_name)
             self.short_descriptions[cmd_name] = cmd.short_descr
-
-CONTEXT_REGISTRY = ContextRegistry()
