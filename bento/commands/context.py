@@ -49,6 +49,9 @@ class GlobalContext(object):
         self._options_registry = options_registry
         self._scheduler = commands_scheduler
 
+    #------------
+    # Command API
+    #------------
     def register_command(self, cmd_name, cmd):
         """Register a command name to a command instance.
 
@@ -64,6 +67,9 @@ class GlobalContext(object):
     def retrieve_command(self, cmd_name):
         return self._commands_registry.retrieve(cmd_name)
 
+    #--------------------
+    # Command Context API
+    #--------------------
     def register_context(self, cmd_name, klass):
         self._contexts_registry.register(cmd_name, klass)
 
@@ -76,6 +82,9 @@ class GlobalContext(object):
         else:
             return self._commands_registry.command_names()
 
+    #--------------------
+    # Command Options API
+    #--------------------
     def retrieve_options_context(self, cmd_name):
         return self._options_registry.retrieve(cmd_name)
 
@@ -109,6 +118,9 @@ class GlobalContext(object):
         ctx = self._options_registry.get_options(cmd_name)
         ctx.add_option(option, group)
 
+    #-----------------------
+    # Command dependency API
+    #-----------------------
     def set_before(self, cmd_name, cmd_name_before):
         """Specify that command cmd_name_before should run before cmd_name."""
         self._scheduler.set_before(cmd_name, cmd_name_before)
