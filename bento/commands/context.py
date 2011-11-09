@@ -120,7 +120,7 @@ class GlobalContext(object):
         group: str, None
             group to associated with
         """
-        ctx = self._options_registry.get_options(cmd_name)
+        ctx = self._options_registry.retrieve(cmd_name)
         ctx.add_option(option, group)
 
     #-----------------------
