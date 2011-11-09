@@ -161,13 +161,3 @@ class BentoDistribution(Distribution):
 
     def has_data_files(self):
         return len(self.pkg.data_files) > 0        
-
-# Install it throughout the distutils
-_MODULES = []
-if _is_setuptools_activated():
-    import setuptools.dist
-    _MODULES.append(setuptools.dist)
-import distutils.dist, distutils.core, distutils.cmd
-_MODULES.extend([distutils.dist, distutils.core, distutils.cmd])
-for module in _MODULES:
-    module.Distribution = BentoDistribution
