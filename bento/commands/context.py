@@ -52,7 +52,7 @@ class GlobalContext(object):
     #------------
     # Command API
     #------------
-    def register_command(self, cmd_name, cmd):
+    def register_command(self, cmd_name, cmd, public=True):
         """Register a command name to a command instance.
 
         Parameters
@@ -62,10 +62,15 @@ class GlobalContext(object):
         cmd: object
             instance from a subclass of Command
         """
-        self._commands_registry.register(cmd_name, cmd)
+        self._commands_registry.register(cmd_name, cmd, public)
 
     def retrieve_command(self, cmd_name):
+        """Return the command instance registered for the given command name."""
         return self._commands_registry.retrieve(cmd_name)
+
+    def is_command_registered(self, cmd_name):
+        """Return True if the command is registered."""
+        return self._commands_registry.is_registered(cmd_name)
 
     #--------------------
     # Command Context API
