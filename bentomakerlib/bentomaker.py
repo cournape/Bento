@@ -146,12 +146,12 @@ def register_options(cmd_name):
     context = OptionsContext.from_command(cmd_klass, usage=usage)
     OPTIONS_REGISTRY.register(cmd_name, context)
 
-def register_options_special():
+def register_options_special(global_context):
     # Register options for special topics not attached to a "real" command
     # (e.g. 'commands')
     context = OptionsContext()
     def print_usage():
-        print(get_usage())
+        print(get_usage(global_context))
     context.parser.print_help = print_usage
     OPTIONS_REGISTRY.register("commands", context)
 
@@ -175,11 +175,11 @@ def register_command_contexts():
         CONTEXT_REGISTRY.register("help", HelpContext)
 
 # All the global state/registration stuff goes here
-def register_stuff():
+def register_stuff(global_context):
     register_commands()
     for cmd_name in COMMANDS_REGISTRY.command_names():
         register_options(cmd_name)
-    register_options_special()
+    register_options_special(global_context)
     register_command_contexts()
 
 def set_main(top_node, build_node):
@@ -236,13 +236,15 @@ def main(argv=None):
     if run_node != build_node and run_node.is_bld():
         raise UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
 
+    global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY,
+                                   OPTIONS_REGISTRY, CMD_SCHEDULER)
     if cmd_name and cmd_name not in ["convert"] or not cmd_name:
-        return _wrapped_main(popts, run_node, top_node, build_node)
+        return _wrapped_main(global_context, popts, run_node, top_node, build_node)
     else:
-        register_stuff()
-        return _main(popts, run_node, top_node, build_node)
+        register_stuff(global_context)
+        return _main(global_context, popts, run_node, top_node, build_node)
 
-def _wrapped_main(popts, run_node, top_node, build_node):
+def _wrapped_main(global_context, popts, run_node, top_node, build_node):
     def _big_ugly_hack():
         # FIXME: huge ugly hack - we need to specify once and for all when the
         # package info is parsed and available, so that we can define options
@@ -260,14 +262,12 @@ def _wrapped_main(popts, run_node, top_node, build_node):
                           "will be displayed" % BENTO_SCRIPT)
             return
 
-    global_context = GlobalContext(COMMANDS_REGISTRY, CONTEXT_REGISTRY,
-                                   OPTIONS_REGISTRY, CMD_SCHEDULER)
     mods = set_main(top_node, build_node)
     if mods:
         mods[0].startup(global_context)
     for command in find_hook_commands(mods):
         global_context.register_command(command.name, command)
-    register_stuff()
+    register_stuff(global_context)
     _big_ugly_hack()
     if mods:
         mods[0].options(global_context)
