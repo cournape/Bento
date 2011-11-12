@@ -32,9 +32,6 @@ from bento.commands.context \
 from bento.commands.options \
     import \
         OptionsContext
-from bento.commands.wrapper_utils \
-    import \
-        run_cmd_in_context
 
 class install(Command):
     cmd_name = "install"
@@ -142,15 +139,11 @@ class install(Command):
 
     def run(self):
         self.run_command("build")
-        dist = self.distribution
         args = []
 
         if self.dry_run == 1:
             args.append("--dry-run")
-        cmd_context_klass = dist.global_context.retrieve_context(self.cmd_name)
-        cmd = dist.global_context.retrieve_command(self.cmd_name)
-        run_cmd_in_context(dist.global_context, cmd, self.cmd_name, args, cmd_context_klass,
-                           dist.run_node, dist.top_node, dist.pkg)
+        self.distribution.run_command_in_context(self.cmd_name, args)
         if self.record:
             self.write_record()
 

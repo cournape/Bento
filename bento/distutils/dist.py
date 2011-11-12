@@ -12,6 +12,9 @@ else:
         import \
             Distribution
 
+from bento.commands.configure \
+    import \
+        _setup_options_parser
 from bento.commands.wrapper_utils \
     import \
         set_main
@@ -24,6 +27,9 @@ from bento.core.node \
 from bento.core.package \
     import \
         PackageDescription
+from bento.core.options \
+    import \
+        PackageOptions
 from bento.commands.context \
     import \
         GlobalContext, ContextRegistry
@@ -36,6 +42,7 @@ from bento.commands.core \
 from bento.commands.yaku_contexts \
     import \
         ConfigureYakuContext, BuildYakuContext
+import bento.commands.wrapper_utils
 
 from bento.commands.dependency \
     import \
@@ -81,7 +88,7 @@ def _setup_cmd_classes(attrs):
 
 CONTEXT_REGISTRY = ContextRegistry()
 
-def global_context_factory():
+def global_context_factory(package_options):
     # FIXME: factor this out with the similar code in bentomakerlib
     options_registry = OptionsRegistry()
     # This is a dummy for now, to fulfill global_context API
@@ -94,6 +101,9 @@ def global_context_factory():
             cmd = commands_registry.retrieve(cmd_name)
             options_context = OptionsContext.from_command(cmd)
             options_registry.register(cmd_name, options_context)
+
+    configure_options_context = options_registry.retrieve("configure")
+    _setup_options_parser(configure_options_context, package_options)
     global_context = GlobalContext(commands_registry, CONTEXT_REGISTRY,
                                    options_registry, cmd_scheduler)
     return global_context
@@ -130,6 +140,8 @@ class BentoDistribution(Distribution):
         else:
             bento_info = attrs["bento.info"]
         self.pkg = PackageDescription.from_file(bento_info)
+        self.package_options = PackageOptions.from_file(bento_info)
+
 
         attrs = _setup_cmd_classes(attrs)
 
@@ -156,8 +168,21 @@ class BentoDistribution(Distribution):
         self.build_node = root._ctx.bldnode
         self.run_node = root._ctx.srcnode
 
-        self.global_context = global_context_factory()
+        self.global_context = global_context_factory(self.package_options)
         modules = set_main(self.top_node, self.build_node, self.pkg)
+
+    def run_command_in_context(self, cmd_name, cmd_argv):
+        cmd_context_klass = self.global_context.retrieve_context(cmd_name)
+        cmd = self.global_context.retrieve_command(cmd_name)
+        return bento.commands.wrapper_utils.run_cmd_in_context(self.global_context,
+                                                               cmd,
+                                                               cmd_name,
+                                                               cmd_argv,
+                                                               cmd_context_klass,
+                                                               self.run_node,
+                                                               self.top_node,
+                                                               self.pkg,
+                                                               self.package_options)
 
     def has_data_files(self):
         return len(self.pkg.data_files) > 0        

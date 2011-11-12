@@ -46,6 +46,9 @@ from bento.commands.context \
     import \
         CmdContext, BuildYakuContext, ConfigureYakuContext, ContextRegistry, \
         HelpContext, GlobalContext, SdistContext
+from bento.commands.wrapper_utils \
+    import \
+        run_cmd_in_context
 import bento.core.errors
 
 from bentomakerlib.package_cache \
@@ -385,7 +388,8 @@ def _get_subpackage(pkg, top, local_node):
         else:
             return None
 
-def run_dependencies(global_context, cmd_name, run_node, top_node, build_node, pkg):
+def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
+        pkg, package_options):
     cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
 
     deps = CMD_SCHEDULER.order(cmd_name)
@@ -393,7 +397,8 @@ def run_dependencies(global_context, cmd_name, run_node, top_node, build_node, p
         cmd = global_context.retrieve_command(cmd_name)
         cmd_argv = _get_cmd_data_provider(cmd_data_db).get_argv(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
-        run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg)
+        run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, ctx_klass,
+                run_node, top_node, pkg, package_options)
 
 def is_help_only(cmd_name, cmd_argv):
     p = OPTIONS_REGISTRY.retrieve(cmd_name)
@@ -427,60 +432,15 @@ def run_cmd(global_ctx, cmd_name, cmd_opts, run_node, top_node, build_node):
         if o.help:
             p.print_help()
     else:
-        run_dependencies(global_ctx, cmd_name, run_node, top_node, build_node, pkg)
+        run_dependencies(global_ctx, cmd_name, run_node, top_node, build_node,
+                pkg, package_options)
 
         ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
-        run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_opts, ctx_klass, run_node, top_node, pkg)
+        run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_opts, ctx_klass,
+                run_node, top_node, pkg, package_options)
 
         cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
         _set_cmd_data_provider(cmd_name, cmd_opts, cmd_data_db)
-
-def run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass, run_node, top_node, pkg):
-    """Run the given Command instance inside its context, including any hook
-    and/or override."""
-    package_options = __get_package_options(top_node)
-
-    options_ctx = OPTIONS_REGISTRY.retrieve(cmd_name)
-
-    ctx = ctx_klass(global_ctx, cmd_argv, options_ctx, pkg, run_node)
-    # FIXME: hack to pass package_options to configure command - most likely
-    # this needs to be known in option context ?
-    ctx.package_options = package_options
-
-    if get_command_override(cmd_name):
-        cmd_funcs = get_command_override(cmd_name)
-    else:
-        cmd_funcs = [(cmd.run, top_node.abspath())]
-
-    try:
-        def _run_hooks(hooks):
-            for hook in hooks:
-                local_node = top_node.find_dir(relpath(hook.local_dir, top_node.abspath()))
-                ctx.pre_recurse(local_node)
-                try:
-                    if not ctx.help:
-                        hook(ctx)
-                finally:
-                    ctx.post_recurse()
-
-        pre_hooks = global_ctx.retrieve_pre_hooks(cmd_name)
-        _run_hooks(pre_hooks)
-
-        while cmd_funcs:
-            cmd_func, local_dir = cmd_funcs.pop(0)
-            local_node = top_node.find_dir(relpath(local_dir, top_node.abspath()))
-            ctx.pre_recurse(local_node)
-            try:
-                cmd_func(ctx)
-            finally:
-                ctx.post_recurse()
-
-        post_hooks = global_ctx.retrieve_post_hooks(cmd_name)
-        _run_hooks(post_hooks)
-
-        cmd.shutdown(ctx)
-    finally:
-        ctx.shutdown()
 
 def noexc_main(argv=None):
     def _print_debug():
