@@ -40,7 +40,8 @@ from bento.commands.options \
 
 from bento.commands.hooks \
     import \
-        get_pre_hooks, get_post_hooks, get_command_override, create_hook_module
+        find_pre_hooks, find_post_hooks, get_command_override, \
+        create_hook_module, HookRegistry
 from bento.commands.context \
     import \
         CmdContext, BuildYakuContext, ConfigureYakuContext, ContextRegistry, \
@@ -279,6 +280,12 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         if not OPTIONS_REGISTRY.is_registered(cmd_name):
             register_options(global_context, cmd_name)
 
+    for cmd_name in global_context.command_names():
+        for hook in find_pre_hooks(mods, cmd_name):
+            global_context.add_pre_hook(hook, cmd_name)
+        for hook in find_post_hooks(mods, cmd_name):
+            global_context.add_post_hook(hook, cmd_name)
+
     try:
         return _main(global_context, popts, run_node, top_node, build_node)
     finally:
@@ -456,7 +463,8 @@ def run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass, run_node,
                 finally:
                     ctx.post_recurse()
 
-        _run_hooks(get_pre_hooks(cmd_name))
+        pre_hooks = global_ctx.retrieve_pre_hooks(cmd_name)
+        _run_hooks(pre_hooks)
 
         while cmd_funcs:
             cmd_func, local_dir = cmd_funcs.pop(0)
@@ -467,7 +475,8 @@ def run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass, run_node,
             finally:
                 ctx.post_recurse()
 
-        _run_hooks(get_post_hooks(cmd_name))
+        post_hooks = global_ctx.retrieve_post_hooks(cmd_name)
+        _run_hooks(post_hooks)
 
         cmd.shutdown(ctx)
     finally:

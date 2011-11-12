@@ -14,6 +14,9 @@ from bento.commands.yaku_contexts \
 from bento.commands.distutils_contexts \
     import \
         DistutilsBuildContext, DistutilsConfigureContext
+from bento.commands.hooks \
+    import \
+        HookRegistry
 
 class ContextRegistry(object):
     def __init__(self, default=None):
@@ -48,6 +51,7 @@ class GlobalContext(object):
         self._contexts_registry = contexts_registry
         self._options_registry = options_registry
         self._scheduler = commands_scheduler
+        self._hooks_registry = HookRegistry()
 
     #------------
     # Command API
@@ -133,6 +137,21 @@ class GlobalContext(object):
     def set_after(self, cmd_name, cmd_name_after):
         """Specify that command cmd_name_before should run after cmd_name."""
         self._scheduler.set_after(cmd_name, cmd_name_after)
+
+    #---------
+    # Hook API
+    #---------
+    def add_pre_hook(self, hook, cmd_name):
+        self._hooks_registry.add_pre_hook(hook, cmd_name)
+
+    def add_post_hook(self, hook, cmd_name):
+        self._hooks_registry.add_post_hook(hook, cmd_name)
+
+    def retrieve_pre_hooks(self, cmd_name):
+        return self._hooks_registry.retrieve_pre_hooks(cmd_name)
+
+    def retrieve_post_hooks(self, cmd_name):
+        return self._hooks_registry.retrieve_post_hooks(cmd_name)
 
 class HelpContext(CmdContext):
     def __init__(self, *a, **kw):

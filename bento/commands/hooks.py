@@ -37,8 +37,6 @@ class HookRegistry(object):
     def retrieve_post_hooks(self, cmd_name):
         return self._post_hooks.get(cmd_name, [])
 
-__HOOK_REGISTRY = HookRegistry()
-
 __COMMANDS_OVERRIDE = {}
 __INIT_FUNCS = {}
 
@@ -51,17 +49,44 @@ def override_command(command, func):
     else:
         __COMMANDS_OVERRIDE[command] = [(func, local_dir)]
 
-def add_to_pre_registry(func, cmd_name):
-    __HOOK_REGISTRY.add_pre_hook(func, cmd_name)
+def find_pre_hooks(modules, cmd_name):
+    """Retrieve all pre hooks instances defined in given modules list.
 
-def add_to_post_registry(func, cmd_name):
-    __HOOK_REGISTRY.add_post_hook(func, cmd_name)
+    This should be used to find prehooks defined through the hook.pre_*. This
+    works by looking for all WrappedCommand instances in the modules.
 
-def get_pre_hooks(cmd_name):
-    return __HOOK_REGISTRY.retrieve_pre_hooks(cmd_name)
+    Parameters
+    ----------
+    modules: seq
+        list of modules to look into
+    cmd_name: str
+        command name
+    """
+    pre_hooks = []
+    for module in modules:
+        yo = [f for f in vars(module).values() if isinstance(f, PreHookWrapper)]
+        pre_hooks.extend([f for f in vars(module).values() if isinstance(f,
+            PreHookWrapper) and f.cmd_name == cmd_name])
+    return pre_hooks
 
-def get_post_hooks(cmd_name):
-    return __HOOK_REGISTRY.retrieve_post_hooks(cmd_name)
+def find_post_hooks(modules, cmd_name):
+    """Retrieve all post hooks instances defined in given modules list.
+
+    This should be used to find prehooks defined through the hook.pre_*. This
+    works by looking for all WrappedCommand instances in the modules.
+
+    Parameters
+    ----------
+    modules: seq
+        list of modules to look into
+    cmd_name: str
+        command name
+    """
+    post_hooks = []
+    for module in modules:
+        post_hooks.extend([f for f in vars(module).values() if isinstance(f,
+            PostHookWrapper) and f.cmd_name == cmd_name])
+    return post_hooks
 
 def get_command_override(cmd_name):
     global __COMMANDS_OVERRIDE
@@ -93,10 +118,8 @@ def _make_hook_decorator(command_name, kind):
         local_dir = os.path.dirname(compat_inspect.stack()[1][1])
         if kind == "post":
             hook = PostHookWrapper(f, command_name, local_dir)
-            add_to_post_registry(hook, command_name)
         elif kind == "pre":
             hook = PreHookWrapper(f, command_name, local_dir)
-            add_to_pre_registry(hook, command_name)
         else:
             raise ValueError("invalid hook kind %s" % kind)
         return hook

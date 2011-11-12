@@ -16,7 +16,7 @@ from bento.commands.options \
         OptionsContext
 from bento.commands.hooks \
     import \
-        get_command_override, get_pre_hooks, get_post_hooks, create_hook_module
+        get_command_override, create_hook_module
 from bento.commands.configure \
     import \
         _setup_options_parser
@@ -51,7 +51,8 @@ def run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, context_klass, r
                 finally:
                     context.post_recurse()
 
-        _run_hooks(get_pre_hooks(cmd_name))
+        pre_hooks = global_context.retrieve_pre_hooks(cmd_name)
+        _run_hooks(pre_hooks)
 
         while cmd_funcs:
             cmd_func, local_dir = cmd_funcs.pop(0)
@@ -62,7 +63,8 @@ def run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, context_klass, r
             finally:
                 context.post_recurse()
 
-        _run_hooks(get_post_hooks(cmd_name))
+        post_hooks = global_context.retrieve_post_hooks(cmd_name)
+        _run_hooks(post_hooks)
 
         cmd.shutdown(context)
     finally:
