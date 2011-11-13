@@ -117,8 +117,8 @@ def register_options(global_context):
     global_context.add_option("build", opt)
 
 class ConfigureWafContext(ConfigureContext):
-    def __init__(self, cmd_argv, options_context, pkg, run_node):
-        super(ConfigureWafContext, self).__init__(cmd_argv, options_context, pkg, run_node)
+    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
+        super(ConfigureWafContext, self).__init__(global_context, cmd_argv, options_context, pkg, run_node)
 
         run_path = self.run_node.abspath()
         source_path = self.top_node.abspath()
@@ -241,8 +241,8 @@ class BuildWafContext(BuildContext):
         self.waf_context.path = self._old_path
         super(BuildWafContext, self).post_recurse()
 
-    def __init__(self, cmd_argv, options_context, pkg, run_node):
-        super(BuildWafContext, self).__init__(cmd_argv, options_context, pkg, run_node)
+    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
+        super(BuildWafContext, self).__init__(None, cmd_argv, options_context, pkg, run_node)
 
         o, a = options_context.parser.parse_args(cmd_argv)
         if o.jobs:

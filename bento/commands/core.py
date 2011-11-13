@@ -43,6 +43,21 @@ Usage: command's usage (default description)
     def shutdown(self, ctx):
         pass
 
+class WrappedCommand(Command):
+    def __init__(self, func):
+        super(WrappedCommand, self).__init__()
+        self._func = func
+        self.name = func.__name__
+
+    def __call__(self, ctx):
+        return self.run(ctx)
+
+    def run(self, ctx):
+        return self._func(ctx)
+
+    def __getattr__(self, k):
+        return getattr(self._func, k)
+
 class HelpCommand(Command):
     long_descr = """\
 Purpose: Show help on a command or other topic.
@@ -56,7 +71,7 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             p.print_help()
             return
         if len(a) < 1:
-            print(get_simple_usage())
+            print(get_simple_usage(ctx))
             return
 
         # Parse the options for help command itself
@@ -73,7 +88,7 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             help_args = _args
             cmd_name = cmd_args[0]
 
-        options_context = ctx.options_registry.get_options(cmd_name)
+        options_context = ctx.options_registry.retrieve(cmd_name)
         if ctx.options_registry.is_registered(cmd_name):
             p = options_context.parser
             p.print_help()
@@ -85,7 +100,11 @@ def fill_string(s, minlen):
         s += " " * (minlen - len(s))
     return s
 
-def get_simple_usage():
+def get_simple_usage(context):
+    """Return simple usage as a string.
+
+    Expects an HelpContext instance.
+    """
     ret = [USAGE % {"name": "bentomaker",
                     "version": bento.__version__}]
     ret.append("Basic Commands:")
@@ -94,8 +113,7 @@ def get_simple_usage():
 
     def add_group(cmd_names):
         for name in cmd_names:
-            v = COMMANDS_REGISTRY.get_command(name)
-            doc = v.short_descr
+            doc = context.short_descriptions[name]
             if doc is None:
                 doc = "undocumented"
             header = "  %(script)s %(cmd_name)s" % \
@@ -119,37 +137,38 @@ def get_simple_usage():
         ret.append(fill_string(header, minlen) + hlp)
     return "\n".join(ret)
 
-# Decorator to create a new command class from a simple function
 def command(f):
-    bypass_help = True
-    def _dec(f):
-        klass_name = "%sCommand" % to_camel_case(f.__name__)
+    """Decorator to create a new command from a simple function
 
-        class _CmdFakeMetaclass(type):
-            def __init__(cls, name, bases, d):
-                super(_CmdFakeMetaclass, cls).__init__(name, bases, d)
-                name = cls.__name__
+    The function should take one CommandContext instance
 
-        klass = _CmdFakeMetaclass(klass_name, (Command,), {})
+    Example
+    -------
+ 
+    A simple command may be defined as follows::
 
-        if f.__name__.startswith("_"):
-            COMMANDS_REGISTRY.register_command(f.__name__, klass, public=False)
-        else:
-            COMMANDS_REGISTRY.register_command(f.__name__, klass)
-        if bypass_help:
-            def run(self, ctx):
-                o, a = ctx.options_context.parser.parse_args(ctx.get_command_arguments())
-                if o.help:
-                    ctx.options_context.parser.print_help()
-                    return
-                return f(ctx)
-        else:
-            run = lambda self, ctx: f(ctx)
-        klass.run = run
-        if f.__doc__:
-            klass.long_descr = f.__doc__
-        return f
-    return _dec(f)
+        @command
+        def hello(context):
+            print "hello"
+    """
+    return WrappedCommand(f)
+
+def find_hook_commands(modules):
+    """Retrieve all command instances defined in given modules list.
+
+    This should be used to find commands defined through the hook.command. This
+    works by looking for all WrappedCommand instances in the modules.
+
+    Parameters
+    ----------
+    modules: seq
+        list of modules to look into
+    """
+    commands = []
+    for module in modules:
+        commands.extend([f for f in vars(module).values() if isinstance(f,
+            WrappedCommand)])
+    return commands
 
 class CommandRegistry(object):
     def __init__(self):
@@ -158,7 +177,7 @@ class CommandRegistry(object):
         # command line name -> None for private commands
         self._privates = {}
 
-    def register_command(self, name, cmd_klass, public=True):
+    def register(self, name, cmd_klass, public=True):
         if name in self._klasses:
             raise ValueError("context for command %r already registered !" % name)
         else:
@@ -166,30 +185,18 @@ class CommandRegistry(object):
             if not public:
                 self._privates[name] = None
 
-    def get_command(self, name):
+    def retrieve(self, name):
         cmd_klass = self._klasses.get(name, None)
         if cmd_klass is None:
             raise ValueError("No command class registered for name %r" % name)
         else:
             return cmd_klass
 
-    def get_command_names(self):
+    def is_registered(self, name):
+        return name in self._klasses
+
+    def command_names(self):
         return self._klasses.keys()
 
-    def get_public_command_names(self):
+    def public_command_names(self):
         return [k for k in self._klasses.keys() if not k in self._privates]
-
-    def get_command_name(self, klass):
-        for k, v in self._klasses.iteritems():
-            if v == klass:
-                return k
-        raise ValueError("Unregistered class %r" % klass)
-
-    def get_command_name_from_class_name(self, class_name):
-        for k, v in self._klasses.iteritems():
-            if v.__name__ == class_name:
-                return k
-        raise ValueError("Unregistered class %r" % class_name)
-
-# FIXME: singleton
-COMMANDS_REGISTRY = CommandRegistry()

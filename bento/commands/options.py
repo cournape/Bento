@@ -61,18 +61,18 @@ class OptionsRegistry(object):
         # command line name -> context *instance*
         self._contexts = {}
 
-    def register_command(self, name, options_context):
-        if name in self._contexts:
-            raise ValueError("options context for command %r already registered !" % name)
+    def register(self, cmd_name, options_context):
+        if cmd_name in self._contexts:
+            raise ValueError("options context for command %r already registered !" % cmd_name)
         else:
-            self._contexts[name] = options_context
+            self._contexts[cmd_name] = options_context
 
     def is_registered(self, cmd_name):
         return cmd_name in self._contexts
 
-    def get_options(self, name):
-        options_context = self._contexts.get(name, None)
+    def retrieve(self, cmd_name):
+        options_context = self._contexts.get(cmd_name, None)
         if options_context is None:
-            raise ValueError("No options context registered for name %r" % name)
+            raise ValueError("No options context registered for cmd_name %r" % cmd_name)
         else:
             return options_context

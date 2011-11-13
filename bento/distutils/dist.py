@@ -12,6 +12,9 @@ else:
         import \
             Distribution
 
+from bento.commands.configure \
+    import \
+        _setup_options_parser
 from bento.commands.wrapper_utils \
     import \
         set_main
@@ -24,7 +27,32 @@ from bento.core.node \
 from bento.core.package \
     import \
         PackageDescription
+from bento.core.options \
+    import \
+        PackageOptions
+from bento.commands.context \
+    import \
+        GlobalContext, ContextRegistry
+from bento.commands.cmd_contexts \
+    import \
+        CmdContext, SdistContext
+from bento.commands.core \
+    import \
+        CommandRegistry
+from bento.commands.yaku_contexts \
+    import \
+        ConfigureYakuContext, BuildYakuContext
+import bento.commands.wrapper_utils
 
+from bento.commands.dependency \
+    import \
+        CommandScheduler
+from bento.commands.api \
+    import \
+        ConfigureCommand, BuildCommand, InstallCommand, SdistCommand
+from bento.commands.options \
+    import \
+        OptionsRegistry, OptionsContext
 from bento.distutils.commands.config \
     import \
         config
@@ -58,6 +86,43 @@ def _setup_cmd_classes(attrs):
     attrs["cmdclass"] = cmdclass
     return attrs
 
+CONTEXT_REGISTRY = ContextRegistry()
+
+def global_context_factory(package_options):
+    # FIXME: factor this out with the similar code in bentomakerlib
+    options_registry = OptionsRegistry()
+    # This is a dummy for now, to fulfill global_context API
+    cmd_scheduler = CommandScheduler()
+    commands_registry = CommandRegistry()
+    register_commands(commands_registry)
+    register_command_contexts()
+    for cmd_name in commands_registry.command_names():
+        if not options_registry.is_registered(cmd_name):
+            cmd = commands_registry.retrieve(cmd_name)
+            options_context = OptionsContext.from_command(cmd)
+            options_registry.register(cmd_name, options_context)
+
+    configure_options_context = options_registry.retrieve("configure")
+    _setup_options_parser(configure_options_context, package_options)
+    global_context = GlobalContext(commands_registry, CONTEXT_REGISTRY,
+                                   options_registry, cmd_scheduler)
+    return global_context
+
+def register_command_contexts():
+    CONTEXT_REGISTRY.set_default(CmdContext)
+    if not CONTEXT_REGISTRY.is_registered("configure"):
+        CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
+    if not CONTEXT_REGISTRY.is_registered("build"):
+        CONTEXT_REGISTRY.register("build", BuildYakuContext)
+    if not CONTEXT_REGISTRY.is_registered("sdist"):
+        CONTEXT_REGISTRY.register("sdist", SdistContext)
+
+def register_commands(commands_registry):
+    commands_registry.register("configure", ConfigureCommand())
+    commands_registry.register("build", BuildCommand())
+    commands_registry.register("install", InstallCommand())
+    commands_registry.register("sdist", SdistCommand())
+
 class BentoDistribution(Distribution):
     def get_command_class(self, command):
         # Better raising an error than having some weird behavior for a command
@@ -75,6 +140,8 @@ class BentoDistribution(Distribution):
         else:
             bento_info = attrs["bento.info"]
         self.pkg = PackageDescription.from_file(bento_info)
+        self.package_options = PackageOptions.from_file(bento_info)
+
 
         attrs = _setup_cmd_classes(attrs)
 
@@ -101,17 +168,21 @@ class BentoDistribution(Distribution):
         self.build_node = root._ctx.bldnode
         self.run_node = root._ctx.srcnode
 
+        self.global_context = global_context_factory(self.package_options)
         modules = set_main(self.top_node, self.build_node, self.pkg)
+
+    def run_command_in_context(self, cmd_name, cmd_argv):
+        cmd_context_klass = self.global_context.retrieve_context(cmd_name)
+        cmd = self.global_context.retrieve_command(cmd_name)
+        return bento.commands.wrapper_utils.run_cmd_in_context(self.global_context,
+                                                               cmd,
+                                                               cmd_name,
+                                                               cmd_argv,
+                                                               cmd_context_klass,
+                                                               self.run_node,
+                                                               self.top_node,
+                                                               self.pkg,
+                                                               self.package_options)
 
     def has_data_files(self):
         return len(self.pkg.data_files) > 0        
-
-# Install it throughout the distutils
-_MODULES = []
-if _is_setuptools_activated():
-    import setuptools.dist
-    _MODULES.append(setuptools.dist)
-import distutils.dist, distutils.core, distutils.cmd
-_MODULES.extend([distutils.dist, distutils.core, distutils.cmd])
-for module in _MODULES:
-    module.Distribution = BentoDistribution

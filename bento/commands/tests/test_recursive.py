@@ -11,7 +11,7 @@ from bento.core.node \
         create_root_with_source_tree
 from bento.commands.hooks \
     import \
-        get_pre_hooks, create_hook_module, get_post_hooks
+        create_hook_module, find_pre_hooks
 from bento.commands.options \
     import \
         OptionsContext
@@ -82,7 +82,7 @@ Library:
         opts = OptionsContext.from_command(build)
 
         cmd_argv = []
-        bld = BuildYakuContext(cmd_argv, opts, conf.pkg, run_node)
+        bld = BuildYakuContext(None, cmd_argv, opts, conf.pkg, run_node)
         build.run(bld)
 
     def test_hook(self):
@@ -118,8 +118,8 @@ def configure(ctx):
 
         hook = top_node.search("bar/bscript")
         m = create_hook_module(hook.abspath())
-        for hook, local_dir, help_bypass in get_pre_hooks("configure"):
-            conf.pre_recurse(root.find_dir(local_dir))
+        for hook in find_pre_hooks([m], "configure"):
+            conf.pre_recurse(root.find_dir(hook.local_dir))
             try:
                 hook(conf)
             finally:

@@ -65,7 +65,7 @@ Library:
         opts = OptionsContext.from_command(sdist)
         cmd_argv = ["--output-file=foo.zip", "--format=zip"]
 
-        context = SdistContext(cmd_argv, opts, package, self.run_node)
+        context = SdistContext(None, cmd_argv, opts, package, self.run_node)
         sdist.run(context)
         sdist.shutdown(context)
         context.shutdown()
@@ -96,7 +96,7 @@ Library:
         opts = OptionsContext.from_command(sdist)
         cmd_argv = ["--output-file=foo.zip", "--format=zip"]
 
-        context = SdistContext(cmd_argv, opts, package, self.run_node)
+        context = SdistContext(None, cmd_argv, opts, package, self.run_node)
         context.register_source_node(self.top_node.find_node("yeah.info"))
         sdist.run(context)
         sdist.shutdown(context)
@@ -128,7 +128,7 @@ Library:
         opts = OptionsContext.from_command(sdist)
         cmd_argv = ["--output-file=foo.zip", "--format=zip"]
 
-        context = SdistContext(cmd_argv, opts, package, self.run_node)
+        context = SdistContext(None, cmd_argv, opts, package, self.run_node)
         context.register_source_node(self.top_node.find_node("yeah.info"), archive_name="bohou.info")
         sdist.run(context)
         sdist.shutdown(context)
@@ -165,7 +165,7 @@ VERSION = $VERSION
         opts = OptionsContext.from_command(sdist)
         cmd_argv = ["--output-file=foo.zip", "--format=zip"]
 
-        context = SdistContext(cmd_argv, opts, package, self.run_node)
+        context = SdistContext(None, cmd_argv, opts, package, self.run_node)
         sdist.run(context)
         sdist.shutdown(context)
         context.shutdown()

@@ -2,17 +2,17 @@ import bento
 
 from bento.commands.core \
     import \
-        COMMANDS_REGISTRY, USAGE, fill_string
+        USAGE, fill_string
 
-def get_usage():
+def get_usage(global_context):
     ret = [USAGE % {"name": "bentomaker",
                     "version": bento.__version__}]
     ret.append("Bento commands:")
 
     commands = []
-    cmd_names = sorted(COMMANDS_REGISTRY.get_public_command_names())
+    cmd_names = sorted(global_context.command_names())
     for name in cmd_names:
-        v = COMMANDS_REGISTRY.get_command(name)
+        v = global_context.retrieve_command(name)
         doc = v.short_descr
         if doc is None:
             doc = "undocumented"

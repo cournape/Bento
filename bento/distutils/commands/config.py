@@ -10,11 +10,9 @@ from distutils.command.config \
 from bento.core.platforms \
     import \
         get_scheme
-from bento.commands.wrapper_utils \
-    import \
-        run_cmd_in_context
 
 class config(old_config):
+    cmd_name = "configure"
     def __init__(self, *a, **kw):
         old_config.__init__(self, *a, **kw)
 
@@ -43,5 +41,4 @@ class config(old_config):
                 k = "exec-prefix"
             argv.append("--%s=%s" % (k, v))
 
-        run_cmd_in_context(ConfigureCommand, "configure", argv, ConfigureYakuContext,
-                           dist.run_node, dist.top_node, dist.pkg)
+        dist.run_command_in_context(self.cmd_name, argv)

@@ -8,30 +8,21 @@ from bento.compat.api \
     import \
         relpath
 
-from bento.core.options \
-    import \
-        PackageOptions
 from bento.commands.options \
     import \
         OptionsContext
 from bento.commands.hooks \
     import \
-        get_command_override, get_pre_hooks, get_post_hooks, create_hook_module
-from bento.commands.configure \
-    import \
-        _setup_options_parser
+        get_command_override, create_hook_module
 
 # FIXME: consolidate this code with bentomakerlib
-def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, context_klass, run_node, top_node, package):
+def run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, context_klass,
+        run_node, top_node, package, package_options):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
-    package_options = PackageOptions.from_file(BENTO_SCRIPT)
+    options_context = global_context.retrieve_options_context(cmd_name)
 
-    cmd = cmd_klass()
-    options_context = OptionsContext.from_command(cmd)
-    _setup_options_parser(options_context, package_options)
-
-    context = context_klass(cmd_argv, options_context, package, run_node)
+    context = context_klass(global_context, cmd_argv, options_context, package, run_node)
     # FIXME: hack to pass package_options to configure command - most likely
     # this needs to be known in option context ?
     context.package_options = package_options
@@ -42,9 +33,9 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, context_klass, run_node, t
         cmd_funcs = [(cmd.run, top_node.abspath())]
 
     try:
-        def _run_hooks(hook_iter):
-            for hook, local_dir, help_bypass in hook_iter:
-                local_node = top_node.find_dir(relpath(local_dir, top_node.abspath()))
+        def _run_hooks(hooks):
+            for hook in hooks:
+                local_node = top_node.find_dir(relpath(hook.local_dir, top_node.abspath()))
                 context.pre_recurse(local_node)
                 try:
                     if not context.help:
@@ -52,7 +43,8 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, context_klass, run_node, t
                 finally:
                     context.post_recurse()
 
-        _run_hooks(get_pre_hooks(cmd_name))
+        pre_hooks = global_context.retrieve_pre_hooks(cmd_name)
+        _run_hooks(pre_hooks)
 
         while cmd_funcs:
             cmd_func, local_dir = cmd_funcs.pop(0)
@@ -63,7 +55,8 @@ def run_cmd_in_context(cmd_klass, cmd_name, cmd_argv, context_klass, run_node, t
             finally:
                 context.post_recurse()
 
-        _run_hooks(get_post_hooks(cmd_name))
+        post_hooks = global_context.retrieve_post_hooks(cmd_name)
+        _run_hooks(post_hooks)
 
         cmd.shutdown(context)
     finally:

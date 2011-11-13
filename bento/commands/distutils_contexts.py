@@ -8,9 +8,9 @@ class DistutilsConfigureContext(ConfigureContext):
     pass
 
 class DistutilsBuildContext(BuildContext):
-    def __init__(self, cmd_argv, options_context, pkg, run_node):
+    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
         from bento.commands.build_distutils import DistutilsBuilder
-        super(DistutilsBuildContext, self).__init__(cmd_argv, options_context, pkg, run_node)
+        super(DistutilsBuildContext, self).__init__(global_context, cmd_argv, options_context, pkg, run_node)
 
         o, a = options_context.parser.parse_args(cmd_argv)
         if o.jobs:

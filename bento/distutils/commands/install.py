@@ -16,27 +16,12 @@ from bento._config \
 from bento.installed_package_description \
     import \
         InstalledPkgDescription, iter_files
-from bento.compat.api \
-    import \
-        relpath
 from bento.core.utils \
     import \
         safe_write, subst_vars
 
-from bento.commands.install \
-    import \
-        InstallCommand
-from bento.commands.context \
-    import \
-        CmdContext
-from bento.commands.options \
-    import \
-        OptionsContext
-from bento.commands.wrapper_utils \
-    import \
-        run_cmd_in_context
-
 class install(Command):
+    cmd_name = "install"
     description = "Install wrapper to install bento package"
 
     user_options = [
@@ -141,22 +126,20 @@ class install(Command):
 
     def run(self):
         self.run_command("build")
-        dist = self.distribution
         args = []
 
         if self.dry_run == 1:
             args.append("--dry-run")
-        run_cmd_in_context(InstallCommand, "install", args, CmdContext,
-                           dist.run_node, dist.top_node, dist.pkg)
+        self.distribution.run_command_in_context(self.cmd_name, args)
         if self.record:
             self.write_record()
 
     def write_record(self):
         dist = self.distribution
 
-        install = InstallCommand()
-        options_context = OptionsContext.from_command(install)
-        context = CmdContext([], options_context, dist.pkg, dist.run_node)
+        options_context = dist.global_context.retrieve_options_context(self.cmd_name)
+        cmd_context_klass = dist.global_context.retrieve_context(self.cmd_name)
+        context = cmd_context_klass(dist.global_context, [], options_context, dist.pkg, dist.run_node)
 
         n = context.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
