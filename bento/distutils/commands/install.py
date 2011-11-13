@@ -16,22 +16,9 @@ from bento._config \
 from bento.installed_package_description \
     import \
         InstalledPkgDescription, iter_files
-from bento.compat.api \
-    import \
-        relpath
 from bento.core.utils \
     import \
         safe_write, subst_vars
-
-from bento.commands.install \
-    import \
-        InstallCommand
-from bento.commands.context \
-    import \
-        CmdContext
-from bento.commands.options \
-    import \
-        OptionsContext
 
 class install(Command):
     cmd_name = "install"
@@ -150,7 +137,6 @@ class install(Command):
     def write_record(self):
         dist = self.distribution
 
-        install = dist.global_context.retrieve_command(self.cmd_name)
         options_context = dist.global_context.retrieve_options_context(self.cmd_name)
         cmd_context_klass = dist.global_context.retrieve_context(self.cmd_name)
         context = cmd_context_klass(dist.global_context, [], options_context, dist.pkg, dist.run_node)

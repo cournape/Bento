@@ -7,10 +7,6 @@ import traceback
 
 import bento
 
-from bento.compat.api \
-    import \
-        relpath
-
 from bento.core.utils \
     import \
         pprint, extract_exception
@@ -40,8 +36,7 @@ from bento.commands.options \
 
 from bento.commands.hooks \
     import \
-        find_pre_hooks, find_post_hooks, get_command_override, \
-        create_hook_module, HookRegistry
+        find_pre_hooks, find_post_hooks, create_hook_module
 from bento.commands.context \
     import \
         CmdContext, BuildYakuContext, ConfigureYakuContext, ContextRegistry, \
@@ -348,7 +343,7 @@ def _main(global_context, popts, run_node, top_node, build_node):
         return 0
 
     if popts["show_usage"]:
-        cmd = COMMANDS_REGISTRY.retrieve('help')()
+        cmd = global_context.retrieve_command('help')
         cmd.run(CmdContext(global_context, [], OPTIONS_REGISTRY.retrieve('help'), None, None))
         return 0
 
