@@ -45,15 +45,17 @@ def _set_metadata(obj, name, version=None, summary=None, url=None,
         else:
             obj.version_postdev = "".join([str(i) for i in v.parts[2]])
 
-    obj.summary = summary
-    obj.url = url
-    obj.download_url = download_url
-    obj.author = author
-    obj.author_email = author_email
-    obj.maintainer = maintainer
-    obj.maintainer_email = maintainer_email
-    obj.license = license
-    obj.description = description
+    # FIXME: one should set metadata default elsewhere, and suggest good values
+    # for developers
+    obj.summary = summary or ""
+    obj.url = url or ""
+    obj.download_url = download_url or ""
+    obj.author = author or ""
+    obj.author_email = author_email or ""
+    obj.maintainer = maintainer or ""
+    obj.maintainer_email = maintainer_email or ""
+    obj.license = license or ""
+    obj.description = description or ""
     obj.description_from_file = description_from_file
 
     if not install_requires:
