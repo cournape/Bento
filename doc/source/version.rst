@@ -1,3 +1,14 @@
+Version 0.0.8
+=============
+
+Released on .
+
+Internals
+---------
+
+    - move most global state from bento into bentomakerlib
+    - add basic end-to-end tests for bento.distutils
+
 Version 0.0.7
 =============
 
