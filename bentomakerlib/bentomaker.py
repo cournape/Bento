@@ -136,9 +136,9 @@ def register_commands(global_context):
  
     if sys.platform == "darwin":
         import bento.commands.build_mpkg
-        COMMANDS_REGISTRY.register_command("build_mpkg",
-            bento.commands.build_mpkg.BuildMpkgCommand, public=False)
-        CMD_SCHEDULER.set_before("build_mpkg", "build")
+        global_context.register_command("build_mpkg",
+            bento.commands.build_mpkg.BuildMpkgCommand(), public=False)
+        global_context.set_before("build_mpkg", "build")
 
 def register_options(global_context, cmd_name):
     cmd_klass = global_context.retrieve_command(cmd_name)
