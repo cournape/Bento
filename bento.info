@@ -59,6 +59,7 @@ ExtraSourceFiles:
     bento/core/tests/pkgdescr/*.py,
     bento/core/tests/*.py,
     bento/compat/tests/*.py,
+    bento/distutils/tests/*.py,
     bento/tests/*.py,
     bento/tests/bentos/*.py,
     bento/tests/bentos/*.info
