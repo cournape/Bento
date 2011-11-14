@@ -3,6 +3,10 @@ Version 0.0.8
 
 Released on .
 
+Main features:
+
+    - Path sections can now use conditionals
+
 Internals
 ---------
 
