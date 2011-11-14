@@ -299,17 +299,31 @@ class Dispatcher(object):
     #-----------------
     #   Path option
     #-----------------
+    def path_stmts(self, node):
+        return node.children
+
     def path(self, node):
         path = {}
-        for i in [node.children[0]] + node.children[1]:
-            if i.type == "path_declaration":
-                path["name"] = i.value
-            elif i.type == "path_description":
-                path["description"] = i.value
-            elif i.type == "default":
-                path["default"] = i.value
+        def update(c):
+            if type(c) == list:
+                for i in c:
+                    update(i)
+            elif c.type == "path_declaration":
+                path["name"] = c.value
+            elif c.type == "path_description":
+                path["description"] = c.value
+            elif c.type == "default":
+                path["default"] = c.value
+            elif c.type == "conditional_stmt":
+                path["default"] = c.value
             else:
                 raise SyntaxError("GNe ?")
+        if len(node.children) > 1:
+            nodes = [node.children[0]] + node.children[1]
+        else:
+            nodes = [node.children[0]]
+        for node in nodes:
+            update(node)
 
         return Node("path", value=path)
 

@@ -432,17 +432,23 @@ def p_compiled_library_include_dirs(p):
 #---------------------
 # Conditional handling
 #---------------------
+def p_in_conditional_stmts(p):
+    """in_conditional_stmts : library_stmts
+                            | path_stmts
+    """
+    p[0] = p[1]
+
 def p_conditional_if_error(p):
     """conditional_stmt : IF error"""
     raise ParseError(error_msg(p[2], "Error in if statement"))
 
 def p_conditional_if_only(p):
-    """conditional_stmt : IF test COLON INDENT library_stmts DEDENT"""
+    """conditional_stmt : IF test COLON INDENT in_conditional_stmts DEDENT"""
     p[0] = Node("conditional", value=p[2], children=[p[5]])
 
 def p_conditional_if_else(p):
-    """conditional_stmt : IF test COLON INDENT library_stmts DEDENT \
-                          ELSE COLON INDENT library_stmts DEDENT
+    """conditional_stmt : IF test COLON INDENT in_conditional_stmts DEDENT \
+                          ELSE COLON INDENT in_conditional_stmts DEDENT
     """
     p[0] = Node("conditional", value=p[2], children=[p[5], p[10]])
 
@@ -501,7 +507,8 @@ def p_path_stmts_term(p):
 
 def p_path_stmt(p):
     """path_stmt : path_description
-                 | path_default"""
+                 | path_default
+                 | conditional_stmt"""
     p[0] = p[1]
 
 def p_path_description(p):

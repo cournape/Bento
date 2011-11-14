@@ -406,3 +406,40 @@ Node(type='stmt_list'):
 
         self._test(data, expected)
 
+class TestPath(_TestGrammar):
+    def test_simple(self):
+        data = """\
+Path: foo
+    Default: foo_default
+    Description: foo_description
+"""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='path'):
+        Node(type='path_declaration', value='foo')
+        Node(type='path_stmts'):
+            Node(type='path_default', value='foo_default')
+            Node(type='path_description', value=[Node('literal')])"""
+
+        self._test(data, expected)
+
+    def test_conditional(self):
+        data = """\
+Path: foo
+    if true:
+        Default: foo_default
+    Description: foo_description
+"""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='path'):
+        Node(type='path_declaration', value='foo')
+        Node(type='path_stmts'):
+            Node(type='conditional'):
+                Node(type='path_stmts'):
+                    Node(type='path_default', value='foo_default')
+            Node(type='path_description', value=[Node('literal')])"""
+
+        self._test(data, expected)
