@@ -325,6 +325,9 @@ class Dispatcher(object):
         for node in nodes:
             update(node)
 
+        if not "description" in path or not "default" in path:
+            raise ValueError("Missing description in path section %r" %
+                             (path["name"],))
         return Node("path", value=path)
 
     def path_default(self, node):
