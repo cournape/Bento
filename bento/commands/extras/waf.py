@@ -4,12 +4,16 @@ import shutil
 import logging
 import collections
 
+from bento.commands.api \
+    import \
+        UsageException
+
 if "WAFDIR" in os.environ:
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
 else:
     WAFDIR = os.path.join(os.getcwd(), "waflib")
 if not os.path.exists(WAFDIR):
-    raise RuntimeError("%r not found: required when using waf extras !" % WAFDIR)
+    raise UsageException("%r not found: required when using waf extras !" % WAFDIR)
 sys.path.insert(0, os.path.dirname(WAFDIR))
 
 from waflib.Context \
