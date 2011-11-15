@@ -7,12 +7,11 @@ import types
 
 import os.path as op
 
-if sys.version_info[0] < 3:
-    from cStringIO import StringIO
-else:
-    from io import StringIO
-
 import nose.config
+
+from six.moves \
+    import \
+        cStringIO
 
 from bento.core.testing\
     import \
@@ -269,8 +268,7 @@ class TestBuildWaf(_TestBuildSimpleExtension):
     def _create_contexts(self, bentos, bscripts=None):
         conf, configure, bld, build = super(TestBuildWaf, self)._create_contexts(bentos, bscripts)
         from bento.commands.extras.waf import make_stream_logger
-        from cStringIO import StringIO
-        bld.waf_context.logger = make_stream_logger("build", StringIO())
+        bld.waf_context.logger = make_stream_logger("build", cStringIO())
 
         return conf, configure, bld, build
 
@@ -424,5 +422,5 @@ class TestBuildDirectoryWaf(TestBuildDirectoryBase):
         opts = prepare_options("build", build, BuildWafContext)
 
         bld = BuildWafContext(None, [], opts, conf.pkg, top_node)
-        bld.waf_context.logger = make_stream_logger("build", StringIO())
+        bld.waf_context.logger = make_stream_logger("build", cStringIO())
         build.run(bld)

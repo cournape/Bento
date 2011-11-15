@@ -8,6 +8,8 @@ from bento.commands.api \
     import \
         UsageException
 
+import six
+
 if "WAFDIR" in os.environ:
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
 else:
@@ -68,13 +70,13 @@ def make_stream_logger(name, stream):
 def _init_log_no_output():
     # XXX: all this heavily plays with waf internals - only use for unit
     # testing bento where waf output screws up nose own output/logging magic
-    from cStringIO import StringIO
+    from six.moves import cStringIO
     Logs.got_tty = False
     Logs.get_term_cols = lambda: 80
     Logs.get_color = lambda cl: ''
     Logs.colors = Logs.color_dict()
 
-    fake_output = StringIO()
+    fake_output = cStringIO()
     def fake_pprint(col, str, label='', sep='\n'):
         fake_output.write("%s%s%s %s%s" % (Logs.colors(col), str, Logs.colors.NORMAL, label, sep))
 
@@ -83,7 +85,7 @@ def _init_log_no_output():
     log = logging.getLogger('waflib')
     log.handlers = []
     log.filters = []
-    hdlr = logging.StreamHandler(StringIO())
+    hdlr = logging.StreamHandler(cStringIO())
     hdlr.setFormatter(Logs.formatter())
     log.addHandler(hdlr)
     log.addFilter(Logs.log_filter())

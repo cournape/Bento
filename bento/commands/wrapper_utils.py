@@ -75,7 +75,7 @@ def set_main(top_node, build_node, pkg):
 
     modules = []
     hook_files = pkg.hook_files
-    for name, spkg in pkg.subpackages.iteritems():
+    for name, spkg in pkg.subpackages.items():
         hook_files.extend([os.path.join(spkg.rdir, h) for h in spkg.hook_files])
     # TODO: find doublons
     for f in hook_files:

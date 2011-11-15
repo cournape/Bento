@@ -2,20 +2,22 @@ import os
 import sys
 import subprocess
 
+import six
+
 import plistlib
 
 BENTO_INFO = "0.0.5"
 
 MKBOM = "/usr/bin/mkbom"
 
-def path_requirement(SpecArgument, Level=u'requires', **kw):
+def path_requirement(SpecArgument, Level=six.u('requires'), **kw):
     return dict(
         Level=Level,
-        SpecType=u'file',
+        SpecType=six.u('file'),
         SpecArgument=unicode_path(SpecArgument),
-        SpecProperty=u'NSFileType',
-        TestOperator=u'eq',
-        TestObject=u'NSFileTypeDirectory',
+        SpecProperty=six.u('NSFileType'),
+        TestOperator=six.u('eq'),
+        TestObject=six.u('NSFileTypeDirectory'),
         **kw
     )
 
@@ -25,18 +27,18 @@ def common_info(pkg_info):
     major, minor = pkg_info.version_info[0], pkg_info.version_info[1]
     version = pkg_info.version
     return dict(
-        CFBundleGetInfoString=u'%s %s' % (name, version),
-        CFBundleIdentifier=u'org.pythonmac.%s' % (name,),
+        CFBundleGetInfoString='%s %s' % (name, version),
+        CFBundleIdentifier='org.pythonmac.%s' % (name,),
         CFBundleName=name,
         CFBundleShortVersionString=unicode(version),
         IFMajorVersion=major,
         IFMinorRevision=minor,
         IFPkgFormatVersion=0.10000000149011612,
-        IFRequirementDicts=[path_requirement(u'/')],
+        IFRequirementDicts=[path_requirement(six.u('/'))],
         PythonInfoDict=dict(
-            PythonLongVersion=unicode(sys.version),
-            PythonShortVersion=unicode(sys.version[:3]),
-            PythonExecutable=unicode(sys.executable),
+            PythonLongVersion=six.u(sys.version),
+            PythonShortVersion=six.u(sys.version[:3]),
+            PythonExecutable=six.u(sys.executable),
             bento_version=dict(
                 version=BENTO_INFO
             ),
@@ -46,14 +48,14 @@ def common_info(pkg_info):
 
 def common_description(pkg_info):
     return dict(
-        IFPkgDescriptionTitle=unicode(pkg_info.name),
-        IFPkgDescriptionVersion=unicode(pkg_info.version),
+        IFPkgDescriptionTitle=six.u(pkg_info.name),
+        IFPkgDescriptionVersion=six.u(pkg_info.version),
     )
 
 def unicode_path(path, encoding=sys.getfilesystemencoding()):
-    if isinstance(path, unicode):
+    if isinstance(path, six.text_type):
         return path
-    return unicode(path, encoding)
+    return six.u(path, encoding)
 
 def write(dct, path):
     p = plistlib.Plist()
@@ -78,13 +80,13 @@ def build_info_plist(pkg_info):
     # Keys that can only appear in single packages
     d.update(dict(
         IFPkgFlagAllowBackRev=False,
-        IFPkgFlagAuthorizationAction=u'AdminAuthorization',
+        IFPkgFlagAuthorizationAction=six.u('AdminAuthorization'),
         IFPkgFlagFollowLinks=True,
         IFPkgFlagInstallFat=False,
         IFPkgFlagIsRequired=False,
         IFPkgFlagOverwritePermissions=False,
         IFPkgFlagRelocatable=False,
-        IFPkgFlagRestartAction=u'NoRestart',
+        IFPkgFlagRestartAction=six.u('NoRestart'),
         IFPkgFlagRootVolumeOnly=True,
         IFPkgFlagUpdateInstalledLangauges=False,
     ))
@@ -122,9 +124,9 @@ def build_pkg(pkg_info):
 class PackageInfo(object):
     def __init__(self, pkg_name, prefix, source_root, pkg_root, admin=True, description=None, version=None):
         if admin:
-            self.auth = u"AdminAuthorization"
+            self.auth = six.u("AdminAuthorization")
         else:
-            self.auth = u"RootAuthorization"
+            self.auth = six.u("RootAuthorization")
 
         # Where things will be installed by Mac OS X installer
         self.prefix = prefix
