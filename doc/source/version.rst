@@ -12,6 +12,9 @@ Internals
 
     - move most global state from bento into bentomakerlib
     - add basic end-to-end tests for bento.distutils
+    - bento.distutils simplified: it is going toward a "shell" around bento
+      with compatibility with pip/easy_install/virtualenv and away from a
+      distutils extension
 
 Version 0.0.7
 =============
