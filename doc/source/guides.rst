@@ -67,6 +67,21 @@ Bentomaker will automatically add the --foodir option, and $foo will be
 expanded to the customized value (or $datadir/foo by default). The description
 will be used as a description in the help message.
 
+Conditional customization
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is sometimes necessary to define platform-specific default for custom paths.
+This can be done as follows::
+
+    Path: foo
+        Description: foo directory
+        if os(darwin):
+            Default: /Library/foo
+        else:
+            Default: $bin/foo
+
+FIXME: refer to conditional
+
 Retrieving data files at runtime
 ================================
 
