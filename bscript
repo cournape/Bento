@@ -151,10 +151,6 @@ Usage:   bentomaker distcheck [OPTIONS]."""
         finally:
             os.chdir(saved)
 
-@hooks.command
-def hello(ctx):
-    print "hello"
-
 @hooks.startup
 def startup(context):
     context.register_command("distcheck", DistCheckCommand())
