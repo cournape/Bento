@@ -30,14 +30,11 @@ To install bento, you can either:
 
         python setup.py install
 
-To install bento for python 3::
+Python3 support
+---------------
 
-    python bootstrap.py # this should be run under a supported python 2.x version
-    ./bentomaker run_2to3
-    # Not mandatory: sanity check of the converted code
-    ./bentomaker test_py3k
-
-and follows the given instructions.
+Bento supports python 3 as is, so there is no need to run 2to3 on it (doing so
+will probably break it).
 
 Why you should use bento ?
 ==========================
@@ -72,6 +69,7 @@ But bento does more:
         * API designed such as commands need to know very little from each other.
         * Moving toward a node-based architecture for robust file location
           (waf-based design)
+        * No global variable/singleton in bento itself
 
     * Easily bundable, one-file distribution to avoid extra-dependencies when
       using bento. You only need to add one file to your sources, no need for
