@@ -81,6 +81,8 @@ Library:
         Packages:
             bento.private._ply.ply,
             bento.private._simplejson.simplejson
+        Modules:
+            bento/private/_six/six
     if flag(bundle_yaku):
         Packages:
             bento.private._yaku.yaku,
