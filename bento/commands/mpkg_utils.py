@@ -32,7 +32,7 @@ def common_info(pkg_info):
     name = _unicode(pkg_info.name)
     major, minor = pkg_info.version_info[0], pkg_info.version_info[1]
     version = pkg_info.version
-    return dict(
+    defaults = dict(
         CFBundleGetInfoString='%s %s' % (name, version),
         CFBundleIdentifier='org.pythonmac.%s' % (name,),
         CFBundleName=name,
