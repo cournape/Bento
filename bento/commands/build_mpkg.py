@@ -21,6 +21,9 @@ from bento.commands.core \
 from bento.commands.mpkg_utils \
     import \
         build_pkg, PackageInfo, MetaPackageInfo, make_mpkg_plist, make_mpkg_description
+from bento.core.utils \
+    import \
+        MODE_755
 
 def get_default_scheme(pkg_name, py_version_short=None, prefix=None):
     if py_version_short is None:
@@ -117,6 +120,8 @@ def build_pkg_from_temp(ctx, ipkg, pkg_root, root_node, install_root, categories
                 #    os.makedirs(os.path.dirname(target))
                 target.parent.mkdir()
                 shutil.copy(source.abspath(), target.abspath())
+                if kind == "executables":
+                    os.chmod(target.abspath(), MODE_755)
 
         pkg_name = os.path.splitext(os.path.basename(pkg_root))[0]
         pkg_info = PackageInfo(pkg_name=pkg_name,
