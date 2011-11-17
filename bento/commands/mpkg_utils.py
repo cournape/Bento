@@ -10,6 +10,12 @@ BENTO_INFO = "0.0.5"
 
 MKBOM = "/usr/bin/mkbom"
 
+def _unicode(*args, **kw):
+    if six.PY3:
+        return str(*args, **kw)
+    else:
+        return unicode(*args, **kw)
+
 def path_requirement(SpecArgument, Level=six.u('requires'), **kw):
     return dict(
         Level=Level,
@@ -23,22 +29,22 @@ def path_requirement(SpecArgument, Level=six.u('requires'), **kw):
 
 def common_info(pkg_info):
     # Keys that can appear in any package
-    name = unicode(pkg_info.name)
+    name = _unicode(pkg_info.name)
     major, minor = pkg_info.version_info[0], pkg_info.version_info[1]
     version = pkg_info.version
     return dict(
         CFBundleGetInfoString='%s %s' % (name, version),
         CFBundleIdentifier='org.pythonmac.%s' % (name,),
         CFBundleName=name,
-        CFBundleShortVersionString=unicode(version),
+        CFBundleShortVersionString=_unicode(version),
         IFMajorVersion=major,
         IFMinorRevision=minor,
         IFPkgFormatVersion=0.10000000149011612,
         IFRequirementDicts=[path_requirement(six.u('/'))],
         PythonInfoDict=dict(
-            PythonLongVersion=six.u(sys.version),
-            PythonShortVersion=six.u(sys.version[:3]),
-            PythonExecutable=six.u(sys.executable),
+            PythonLongVersion=_unicode(sys.version),
+            PythonShortVersion=_unicode(sys.version[:3]),
+            PythonExecutable=_unicode(sys.executable),
             bento_version=dict(
                 version=BENTO_INFO
             ),
@@ -48,14 +54,14 @@ def common_info(pkg_info):
 
 def common_description(pkg_info):
     return dict(
-        IFPkgDescriptionTitle=six.u(pkg_info.name),
-        IFPkgDescriptionVersion=six.u(pkg_info.version),
+        IFPkgDescriptionTitle=_unicode(pkg_info.name),
+        IFPkgDescriptionVersion=_unicode(pkg_info.version),
     )
 
 def unicode_path(path, encoding=sys.getfilesystemencoding()):
     if isinstance(path, six.text_type):
         return path
-    return six.u(path, encoding)
+    return _unicode(path, encoding)
 
 def write(dct, path):
     p = plistlib.Plist()
