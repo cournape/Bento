@@ -6,6 +6,10 @@ import six
 
 import plistlib
 
+from bento.compat.api \
+    import \
+        check_call
+
 BENTO_INFO = "0.0.5"
 
 MKBOM = "/usr/bin/mkbom"
@@ -74,10 +78,10 @@ def ensure_directories(pkg_info):
             os.makedirs(d)
 
 def build_bom(pkg_info):
-    subprocess.check_call([MKBOM, pkg_info.source_root, pkg_info.bom])
+    check_call([MKBOM, pkg_info.source_root, pkg_info.bom])
 
 def build_archive(pkg_info):
-    subprocess.check_call(["pax", "-w", "-f", pkg_info.archive, "-x", "cpio", "-z", "."],
+    check_call(["pax", "-w", "-f", pkg_info.archive, "-x", "cpio", "-z", "."],
                           cwd=pkg_info.source_root)
 
 def build_info_plist(pkg_info):
