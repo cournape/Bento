@@ -14,4 +14,6 @@ class bdist_egg(old_bdist_egg):
     cmd_name = "build_egg"
     def run(self):
         self.run_command("build")
-        self.distribution.run_command_in_context(self.cmd_name, [])
+
+        cmd_argv = ["--output-dir=%s" % self.dist_dir]
+        self.distribution.run_command_in_context(self.cmd_name, cmd_argv)

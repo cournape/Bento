@@ -12,6 +12,9 @@ from bento.installed_package_description import \
 from bento._config \
     import \
         IPKG_PATH
+from bento.commands.core \
+    import \
+        Command, Option
 
 from bento.commands.errors \
     import \
@@ -28,6 +31,9 @@ class BuildEggCommand(Command):
 Purpose: build egg
 Usage:   bentomaker build_egg [OPTIONS]"""
     short_descr = "build egg."
+    common_options = Command.common_options \
+                        + [Option("--output-dir",
+                                  help="Output directory", default="dist")]
 
     def run(self, ctx):
         argv = ctx.get_command_arguments()
@@ -36,10 +42,14 @@ Usage:   bentomaker build_egg [OPTIONS]"""
         if o.help:
             p.print_help()
             return
+        if o.output_dir is None:
+            output_dir = None
+        else:
+            output_dir = o.output_dir
 
         n = ctx.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
-        build_egg(ipkg, ctx, ctx.build_node)
+        build_egg(ipkg, ctx, ctx.build_node, output_dir)
 
 def build_egg(ipkg, ctx, source_root, path=None):
     meta = PackageMetadata.from_ipkg(ipkg)
