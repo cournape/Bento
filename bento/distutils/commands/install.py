@@ -50,27 +50,6 @@ class install(Command):
     def finalize_options(self):
         if self.install_headers is not None:
             warnings.warn("--install-headers option is ignored.")
-        if os.name == "posix":
-            self._finalize_unix()
-        else:
-            self._finalize_other()
-
-    def _finalize_other(self):
-        scheme = self.scheme
-
-        if self.root:
-            raise ValueError("Option root is meaningless on non-posix platforms !")
-
-        scheme['prefix'] = self.prefix
-        scheme['exec_prefix'] = self.exec_prefix
-
-    def _finalize_unix(self):
-        scheme = self.scheme
-
-        if self.root:
-            scheme["destdir"] = self.root
-
-        # TODO: user and home schemes
 
         if self.prefix is None:
             prefix_customized = False
@@ -87,10 +66,38 @@ class install(Command):
             if self.exec_prefix is None:
                 self.exec_prefix = self.prefix
 
+        if os.name == "posix":
+            self._finalize_unix(prefix_customized)
+        else:
+            self._finalize_other(prefix_customized)
+
+    def _finalize_other(self, is_prefix_customized):
+        scheme = self.scheme
+
+        if self.root:
+            raise ValueError("Option root is meaningless on non-posix platforms !")
+
+        if is_prefix_customized:
+            prefix = self.prefix
+            exec_prefix = self.exec_prefix
+	else:
+            prefix = sys.prefix
+            exec_prefix = sys.exec_prefix
+        scheme['prefix'] = prefix
+        scheme['exec_prefix'] = exec_prefix
+
+    def _finalize_unix(self, is_prefix_customized):
+        scheme = self.scheme
+
+        if self.root:
+            scheme["destdir"] = self.root
+
+        # TODO: user and home schemes
+
         py_version_short = ".".join(map(str, sys.version_info[:2]))
         dist_name = self.distribution.pkg.name
 
-        if prefix_customized:
+        if is_prefix_customized:
             if op.normpath(self.prefix) != '/usr/local':
                 # unix prefix
                 scheme['prefix'] = self.prefix
