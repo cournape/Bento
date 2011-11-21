@@ -15,7 +15,10 @@ if "WAFDIR" in os.environ:
 else:
     WAFDIR = os.path.join(os.getcwd(), "waflib")
 if not os.path.exists(WAFDIR):
-    raise UsageException("%r not found: required when using waf extras !" % WAFDIR)
+    raise UsageException("""\
+%r not found: required when using waf extras !
+    You can set waf location using the WAFDIR environment variable, such as
+    $WAFDIR contains the 'waflib' directory""" % WAFDIR)
 sys.path.insert(0, os.path.dirname(WAFDIR))
 
 from waflib.Context \
