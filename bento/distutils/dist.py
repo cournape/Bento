@@ -42,6 +42,9 @@ from bento.commands.core \
 from bento.commands.yaku_contexts \
     import \
         ConfigureYakuContext, BuildYakuContext
+from bento.commands.build_egg \
+    import \
+        BuildEggCommand
 import bento.commands.wrapper_utils
 
 from bento.commands.dependency \
@@ -122,6 +125,7 @@ def register_commands(commands_registry):
     commands_registry.register("build", BuildCommand())
     commands_registry.register("install", InstallCommand())
     commands_registry.register("sdist", SdistCommand())
+    commands_registry.register("build_egg", BuildEggCommand())
 
 class BentoDistribution(Distribution):
     def get_command_class(self, command):
