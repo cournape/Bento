@@ -62,6 +62,6 @@ def _config_content(paths):
     n = max([len(k) for k in keys]) + 2
     content = []
     for name, value in sorted(paths.items()):
-        content.append('%s = r"%s"' % (name.upper().ljust(n), subst_vars(value, paths)))
+        content.append('%s = %r' % (name.upper().ljust(n), subst_vars(value, paths)))
     return "\n".join(content)
 
