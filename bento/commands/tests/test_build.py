@@ -37,6 +37,9 @@ from bento.commands.build \
 from bento.installed_package_description \
     import \
         InstalledSection
+from bento.commands.api \
+    import \
+        UsageException
 
 import bento.commands.build_distutils
 import bento.commands.build_yaku
@@ -249,7 +252,7 @@ def _not_has_waf():
         import bento.commands.extras.waf
         bento.commands.extras.waf.disable_output()
         return False
-    except RuntimeError:
+    except UsageException:
         return True
 
 def skip_no_waf(f):
