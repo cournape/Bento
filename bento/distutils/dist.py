@@ -131,8 +131,9 @@ class BentoDistribution(Distribution):
     def get_command_class(self, command):
         # Better raising an error than having some weird behavior for a command
         # we don't support
-        if command in self.script_args and \
-                command not in _BENTO_MONKEYED_CLASSES:
+        if self.script_args is not None \
+           and command in self.script_args \
+           and command not in _BENTO_MONKEYED_CLASSES:
             raise ValueError("Command %s is not supported by bento.distutils compat layer" % command)
         return Distribution.get_command_class(self, command)
 
