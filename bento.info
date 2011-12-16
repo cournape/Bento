@@ -75,6 +75,7 @@ Library:
         bento.core.platforms,
         bento.distutils,
         bento.distutils.commands,
+        bento.misc,
         bento.private,
         bentomakerlib
     if flag(bundle):
