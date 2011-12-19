@@ -813,7 +813,7 @@ Name: foo # inline comment
         ref_str = "NAME_ID COLON WORD"
         self._test(data, split(ref_str))
 
-    def test_simple_inline(self):
+    def test_simple_inline2(self):
         data = """\
 ExtraSourceFiles:
     # indented comment
