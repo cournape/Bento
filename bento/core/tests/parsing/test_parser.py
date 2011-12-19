@@ -8,9 +8,6 @@ else:
 from unittest \
     import \
         TestCase
-from nose.tools \
-    import \
-        assert_equal, assert_raises
 
 from bento.core.parser.nodes \
     import \
@@ -27,7 +24,7 @@ class _TestGrammar(TestCase):
         ast_pprint(p, string=s)
 
         try:
-            assert_equal(s.getvalue(), expected)
+            self.assertEqual(s.getvalue(), expected)
         except AssertionError:
             msg = s.getvalue()
             msg += "\n%s" % str(expected)

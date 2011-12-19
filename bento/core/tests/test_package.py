@@ -2,9 +2,6 @@ import unittest
 import os
 import tempfile
 
-from nose.tools import \
-    assert_equal
-
 from bento import PackageDescription
 from bento.core.package import static_representation
 from bento.core.meta import PackageMetadata
@@ -71,12 +68,12 @@ Library:
         # original and static_representation
         pkg = PackageDescription.from_string(static_representation(r_pkg))
 
-        assert_equal(static_representation(pkg), static_representation(r_pkg))
+        self.assertEqual(static_representation(pkg), static_representation(r_pkg))
 
 class TestPackageMetadata(unittest.TestCase):
     def test_ctor(self):
         meta = PackageMetadata(name="foo", version="1.0", author="John Doe",
                                author_email="john@doe.com")
-        assert_equal(meta.fullname, "foo-1.0")
-        assert_equal(meta.contact, "John Doe")
-        assert_equal(meta.contact_email, "john@doe.com")
+        self.assertEqual(meta.fullname, "foo-1.0")
+        self.assertEqual(meta.contact, "John Doe")
+        self.assertEqual(meta.contact_email, "john@doe.com")

@@ -7,8 +7,6 @@ import types
 
 import os.path as op
 
-import nose.config
-
 from six.moves \
     import \
         cStringIO
@@ -78,8 +76,6 @@ Library:
     Packages: foo, foo.bar
     Modules: fubar
 """
-
-_NOSE_CONFIG = nose.config.Config()
 
 class _TestBuildSimpleExtension(unittest.TestCase):
     def setUp(self):

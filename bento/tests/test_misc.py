@@ -1,10 +1,6 @@
 import os
 import unittest
 
-from nose.tools \
-    import \
-        assert_raises
-
 from bento.compat.api \
     import \
         NamedTemporaryFile
@@ -35,5 +31,5 @@ class TestBytecode(unittest.TestCase):
     def test_invalid(self):
         s = """print("""
         def f(filename):
-            assert_raises(PyCompileError, lambda: bcompile(filename))
+            self.assertRaises(PyCompileError, lambda: bcompile(filename))
         run_with_tempfile(s, f)

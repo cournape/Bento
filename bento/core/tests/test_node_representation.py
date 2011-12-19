@@ -3,10 +3,6 @@ import tempfile
 import unittest
 import shutil
 
-from nose.tools \
-    import \
-        assert_equal
-
 from bento.core.package \
     import \
         PackageDescription
@@ -55,8 +51,8 @@ Library:
         node_pkg.update_package(pkg)
 
         extensions = dict(node_pkg.iter_category("extensions"))
-        assert_equal(len(extensions), 1)
-        assert_equal(len(extensions["_foo"].nodes), 2)
+        self.assertEqual(len(extensions), 1)
+        self.assertEqual(len(extensions["_foo"].nodes), 2)
 
     def test_sources_glob(self):
         bento_info = """\
@@ -80,5 +76,5 @@ Library:
         node_pkg.update_package(pkg)
 
         extensions = dict(node_pkg.iter_category("extensions"))
-        assert_equal(len(extensions), 1)
-        assert_equal(len(extensions["_foo"].nodes), 2)
+        self.assertEqual(len(extensions), 1)
+        self.assertEqual(len(extensions["_foo"].nodes), 2)

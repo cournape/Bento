@@ -3,10 +3,6 @@ import shutil
 import unittest
 import tempfile
 
-from nose.tools \
-    import \
-        assert_equal
-
 import bento.core.node as node
 import bento.core.pkg_objects as pkg_objects
 import bento.core.package as package
@@ -57,8 +53,8 @@ class TestTranslation(unittest.TestCase):
                     spkg, top_node)
             self.failUnless("foo._hello" in extensions)
             extension = extensions["foo._hello"]
-            assert_equal(extension.sources, ["foo/src/hellomodule.c"])
-            assert_equal(extension.include_dirs, ["foo"])
+            self.assertEqual(extension.sources, ["foo/src/hellomodule.c"])
+            self.assertEqual(extension.include_dirs, ["foo"])
         finally:
             shutil.rmtree(top)
 
@@ -83,7 +79,7 @@ class TestTranslation(unittest.TestCase):
                     spkg, top_node)
             self.failUnless("bar.clib" in clibs)
             clib = clibs["bar.clib"]
-            assert_equal(clib.sources, ["bar/src/clib.c"])
-            assert_equal(clib.include_dirs, ["bar"])
+            self.assertEqual(clib.sources, ["bar/src/clib.c"])
+            self.assertEqual(clib.include_dirs, ["bar"])
         finally:
             shutil.rmtree(top)

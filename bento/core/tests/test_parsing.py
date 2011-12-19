@@ -6,8 +6,6 @@ import sys
 
 from os.path import \
     join, dirname
-from nose.tools import \
-    assert_equal, raises
 
 if sys.version_info[0] < 3:
     from cStringIO import StringIO
@@ -93,7 +91,7 @@ DataFiles: data
         r_data = DataFiles("data", files=["foo.data"], target_dir="$datadir")
         pkg = PackageDescription.from_string(text)
         self.failUnless("data" in pkg.data_files)
-        assert_equal(pkg.data_files["data"].__dict__, r_data.__dict__)
+        self.assertEqual(pkg.data_files["data"].__dict__, r_data.__dict__)
     
 class TestOptions(unittest.TestCase):
     simple_text = """\

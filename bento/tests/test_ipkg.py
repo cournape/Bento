@@ -11,8 +11,6 @@ else:
 
 from bento.compat.api import json
 
-import nose.tools
-
 from bento.core.package \
     import \
         PackageDescription
@@ -49,7 +47,7 @@ class TestInstalledSection(unittest.TestCase):
         section = InstalledSection.from_source_target_directories("pythonfiles",
                         "section1", "source", "target", files)
 
-        nose.tools.assert_equal(r_section.files, section.files)
+        self.assertEqual(r_section.files, section.files)
 
 def create_simple_ipkg_args(top_node):
     files = ["scripts/foo.py", "scripts/bar.py"]

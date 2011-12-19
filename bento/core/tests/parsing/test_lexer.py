@@ -1,9 +1,6 @@
 from unittest \
     import \
         TestCase
-from nose.tools \
-    import \
-        assert_equal, assert_raises
 
 from bento.core.utils \
     import \
@@ -37,7 +34,7 @@ class TestLexer(TestCase):
         if is_string(ref):
             ref = split(ref)
         try:
-            assert_equal(res, ref)
+            self.assertEqual(res, ref)
         except AssertionError:
             e = extract_exception()
             cnt = 0
@@ -78,7 +75,7 @@ Summary: a brief summary
 Library:
 \tpackages
 """
-        assert_raises(SyntaxError, lambda: self._test(data, []))
+        self.assertRaises(SyntaxError, lambda: self._test(data, []))
 
 class TestLexerStageTwo(TestLexer):
     def setUp(self):
@@ -100,8 +97,8 @@ class TestLexerStageTwo(TestLexer):
         self._test(data, ref)
 
         tokens = self._get_tokens(data)
-        assert_equal(tokens[0].escaped, False)
-        assert_equal(tokens[1].escaped, True)
+        self.assertEqual(tokens[0].escaped, False)
+        self.assertEqual(tokens[1].escaped, True)
 
     def test_double_escape(self):
         data = "yoyo\\\\ "
@@ -109,9 +106,9 @@ class TestLexerStageTwo(TestLexer):
         self._test(data, ref)
 
         tokens = self._get_tokens(data)
-        assert_equal(tokens[0].escaped, False)
-        assert_equal(tokens[1].escaped, True)
-        assert_equal(tokens[2].escaped, False)
+        self.assertEqual(tokens[0].escaped, False)
+        self.assertEqual(tokens[1].escaped, True)
+        self.assertEqual(tokens[2].escaped, False)
 
     def test_wrong_escape(self):
         data = "yoyo\\"
@@ -139,7 +136,7 @@ class TestLexerStageThree(TestLexer):
         self._test(data, ref)
 
         tokens = self._get_tokens(data)
-        assert_equal(tokens[0].value, "yoyo ")
+        self.assertEqual(tokens[0].value, "yoyo ")
 
     def test_simple_escape2(self):
         data = "\ yoyo\ "
@@ -147,7 +144,7 @@ class TestLexerStageThree(TestLexer):
         self._test(data, ref)
 
         tokens = self._get_tokens(data)
-        assert_equal(tokens[0].value, " yoyo ")
+        self.assertEqual(tokens[0].value, " yoyo ")
 
     def test_double_escape(self):
         data = "yoyo\ \ yaya"
@@ -155,7 +152,7 @@ class TestLexerStageThree(TestLexer):
         self._test(data, ref)
 
         tokens = self._get_tokens(data)
-        assert_equal(tokens[0].value, "yoyo  yaya")
+        self.assertEqual(tokens[0].value, "yoyo  yaya")
 
     def test_literal_escape(self):
         data = "yoyo\\\\"
@@ -163,7 +160,7 @@ class TestLexerStageThree(TestLexer):
         self._test(data, ref)
 
         tokens = self._get_tokens(data)
-        assert_equal(tokens[0].value, "yoyo\\")
+        self.assertEqual(tokens[0].value, "yoyo\\")
 
 class TestLexerStageFour(TestLexer):
     def setUp(self):
@@ -328,10 +325,10 @@ DEDENT DEDENT
         tokens = self._get_tokens(data)
 
         indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
-        assert_equal(indents[0].value, 4)
-        assert_equal(indents[1].value, 6)
-        assert_equal(indents[2].value, 6)
-        assert_equal(indents[3].value, 4)
+        self.assertEqual(indents[0].value, 4)
+        self.assertEqual(indents[1].value, 6)
+        self.assertEqual(indents[2].value, 6)
+        self.assertEqual(indents[3].value, 4)
 
     def test_indent_value2(self):
         data = """\
@@ -351,10 +348,10 @@ WORD COLON WS WORD NEWLINE
         tokens = self._get_tokens(data)
 
         indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
-        assert_equal(indents[0].value, 4)
-        assert_equal(indents[1].value, 6)
-        assert_equal(indents[2].value, 6)
-        assert_equal(indents[3].value, 4)
+        self.assertEqual(indents[0].value, 4)
+        self.assertEqual(indents[1].value, 6)
+        self.assertEqual(indents[2].value, 6)
+        self.assertEqual(indents[3].value, 4)
 
 class TestLexerStageFive(TestLexer):
     def setUp(self):
@@ -500,10 +497,10 @@ Description: some
         tokens = self._get_tokens(data,)
 
         indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
-        assert_equal(indents[0].value, 4)
-        assert_equal(indents[1].value, 6)
-        assert_equal(indents[2].value, 6)
-        assert_equal(indents[3].value, 4)
+        self.assertEqual(indents[0].value, 4)
+        self.assertEqual(indents[1].value, 6)
+        self.assertEqual(indents[2].value, 6)
+        self.assertEqual(indents[3].value, 4)
 
     def test_indent_value2(self):
         data = """\
@@ -521,10 +518,10 @@ Name: yo
         tokens = self._get_tokens(data,)
 
         indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
-        assert_equal(indents[0].value, 4)
-        assert_equal(indents[1].value, 6)
-        assert_equal(indents[2].value, 6)
-        assert_equal(indents[3].value, 4)
+        self.assertEqual(indents[0].value, 4)
+        self.assertEqual(indents[1].value, 6)
+        self.assertEqual(indents[2].value, 6)
+        self.assertEqual(indents[3].value, 4)
 
     def test_comma(self):
         data = """\
@@ -568,7 +565,7 @@ Library:
 Library:
 \tpackages
 """
-        assert_raises(SyntaxError, lambda: self._test(data, []))
+        self.assertRaises(SyntaxError, lambda: self._test(data, []))
 
     def test_rest_literal1(self):
         data = '''\
