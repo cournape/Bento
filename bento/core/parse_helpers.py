@@ -48,6 +48,12 @@ def extract_top_dicts_subento(d):
         if k in d:
             misc[k] = d.pop(k)
 
+    # FIXME: bento vs subento visitor. Those should not be defined in the first
+    # place for subento.
+    for k in ["path_options", "flag_options", "data_files", "extra_source_files", "executables"]:
+        v = d.pop(k)
+        if len(v) > 0:
+            raise ValueError("Invalid non empty entry %s" % k)
     if len(d) > 0:
         raise ValueError("Unknown entry(ies) %s" % d.keys())
 

@@ -28,7 +28,14 @@ _LIT_BOOL = {"true": True, "false": False, True: True, False: False}
 
 class Dispatcher(object):
     def __init__(self, user_values=None):
-        self._d = {}
+        self._d = {
+                "path_options": {},
+                "flag_options": {},
+                "libraries": {},
+                "executables": {},
+                "data_files": {},
+                "extra_source_files": [],
+        }
         self.action_dict = {
             "empty": self.empty,
             "stmt_list": self.stmt_list,
@@ -99,30 +106,15 @@ class Dispatcher(object):
                           "meta_template_file", "keywords"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
-                if "path_options" in self._d:
-                    self._d["path_options"].update({c.value["name"]: c.value})
-                else:
-                    self._d["path_options"] = {c.value["name"]: c.value}
+                self._d["path_options"].update({c.value["name"]: c.value})
             elif c.type == "flag":
-                if "flag_options" in self._d:
-                    self._d["flag_options"].update({c.value["name"]: c.value})
-                else:
-                    self._d["flag_options"] = {c.value["name"]: c.value}
+                self._d["flag_options"].update({c.value["name"]: c.value})
             elif c.type == "library":
-                if "libraries" in self._d:
-                    self._d["libraries"].update({c.value["name"]: c.value})
-                else:
-                    self._d["libraries"] = {c.value["name"]: c.value}
+                self._d["libraries"].update({c.value["name"]: c.value})
             elif c.type == "executable":
-                if "executables" in self._d:
-                    self._d["executables"].update({c.value["name"]: c.value})
-                else:
-                    self._d["executables"] = {c.value["name"]: c.value}
+                self._d["executables"].update({c.value["name"]: c.value})
             elif c.type == "data_files":
-                if "data_files" in self._d:
-                    self._d["data_files"].update({c.value["name"]: c.value})
-                else:
-                    self._d["data_files"] = {c.value["name"]: c.value}
+                self._d["data_files"].update({c.value["name"]: c.value})
             else:
                 raise ValueError("Unhandled top statement (%s)" % c)
         return self._d
@@ -411,10 +403,7 @@ class Dispatcher(object):
             return _LIT_BOOL[value]
 
     def extra_source_files(self, node):
-        if "extra_source_files" in self._d:
-            self._d["extra_source_files"].extend(node.value)
-        else:
-            self._d["extra_source_files"] = node.value
+        self._d["extra_source_files"].extend(node.value)
 
     def subento(self, node):
         if "subento" in self._d:

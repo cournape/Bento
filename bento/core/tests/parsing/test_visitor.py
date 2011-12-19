@@ -20,7 +20,7 @@ def parse_and_analyse(data):
 
 def _empty_description():
     d = {"libraries": {}, "path_options": {}, "flag_options": {},
-         "data_files": {}, "extra_sources": [], "executables": {}}
+         "data_files": {}, "extra_source_files": [], "executables": {}}
     return d
 
 def _empty_library():
@@ -29,6 +29,9 @@ def _empty_library():
     return d
 
 class TestSimpleMeta(unittest.TestCase):
+    def setUp(self):
+        self.ref = _empty_description()
+
     def test_empty(self):
         data = ""
         self.assertEqual(parse_and_analyse(data), {})
@@ -37,30 +40,32 @@ class TestSimpleMeta(unittest.TestCase):
         data = """\
 Name: foo
 """
-        ref = {"name": "foo"}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["name"] = "foo"
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_summary(self):
         data = """\
 Summary: a few words.
 """
-        ref = {"summary": "a few words."}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref.update({"summary": "a few words."})
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_author(self):
         data = """\
 Author: John Doe
 """
-        ref = {"author": "John Doe"}
-
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref.update({"author": "John Doe"})
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
 class TestDescription(unittest.TestCase):
+    def setUp(self):
+        self.ref = _empty_description()
+
     def test_simple_single_line(self):
         data = "Description: some simple description"
 
-        ref = {"description": "some simple description"}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref.update({"description": "some simple description"})
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_simple_indented_block(self):
         data = """\
@@ -69,8 +74,8 @@ Description:
     on multiple
     lines.
 """
-        ref = {"description": "some simple description\non multiple\nlines."}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["description"] = "some simple description\non multiple\nlines."
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_simple_indented_block2(self):
         data = """\
@@ -78,8 +83,8 @@ Description: some simple description
     on multiple
     lines.
 """
-        ref = {"description": "some simple description\non multiple\nlines."}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["description"] = "some simple description\non multiple\nlines."
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_nested_indented_block3(self):
         data = """\
@@ -93,7 +98,7 @@ Description: some
     lines.
 """
 
-        ref = {"description": """some
+        self.ref["description"] = """some
 simple
     description
         on
@@ -101,17 +106,20 @@ simple
 multiple
 
 lines.\
-"""}
-        self.assertEqual(parse_and_analyse(data), ref)
+"""
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
 class TestLibrary(unittest.TestCase):
+    def setUp(self):
+        self.ref = _empty_description()
+
     def test_empty(self):
         data = """\
 Library:
 """
 
-        ref = {"libraries": {"default": {"name": "default"}}}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["libraries"] = {"default": {"name": "default"}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_modules(self):
         data = """\
@@ -119,8 +127,8 @@ Library:
     Modules: foo.py
 """
 
-        ref = {"libraries": {"default": {"name": "default", "py_modules": ["foo.py"]}}}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["libraries"] = {"default": {"name": "default", "py_modules": ["foo.py"]}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_simple_extension(self):
         data = """\
@@ -129,27 +137,27 @@ Library:
         Sources: foo.c
 """
         extension = {"name": "_foo", "sources": ["foo.c"]}
-        ref = {"libraries": {"default": {"name": "default",
-                                         "extensions": {"_foo": extension}}}}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["libraries"] = {"default": {"name": "default",
+                                             "extensions": {"_foo": extension}}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_build_requires(self):
         data = """\
 Library:
     BuildRequires: foo
 """
-        ref = {"libraries": {"default": {"name": "default",
-                                         "build_requires": ["foo"]}}}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["libraries"] = {"default": {"name": "default",
+                                             "build_requires": ["foo"]}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_install_requires(self):
         data = """\
 Library:
     InstallRequires: foo
 """
-        ref = {"libraries": {"default": {"name": "default",
-                                         "install_requires": ["foo"]}}}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["libraries"] = {"default": {"name": "default",
+                                             "install_requires": ["foo"]}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
 class TestPath(unittest.TestCase):
     def test_simple(self):
@@ -159,9 +167,10 @@ Path: manpath
     Default: /usr/share/man
 """
 
-        descr = {"path_options": {"manpath": {"name": "manpath",
-                                              "default": "/usr/share/man",
-                                              "description": "man path"}}}
+        descr = _empty_description()
+        descr["path_options"] = {"manpath": {"name": "manpath",
+                                             "default": "/usr/share/man",
+                                             "description": "man path"}}
         self.assertEqual(parse_and_analyse(data), descr)
 
 class TestDataFiles(unittest.TestCase):
@@ -173,25 +182,32 @@ DataFiles: man1doc
     Files: foo.1
 """
 
-        ref = {"data_files": {"man1doc": {"name": "man1doc",
-                                          "target_dir": "/usr/share/man/man1",
-                                          "source_dir": "doc/man1",
-                                          "files": ["foo.1"]}}}
+        ref = _empty_description()
+        ref["data_files"] = {"man1doc": {"name": "man1doc",
+                                         "target_dir": "/usr/share/man/man1",
+                                         "source_dir": "doc/man1",
+                                         "files": ["foo.1"]}}
         self.assertEqual(parse_and_analyse(data), ref)
 
 class TestFlag(unittest.TestCase):
+    def setUp(self):
+        self.ref = _empty_description()
+
     def test_simple(self):
         data = """\
 Flag: debug
     Description: debug flag
     Default: false
 """
-        ref = {"flag_options": {"debug": {"name": "debug",
-                                          "default": "false",
-                                          "description": "debug flag"}}}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["flag_options"] = {"debug": {"name": "debug",
+                                              "default": "false",
+                                              "description": "debug flag"}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
 class TestConditional(unittest.TestCase):
+    def setUp(self):
+        self.ref = _empty_description()
+
     def test_literal(self):
         data = """\
 Library:
@@ -201,9 +217,9 @@ Library:
         Modules:  fubar.py
 """
 
-        ref = {"libraries": {"default": {"name": "default",
-                                         "py_modules": ["foo.py", "bar.py"]}}}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["libraries"] = {"default": {"name": "default",
+                                             "py_modules": ["foo.py", "bar.py"]}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
         data = """\
 Library:
@@ -212,9 +228,9 @@ Library:
     else:
         Modules:  fubar.py
 """
-        ref["libraries"]["default"]["py_modules"] = ["fubar.py"]
+        self.ref["libraries"]["default"]["py_modules"] = ["fubar.py"]
 
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_os(self):
         data = """\
@@ -225,9 +241,9 @@ Library:
         Modules:  fubar.py
 """ % sys.platform
 
-        ref = {"libraries": {"default": {"name": "default",
-                                         "py_modules": ["foo.py", "bar.py"]}}}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["libraries"] = {"default": {"name": "default",
+                                             "py_modules": ["foo.py", "bar.py"]}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_flag(self):
         data = """\
@@ -241,11 +257,11 @@ Library:
         Modules:  fubar.py
 """
 
-        ref = {"libraries": {"default": {"name": "default",
-                                         "py_modules": ["foo.py", "bar.py"]}},
-               "flag_options": {"debug": {"default": "true",
-                                          "name": "debug"}}}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["libraries"] = {"default": {"name": "default",
+                                             "py_modules": ["foo.py", "bar.py"]}}
+        self.ref["flag_options"] = {"debug": {"default": "true",
+                                              "name": "debug"}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
         data = """\
 Flag: debug
@@ -258,19 +274,22 @@ Library:
         Modules:  fubar.py
 """
 
-        ref["libraries"]["default"]["py_modules"] = ["fubar.py"]
-        ref["flag_options"]["debug"] = {"default": "false", "name": "debug"}
+        self.ref["libraries"]["default"]["py_modules"] = ["fubar.py"]
+        self.ref["flag_options"]["debug"] = {"default": "false", "name": "debug"}
 
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
 class TestExecutable(unittest.TestCase):
+    def setUp(self):
+        self.ref = _empty_description()
+
     def test_modules(self):
         data = """\
 Executable: foo
     Module: foo.bar
     Function: main
 """
-        ref = {"executables": {"foo": {"module": "foo.bar",
-                                       "function": "main",
-                                       "name": "foo"}}}
-        self.assertEqual(parse_and_analyse(data), ref)
+        self.ref["executables"] = {"foo": {"module": "foo.bar",
+                                           "function": "main",
+                                           "name": "foo"}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
