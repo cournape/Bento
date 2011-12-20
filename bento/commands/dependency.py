@@ -14,27 +14,6 @@ from bento.compat.api \
     import \
         defaultdict
 
-class PickledStore(object):
-    """Simple class to store/retrieve data from a pickled file."""
-    @classmethod
-    def from_dump(cls, filename):
-        fid = open(filename, "rb")
-        try:
-            data = load(fid)
-        finally:
-            fid.close()
-
-        inst = cls()
-        inst._data = data
-        return inst
-
-    def store(self, filename):
-        fid = open(filename, "wb")
-        try:
-            dump(self._data, fid)
-        finally:
-            fid.close()
-
 def _invert_dependencies(deps):
     """Given a dictionary of edge -> dependencies representing a DAG, "invert"
     all the dependencies."""
