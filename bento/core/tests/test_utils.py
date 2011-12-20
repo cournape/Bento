@@ -3,11 +3,16 @@ import unittest
 import tempfile
 import shutil
 
-from os.path import \
-    join
+import os.path as op
 
-from bento.core.utils import \
-    validate_glob_pattern, expand_glob, subst_vars, to_camel_case, explode_path
+from bento.compat.api \
+    import \
+        NamedTemporaryFile
+
+from bento.core.utils \
+    import \
+        validate_glob_pattern, expand_glob, subst_vars, to_camel_case, \
+        explode_path, same_content
 
 class TestParseGlob(unittest.TestCase):
     def test_invalid(self):
@@ -19,8 +24,8 @@ class TestParseGlob(unittest.TestCase):
         # Test simple pattern matching
         d = tempfile.mkdtemp("flopflop")
         try:
-            open(join(d, "foo1.py"), "w").close()
-            open(join(d, "foo2.py"), "w").close()
+            open(op.join(d, "foo1.py"), "w").close()
+            open(op.join(d, "foo2.py"), "w").close()
             f = sorted(expand_glob("*.py", d))
             self.assertEqual(f, ["foo1.py", "foo2.py"])
         finally:
@@ -30,11 +35,11 @@ class TestParseGlob(unittest.TestCase):
         # Test another pattern matching, with pattern including directory
         d = tempfile.mkdtemp("flopflop")
         try:
-            os.makedirs(join(d, "common"))
-            open(join(d, "common", "foo1.py"), "w").close()
-            open(join(d, "common", "foo2.py"), "w").close()
-            f = sorted(expand_glob(join("common", "*.py"), d))
-            self.assertEqual(f, [join("common", "foo1.py"), join("common", "foo2.py")])
+            os.makedirs(op.join(d, "common"))
+            open(op.join(d, "common", "foo1.py"), "w").close()
+            open(op.join(d, "common", "foo2.py"), "w").close()
+            f = sorted(expand_glob(op.join("common", "*.py"), d))
+            self.assertEqual(f, [op.join("common", "foo1.py"), op.join("common", "foo2.py")])
         finally:
             shutil.rmtree(d)
 
@@ -80,3 +85,34 @@ class TestExplodePath(unittest.TestCase):
     def test_empty(self):
         path = ""
         self.assertEqual(explode_path(path), [])
+
+class TestSameFile(unittest.TestCase):
+    def test_same(self):
+        f1 = NamedTemporaryFile("wt", delete=False)
+        try:
+            f1.write("fofo")
+            f1.close()
+            f2 = NamedTemporaryFile("wt", delete=False)
+            try:
+                f2.write("fofo")
+                f2.close()
+                self.assertTrue(same_content(f1.name, f2.name))
+            finally:
+                os.remove(f2.name)
+        finally:
+            os.remove(f1.name)
+
+    def test_different(self):
+        f1 = NamedTemporaryFile("wt", delete=False)
+        try:
+            f1.write("fofo")
+            f1.close()
+            f2 = NamedTemporaryFile("wt", delete=False)
+            try:
+                f2.write("fofa")
+                f2.close()
+                self.assertFalse(same_content(f1.name, f2.name))
+            finally:
+                os.remove(f2.name)
+        finally:
+            os.remove(f1.name)
