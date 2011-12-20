@@ -182,7 +182,13 @@ class Dispatcher(object):
     # Library section handlers
     #--------------------------
     def library(self, node):
-        library = {}
+        library = {"py_modules": [],
+                   "install_requires": [],
+                   "build_requires": [],
+                   "packages": [],
+                   "extensions": {},
+                   "compiled_libraries": {},
+                   }
 
         def update(library_dict, c):
             if type(c) == list:
@@ -191,32 +197,17 @@ class Dispatcher(object):
             elif c.type == "name":
                 library_dict["name"] = c.value
             elif c.type == "modules":
-                if "modules" in library_dict:
-                    library_dict["py_modules"].extend(c.value)
-                else:
-                    library_dict["py_modules"] = c.value
+                library_dict["py_modules"].extend(c.value)
             elif c.type == "packages":
-                if "packages" in library_dict:
-                    library_dict["packages"].extend(c.value)
-                else:
-                    library_dict["packages"] = c.value
+                library_dict["packages"].extend(c.value)
             elif c.type in ("build_requires", "install_requires"):
-                if c.type in library_dict:
-                    library_dict[c.type].extend(c.value)
-                else:
-                    library_dict[c.type] = c.value
+                library_dict[c.type].extend(c.value)
             elif c.type == "extension":
                 name = c.value["name"]
-                if "extensions" in library_dict:
-                    library_dict["extensions"][name] = c.value
-                else:
-                    library_dict["extensions"] = {name: c.value}
+                library_dict["extensions"][name] = c.value
             elif c.type == "compiled_library":
                 name = c.value["name"]
-                if "compiled_libraries" in library_dict:
-                    library_dict["compiled_libraries"][name] = c.value
-                else:
-                    library_dict["compiled_libraries"] = {name: c.value}
+                library_dict["compiled_libraries"][name] = c.value
             else:
                 raise ValueError("Unhandled node type: %s" % c)
 

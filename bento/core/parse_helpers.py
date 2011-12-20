@@ -44,6 +44,13 @@ def extract_top_dicts_subento(d):
         libraries = d.pop("libraries")
     else:
         libraries = {}
+    # FIXME: bento vs subento visitor. Those should not be defined in the first
+    # place for subento.
+    for library in libraries.values():
+        for k in ["install_requires"]:
+            v = library.pop(k)
+            if len(v) > 0:
+                raise ValueError("Invalid non empty entry %s" % k)
     for k in misc.keys():
         if k in d:
             misc[k] = d.pop(k)

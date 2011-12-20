@@ -112,13 +112,14 @@ lines.\
 class TestLibrary(unittest.TestCase):
     def setUp(self):
         self.ref = _empty_description()
+        self.ref["libraries"]["default"] = _empty_library()
 
     def test_empty(self):
         data = """\
 Library:
 """
 
-        self.ref["libraries"] = {"default": {"name": "default"}}
+        #self.ref["libraries"] = {"default": {"name": "default"}}
         self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_modules(self):
@@ -127,7 +128,7 @@ Library:
     Modules: foo.py
 """
 
-        self.ref["libraries"] = {"default": {"name": "default", "py_modules": ["foo.py"]}}
+        self.ref["libraries"]["default"].update({"py_modules": ["foo.py"]})
         self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_simple_extension(self):
@@ -137,8 +138,7 @@ Library:
         Sources: foo.c
 """
         extension = {"name": "_foo", "sources": ["foo.c"]}
-        self.ref["libraries"] = {"default": {"name": "default",
-                                             "extensions": {"_foo": extension}}}
+        self.ref["libraries"]["default"].update({"extensions": {"_foo": extension}})
         self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_build_requires(self):
@@ -146,8 +146,7 @@ Library:
 Library:
     BuildRequires: foo
 """
-        self.ref["libraries"] = {"default": {"name": "default",
-                                             "build_requires": ["foo"]}}
+        self.ref["libraries"]["default"].update({"build_requires": ["foo"]})
         self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_install_requires(self):
@@ -155,8 +154,7 @@ Library:
 Library:
     InstallRequires: foo
 """
-        self.ref["libraries"] = {"default": {"name": "default",
-                                             "install_requires": ["foo"]}}
+        self.ref["libraries"]["default"].update({"install_requires": ["foo"]})
         self.assertEqual(parse_and_analyse(data), self.ref)
 
 class TestPath(unittest.TestCase):
@@ -207,6 +205,7 @@ Flag: debug
 class TestConditional(unittest.TestCase):
     def setUp(self):
         self.ref = _empty_description()
+        self.ref["libraries"]["default"] = _empty_library()
 
     def test_literal(self):
         data = """\
@@ -217,8 +216,7 @@ Library:
         Modules:  fubar.py
 """
 
-        self.ref["libraries"] = {"default": {"name": "default",
-                                             "py_modules": ["foo.py", "bar.py"]}}
+        self.ref["libraries"]["default"].update({"py_modules": ["foo.py", "bar.py"]})
         self.assertEqual(parse_and_analyse(data), self.ref)
 
         data = """\
@@ -241,8 +239,7 @@ Library:
         Modules:  fubar.py
 """ % sys.platform
 
-        self.ref["libraries"] = {"default": {"name": "default",
-                                             "py_modules": ["foo.py", "bar.py"]}}
+        self.ref["libraries"]["default"].update({"py_modules": ["foo.py", "bar.py"]})
         self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_flag(self):
@@ -257,8 +254,7 @@ Library:
         Modules:  fubar.py
 """
 
-        self.ref["libraries"] = {"default": {"name": "default",
-                                             "py_modules": ["foo.py", "bar.py"]}}
+        self.ref["libraries"]["default"].update({"py_modules": ["foo.py", "bar.py"]})
         self.ref["flag_options"] = {"debug": {"default": "true",
                                               "name": "debug"}}
         self.assertEqual(parse_and_analyse(data), self.ref)
