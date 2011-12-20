@@ -50,7 +50,6 @@ class CommandScheduler(object):
         return self.set_before(command_name_next, command_name)
 
     def order(self, target):
-        # XXX: cycle detection missing !
         after = _invert_dependencies(self.before)
 
         visited = {}
