@@ -21,7 +21,7 @@ from bento.commands.core \
         Command
 from bento.core.utils \
     import \
-        pprint, test_program_run
+        pprint, cmd_is_runnable
 from bento.compat.api \
     import \
         rename, TarFile
@@ -50,17 +50,17 @@ class TestCommand(Command):
             # XXX: would be good to understand why shell=True is necessary here
             cmd = [sys.executable, "-c", "'import nose; nose.core.main()'"]
             shell = True
-            if not test_program_run(" ".join(cmd) + " -h", shell=shell):
+            if not cmd_is_runnable(" ".join(cmd) + " -h", shell=shell):
                 raise CommandExecutionFailure(
                         "nose not available for program %r - needed to test bento !" % cmd[0])
             cmd = " ".join(cmd)
         else:
             cmd = [sys.executable]
-            if not test_program_run(cmd + ["-h"]):
+            if not cmd_is_runnable(cmd + ["-h"]):
                 raise CommandExecutionFailure(
                         "program %r not found - needed to test bento !" % cmd[0])
             cmd.extend(["-m", "nose.core"])
-            if not test_program_run(cmd + ["-h"]):
+            if not cmd_is_runnable(cmd + ["-h"]):
                 raise CommandExecutionFailure(
                         "nose not available for program %r - needed to test bento !" % cmd[0])
             cmd.extend(["-s", "-v", "bento"])

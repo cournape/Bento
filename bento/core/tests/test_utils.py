@@ -12,7 +12,7 @@ from bento.compat.api \
 from bento.core.utils \
     import \
         validate_glob_pattern, expand_glob, subst_vars, to_camel_case, \
-        explode_path, same_content
+        explode_path, same_content, cmd_is_runnable
 
 class TestParseGlob(unittest.TestCase):
     def test_invalid(self):
@@ -116,3 +116,12 @@ class TestSameFile(unittest.TestCase):
                 os.remove(f2.name)
         finally:
             os.remove(f1.name)
+
+class TestMisc(unittest.TestCase):
+    def test_cmd_is_runnable(self):
+        st = cmd_is_runnable(["python", "-c", "''"])
+        self.assertTrue(st)
+
+    def test_cmd_is_not_runnable(self):
+        st = cmd_is_runnable(["phython", "-c", "''"])
+        self.assertFalse(st)

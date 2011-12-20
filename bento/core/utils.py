@@ -341,7 +341,7 @@ def fix_kw(kw):
     the python version and encoding of kw's keys."""
     return dict([(str(k), v) for k, v in kw.items()])
 
-def test_program_run(cmd, **kw):
+def cmd_is_runnable(cmd, **kw):
     """Test whether the given command can work.
 
     Notes
