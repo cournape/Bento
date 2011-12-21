@@ -343,8 +343,9 @@ def _main(global_context, popts, run_node, top_node, build_node):
         return 0
 
     if popts["show_usage"]:
+        ctx_klass = global_context.retrieve_context("help")
         cmd = global_context.retrieve_command('help')
-        cmd.run(CmdContext(global_context, [], OPTIONS_REGISTRY.retrieve('help'), None, None))
+        cmd.run(ctx_klass(global_context, [], OPTIONS_REGISTRY.retrieve('help'), None, None))
         return 0
 
     cmd_name = popts["cmd_name"]
