@@ -65,11 +65,14 @@ def prepare_options(cmd_name, cmd, context_klass):
         register_options(g_context)
     return opts
 
-def prepare_build(run_node, pkg, context_klass=BuildYakuContext):
+def prepare_build(run_node, pkg, package_options, context_klass=BuildYakuContext, args=None):
+    if args is None:
+        args = []
     build = BuildCommand()
     opts = prepare_options("build", build, context_klass)
 
-    bld = context_klass(None, [], opts, pkg, run_node)
+    bld = context_klass(None, args, opts, pkg, run_node)
+    bld.package_options = package_options
     return bld, build
 
 # Super ugly stuff to make waf and nose happy: nose happily override

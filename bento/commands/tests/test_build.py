@@ -114,14 +114,15 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         if self.d:
             shutil.rmtree(self.d)
 
-    def _prepare(self, bentos, bscripts=None):
-        conf, configure, bld, build = self._create_contexts(bentos, bscripts)
+    def _prepare(self, bentos, bscripts=None, configure_args=None, build_args=None):
+        conf, configure, bld, build = self._create_contexts(bentos, bscripts,
+                configure_args, build_args)
 
         build.run(bld)
         build.shutdown(bld)
         return conf, configure, bld, build
 
-    def _create_contexts(self, bentos, bscripts=None):
+    def _create_contexts(self, bentos, bscripts=None, configure_args=None, build_args=None):
         top_node = self.top_node
 
         create_fake_package_from_bento_infos(top_node, bentos, bscripts)
@@ -130,7 +131,8 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         configure.run(conf)
         conf.shutdown()
 
-        bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
+        bld, build = prepare_build(top_node, conf.pkg,
+                conf.package_options, self._build_context, build_args)
         return conf, configure, bld, build
 
     def _resolve_isection(self, node, isection):
@@ -215,6 +217,15 @@ Library:
             isection = self._resolve_isection(bld.run_node, sections[library.name])
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
+    def test_simple_inplace(self):
+        conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_EXT}, build_args=["-i"])
+        sections = bld.section_writer.sections["extensions"]
+        source_dir = bld.top_node.abspath()
+        for section in sections.values():
+            isection = self._resolve_isection(bld.run_node, section)
+            for f in isection.files[0]:
+                self.assertTrue(op.exists(op.join(source_dir, f)))
+
 class TestBuildDistutils(_TestBuildSimpleExtension):
     def setUp(self):
         from bento.commands.build_distutils import DistutilsBuilder
@@ -264,8 +275,9 @@ class TestBuildWaf(_TestBuildSimpleExtension):
     #        if isinstance(a, types.MethodType) and _NOSE_CONFIG.testMatch.match(m):
     #            setattr(self, m, skip_no_waf(a))
 
-    def _create_contexts(self, bentos, bscripts=None):
-        conf, configure, bld, build = super(TestBuildWaf, self)._create_contexts(bentos, bscripts)
+    def _create_contexts(self, bentos, bscripts=None, configure_args=None, build_args=None):
+        conf, configure, bld, build = super(TestBuildWaf, self)._create_contexts(
+                bentos, bscripts, configure_args, build_args)
         from bento.commands.extras.waf import make_stream_logger
         bld.waf_context.logger = make_stream_logger("build", cStringIO())
 
@@ -294,6 +306,10 @@ class TestBuildWaf(_TestBuildSimpleExtension):
     @skip_no_waf
     def test_disable_nonexisting_extension(self):
         super(TestBuildWaf, self).test_disable_extension()
+
+    @skip_no_waf
+    def test_simple_inplace(self):
+        super(TestBuildWaf, self).test_simple_inplace()
 
     def setUp(self):
         self._fake_output = None
