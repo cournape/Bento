@@ -80,7 +80,7 @@ class install(Command):
         if is_prefix_customized:
             prefix = self.prefix
             exec_prefix = self.exec_prefix
-	else:
+        else:
             prefix = sys.prefix
             exec_prefix = sys.exec_prefix
         scheme['prefix'] = prefix
