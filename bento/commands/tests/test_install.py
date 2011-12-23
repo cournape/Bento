@@ -53,7 +53,7 @@ class TestBuildCommand(unittest.TestCase):
         configure.run(conf)
         conf.shutdown()
 
-        bld, build = prepare_build(top_node, conf.pkg)
+        bld, build = prepare_build(top_node, conf.pkg, conf.package_options)
         build.run(bld)
         build.shutdown(bld)
 
