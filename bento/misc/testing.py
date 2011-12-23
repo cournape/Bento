@@ -33,7 +33,7 @@ def _execute_test(module_name, class_name, function_name):
 
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             stdin=subprocess.PIPE, env={"SUBTESTPIPE": "1"})
-    out, err = p.communicate(code)
+    out, err = p.communicate(code.encode())
     return out, err, p.returncode
 
 class SubprocessTestCase(unittest.TestCase):
@@ -52,6 +52,8 @@ class SubprocessTestCase(unittest.TestCase):
             result.startTest(self)
             try:
                 out, err, st = _execute_test(module_name, class_name, function_name)
+                out = out.decode()
+                err = err.decode()
                 sys.stdout.write(out)
                 if st == 0:
                     result.addSuccess(self)
