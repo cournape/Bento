@@ -9,6 +9,9 @@ from bento.core \
 from bento.core.node \
     import \
         create_root_with_source_tree
+from bento.core.node_package \
+    import \
+        NodeRepresentation
 from bento.commands.hooks \
     import \
         create_hook_module, find_pre_hooks
@@ -44,7 +47,48 @@ class TestRecurseBase(unittest.TestCase):
         os.chdir(self.old_dir)
         shutil.rmtree(self.d)
 
-    def test_simple(self):
+    def _create_package_and_reference(self, bento_info, r_bento_info):
+        pkg = PackageDescription.from_string(bento_info)
+        node_pkg = NodeRepresentation(self.run_node, self.top_node)
+        node_pkg.update_package(pkg)
+
+        r_pkg = PackageDescription.from_string(r_bento_info)
+        r_node_pkg = NodeRepresentation(self.run_node, self.top_node)
+        r_node_pkg.update_package(r_pkg)
+
+        return node_pkg, r_node_pkg
+
+    def test_py_packages(self):
+        run_node = self.run_node
+
+        bento_info = """\
+Name: foo
+
+Recurse: bar
+
+Library:
+    Packages: bar
+"""
+        sub_bento_info = """\
+Library:
+    Packages: foo
+"""
+
+        r_bento_info = """\
+Name: foo
+
+Library:
+    Packages: bar, bar.foo
+"""
+
+        bentos = {"bento.info": bento_info,
+                  "bar/bento.info": sub_bento_info}
+        create_fake_package_from_bento_infos(run_node, bentos)
+
+        node_pkg, r_node_pkg = self._create_package_and_reference(bento_info, r_bento_info)
+        self.assertEqual(node_pkg.iter_category("packages"), r_node_pkg.iter_category("packages"))
+
+    def test_basics(self):
         root = self.root
         top_node = self.top_node
         run_node = self.run_node
