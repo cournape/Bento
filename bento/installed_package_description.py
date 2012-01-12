@@ -51,11 +51,13 @@ class InstalledSection(object):
 
     def __repr__(self):
         ret = """\
-InstalledSection:
-    source dir: %s
-    target dir: %s
-    category: %s\
-""" % (self.source_dir, self.target_dir, self.category)
+InstalledSection(%(category)s,
+    %(name)s,
+    %(source_dir)s,
+    %(target_dir)s,
+    %(files)s)""" % {"name": self.name, "category": self.category,
+            "source_dir": self.source_dir, "target_dir": self.target_dir,
+            "files": self.files}
         return ret
 
 def iter_source_files(file_sections):
