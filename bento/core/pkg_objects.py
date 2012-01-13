@@ -112,10 +112,16 @@ class Compiled(object):
             self.include_dirs = include_dirs
 
     def __str__(self):
-        return "%s(name=%s)" % (self.__class__.__name__, self.name)
+        return "%s(%s, %s, %s)" % (self.__class__.__name__, self.name,
+                                   self.sources, self.include_dirs)
 
-    def __repr__(self):
-        return self.__str__()
+    def __eq__(self, other):
+        return self.name == other.name \
+                and self.sources == other.sources \
+                and self.include_dirs == other.include_dirs
+
+    #def __repr__(self):
+    #    return self.__str__()
 
 class Extension(Compiled):
     pass

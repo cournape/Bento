@@ -32,6 +32,16 @@ from bento.commands.tests.utils \
     import \
         prepare_configure
 
+def comparable_representation(top_node, node_pkg):
+    """Return a dictionary representing the node_pkg to be used for
+    comparison."""
+    d = {"packages": {}, "extensions": {}}
+    for k, v in node_pkg.iter_category("extensions"):
+        d["extensions"][k] = v.extension_from(top_node)
+    for k, v in node_pkg.iter_category("packages"):
+        d["packages"][k] = v
+    return d
+
 class TestRecurseBase(unittest.TestCase):
     def setUp(self):
         self.old_dir = os.getcwd()
@@ -89,8 +99,6 @@ Library:
         self.assertEqual(node_pkg.iter_category("packages"), r_node_pkg.iter_category("packages"))
 
     def test_basics(self):
-        root = self.root
-        top_node = self.top_node
         run_node = self.run_node
 
         bento_info = """\
@@ -104,30 +112,32 @@ Recurse:
     foo
 
 Library:
-    Modules: fubar
     Extension: _foo
         Sources: foo.c
 """
 
         bento_info3 = """\
 Library:
-    Modules: foufoufou
     Packages: sub2
 """
         bentos = {"bento.info": bento_info, os.path.join("bar", "bento.info"): bento_info2,
                   os.path.join("bar", "foo", "bento.info"): bento_info3}
         create_fake_package_from_bento_infos(run_node, bentos)
 
-        conf, configure = prepare_configure(run_node, bento_info, ConfigureYakuContext)
-        configure.run(conf)
-        conf.shutdown()
+        r_bento_info = """\
+Name: foo
 
-        build = BuildCommand()
-        opts = OptionsContext.from_command(build)
+Library:
+    Packages:
+        bar.foo.sub2
+    Extension: bar._foo
+        Sources: bar/foo.c
+"""
 
-        cmd_argv = []
-        bld = BuildYakuContext(None, cmd_argv, opts, conf.pkg, run_node)
-        build.run(bld)
+        node_pkg, r_node_pkg = self._create_package_and_reference(bento_info, r_bento_info)
+
+        self.assertEqual(comparable_representation(self.top_node, node_pkg),
+                         comparable_representation(self.top_node, r_node_pkg))
 
     def test_hook(self):
         root = self.root
