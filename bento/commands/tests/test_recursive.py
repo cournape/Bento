@@ -111,6 +111,8 @@ Recurse:
 Library:
     Extension: _foo
         Sources: foo.c
+    CompiledLibrary: _bar
+        Sources: foo.c
 """
 
         bento_info3 = """\
@@ -128,6 +130,8 @@ Library:
     Packages:
         bar.foo.sub2
     Extension: bar._foo
+        Sources: bar/foo.c
+    CompiledLibrary: bar._bar
         Sources: bar/foo.c
 """
 
