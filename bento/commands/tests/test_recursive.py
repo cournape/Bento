@@ -15,15 +15,9 @@ from bento.core.node_package \
 from bento.commands.hooks \
     import \
         create_hook_module, find_pre_hooks
-from bento.commands.options \
-    import \
-        OptionsContext
 from bento.commands.context \
     import \
-        ConfigureYakuContext, BuildYakuContext
-from bento.commands.build \
-    import \
-        BuildCommand
+        ConfigureYakuContext
 
 from bento.core.testing \
     import \
