@@ -1,3 +1,6 @@
+from bento.core.errors \
+    import \
+        InvalidPackage
 from bento.core.meta \
     import \
         _METADATA_FIELDS
@@ -47,10 +50,10 @@ def extract_top_dicts_subento(d):
     # FIXME: bento vs subento visitor. Those should not be defined in the first
     # place for subento.
     for library in libraries.values():
-        for k in ["install_requires"]:
+        for k, field_name in [("install_requires", "InstallRequires"), ("py_modules", "Modules")]:
             v = library.pop(k)
             if len(v) > 0:
-                raise ValueError("Invalid non empty entry %s" % k)
+                raise InvalidPackage("Invalid entry %r in recursed bento file(s)" % field_name)
     for k in misc.keys():
         if k in d:
             misc[k] = d.pop(k)

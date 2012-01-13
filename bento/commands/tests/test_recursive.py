@@ -6,6 +6,9 @@ import tempfile
 from bento.core \
     import \
         PackageDescription, PackageOptions
+from bento.core.errors \
+    import \
+        InvalidPackage
 from bento.core.node \
     import \
         create_root_with_source_tree
@@ -133,6 +136,23 @@ Library:
         self.assertEqual(comparable_representation(self.top_node, node_pkg),
                          comparable_representation(self.top_node, r_node_pkg))
 
+    def test_py_module_invalid(self):
+        """Ensure we get a package error when defining py modules in recursed
+        bento.info."""
+        bento_info = """\
+Name: foo
+
+Recurse: bar
+"""
+        sub_bento_info = """\
+Library:
+    Modules: foo
+"""
+        bentos = {"bento.info": bento_info,
+                  os.path.join("bar", "bento.info"): sub_bento_info}
+        self.assertRaises(InvalidPackage,
+                          lambda: create_fake_package_from_bento_infos(self.run_node, bentos))
+
     def test_hook(self):
         root = self.root
         top_node = self.top_node
@@ -148,15 +168,15 @@ Recurse:
 """
         bento_info2 = """\
 Library:
-    Modules: fubar
+    Packages: fubar
 """
 
         bscript = """\
 from bento.commands import hooks
 @hooks.pre_configure
 def configure(ctx):
-    py_modules = ctx.local_pkg.py_modules
-    ctx.local_node.make_node("test").write(str(py_modules))
+    packages = ctx.local_pkg.packages
+    ctx.local_node.make_node("test").write(str(packages))
 """
         bentos = {"bento.info": bento_info, os.path.join("bar", "bento.info"): bento_info2}
         bscripts = {os.path.join("bar", "bscript"): bscript}
