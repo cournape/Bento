@@ -147,7 +147,7 @@ def main(argv=None):
 
     opts, args = parser.parse_args(argv)
     if opts.include_exe is not None:
-        config["include_exe"] = not opts.include_exe
+        config["include_exe"] = opts.include_exe
 
     create_script(config)
 
