@@ -95,6 +95,42 @@ Library:
         node_pkg, r_node_pkg = self._create_package_and_reference(bento_info, r_bento_info)
         self.assertEqual(node_pkg.iter_category("packages"), r_node_pkg.iter_category("packages"))
 
+    def test_extension(self):
+        run_node = self.run_node
+
+        bento_info = """\
+Name: foo
+
+Recurse: bar
+
+Library:
+    Extension: foo
+        Sources: src/foo.c
+"""
+        sub_bento_info = """\
+Library:
+    Extension: foo
+        Sources: src/foo.c
+"""
+
+        r_bento_info = """\
+Name: foo
+
+Library:
+    Extension: foo
+        Sources: src/foo.c
+    Extension: bar.foo
+        Sources: bar/src/foo.c
+"""
+
+        bentos = {"bento.info": bento_info,
+                  "bar/bento.info": sub_bento_info}
+        create_fake_package_from_bento_infos(run_node, bentos)
+
+        node_pkg, r_node_pkg = self._create_package_and_reference(bento_info, r_bento_info)
+        self.assertEqual(comparable_representation(self.top_node, node_pkg),
+                         comparable_representation(self.top_node, r_node_pkg))
+
     def test_basics(self):
         run_node = self.run_node
 
