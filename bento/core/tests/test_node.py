@@ -4,14 +4,7 @@ import unittest
 
 from bento.core.node \
     import \
-        Node, NodeWithBuild, create_root_with_source_tree
-
-def get_root():
-    # FIXME: not exactly...
-    if sys.platform == "win32":
-        return ""
-    else:
-        return "/"
+        Node, create_root_with_source_tree, find_root
 
 class TestNode(unittest.TestCase):
     def setUp(self):
@@ -24,7 +17,7 @@ class TestNode(unittest.TestCase):
 
     def test_scratch_creation(self):
         root = Node("", None)
-        self.assertEqual(root.abspath(), get_root())
+        self.assertEqual(root, root)
 
     def test_find_node(self):
         r_n = os.path.abspath(os.getcwd())
@@ -50,7 +43,7 @@ class TestNodeWithBuild(unittest.TestCase):
         self.root = create_root_with_source_tree(top, build)
 
     def test_root(self):
-        self.assertEqual(self.root.abspath(), get_root())
+        self.assertEqual(self.root, find_root(self.root))
 
     def test_cwd_node(self):
         cur_node = self.root.make_node(os.getcwd())
