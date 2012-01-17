@@ -21,9 +21,6 @@ from os.path import \
 from bento.compat.api \
     import \
         relpath, rename as _rename
-from bento.core.errors \
-    import \
-        InvalidPackage
 
 # Color handling for terminals (taken from waf)
 COLORS_LST = {
@@ -189,34 +186,6 @@ def cpu_count():
     else:
         return 1
         #raise NotImplementedError('cannot determine number of cpus')
-
-def validate_package(pkg_name, base_node):
-    """Given a python package name, check whether it is indeed an existing
-    package.
-
-    Package is looked relatively to base_node."""
-    # XXX: this function is wrong - use the code from setuptools
-    pkg_dir = pkg_name.replace(".", os.path.sep)
-    pkg_node = base_node.find_node(pkg_dir)
-    if pkg_node is None:
-        raise InvalidPackage("directory %s in %s does not exist" % (pkg_dir, base_node.abspath()))
-    init = pkg_node.find_node('__init__.py')
-    if init is None:
-        raise InvalidPackage(
-                "Missing __init__.py in package %s (in directory %s)"
-                % (pkg_name, base_node.abspath()))
-    return pkg_node
-
-def find_package(pkg_name, base_node):
-    """Given a python package name, find all its modules relatively to
-    base_node."""
-    pkg_node = validate_package(pkg_name, base_node)
-    ret = []
-    for f in pkg_node.listdir():
-        if f.endswith(".py"):
-            node = pkg_node.find_node(f)
-            ret.append(node.path_from(base_node))
-    return ret
 
 def ensure_dir(path):
     d = os.path.dirname(path)

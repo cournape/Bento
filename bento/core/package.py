@@ -13,7 +13,7 @@ from bento.core.meta \
         _set_metadata, _METADATA_FIELDS
 from bento.core.utils \
     import \
-        find_package, expand_glob, unnormalize_path
+        unnormalize_path
 from bento.core.parser.api \
     import \
         build_ast_from_raw_dict, raw_parse
