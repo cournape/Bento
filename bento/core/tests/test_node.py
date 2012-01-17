@@ -1,10 +1,12 @@
 import os
 import sys
 import unittest
+import pickle
 
 from bento.core.node \
     import \
-        Node, create_root_with_source_tree, find_root
+        Node, create_root_with_source_tree, find_root, split_path_win32, split_path_cygwin
+
 
 class TestNode(unittest.TestCase):
     def setUp(self):
@@ -35,6 +37,16 @@ class TestNode(unittest.TestCase):
             self.assertTrue(n)
             assert n.abspath() == r_n, "%s vs %s" % (n.abspath(), r_n)
 
+    def test_serialization(self):
+        """Test pickled/unpickle round trip."""
+        n = self.root.find_node(os.getcwd())
+        r_n = pickle.loads(pickle.dumps(n))
+        self.assertEqual(n.name, r_n.name)
+        self.assertEqual(n.abspath(), r_n.abspath())
+        self.assertEqual(n.parent.abspath(), r_n.parent.abspath())
+        self.assertEqual([child.abspath() for child in getattr(n, "children", [])],
+                         [child.abspath() for child in getattr(n, "children", [])])
+
 class TestNodeWithBuild(unittest.TestCase):
     def setUp(self):
         top = os.getcwd()
@@ -48,3 +60,14 @@ class TestNodeWithBuild(unittest.TestCase):
     def test_cwd_node(self):
         cur_node = self.root.make_node(os.getcwd())
         self.assertEqual(os.getcwd(), cur_node.abspath())
+
+class TestUtils(unittest.TestCase):
+    def test_split_path_win32(self):
+        self.assertEqual(split_path_win32(r"C:\foo\bar"), ["C:", "foo", "bar"])
+        self.assertEqual(split_path_win32(r"\\"), ["\\"])
+        self.assertEqual(split_path_win32(""), [''])
+
+    def test_split_path_cygwin(self):
+        self.assertEqual(split_path_cygwin("/foo/bar"), ["", "foo", "bar"])
+        self.assertEqual(split_path_cygwin("//"), ["/"])
+        self.assertEqual(split_path_cygwin(""), [''])

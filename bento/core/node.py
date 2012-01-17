@@ -147,18 +147,6 @@ class Node(object):
         "change file/dir permissions"
         os.chmod(self.abspath(), val)
 
-    def delete(self):
-        "delete the file physically, do not destroy the nodes"
-        try:
-            shutil.rmtree(self.abspath())
-        except:
-            pass
-
-        try:
-            delattr(self, 'children')
-        except:
-            pass
-
     def suffix(self):
         "scons-like - hot zone so do not touch"
         k = max(0, self.name.rfind('.'))
