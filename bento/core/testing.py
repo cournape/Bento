@@ -177,15 +177,15 @@ def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
 
     py_modules = _kw.get("py_modules", [])
     if "extensions" in _kw:
-        extensions = _kw["extensions"].values()
+        extensions = list(_kw["extensions"].values())
     else:
         extensions = []
     if "compiled_libraries" in _kw:
-        compiled_libraries = _kw["compiled_libraries"].values()
+        compiled_libraries = list(_kw["compiled_libraries"].values())
     else:
         compiled_libraries = []
     if "extra_source_files" in _kw:
-        extra_source_files = _kw["extra_source_files"]
+        extra_source_files = list(_kw["extra_source_files"])
     else:
         extra_source_files = []
 
