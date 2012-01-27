@@ -154,7 +154,7 @@ def create_fake_package_from_bento_info(top_node, bento_info):
     if "packages" in _kw:
         kw["packages"] = _kw["packages"]
     if "compiled_libraries" in _kw:
-        kw["compiled_libraries"] = _kw["compiled_libraries"]
+        kw["compiled_libraries"] = _kw["compiled_libraries"].values()
     if "extra_source_files" in _kw:
         kw["extra_source_files"] = _kw["extra_source_files"]
     return create_fake_package(top_node, **kw)
