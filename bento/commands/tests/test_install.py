@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import unittest
+import os.path as op
 
 from bento.core.node \
     import \
@@ -15,7 +16,7 @@ from bento.commands.tests.utils \
         prepare_configure, prepare_build
 from bento.commands.install \
     import \
-        InstallCommand
+        InstallCommand, TransactionLog
 from bento.commands.options \
     import \
         OptionsContext
@@ -114,3 +115,46 @@ Library:
         Sources: src/foo.c
 """
         self._test_dry_run(bento_info)
+
+def write_simple_tree(base_dir):
+    """Write some files and subdirectories in base_dir."""
+    files = []
+    cur_dir = base_dir
+    for i in range(25):
+        if i % 3 == 0:
+            cur_dir = op.join(cur_dir, "dir%d" % i)
+            os.makedirs(cur_dir)
+        filename = op.join(cur_dir, "foo%s.txt" % i)
+        fid = open(filename, "wt")
+        try:
+            fid.write("file %d" % i)
+        finally:
+            fid.close()
+        files.append(filename)
+    return files
+
+class TestTransactionLog(unittest.TestCase):
+    def setUp(self):
+        self.base_dir = tempfile.mkdtemp()
+        self.files = write_simple_tree(self.base_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.base_dir)
+
+    def test_simple(self):
+        """Test a simple, uninterrupted run."""
+        target_prefix = op.join(self.base_dir, "foo")
+
+        trans_file = op.join(self.base_dir, "trans.log")
+        targets = []
+        log = TransactionLog(trans_file)
+        try:
+            for source in self.files:
+                target = op.join(target_prefix, op.basename(source))
+                targets.append(target)
+                log.copy(source, target, None)
+        finally:
+            log.close()
+
+        for target in targets:
+            self.assertTrue(op.exists(target))
