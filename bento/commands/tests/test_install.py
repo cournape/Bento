@@ -1,5 +1,4 @@
 import os
-import sys
 import shutil
 import tempfile
 import unittest
@@ -10,19 +9,16 @@ from bento.core.node \
 
 from bento.commands.context \
     import \
-        BuildContext, BuildYakuContext, ConfigureYakuContext, CmdContext
+        ConfigureYakuContext, CmdContext
 from bento.commands.tests.utils \
     import \
         prepare_configure, prepare_build
-from bento.commands.build \
-    import \
-        BuildCommand
 from bento.commands.install \
     import \
         InstallCommand
 from bento.commands.options \
     import \
-        OptionsContext, Option
+        OptionsContext
 
 from bento.core.testing \
     import \
