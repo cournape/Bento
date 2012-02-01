@@ -1,11 +1,12 @@
 import os
 import sys
 import string
-import shutil
+
+import os.path as op
 
 from bento.core.errors \
     import \
-        InvalidPackage, BuildError
+        InvalidPackage
 from bento.core.utils \
     import \
         is_string, subst_vars
@@ -107,14 +108,6 @@ class CmdContext(object):
             else:
                 self._configured_state = _ConfigureState.from_dump(dump_node)
         return self._configured_state
-
-    def get_package(self):
-        state = self._get_configured_state()
-        return state.pkg
-
-    def get_user_data(self):
-        state = self._get_configured_state()
-        return state.user_data
 
     def get_paths_scheme(self):
         state = self._get_configured_state()
