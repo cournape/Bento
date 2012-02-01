@@ -41,13 +41,12 @@ class TestBuildCommand(unittest.TestCase):
         os.chdir(self.old_dir)
         shutil.rmtree(self.d)
 
-    def _test_run(self, bento_info):
+    def _run_configure_and_build(self, bento_info, install_prefix):
         top_node = self.top_node
 
         create_fake_package_from_bento_info(top_node, bento_info)
 
-        install_dir = tempfile.mkdtemp()
-        cmd_argv = ["--prefix=%s" % install_dir, "--exec-prefix=%s" % install_dir]
+        cmd_argv = ["--prefix=%s" % install_prefix, "--exec-prefix=%s" % install_prefix]
 
         conf, configure = prepare_configure(top_node, bento_info, ConfigureYakuContext, cmd_argv)
         configure.run(conf)
@@ -57,14 +56,33 @@ class TestBuildCommand(unittest.TestCase):
         build.run(bld)
         build.shutdown(bld)
 
-        install = InstallCommand()
-        opts = OptionsContext.from_command(install)
+        return conf, configure, bld, build
 
-        inst = CmdContext(None, ["--list-files"], opts, conf.pkg, top_node)
+    def _test_dry_run(self, bento_info):
+        install_prefix = tempfile.mkdtemp()
         try:
+            conf, configure, bld, build = self._run_configure_and_build(bento_info, install_prefix)
+
+            install = InstallCommand()
+            opts = OptionsContext.from_command(install)
+
+            inst = CmdContext(None, ["--list-files"], opts, conf.pkg, self.top_node)
             install.run(inst)
         finally:
-            shutil.rmtree(install_dir)
+            shutil.rmtree(install_prefix)
+
+    def _test_run(self, bento_info):
+        install_prefix = tempfile.mkdtemp()
+        try:
+            conf, configure, bld, build = self._run_configure_and_build(bento_info, install_prefix)
+
+            install = InstallCommand()
+            opts = OptionsContext.from_command(install)
+
+            inst = CmdContext(None, [], opts, conf.pkg, self.top_node)
+            install.run(inst)
+        finally:
+            shutil.rmtree(install_prefix)
 
     def test_simple(self):
         """Test whether install runs at all for a trivial package."""
@@ -77,7 +95,18 @@ Library:
 """
         self._test_run(bento_info)
 
-    def test_simple_extension(self):
+    def test_simple_list_only(self):
+        """Test whether install runs at all for a trivial package."""
+        bento_info = """\
+Name: foo
+
+Library:
+    Packages: foo, foo.bar
+    Modules: fubar
+"""
+        self._test_dry_run(bento_info)
+
+    def test_simple_extension_list_only(self):
         """Test whether install runs at all for a trivial package."""
         bento_info = """\
 Name: foo
@@ -88,4 +117,4 @@ Library:
     Extension: foo
         Sources: src/foo.c
 """
-        self._test_run(bento_info)
+        self._test_dry_run(bento_info)
