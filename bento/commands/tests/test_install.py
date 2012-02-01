@@ -16,7 +16,7 @@ from bento.commands.tests.utils \
         prepare_configure, prepare_build
 from bento.commands.install \
     import \
-        InstallCommand, TransactionLog
+        InstallCommand, TransactionLog, rollback_transaction
 from bento.commands.options \
     import \
         OptionsContext
@@ -144,8 +144,10 @@ class TestTransactionLog(unittest.TestCase):
     def test_simple(self):
         """Test a simple, uninterrupted run."""
         target_prefix = op.join(self.base_dir, "foo")
-
         trans_file = op.join(self.base_dir, "trans.log")
+        self._test_simple(target_prefix, trans_file)
+
+    def _test_simple(self, target_prefix, trans_file):
         targets = []
         log = TransactionLog(trans_file)
         try:
@@ -158,3 +160,39 @@ class TestTransactionLog(unittest.TestCase):
 
         for target in targets:
             self.assertTrue(op.exists(target))
+
+    def test_rollback_transaction(self):
+        target_prefix = op.join(self.base_dir, "foo")
+        trans_file = op.join(self.base_dir, "trans.log")
+
+        self._test_simple(target_prefix, trans_file)
+
+        rollback_transaction(trans_file)
+        self.assertFalse(op.exists(target_prefix))
+
+    def test_simple_interrupted(self):
+        """Test a simple, interrupted run."""
+        class _InterruptException(Exception):
+            pass
+
+        target_prefix = op.join(self.base_dir, "foo")
+
+        trans_file = op.join(self.base_dir, "trans.log")
+        targets = []
+        log = TransactionLog(trans_file)
+        try:
+            try:
+                for i, source in enumerate(self.files):
+                    if i > len(self.files) / 3:
+                        raise _InterruptException()
+                    target = op.join(target_prefix, op.basename(source))
+                    targets.append(target)
+                    log.copy(source, target, None)
+            except _InterruptException:
+                log.rollback()
+                for target in targets:
+                    self.assertFalse(op.exists(target))
+                return
+            self.fail("Expected failure at this point !")
+        finally:
+            log.close()

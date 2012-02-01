@@ -51,6 +51,7 @@ def rollback_transaction(f):
                 fid.close()
 
 class TransactionLog(object):
+    """Naive version of a journal to rollback interrupted install."""
     def __init__(self, f):
         if os.path.exists(f):
             raise IOError("file %s already exists" % f)
