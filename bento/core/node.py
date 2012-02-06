@@ -610,9 +610,5 @@ def create_root_with_source_tree(source_path, build_path):
 
 def find_root(n):
     while n.parent:
-        p = n.parent
-        if p is None:
-            break
-        else:
-            n = p
+        n = n.parent
     return n
