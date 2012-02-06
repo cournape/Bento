@@ -47,3 +47,18 @@ class TestConfigureCommand(unittest.TestCase):
         configure.run(conf)
         configure.shutdown(conf)
         conf.shutdown()
+
+    def test_flags(self):
+        bento_info = """\
+Name: foo
+
+Flag: floupi
+    Description: some floupi flag
+    Default: true
+"""
+        run_node = self.root.find_node(self.d)
+
+        conf, configure = prepare_configure(run_node, bento_info, ConfigureYakuContext, ["--floupi=false"])
+        configure.run(conf)
+        configure.shutdown(conf)
+        conf.shutdown()
