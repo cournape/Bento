@@ -16,7 +16,7 @@ from bento.compat.api \
 
 from bento.core.testing\
     import \
-        knownfailureif, skip_if
+        expected_failure, skip_if
 from bento.core.node \
     import \
         create_root_with_source_tree
@@ -167,7 +167,7 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
         assert "extensions" not in bld.section_writer.sections
 
-    @knownfailureif(True)
+    @expected_failure
     def test_disable_nonexisting_extension(self):
         conf, configure, bld, build = self._create_contexts({"bento.info": BENTO_INFO_WITH_EXT})
 
