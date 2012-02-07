@@ -1,7 +1,9 @@
-import unittest
 import os
 import tempfile
 
+from bento.compat.api \
+    import \
+        unittest
 from bento import PackageDescription
 from bento.core.package import static_representation
 from bento.core.meta import PackageMetadata

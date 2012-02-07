@@ -2,8 +2,10 @@ import os
 import os.path as op
 import tempfile
 import shutil
-import unittest
 
+from bento.compat.api \
+    import \
+        unittest
 from bento.distutils.dist \
     import \
         BentoDistribution

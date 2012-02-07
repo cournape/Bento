@@ -1,6 +1,8 @@
-import unittest
 import sys
 
+from bento.compat.api \
+    import \
+        unittest
 from bento.core.parser.parser \
     import \
         parse

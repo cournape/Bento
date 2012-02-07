@@ -1,12 +1,11 @@
 import sys
 import os
 import re
-import unittest
 import tempfile
 
 from bento.compat.api \
     import \
-        NamedTemporaryFile
+        NamedTemporaryFile, unittest
 
 # Finicky: to make sure we test our NamedTemporaryFile and not something else...
 tempfile.NamedTemporaryFile = NamedTemporaryFile

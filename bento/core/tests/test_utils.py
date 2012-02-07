@@ -1,5 +1,4 @@
 import os
-import unittest
 import tempfile
 import shutil
 
@@ -7,7 +6,7 @@ import os.path as op
 
 from bento.compat.api \
     import \
-        NamedTemporaryFile
+        NamedTemporaryFile, unittest
 
 from bento.core.utils \
     import \

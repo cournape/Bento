@@ -1,10 +1,12 @@
 import os
 import os.path as op
-import unittest
 import tempfile
 import shutil
 import zipfile
 
+from bento.compat.api \
+    import \
+        unittest
 from bento.core.package \
     import \
         PackageDescription

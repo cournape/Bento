@@ -1,8 +1,11 @@
 import os
 import shutil
 import tempfile
-import unittest
 import os.path as op
+
+from bento.compat.api \
+    import \
+        unittest
 
 from bento.core.node \
     import \

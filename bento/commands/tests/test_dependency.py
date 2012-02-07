@@ -1,4 +1,6 @@
-import unittest
+from bento.compat.api \
+    import \
+        unittest
 
 from bento.commands.dependency \
     import \

@@ -1,7 +1,10 @@
 import os
 import tempfile
-import unittest
 import shutil
+
+from bento.compat.api \
+    import \
+        unittest
 
 from bento.core.package \
     import \

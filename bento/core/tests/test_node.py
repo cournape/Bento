@@ -1,12 +1,13 @@
 import os
 import sys
-import unittest
 import pickle
 
+from bento.compat.api \
+    import \
+        unittest
 from bento.core.node \
     import \
         Node, create_root_with_source_tree, find_root, split_path_win32, split_path_cygwin
-
 
 class TestNode(unittest.TestCase):
     def setUp(self):

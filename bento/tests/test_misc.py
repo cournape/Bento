@@ -1,9 +1,8 @@
 import os
-import unittest
 
 from bento.compat.api \
     import \
-        NamedTemporaryFile
+        NamedTemporaryFile, unittest
 from bento.private.bytecode \
     import \
         bcompile, PyCompileError

@@ -1,7 +1,6 @@
 import os
 import sys
 import shutil
-import unittest
 import tempfile
 import types
 
@@ -11,9 +10,13 @@ from six.moves \
     import \
         cStringIO
 
+from bento.compat.api \
+    import \
+        unittest
+
 from bento.core.testing\
     import \
-        knownfailureif, skipif
+        knownfailureif, skip_if
 from bento.core.node \
     import \
         create_root_with_source_tree
@@ -263,7 +266,7 @@ def _not_has_waf():
         return True
 
 def skip_no_waf(f):
-    return skipif(_not_has_waf, "waf not found")(f)
+    return skip_if(_not_has_waf(), "waf not found")(f)
 
 class TestBuildWaf(_TestBuildSimpleExtension):
     #def __init__(self, *a, **kw):

@@ -1,5 +1,6 @@
-import unittest
-
+from bento.compat.api \
+    import \
+        unittest
 from bento.commands.script_utils \
     import \
         nt_quote_arg

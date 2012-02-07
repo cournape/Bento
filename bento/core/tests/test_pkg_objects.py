@@ -1,6 +1,5 @@
 import os
 import tempfile
-import unittest
 import sys
 
 if sys.version_info[0] < 3:
@@ -8,8 +7,12 @@ if sys.version_info[0] < 3:
 else:
     from io import StringIO
 
-from bento.core.pkg_objects import \
-    DataFiles, Executable
+from bento.compat.api \
+    import \
+        unittest
+from bento.core.pkg_objects \
+    import \
+        DataFiles, Executable
 
 class TestDataFiles(unittest.TestCase):
     def test_simple(self):

@@ -1,11 +1,18 @@
 import os
 import sys
 import subprocess
-import unittest
+
+from bento.compat.api \
+    import \
+        unittest
 
 TEMPLATE = """\
 import sys
-import unittest
+
+from bento.compat.api \
+    import \
+        unittest
+
 from %(module_name)s import %(class_name)s
 
 if __name__ == "__main__":

@@ -1,7 +1,9 @@
 import os
 import sys
-import unittest
 
+from bento.compat.api \
+    import \
+        unittest
 from bento.core.parser.nodes \
     import \
         ast_walk

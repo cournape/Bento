@@ -1,6 +1,5 @@
 import os
 import sys
-import unittest
 import tempfile
 import shutil
 
@@ -9,7 +8,9 @@ if sys.version_info[0] < 3:
 else:
     from io import StringIO
 
-from bento.compat.api import json
+from bento.compat.api \
+    import \
+        json, unittest
 
 from bento.core.package \
     import \

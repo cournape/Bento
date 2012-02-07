@@ -1,7 +1,6 @@
 import os
 import tempfile
 import shutil
-import unittest
 import sys
 
 from os.path import \
@@ -12,10 +11,15 @@ if sys.version_info[0] < 3:
 else:
     from io import StringIO
 
-from bento.core.pkg_objects import \
-    PathOption, FlagOption, Executable, DataFiles
-from bento.core.options import \
-    PackageOptions
+from bento.compat.api \
+    import \
+        unittest
+from bento.core.pkg_objects \
+    import \
+        PathOption, FlagOption, Executable, DataFiles
+from bento.core.options \
+    import \
+        PackageOptions
 
 from bento.core.utils \
     import \

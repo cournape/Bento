@@ -1,6 +1,8 @@
-import unittest
 import copy
 
+from bento.compat.api \
+    import \
+        unittest
 from bento.commands.configure \
     import \
         ConfigureCommand

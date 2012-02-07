@@ -1,7 +1,10 @@
 import os
 import shutil
-import unittest
 import tempfile
+
+from bento.compat.api \
+    import \
+        unittest
 
 import bento.core.node as node
 import bento.core.pkg_objects as pkg_objects

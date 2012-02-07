@@ -5,10 +5,10 @@ import nose
 from nose.plugins.errorclass \
     import \
         ErrorClass, ErrorClassPlugin
-from nose.plugins.skip \
-    import \
-        SkipTest
 
+from bento.compat.api \
+    import \
+        unittest
 from bento.core.package \
     import \
         raw_parse, raw_to_pkg_kw
@@ -45,21 +45,8 @@ class KnownFailure(ErrorClassPlugin):
         if disable:
             self.enabled = False
 
-
-def skipif(condition, msg=None):
-    def skip_decorator(f):
-        if callable(condition):
-            skip_func = condition
-        else:
-            skip_func = lambda : condition()
-
-        if skip_func():
-            def g(*a, **kw):
-                raise SkipTest()
-        else:
-            g = f
-        return nose.tools.make_decorator(f)(g)
-    return skip_decorator
+def skip_if(condition, msg):
+    return unittest.skipIf(condition, msg)
 
 # Code taken from Numpy
 def knownfailureif(fail_condition, msg=None):
