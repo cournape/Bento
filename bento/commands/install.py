@@ -128,20 +128,15 @@ Usage:   bentomaker install [OPTIONS]."""
     common_options = Command.common_options + \
                         [Option("-t", "--transaction",
                                 help="Do a transaction-based install", action="store_true"),
-                         Option("--list-files",
+                         Option("-n", "--dry-run", "--list-files",
                                 help="List installed files (do not install anything)",
-                                action="store_true"),
-                         Option("--dry-run",
-                                help="Do nothing (do not install anything)",
-                                action="store_true")]
+                                action="store_true", dest="list_files")]
     def run(self, ctx):
         argv = ctx.get_command_arguments()
         p = ctx.options_context.parser
         o, a = p.parse_args(argv)
         if o.help:
             p.print_help()
-            return
-        if o.dry_run:
             return
 
         n = ctx.build_node.make_node(IPKG_PATH)
