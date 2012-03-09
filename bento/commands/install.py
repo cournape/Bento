@@ -52,11 +52,12 @@ def rollback_transaction(f):
 
 class TransactionLog(object):
     """Naive version of a journal to rollback interrupted install."""
-    def __init__(self, f):
-        if os.path.exists(f):
-            raise IOError("file %s already exists" % f)
-        open(f, "w").close()
-        self.f = open(f, "r+w")
+    def __init__(self, journal_filename):
+        if os.path.exists(journal_filename):
+            raise IOError("file %s already exists" % journal_filename)
+        open(journal_filename, "w").close()
+        self.f = open(journal_filename, "w")
+        self.journal_filename = journal_filename
 
     def copy(self, source, target, category):
         if os.path.exists(target):
@@ -91,14 +92,16 @@ class TransactionLog(object):
         os.mkdir(name, mode)
 
     def close(self):
-        self.f.close()
+        if self.f is not None:
+            self.f.close()
 
     def rollback(self):
-        self.f.flush()
-        self.f.seek(0, 0)
+        self.f.close()
+        self.f = open(self.journal_filename, "r")
         lines = self.f.readlines()
         for line in lines[::-1]:
             _rollback_operation(line.strip())
+        self.f = None
 
 def copy_installer(source, target, kind):
     dtarget = os.path.dirname(target)
