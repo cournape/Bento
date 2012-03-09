@@ -7,6 +7,10 @@ from optparse \
     import \
         Option
 
+from bento.conv \
+    import \
+        find_package
+
 from bento.core.utils import \
         pprint, extract_exception
 from bento.core.package import \
