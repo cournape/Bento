@@ -6,6 +6,9 @@ Released on .
 Main features:
 
     - Path sections can now use conditionals
+    - Single-file distribution can now include waf itself
+    - Nose is not necessary to run the test suite anymore
+    - Significant improvements to the distutils compatibility layer
 
 Internals
 ---------
@@ -15,6 +18,7 @@ Internals
     - bento.distutils simplified: it is going toward a "shell" around bento
       with compatibility with pip/easy_install/virtualenv and away from a
       distutils extension
+    - six is now used to handle most 2/3 compatibilities.
 
 Version 0.0.7
 =============
