@@ -5,6 +5,9 @@ import warnings
 from bento.core.pkg_objects \
     import \
         Extension
+from bento.core.node \
+    import \
+        split_path
 
 def translate_name(name, ref_node, from_node):
     if from_node != ref_node:
@@ -21,10 +24,21 @@ class NodeDataFiles(object):
         self.target_dir = target_dir
 
 class NodeExtension(object):
-    def __init__(self, name, nodes, ref_node):
+    def __init__(self, name, nodes, top_node, ref_node, sub_directory_node=None):
         self.name = name
-        self.nodes = nodes
+        self.top_node = top_node
         self.ref_node = ref_node
+        self.nodes = nodes
+
+        if sub_directory_node is None:
+            self.top_or_lib_node = top_node
+        else:
+            self.top_or_lib_node = sub_directory_node
+
+        if not ref_node.is_child_of(self.top_or_lib_node):
+            self.full_name = name
+        else:
+            self.full_name = translate_name(name, ref_node, self.top_or_lib_node)
 
     def extension_from(self, from_node=None):
         if len(self.nodes) < 1:
@@ -38,14 +52,51 @@ class NodeExtension(object):
                 raise ValueError("from_node should be a parent of %s, but is %s" % \
                                  (self.ref_node.abspath(), from_node.abspath()))
             else:
-                name = translate_name(self.name, self.ref_node, from_node)
-                return Extension(name, sources=[n.path_from(from_node) for n in self.nodes])
+                def translate_full_name(full_name):
+                    parent_pkg = from_node.path_from(self.top_node)
+                    if parent_pkg == ".":
+                        parent_components = []
+                    else:
+                        parent_components = split_path(parent_pkg)
+                    full_name_components = self.full_name.split(".")
+                    if not full_name_components[:len(parent_components)] == parent_components:
+                        raise ValueError("Internal bug: unexpected parent/name components: %s %s" % \
+                                         (parent_components, full_name_components))
+                    else:
+                        return ".".join(full_name_components[len(parent_components):])
+                relative_name = translate_full_name(self.full_name)
+                return Extension(relative_name, sources=[n.path_from(from_node) for n in self.nodes])
+
+class NodePythonPackage(object):
+    def __init__(self, name, nodes, top_node, ref_node, sub_directory_node=None):
+        self.nodes = nodes
+        self.top_node = top_node
+        self.ref_node = ref_node
+
+        if sub_directory_node is None:
+            self.top_or_lib_node = top_node
+        else:
+            self.top_or_lib_node = sub_directory_node
+
+        if not ref_node.is_child_of(self.top_or_lib_node):
+            raise IOError()
+
+        self.full_name = translate_name(name, ref_node, self.top_or_lib_node)
 
 class NodeRepresentation(object):
     """Node-based representation of a Package content."""
-    def __init__(self, run_node, top_node):
+    def __init__(self, run_node, top_node, sub_directory_node=None):
         self.top_node = top_node
         self.run_node = run_node
+        self.sub_directory_node = sub_directory_node
+
+        if sub_directory_node is None:
+            self.top_or_sub_directory_node = top_node
+        else:
+            if not sub_directory_node.is_child_of(top_node):
+                raise IOError("sub_directory_node %r is not a subdirectory of %s" % \
+                              (sub_directory_node, top_node))
+            self.top_or_sub_directory_node = sub_directory_node
 
         self._registry = {}
         for category in ("modules", "packages", "extensions",
@@ -55,18 +106,19 @@ class NodeRepresentation(object):
         self._extra_source_nodes = []
         self._aliased_source_nodes = {}
 
-    def to_node_extension(self, extension, ref_node):
+    def to_node_extension(self, extension, source_node, ref_node):
         nodes = []
         for s in extension.sources:
-            _nodes = ref_node.ant_glob(s)
+            _nodes = source_node.ant_glob(s)
             if len(_nodes) < 1:
-                name = translate_name(extension.name, ref_node, self.top_node)
-                raise IOError("Sources glob entry %r for extension %r did not return any result" % (s, name))
+                #name = translate_name(extension.name, ref_node, self.top_or_sub_directory_node)
+                raise IOError("Sources glob entry %r for extension %r did not return any result" \
+                              % (s, extension.name))
             else:
                 nodes.extend(_nodes)
         if extension.include_dirs:
             raise NotImplementedError("include dirs translation not implemented yet")
-        return NodeExtension(extension.name, nodes, ref_node)
+        return NodeExtension(extension.name, nodes, self.top_node, ref_node, self.sub_directory_node)
 
     def _run_in_subpackage(self, pkg, func):
         for name, sub_pkg in pkg.subpackages.items():
@@ -79,25 +131,25 @@ class NodeRepresentation(object):
     def _update_extensions(self, pkg):
         for name, extension in pkg.extensions.items():
             ref_node = self.top_node
-            extension = self.to_node_extension(extension, ref_node)
-            full_name = translate_name(name, ref_node, self.top_node)
-            self._registry["extensions"][full_name] = extension
+            extension = self.to_node_extension(extension, self.top_node, ref_node)
+            self._registry["extensions"][extension.full_name] = extension
 
         def _subpackage_extension(sub_package, ref_node):
             for name, extension in sub_package.extensions.items():
-                extension = self.to_node_extension(extension, ref_node)
+                extension = self.to_node_extension(extension, ref_node, ref_node)
                 full_name = translate_name(name, ref_node, self.top_node)
                 self._registry["extensions"][full_name] = extension
         self._run_in_subpackage(pkg, _subpackage_extension)
 
     def _update_libraries(self, pkg):
         for name, compiled_library in pkg.compiled_libraries.items():
-            compiled_library = self.to_node_extension(compiled_library, self.top_node)
+            ref_node = self.top_node
+            compiled_library = self.to_node_extension(compiled_library, self.top_node, ref_node)
             self._registry["compiled_libraries"][name] = compiled_library
 
         def _subpackage_compiled_libraries(sub_package, ref_node):
             for name, compiled_library in sub_package.compiled_libraries.items():
-                compiled_library = self.to_node_extension(compiled_library, ref_node)
+                compiled_library = self.to_node_extension(compiled_library, ref_node, ref_node)
                 name = translate_name(name, ref_node, self.top_node)
                 self._registry["compiled_libraries"][name] = compiled_library
         self._run_in_subpackage(pkg, _subpackage_compiled_libraries)
@@ -107,19 +159,21 @@ class NodeRepresentation(object):
             init = os.path.join(*(package_name.split(".") + ["__init__.py"]))
             n = ref_node.find_node(init)
             if n is None:
-                raise IOError("init file for package %s not found !" % package_name)
+                raise IOError("init file for package %s not found (looked for %r)!" \
+                              % (package_name, init))
             else:
                 p = n.parent
-                full_name = translate_name(package_name, ref_node, self.top_node)
-                self._registry["packages"][full_name] = [
-                    p.find_node(f) for f in p.listdir() if f.endswith(".py")]
+                nodes = [p.find_node(f) for f in p.listdir() if f.endswith(".py")]
+                node_package = NodePythonPackage(package_name, nodes, self.top_node,
+                                                 ref_node, self.sub_directory_node)
+                self._registry["packages"][node_package.full_name] = node_package
+
         def _subpackage_resolve_package(sub_package, ref_node):
             for package in sub_package.packages:
                 _resolve_package(package, ref_node)
 
-        src = self.top_node
         for package in pkg.packages:
-            _resolve_package(package, src)
+            _resolve_package(package, self.top_or_sub_directory_node)
         self._run_in_subpackage(pkg, _subpackage_resolve_package)
 
     def _update_data_files(self, pkg):
@@ -136,7 +190,7 @@ class NodeRepresentation(object):
 
     def _update_py_modules(self, pkg):
         for m in pkg.py_modules:
-            n = self.top_node.find_node("%s.py" % m)
+            n = self.top_or_sub_directory_node.find_node("%s.py" % m)
             if n is None:
                 raise IOError("file for module %s not found" % m)
             else:
@@ -182,7 +236,7 @@ class NodeRepresentation(object):
         for m in self._registry["modules"].values():
             yield m
         for package in self._registry["packages"].values():
-            for n in package:
+            for n in package.nodes:
                 yield n
 
         for extension in self._registry["extensions"].values():

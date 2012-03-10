@@ -23,13 +23,16 @@ from bento.commands.hooks \
 from bento.commands.context \
     import \
         ConfigureYakuContext
+from bento.installed_package_description \
+    import \
+        InstalledSection
 
 from bento.core.testing \
     import \
         create_fake_package_from_bento_infos
 from bento.commands.tests.utils \
     import \
-        prepare_configure
+        prepare_configure, prepare_build, comparable_installed_sections
 
 def comparable_representation(top_node, node_pkg):
     """Return a dictionary representing the node_pkg to be used for
@@ -38,7 +41,7 @@ def comparable_representation(top_node, node_pkg):
     for k, v in node_pkg.iter_category("extensions"):
         d["extensions"][k] = v.extension_from(top_node)
     for k, v in node_pkg.iter_category("packages"):
-        d["packages"][k] = v
+        d["packages"][k] = (v.full_name, v.nodes, v.top_node, v.top_or_lib_node)
     return d
 
 class TestRecurseBase(unittest.TestCase):
@@ -95,7 +98,9 @@ Library:
         create_fake_package_from_bento_infos(run_node, bentos)
 
         node_pkg, r_node_pkg = self._create_package_and_reference(bento_info, r_bento_info)
-        self.assertEqual(node_pkg.iter_category("packages"), r_node_pkg.iter_category("packages"))
+        self.assertEqual(comparable_representation(self.top_node, node_pkg),
+                         comparable_representation(self.top_node, r_node_pkg))
+
 
     def test_extension(self):
         run_node = self.run_node
@@ -240,3 +245,91 @@ def configure(ctx):
             self.failUnlessEqual(test.read(), "['fubar']")
         else:
             self.fail("test dummy not found")
+
+class TestInstalledSections(unittest.TestCase):
+    """Test registered installed sections are the expected ones when using
+    recursive support."""
+    def setUp(self):
+        self.old_dir = os.getcwd()
+
+        self.d = tempfile.mkdtemp()
+        self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
+        self.run_node = self.root.find_node(self.d)
+        self.top_node = self.run_node
+
+        os.chdir(self.d)
+
+    def tearDown(self):
+        os.chdir(self.old_dir)
+        shutil.rmtree(self.d)
+
+    def _test_installed_sections(self, bento_infos, r_sections):
+        create_fake_package_from_bento_infos(self.top_node, bento_infos)
+
+        conf, configure = prepare_configure(self.run_node, bento_infos["bento.info"])
+        configure.run(conf)
+        conf.shutdown()
+
+        bld, build = prepare_build(self.top_node, conf.pkg, conf.package_options)
+        build.run(bld)
+        bld.shutdown()
+
+        sections = bld.section_writer.sections
+
+        self.assertEqual(comparable_installed_sections(sections),
+                         comparable_installed_sections(r_sections))
+
+    def test_packages(self):
+        bento_info = """\
+Name: foo
+
+Recurse:
+    foo
+
+Library:
+    Packages: foo
+"""
+        sub_bento_info = """\
+Library:
+    Packages: bar
+"""
+
+        r_bar_section = InstalledSection.from_source_target_directories("pythonfiles",
+                                     "foo",
+                                     "$_srcrootdir/..",
+                                     "$sitedir",
+                                     ["foo/__init__.py"])
+        r_foo_bar_section = InstalledSection.from_source_target_directories("pythonfiles",
+                                     "foo.bar",
+                                     "$_srcrootdir/..",
+                                     "$sitedir",
+                                     ["foo/bar/__init__.py"])
+        r_sections = {"pythonfiles":
+                         {"foo": r_bar_section,
+                          "foo.bar": r_foo_bar_section}}
+        self._test_installed_sections({"bento.info": bento_info, "foo/bento.info": sub_bento_info},
+                                      r_sections)
+
+    def test_extension(self):
+        bento_info = """\
+Name: foo
+
+Recurse: bar
+"""
+
+        sub_bento_info = """\
+Library:
+    Extension: foo
+        Sources: src/foo.c
+"""
+
+        r_section = InstalledSection.from_source_target_directories("extensions",
+                                     "bar.foo",
+                                     "$_srcrootdir/bar",
+                                     "$sitedir/bar",
+                                     ["foo.so"])
+        r_sections = {"extensions":
+                        {"bar.foo":
+                            r_section}}
+        self._test_installed_sections({"bento.info": bento_info, "bar/bento.info": sub_bento_info},
+                                      r_sections)

@@ -79,6 +79,13 @@ class CmdContext(object):
             self.top_node = None
             self.build_node = None
 
+        if self.pkg.sub_directory:
+            self.top_or_sub_directory_node = self.top_node.make_node(self.pkg.sub_directory)
+            self.build_or_sub_directory_node = self.build_node.make_node(self.pkg.sub_directory)
+        else:
+            self.top_or_sub_directory_node = self.top_node
+            self.build_or_sub_directory_node = self.build_node
+
         self._configured_state = None
 
         # Recursive related members
@@ -142,7 +149,8 @@ class CmdContext(object):
             self.local_node = local_node
 
             def _get_sub_package():
-                local_bento = local_node.find_node("bento.info")
+                relative_pos = local_node.path_from(self.top_or_sub_directory_node)
+                local_bento = self.top_node.find_node(op.join(relative_pos, "bento.info"))
                 k = local_bento.path_from(self.run_node)
                 if k is None:
                     raise IOError("%r not found" % os.path.join(local_node.abspath(), "bento.info"))
@@ -316,11 +324,11 @@ class BuildContext(_ContextWithBuildDirectory):
         def data_section_builder(name, section):
             return name, section.nodes, section.ref_node, section.target_dir
 
-        def package_builder(name, nodes):
-            return name, nodes, self.top_node, "$sitedir"
+        def package_builder(name, node_py_package):
+            return name, node_py_package.nodes, self.top_or_sub_directory_node, "$sitedir"
 
         def module_builder(name, node):
-            return name, [node], self.top_node, "$sitedir"
+            return name, [node], self.top_or_sub_directory_node, "$sitedir"
 
         def script_builder(name, executable):
             scripts_node = self.build_node.make_node("scripts-%s" % sys.version[:3])
@@ -336,7 +344,11 @@ class BuildContext(_ContextWithBuildDirectory):
         self.builder_registry.register_category("modules", module_builder)
         self.builder_registry.register_category("scripts", script_builder)
 
-        self._node_pkg = NodeRepresentation(run_node, self.top_node)
+        if self.pkg.sub_directory is not None:
+            sub_directory_node = self.top_node.find_node(self.pkg.sub_directory)
+        else:
+            sub_directory_node = None
+        self._node_pkg = NodeRepresentation(run_node, self.top_node, sub_directory_node)
         self._node_pkg.update_package(pkg)
 
         categories = (("packages", "pythonfiles"), ("modules", "pythonfiles"), ("datafiles", "datafiles"),

@@ -8,7 +8,7 @@ from bento.core.parser.parser \
         parse
 from bento.core.parser.nodes \
     import \
-        ast_walk, Node
+        ast_walk
 from bento.core.parser.visitor \
     import \
         Dispatcher
@@ -27,7 +27,8 @@ def _empty_description():
 
 def _empty_library():
     d = {"name": "default", "py_modules": [], "packages": [], "extensions": {},
-         "build_requires": [], "install_requires": [], "compiled_libraries": {}}
+         "build_requires": [], "install_requires": [], "compiled_libraries": {},
+         "sub_directory": None}
     return d
 
 class TestSimpleMeta(unittest.TestCase):
@@ -122,6 +123,16 @@ Library:
 """
 
         #self.ref["libraries"] = {"default": {"name": "default"}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
+
+    def test_sub_directory(self):
+        self.maxDiff = None
+        data = """\
+Library:
+    SubDirectory: lib
+"""
+
+        self.ref["libraries"]["default"]["sub_directory"] = "lib"
         self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_modules(self):

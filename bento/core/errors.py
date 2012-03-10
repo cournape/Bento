@@ -2,7 +2,8 @@ class BentoError(Exception):
     pass
 
 class InternalBentoError(BentoError):
-    pass
+    def __str__(self):
+        return "unexpected error: %s (most likely a bento bug)"
 
 class InvalidPackage(BentoError):
     pass

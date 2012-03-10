@@ -1,20 +1,9 @@
-import copy
-
 from bento.compat.api \
     import \
         unittest
-from bento.commands.configure \
+from bento.core \
     import \
-        ConfigureCommand
-from bento.commands.build \
-    import \
-        BuildCommand
-from bento.commands.install \
-    import \
-        InstallCommand
-from bento.commands.sdist \
-    import \
-        SdistCommand
+        PackageDescription
 from bento.commands.core \
     import \
         HelpCommand, Command
@@ -48,7 +37,8 @@ class TestHelpCommand(unittest.TestCase):
         for option in HelpCommand.common_options:
             options.add_option(option)
         global_context = GlobalContext(self.registry, None, None, None)
-        context = HelpContext(global_context, [], options, None, None)
+        pkg = PackageDescription()
+        context = HelpContext(global_context, [], options, pkg, None)
 
         help.run(context)
 
@@ -57,7 +47,8 @@ class TestHelpCommand(unittest.TestCase):
         options = OptionsContext()
         for option in HelpCommand.common_options:
             options.add_option(option)
-        context = CmdContext(None, ["configure"], options, None, None)
+        pkg = PackageDescription()
+        context = CmdContext(None, ["configure"], options, pkg, None)
         context.options_registry = self.options_registry
 
         help.run(context)

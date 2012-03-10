@@ -356,6 +356,7 @@ def p_library_stmt(p):
                     | build_requires_stmt
                     | install_requires_stmt
                     | conditional_stmt
+                    | sub_directory_stmt
     """
     p[0] = p[1]
 
@@ -428,6 +429,10 @@ def p_compiled_library_sources(p):
 def p_compiled_library_include_dirs(p):
     """compiled_library_field_stmt : INCLUDE_DIRS_ID COLON comma_list"""
     p[0] = Node("include_dirs", value=p[3].value)
+
+def p_sub_directory_stmt(p):
+    """sub_directory_stmt : SUB_DIRECTORY_ID COLON word"""
+    p[0] = Node("sub_directory", value=p[3].value)
 
 #---------------------
 # Conditional handling

@@ -60,6 +60,13 @@ InstalledSection(%(category)s,
             "files": self.files}
         return ret
 
+    def __eq__(self, other):
+        return self.category == other.category and \
+                self.name == other.name and \
+                self.source_dir == other.source_dir and \
+                self.target_dir == other.target_dir and \
+                self.files == other.files
+
 def iter_source_files(file_sections):
     for kind in file_sections:
         if not kind in ["executables"]:

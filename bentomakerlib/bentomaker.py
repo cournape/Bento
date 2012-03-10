@@ -16,6 +16,9 @@ from bento.core.parser.api \
 from bento._config \
     import \
         BENTO_SCRIPT, DB_FILE, _SUB_BUILD_DIR
+from bento.core \
+    import \
+        PackageDescription
 import bento.core.node
 
 from bento.commands.api \
@@ -408,7 +411,7 @@ def run_cmd(global_ctx, cmd_name, cmd_opts, run_node, top_node, build_node):
     if cmd_name in ["help", "convert"]:
         options_ctx = OPTIONS_REGISTRY.retrieve(cmd_name)
         ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
-        ctx = ctx_klass(global_ctx, cmd_opts, options_ctx, None, run_node)
+        ctx = ctx_klass(global_ctx, cmd_opts, options_ctx, PackageDescription(), run_node)
         # XXX: hack for help command to get option context for any command
         # without making help depends on bentomakerlib
         ctx.options_registry = OPTIONS_REGISTRY

@@ -28,7 +28,7 @@ from bento.core.parse_helpers \
         extract_top_dicts, extract_top_dicts_subento
 from bento.core.errors \
     import \
-        InvalidPackage
+        InvalidPackage, InternalBentoError
 
 def _parse_libraries(libraries):
     ret = {}
@@ -38,7 +38,7 @@ def _parse_libraries(libraries):
                     "Non default library not yet supported")
 
         default = libraries["default"]
-        for k in ["packages", "py_modules", "install_requires"]:
+        for k in ["packages", "py_modules", "install_requires", "sub_directory"]:
             if k in default:
                 ret[k] = default[k]
 
@@ -50,7 +50,6 @@ def _parse_libraries(libraries):
         for k, v in default.get("compiled_libraries", {}).items():
             ret["compiled_libraries"][k] = \
                     CompiledLibrary.from_parse_dict(v)
-
     return ret
 
 def recurse_subentos(subentos, source_dir):
@@ -108,6 +107,9 @@ def raw_to_subpkg_kw(raw_dict):
     libraries = build_libs_from_dict(libraries_d)
     kw.update(libraries)
     kw["hook_files"] = misc_d["hook_files"]
+    sub_directory = kw.pop("sub_directory")
+    if sub_directory is not None:
+        raise InternalBentoError("Unexpected sub_directory while parsing recursed bendo")
 
     return kw, misc_d["subento"]
 
@@ -147,8 +149,11 @@ def raw_to_pkg_kw(raw_dict, user_flags, bento_info=None):
 
     if "subento" in misc_d:
         subentos = misc_d.pop("subento")
-        subpackages, files = recurse_subentos(subentos, source_dir=source_dir)
-        kw["subpackages"] = subpackages
+        if len(subentos) > 0 and libraries and libraries["sub_directory"] is not None:
+            raise InvalidPackage("You cannot use both Recurse and Library:SubDirectory features !")
+        else:
+            subpackages, files = recurse_subentos(subentos, source_dir=source_dir)
+            kw["subpackages"] = subpackages
     else:
         files = []
 
@@ -202,6 +207,8 @@ class PackageDescription:
         finally:
             info_file.close()
 
+    # FIXME: this stuff has passed the uglyness threshold quite some time
+    # ago...
     def __init__(self, name=None, version=None, summary=None, url=None,
             author=None, author_email=None, maintainer=None,
             maintainer_email=None, license=None, description=None,
@@ -211,7 +218,7 @@ class PackageDescription:
             classifiers=None, provides=None, obsoletes=None, executables=None,
             hook_files=None, config_py=None, compiled_libraries=None,
             subpackages=None, description_from_file=None, meta_template_file=None,
-            keywords=None):
+            keywords=None, sub_directory=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -288,6 +295,8 @@ class PackageDescription:
         for f in [self.meta_template_file]:
             if f is not None:
                 self.extra_source_files.append(f)
+
+        self.sub_directory = sub_directory
 
 def static_representation(pkg, options={}):
     """Return the static representation of the given PackageDescription

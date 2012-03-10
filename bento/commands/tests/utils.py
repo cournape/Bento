@@ -1,5 +1,6 @@
 import os
 import sys
+import os.path as op
 
 if sys.version_info[0] < 3:
     from cStringIO import StringIO
@@ -89,3 +90,39 @@ class EncodedStringIO(object):
     def write(self, data):
         return self._data.write(data)
 
+def comparable_installed_sections(sections):
+    # Hack to compare compiled sections without having to hardcode the exact,
+    # platform-dependent name
+    class _InstalledSectionProxy(object):
+        def __init__(self, installed_section):
+            self.installed_section = installed_section
+
+        def __eq__(self, other):
+            _self = self.installed_section
+            _other = other.installed_section
+            def are_files_comparables():
+                if len(_self.files) != len(_other.files):
+                    return False
+                else:
+                    for i in range(len(_self.files)):
+                        for j in range(2):
+                            if op.dirname(_self.files[i][j]) != \
+                                    op.dirname(_other.files[i][j]):
+                                return False
+                    return True
+
+            return _self.name == _other.name and \
+                _self.source_dir == _other.source_dir and \
+                _self.target_dir == _other.target_dir and \
+                are_files_comparables()
+
+        def __repr__(self):
+            return self.installed_section.__repr__()
+
+    def proxy_categories(sections):
+        for category in sections:
+            for section_name, section in sections[category].items():
+                sections[category ][section_name] = _InstalledSectionProxy(section)
+        return sections
+
+    return proxy_categories(sections)

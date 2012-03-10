@@ -11,10 +11,10 @@ from unittest \
 
 from bento.core.parser.nodes \
     import \
-        Node, ast_pprint
+        ast_pprint
 from bento.core.parser.parser \
     import \
-        parse, Parser
+        parse
 
 class _TestGrammar(TestCase):
     def _test(self, data, expected):
@@ -382,6 +382,21 @@ Node(type='stmt_list'):
         Node(type='library_stmts'):
             Node(type='build_requires', value=['foo', 'bar'])
             Node(type='build_requires', value=['fubar'])"""
+
+        self._test(data, expected)
+
+    def test_subdir(self):
+        data = """\
+Library:
+    SubDirectory: lib
+"""
+
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='library'):
+        Node(type='library_name', value='default')
+        Node(type='library_stmts'):
+            Node(type='sub_directory', value='lib')"""
 
         self._test(data, expected)
 

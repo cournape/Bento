@@ -608,6 +608,15 @@ def create_root_with_source_tree(source_path, build_path):
 
     return root
 
+def create_base_nodes(source_path, build_path, run_path=None):
+    if run_path is None:
+        run_path = source_path
+    root = create_root_with_source_tree(source_path, build_path)
+    top_node  = root.find_node(source_path)
+    build_node  = root.find_node(build_path)
+    run_node = root.find_node(run_path)
+    return top_node, build_node, run_node
+
 def find_root(n):
     while n.parent:
         n = n.parent

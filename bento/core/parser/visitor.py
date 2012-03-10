@@ -87,6 +87,7 @@ class Dispatcher(object):
             "exec_name": self.exec_name,
             "function": self.function,
             "module": self.module,
+            "sub_directory": self.sub_directory,
         }
         if user_values is not None:
             self._vars = copy.deepcopy(user_values)
@@ -188,6 +189,7 @@ class Dispatcher(object):
                    "packages": [],
                    "extensions": {},
                    "compiled_libraries": {},
+                   "sub_directory": None,
                    }
 
         def update(library_dict, c):
@@ -208,6 +210,8 @@ class Dispatcher(object):
             elif c.type == "compiled_library":
                 name = c.value["name"]
                 library_dict["compiled_libraries"][name] = c.value
+            elif c.type == "sub_directory":
+                library_dict["sub_directory"] = c.value
             else:
                 raise ValueError("Unhandled node type: %s" % c)
 
@@ -278,6 +282,9 @@ class Dispatcher(object):
 
     def compiled_library_declaration(self, node):
         return Node("name", value=node.value)
+
+    def sub_directory(self, node):
+        return Node("sub_directory", value=node.value)
 
     #-----------------
     #   Path option
