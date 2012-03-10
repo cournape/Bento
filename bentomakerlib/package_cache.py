@@ -74,6 +74,23 @@ class _CachedPackageImpl(object):
         self.db["version"] = self.__version__
         self._first_time = True
 
+    def _load_existing_cache(self, db_location):
+        fid = open(db_location, "rb")
+        try:
+            db = pickle.load(fid)
+            if not self._has_valid_magic(db):
+                warnings.warn("Resetting invalid cached db")
+                self._reset()
+        finally:
+            fid.close()
+
+        version = db["version"]
+        if version != self.__version__:
+            warnings.warn("Resetting invalid version of cached db")
+            self._reset()
+
+        return db
+
     def __init__(self, db_location):
         self._location = db_location
         self._first_time = False
@@ -81,18 +98,10 @@ class _CachedPackageImpl(object):
             ensure_dir(db_location)
             self._reset()
         else:
-            fid = open(db_location, "rb")
             try:
-                self.db = pickle.load(fid)
-                if not self._has_valid_magic(self.db):
-                    warnings.warn("Resetting invalid cached db")
-                    self._reset()
-            finally:
-                fid.close()
-
-            version = self.db["version"]
-            if version != self.__version__:
-                warnings.warn("Resetting invalid version of cached db")
+                self.db = self._load_existing_cache(db_location)
+            except Exception:
+                warnings.warn("Resetting invalid cached db")
                 self._reset()
 
     def _has_invalidated_cache(self):
