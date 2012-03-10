@@ -10,6 +10,12 @@ Main features:
     - Nose is not necessary to run the test suite anymore
     - Significant improvements to the distutils compatibility layer
 
+Fixed issues
+------------
+
+    - Running bento for python 2.x after having run it for 3.x does not crash
+      bento anymore
+
 Internals
 ---------
 
