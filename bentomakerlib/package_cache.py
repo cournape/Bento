@@ -34,7 +34,7 @@ from bento.core.options \
         raw_to_options_kw, PackageOptions
 from bento.core.utils \
     import \
-        ensure_dir, safe_write
+        ensure_dir, safe_write, extract_exception
 
 class CachedPackage(object):
     def __init__(self, db_node):
@@ -101,7 +101,8 @@ class _CachedPackageImpl(object):
             try:
                 self.db = self._load_existing_cache(db_location)
             except Exception:
-                warnings.warn("Resetting invalid cached db")
+                e = extract_exception()
+                warnings.warn("Resetting invalid cached db: (reason: %r)" % e)
                 self._reset()
 
     def _has_invalidated_cache(self):
