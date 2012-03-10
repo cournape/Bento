@@ -23,8 +23,6 @@ except ImportError:
     from md5 import md5
 import warnings
 
-import six
-
 from bento.core.parser.api \
     import \
         raw_parse
@@ -109,7 +107,7 @@ class _CachedPackageImpl(object):
 
     def _has_invalidated_cache(self):
         if "bentos_checksums" in self.db:
-            r_checksums = pickle.loads(six.b(self.db["bentos_checksums"]))
+            r_checksums = pickle.loads(self.db["bentos_checksums"])
             for f in r_checksums:
                 checksum = md5(open(f, "rb").read()).hexdigest()
                 if checksum != r_checksums[f]:
@@ -119,6 +117,15 @@ class _CachedPackageImpl(object):
             return True
 
     def get_package(self, bento_info, user_flags=None):
+        try:
+            return self._get_package(bento_info, user_flags)
+        except Exception:
+            e = extract_exception()
+            warnings.warn("Resetting invalid cache (error was %r)" % e)
+            self._reset()
+            return self._get_package(bento_info, user_flags)
+
+    def _get_package(self, bento_info, user_flags=None):
         if self._first_time:
             self._first_time = False
             return _create_package_nocached(bento_info, user_flags, self.db)
@@ -126,10 +133,10 @@ class _CachedPackageImpl(object):
             if self._has_invalidated_cache():
                 return _create_package_nocached(bento_info, user_flags, self.db)
             else:
-                r_user_flags = pickle.loads(six.b(self.db["user_flags"]))
+                r_user_flags = pickle.loads(self.db["user_flags"])
                 if user_flags is None:
                     # FIXME: this case is wrong
-                    return pickle.loads(six.b(self.db["package_description"]))
+                    return pickle.loads(self.db["package_description"])
                 elif r_user_flags != user_flags:
                     return _create_package_nocached(bento_info, user_flags, self.db)
                 else:
@@ -138,6 +145,15 @@ class _CachedPackageImpl(object):
                     return pkg
 
     def get_options(self, bento_info):
+        try:
+            return self._get_options(bento_info)
+        except Exception:
+            e = extract_exception()
+            warnings.warn("Resetting invalid cache (error was %r)" % e)
+            self._reset()
+            return self._get_options(bento_info)
+
+    def _get_options(self, bento_info):
         if self._first_time:
             self._first_time = False
             return _create_options_nocached(bento_info, {}, self.db)
@@ -145,7 +161,7 @@ class _CachedPackageImpl(object):
             if self._has_invalidated_cache():
                 return _create_options_nocached(bento_info, {}, self.db)
             else:
-                raw = pickle.loads(six.b(self.db["parsed_dict"]))
+                raw = pickle.loads(self.db["parsed_dict"])
                 return _raw_to_options(raw)
 
     def close(self):
