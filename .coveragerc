@@ -1,0 +1,12 @@
+[report]
+# Remove obsolete code, bundled code or code that cannot be tested
+omit = bento/distutils/*
+       bento/private/*
+       bento/compat/inspect*
+       bento/compat/dist.py
+       bento/commands/build_pkg_info.py
+       bento/commands/convert.py
+       bento/commands/convert_utils.py
+       bento/commands/detect_type.py
+       bento/commands/parse.py
+       bento/conv.py
