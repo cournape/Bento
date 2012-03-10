@@ -9,6 +9,8 @@ Main features:
     - Single-file distribution can now include waf itself
     - Nose is not necessary to run the test suite anymore
     - Significant improvements to the distutils compatibility layer
+    - LibraryDir support for backward compatibility with distutils packages
+      relying on pacakge_dir feature
 
 Fixed issues
 ------------
