@@ -1,6 +1,6 @@
 from bento.private.version \
     import \
-        NormalizedVersion, is_valid_version
+        NormalizedVersion, is_valid_version, suggest_normalized_version
 from bento.core.errors \
     import \
         InvalidPackage
@@ -30,7 +30,8 @@ def _set_metadata(obj, name, version=None, summary=None, url=None,
         obj.version_postdev = ""
     else:
         if not is_valid_version(version):
-            raise InvalidPackage("Invalid version: %r" % (version,))
+            raise InvalidPackage("Invalid version: %r (suggested version: %s)" \
+                                 % (version, suggest_normalized_version(version)))
         v = NormalizedVersion(version)
         obj.version_major = v.parts[0][0]
         obj.version_minor = v.parts[0][1]
