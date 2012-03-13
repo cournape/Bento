@@ -39,12 +39,14 @@ def _set_metadata(obj, name, version=None, summary=None, url=None,
             obj.version_micro = v.parts[0][2]
         else:
             obj.version_micro = 0
-        if v.parts[1] != ('f',):
-            raise InvalidPackage("Unsupported version: %r (prerelease part)" % (version,))
-        if v.parts[2] == ('f',):
-            obj.version_postdev = ""
-        else:
-            obj.version_postdev = "".join([str(i) for i in v.parts[2]])
+        # FIXME: look at distutils version stuff more carefully
+        obj.version_postdev = ""
+        #if v.parts[1] != ('f',):
+        #    raise InvalidPackage("Unsupported version: %r (prerelease part)" % (version,))
+        #if v.parts[2] == ('f',):
+        #    obj.version_postdev = ""
+        #else:
+        #    obj.version_postdev = "".join([str(i) for i in v.parts[2]])
 
     # FIXME: one should set metadata default elsewhere, and suggest good values
     # for developers
