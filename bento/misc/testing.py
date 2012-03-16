@@ -2,14 +2,14 @@ import os
 import sys
 import subprocess
 
-from bento.compat.api \
+from bento.compat.api.moves \
     import \
         unittest
 
 TEMPLATE = """\
 import sys
 
-from bento.compat.api \
+from bento.compat.api.moves \
     import \
         unittest
 

@@ -4,7 +4,7 @@ import tempfile
 import shutil
 import zipfile
 
-from bento.compat.api \
+from bento.compat.api.moves \
     import \
         unittest
 from bento.core.package \

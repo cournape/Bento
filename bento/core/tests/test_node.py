@@ -2,7 +2,7 @@ import os
 import sys
 import pickle
 
-from bento.compat.api \
+from bento.compat.api.moves \
     import \
         unittest
 from bento.core.node \

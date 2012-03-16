@@ -7,7 +7,7 @@ if sys.version_info[0] < 3:
 else:
     from io import StringIO
 
-from bento.compat.api \
+from bento.compat.api.moves \
     import \
         unittest
 from bento.core.pkg_objects \

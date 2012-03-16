@@ -6,7 +6,10 @@ import os.path as op
 
 from bento.compat.api \
     import \
-        NamedTemporaryFile, unittest
+        NamedTemporaryFile
+from bento.compat.api.moves \
+    import \
+        unittest
 
 from bento.core.utils \
     import \
