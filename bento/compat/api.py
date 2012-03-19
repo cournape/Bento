@@ -70,6 +70,6 @@ else:
             TarFile
 
 if sys.version_info < (2, 7, 0):
-    import unittest
-else:
     import unittest2 as unittest
+else:
+    import unittest
