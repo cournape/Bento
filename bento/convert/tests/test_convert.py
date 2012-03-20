@@ -4,7 +4,7 @@ from bento.misc.testing \
     import \
         SubprocessTestCase
 
-from bento.commands.convert \
+from bento.convert.core \
     import \
         monkey_patch
 

@@ -15,7 +15,7 @@ from bento.core.utils import \
 
 from bento.commands.core import \
         Command
-from bento.commands.convert_utils import \
+from bento.convert.utils import \
         whole_test
 
 

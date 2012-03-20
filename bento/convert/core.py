@@ -362,7 +362,7 @@ def prune_extra_files(files, pkg, top_node):
     return prune_file_list(files, redundant)
 
 def detect_monkeys(setup_py, show_output, log):
-    from bento.commands.convert_utils import \
+    from bento.convert.utils import \
         test_distutils, test_setuptools, test_numpy, test_setuptools_numpy, \
         test_can_run
 

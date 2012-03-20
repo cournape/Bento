@@ -13,15 +13,9 @@ from bento.commands.install \
 from bento.commands.parse \
     import \
         ParseCommand
-from bento.commands.convert \
-    import \
-        ConvertCommand
 from bento.commands.sdist \
     import \
         SdistCommand
-from bento.commands.detect_type \
-    import \
-        DetectTypeCommand
 from bento.commands.build_pkg_info \
     import \
         BuildPkgInfoCommand
