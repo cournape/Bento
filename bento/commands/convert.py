@@ -2,6 +2,10 @@ import os
 import sys
 import traceback
 import warnings
+import posixpath
+import ntpath
+
+import os.path as op
 
 from optparse \
     import \
@@ -37,10 +41,10 @@ def _process_data_files(seq):
     for name, data in seq.iteritems():
         ndots = name.count(".")
         if ndots > 0:
-            pdir = os.path.join(*[os.pardir for i in range(ndots)])
+            pdir = op.join(*[os.pardir for i in range(ndots)])
         else:
             pdir = ""
-        ret[name] = [os.path.join(pdir, f) for f in data]
+        ret[name] = [op.join(pdir, f) for f in data]
     return ret
 
 # XXX: this is where the magic happens. This is highly dependent on the
@@ -183,11 +187,11 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
             filename = "setup.py"
         else:
             filename = a[0]
-        if not os.path.exists(filename):
+        if not op.exists(filename):
             raise ValueError("file %s not found" % filename)
 
         output = o.output_filename
-        if os.path.exists(output):
+        if op.exists(output):
             raise UsageException("file %s exists, not overwritten" % output)
 
         if o.verbose:
@@ -256,7 +260,7 @@ def analyse_setup_py(filename, setup_args):
     # Some setup.py files call setup from their main, so execute them as if
     # they were the main script
     exec_globals["__name__"] = "__main__"
-    exec_globals["__file__"] = os.path.abspath(filename)
+    exec_globals["__file__"] = op.abspath(filename)
 
     _saved_argv = sys.argv[:]
     _saved_sys_path = sys.path
@@ -266,7 +270,7 @@ def analyse_setup_py(filename, setup_args):
             # XXX: many packages import themselves to get version at build
             # time, and setuptools screw this up by inserting stuff first. Is
             # there a better way ?
-            sys.path.insert(0, os.path.dirname(filename))
+            sys.path.insert(0, op.dirname(filename))
             execfile(filename, exec_globals)
             if type == "distutils" and "setuptools" in sys.modules:
                 pprint("YELLOW", "Setuptools detected in distutils mode !!!")
@@ -290,7 +294,7 @@ def analyse_setup_py(filename, setup_args):
 def build_pkg(dist, live_objects, top_node):
     if dist.package_dir is not None:
         for package, path in dist.package_dir.iteritems():
-            if not os.path.samefile(package.replace(".", os.sep), path):
+            if not op.samefile(package.replace(".", os.sep), path):
                 raise ConvertionError("setup.py with package_dir arguments is not supported (was %r)." % dist.package_dir)
 
     pkg = distutils_to_package_description(dist)
@@ -310,7 +314,7 @@ def build_pkg(dist, live_objects, top_node):
             if len(files) > 0:
                 # FIXME: use nodes here instead of ugly path manipulations
                 name = "gendata_%s" % package.replace(".", "_")
-                target_dir = os.path.join("$gendatadir", package.replace(".", "/"))
+                target_dir = op.join("$gendatadir", package.replace(".", "/"))
                 data_section = DataFiles(name, files, target_dir)
                 pkg.data_files[name] = data_section
         path_options.append(PathOption("gendatadir", "$sitedir",
@@ -328,7 +332,7 @@ def build_pkg(dist, live_objects, top_node):
         for pkg_name, source_dir, _, files in data_files:
             if len(files) > 0:
                 name = "%s_data" % pkg_name.replace(".", "_")
-                target_dir = os.path.join("$sitedir", pkg_name.replace(".", os.sep))
+                target_dir = op.join("$sitedir", pkg_name.replace(".", os.sep))
                 pkg.data_files[name] = DataFiles(name, files, target_dir, source_dir)
 
     if dist.scripts:
@@ -351,7 +355,7 @@ def prune_extra_files(files, pkg, top_node):
 
     data_files = []
     for data_section in pkg.data_files.values():
-        data_files.extend([os.path.join(data_section.source_dir, f) for f in data_section.files])
+        data_files.extend([op.join(data_section.source_dir, f) for f in data_section.files])
 
     redundant = package_files + data_files + pkg.py_modules
 
@@ -394,11 +398,6 @@ def detect_monkeys(setup_py, show_output, log):
         raise ValueError("Unsupported converter")
 
 # Functions below should always produce posix-style paths, even on windows
-from ntpath import \
-    join as ntjoin, split as ntsplit
-from posixpath import \
-    join as posjoin, normpath as posnormpath
-
 def combine_groups(data_files):
     """Given a list of tuple (target, files), combine files together per
     target/srcdir.
@@ -418,24 +417,24 @@ def combine_groups(data_files):
     """
 
     ret = {}
-    for e in data_files:
+    for data_file in data_files:
         # FIXME: install policies should not be handled here
         # FIXME: find the cases when entries' length are 2 vs 3 vs 4
-        if len(e) == 2:
-            target = posjoin("$sitedir", e[0])
-            sources = e[1]
-        elif len(e) == 3:
-            target = posjoin("$prefix", e[1])
-            sources = e[2]
+        if len(data_file) == 2:
+            target = posixpath.join("$sitedir", data_file[0])
+            sources = data_file[1]
+        elif len(data_file) == 3:
+            target = posixpath.join("$prefix", data_file[1])
+            sources = data_file[2]
         else:
             raise NotImplementedError("data files with >3 components not handled yet")
 
-        for s in sources:
-            srcdir = os.path.dirname(s)
-            name = canonalize_path(os.path.basename(s))
+        for source in sources:
+            srcdir = op.dirname(source)
+            name = canonalize_path(op.basename(source))
 
             # Generate a unique key for target/source combination
-            key = "%s_%s" % (target.replace(os.path.sep, "_"), srcdir.replace(os.path.sep, "_"))
+            key = "%s_%s" % (target.replace(op.sep, "_"), srcdir.replace(op.sep, "_"))
             if ret.has_key(key):
                 if not (ret[key]["srcdir"] == srcdir and ret[key]["target"] == target):
                     raise ValueError("BUG: mismatch for key %s ?" % key)
@@ -462,20 +461,20 @@ def prune_file_list(files, redundant):
     redundant: seq
         list of candidate files to prune.
     """
-    files_set = set([posnormpath(f) for f in files if not isinstance(f, basestring)])
-    redundant_set = set([posnormpath(f) for f in redundant if not isinstance(f, basestring)])
+    files_set = set([posixpath.normpath(f) for f in files if not isinstance(f, basestring)])
+    redundant_set = set([posixpath.normpath(f) for f in redundant if not isinstance(f, basestring)])
 
     return list(files_set.difference(redundant_set))
 
 def canonalize_path(path):
     """Convert a win32 path to unix path."""
-    if os.path.sep == "/":
+    if op.sep == "/":
         return path
-    head, tail = ntsplit(path)
+    head, tail = ntpath.split(path)
     lst = [tail]
     while head and tail:
-        head, tail = ntsplit(head)
+        head, tail = ntpath.split(head)
         lst.insert(0, tail)
     lst.insert(0, head)
 
-    return posjoin(*lst)
+    return posixpath.join(*lst)
