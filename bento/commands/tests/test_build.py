@@ -10,7 +10,7 @@ from six.moves \
     import \
         cStringIO
 
-from bento.compat.api \
+from bento.compat.api.moves \
     import \
         unittest
 

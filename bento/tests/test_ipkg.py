@@ -10,7 +10,10 @@ else:
 
 from bento.compat.api \
     import \
-        json, unittest
+        json
+from bento.compat.api.moves \
+    import \
+        unittest
 
 from bento.core.package \
     import \

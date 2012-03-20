@@ -1,3 +1,5 @@
+import warnings
+
 try:
     from unittest.case import _ExpectedFailure as ExpectedFailure, _UnexpectedSuccess as UnexpectedSuccess
 except ImportError:
@@ -12,7 +14,13 @@ def install_proxy():
             self.assertMyTest(test)
             plugins = self.plugins
             plugins.addError(self.test, (ExpectedFailure, err, None))
-            self.result.addExpectedFailure(self.test, self._prepareErr(err))
+            addExpectedFailure = getattr(self.result, "addExpectedFailure", None)
+            if addExpectedFailure:
+                self.result.addExpectedFailure(self.test, self._prepareErr(err))
+            else:
+                warnings.warn("TestResult has no addExpectedFailure method, reporting as passes",
+                              RuntimeWarning)
+                self.result.addSuccess(self)
 
         def addUnexpectedSuccess(self, test):
             #from nose.plugins.expected import UnexpectedSuccess
@@ -43,4 +51,3 @@ def install_result():
                     'failure, but it succeeded.'))
                 self.printLabel(label, (UnexpectedSuccess, '', None))
     nose.result.TextTestResult = MyTextTestResult
-

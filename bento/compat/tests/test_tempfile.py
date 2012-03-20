@@ -5,7 +5,8 @@ import tempfile
 
 from bento.compat.api \
     import \
-        NamedTemporaryFile, unittest
+        NamedTemporaryFile
+from bento.compat.api.moves import unittest
 
 # Finicky: to make sure we test our NamedTemporaryFile and not something else...
 tempfile.NamedTemporaryFile = NamedTemporaryFile

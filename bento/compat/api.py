@@ -69,7 +69,19 @@ else:
         import \
             TarFile
 
+from bento.compat.misc \
+    import \
+        MovedModule, _MovedItems
+
+_moved_attributes = []
+
 if sys.version_info < (2, 7, 0):
-    import unittest2 as unittest
+    _moved_attributes.append(MovedModule("unittest", "unittest2"))
 else:
-    import unittest
+    _moved_attributes.append(MovedModule("unittest", "unittest"))
+
+for attr in _moved_attributes:
+    setattr(_MovedItems, attr.name, attr)
+del attr
+
+moves = sys.modules["bento.compat.api.moves"] = _MovedItems("moves")

@@ -3,7 +3,7 @@ import shutil
 import tempfile
 import os.path as op
 
-from bento.compat.api \
+from bento.compat.api.moves \
     import \
         unittest
 
