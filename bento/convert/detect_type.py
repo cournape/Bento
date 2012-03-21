@@ -1,21 +1,18 @@
 import optparse
 import sys
 
-if sys.version_info[0] < 3:
-    from StringIO \
-        import \
-            StringIO
-else:
-    from io \
-        import \
-            StringIO
+from six.moves \
+    import \
+        cStringIO
 
-from bento.core.utils import \
+from bento.core.utils \
+    import \
         pprint
-
-from bento.commands.core import \
+from bento.commands.core \
+    import \
         Command
-from bento.convert.utils import \
+from bento.convert.utils \
+    import \
         whole_test
 
 
@@ -36,7 +33,7 @@ Usage:   bentomaker detect_type [OPTIONS]."""
             p.print_help()
             return
 
-        log = StringIO()
+        log = cStringIO()
         pprint("PINK",
                "=================================================================")
         pprint("PINK",

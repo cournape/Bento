@@ -8,16 +8,16 @@ import os.path as op
 
 from bento.conv \
     import \
-        find_package
-
-from bento.core.utils import \
+        find_package, distutils_to_package_description
+from bento.core.utils \
+    import \
         pprint, extract_exception
-from bento.conv import \
-        distutils_to_package_description
-from bento.core.pkg_objects import \
+from bento.core.pkg_objects \
+    import \
         PathOption, DataFiles
 
-from bento.commands.errors import \
+from bento.commands.errors \
+    import \
         UsageException, ConvertionError
 
 class SetupCannotRun(Exception):
