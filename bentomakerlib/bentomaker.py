@@ -47,7 +47,7 @@ from bento.commands.context \
 from bento.commands.wrapper_utils \
     import \
         run_cmd_in_context
-from bento.convert.core \
+from bento.convert.commands \
     import \
         ConvertCommand
 from bento.convert.detect_type \
