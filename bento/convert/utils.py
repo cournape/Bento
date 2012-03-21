@@ -254,13 +254,17 @@ def whole_test(setup_py, verbose, log):
 
     if not test_can_run(setup_py, show_output, log):
         pass
-    pprint("YELLOW", "----------------- Testing distutils ------------------")
+    if verbose:
+        pprint("YELLOW", "----------------- Testing distutils ------------------")
     use_distutils = test_distutils(setup_py, show_output, log)
-    pprint("YELLOW", "----------------- Testing setuptools -----------------")
+    if verbose:
+        pprint("YELLOW", "----------------- Testing setuptools -----------------")
     use_setuptools = test_setuptools(setup_py, show_output, log)
-    pprint("YELLOW", "------------ Testing numpy.distutils -----------------")
+    if verbose:
+        pprint("YELLOW", "------------ Testing numpy.distutils -----------------")
     use_numpy = test_numpy(setup_py, show_output, log)
-    pprint("YELLOW", "--- Testing numpy.distutils patched by setuptools ----")
+    if verbose:
+        pprint("YELLOW", "--- Testing numpy.distutils patched by setuptools ----")
     use_setuptools_numpy = test_setuptools_numpy(setup_py, show_output, log)
     if verbose:
         print("Is distutils ? %d" % use_distutils)
@@ -269,11 +273,11 @@ def whole_test(setup_py, verbose, log):
         print("Is setuptools numpy ? %d" % use_setuptools_numpy)
 
     if use_distutils and not (use_setuptools or use_numpy or use_setuptools_numpy):
-        return "distutils converter"
+        return "distutils"
     elif use_setuptools  and not (use_numpy or use_setuptools_numpy):
-        return "setuptools converter"
+        return "setuptools"
     elif use_numpy  and not use_setuptools_numpy:
-        return "numpy.distutils converter"
+        return "numpy.distutils"
     elif use_setuptools_numpy:
         return "setuptools + numpy.distutils converter"
     else:

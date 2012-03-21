@@ -49,10 +49,7 @@ from bento.commands.wrapper_utils \
         run_cmd_in_context
 from bento.convert.commands \
     import \
-        ConvertCommand
-from bento.convert.detect_type \
-    import \
-        DetectTypeCommand
+        ConvertCommand, DetectTypeCommand
 import bento.core.errors
 
 from bentomakerlib.package_cache \

@@ -4,6 +4,10 @@ import optparse
 
 import os.path as op
 
+from six.moves \
+    import \
+        cStringIO
+
 from bento.core.utils \
     import \
         pprint, extract_exception, comma_list_split
@@ -20,6 +24,9 @@ from bento.commands.errors \
 from bento.convert.core \
     import \
         detect_monkeys, monkey_patch, analyse_setup_py, build_pkg, LIVE_OBJECTS
+from bento.convert.utils \
+    import \
+        whole_test
 
 class ConvertCommand(Command):
     long_descr = """\
@@ -74,7 +81,7 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
         log = open(convert_log, "w")
         try:
             try:
-                convert(ctx, filename, setup_args, monkey_patch_mode, output, log, show_output)
+                convert(ctx, filename, setup_args, monkey_patch_mode, o.verbose, output, log, show_output)
             except ConvertionError:
                 raise
             except Exception:
@@ -89,13 +96,15 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
             log.flush()
             log.close()
 
-def convert(ctx, filename, setup_args, monkey_patch_mode, output, log, show_output=True):
+def convert(ctx, filename, setup_args, monkey_patch_mode, verbose, output, log, show_output=True):
     if monkey_patch_mode == "automatic":
         try:
-            pprint("PINK",
-                   "Catching monkey (this may take a while) ...")
+            if verbose:
+                pprint("PINK",
+                       "Catching monkey (this may take a while) ...")
             monkey_patch_mode = detect_monkeys(filename, show_output, log)
-            pprint("PINK", "Detected mode: %s" % monkey_patch_mode)
+            if verbose:
+                pprint("PINK", "Detected mode: %s" % monkey_patch_mode)
         except ValueError:
             e = extract_exception()
             raise UsageException("Error while detecting setup.py type " \
@@ -116,3 +125,35 @@ def convert(ctx, filename, setup_args, monkey_patch_mode, output, log, show_outp
             fid.write(out)
         finally:
             fid.close()
+
+class DetectTypeCommand(Command):
+    long_descr = """\
+Purpose: detect type of distutils extension used by given setup.py
+Usage:   bentomaker detect_type [OPTIONS]."""
+    short_descr = "detect extension type."
+    common_options = Command.common_options + [
+        optparse.Option("-i", "--input", help="TODO", default="setup.py", dest="setup_file"),
+        optparse.Option("-v", "--verbose", help="verbose run", action="store_true")]
+
+    def run(self, ctx):
+        argv = ctx.get_command_arguments()
+        p = ctx.options_context.parser
+        o, a = p.parse_args(argv)
+        if o.help:
+            p.print_help()
+            return
+        verbose = o.verbose
+
+        log = cStringIO()
+
+        if verbose:
+            pprint("PINK",
+                   "=================================================================")
+            pprint("PINK",
+                   "Detecting used distutils extension(s) ... (This may take a while)")
+        monkey_patch_mode = whole_test(o.setup_file, o.verbose, log)
+        if verbose:
+            pprint("PINK", "Done !")
+            pprint("PINK",
+                   "=================================================================")
+        pprint("GREEN", "Detected type: %r" % monkey_patch_mode)

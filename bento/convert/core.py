@@ -148,9 +148,10 @@ def monkey_patch(type, filename):
         raise UsageException("Unknown converter: %s (known converters are %s)" % 
                          (type, ", ".join(supported)))
 
-def analyse_setup_py(filename, setup_args):
-    pprint('PINK', "======================================================")
-    pprint('PINK', " Analysing %s (running %s) .... " % (filename, filename))
+def analyse_setup_py(filename, setup_args, verbose=False):
+    if verbose:
+        pprint('PINK', "======================================================")
+        pprint('PINK', " Analysing %s (running %s) .... " % (filename, filename))
 
     # exec_globals contains the globals used to execute the setup.py
     exec_globals = {}
@@ -170,7 +171,7 @@ def analyse_setup_py(filename, setup_args):
             # there a better way ?
             sys.path.insert(0, op.dirname(filename))
             execfile(filename, exec_globals)
-            if type == "distutils" and "setuptools" in sys.modules:
+            if type == "distutils" and "setuptools" in sys.modules and verbose:
                 pprint("YELLOW", "Setuptools detected in distutils mode !!!")
         except Exception:
             e = extract_exception()
@@ -184,8 +185,9 @@ def analyse_setup_py(filename, setup_args):
         raise ValueError("setup monkey-patching failed")
     dist = LIVE_OBJECTS["dist"]
 
-    pprint('PINK', " %s analyse done " % filename)
-    pprint('PINK', "======================================================")
+    if verbose:
+        pprint('PINK', " %s analyse done " % filename)
+        pprint('PINK', "======================================================")
 
     return dist
 
