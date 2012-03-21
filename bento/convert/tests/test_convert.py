@@ -8,7 +8,7 @@ from bento.convert.core \
     import \
         monkey_patch
 
-class TestMonkeyPath(SubprocessTestCase):
+class TestMonkeyPatch(SubprocessTestCase):
     def test_distutils(self):
         monkey_patch("distutils", "setup.py")
         self.assertTrue("setuptools" not in sys.modules)
