@@ -6,7 +6,7 @@ import os.path as op
 
 from bento.core.utils \
     import \
-        pprint, extract_exception
+        pprint, extract_exception, comma_list_split
 from bento.core.package \
     import \
         static_representation
