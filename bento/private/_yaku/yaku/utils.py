@@ -112,3 +112,23 @@ else:
     from yaku._utils_py3 import join_bytes, function_code
     def is_string(s):
         return isinstance(s, str)
+
+def extract_exception():
+    """Extract the last exception.
+
+    Used to avoid the except ExceptionType as e, which cannot be written the
+    same across supported versions. I.e::
+
+        try:
+            ...
+        except Exception, e:
+            ...
+
+    becomes:
+
+        try:
+            ...
+        except Exception:
+            e = extract_exception()
+    """
+    return sys.exc_info()[1]
