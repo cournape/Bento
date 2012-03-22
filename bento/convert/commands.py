@@ -110,7 +110,7 @@ def convert(ctx, filename, setup_args, monkey_patch_mode, verbose, output, log, 
             raise UsageException("Error while detecting setup.py type " \
                                  "(original error: %s)" % str(e))
 
-    monkey_patch(monkey_patch_mode, filename)
+    monkey_patch(ctx.top_node, monkey_patch_mode, filename)
     # analyse_setup_py put results in LIVE_OBJECTS
     dist = analyse_setup_py(filename, setup_args)
     pkg, options = build_pkg(dist, LIVE_OBJECTS, ctx.top_node)

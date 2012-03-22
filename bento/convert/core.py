@@ -40,7 +40,7 @@ def _process_data_files(seq):
 
 # XXX: this is where the magic happens. This is highly dependent on the
 # setup.py, whether it uses distutils, numpy.distutils, setuptools and whatnot.
-def monkey_patch(type, filename):
+def monkey_patch(top_node, type, filename):
     supported = ["distutils", "numpy_distutils", "setuptools", "setuptools_numpy"]
 
     if type == "distutils":
