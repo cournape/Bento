@@ -5,6 +5,7 @@ import distutils
 import distutils.sysconfig
 import re
 import warnings
+import errno
 
 from subprocess \
     import \
@@ -378,15 +379,12 @@ def _detect_cc_type(ctx, cc_cmd):
 
     def detect_type(vflag):
         cmd = cc_cmd + [vflag]
-        try:
-            p = Popen(cmd, stdout=PIPE, stderr=STDOUT)
-            out = p.communicate()[0].decode()
-            for k, v in CC_SIGNATURE.items():
-                m = v.search(out)
-                if m:
-                    return k
-        except OSError:
-            pass
+        p = Popen(cmd, stdout=PIPE, stderr=STDOUT)
+        out = p.communicate()[0].decode()
+        for k, v in CC_SIGNATURE.items():
+            m = v.search(out)
+            if m:
+                return k
         return None
 
     _OUTPUT.write("Detecting CC type... ")
@@ -394,12 +392,19 @@ def _detect_cc_type(ctx, cc_cmd):
         for v in ["", "-v"]:
             cc_type = detect_type(v)
     else:
-        for v in ["-v", "-V", "-###"]:
-            cc_type = detect_type(v)
-            if cc_type:
-                break
-        if cc_type is None:
-            cc_type = "cc"
+        try:
+            for v in ["-v", "-V", "-###"]:
+                cc_type = detect_type(v)
+                if cc_type:
+                    break
+            if cc_type is None:
+                cc_type = "cc"
+        except OSError:
+            e = extract_exception()
+            if e.errno == errno.ENOENT:
+                raise ValueError("compiler %r not found" % " ".join(cc_cmd))
+            else:
+                raise ValueError("Unexpected error %r when testing compiler %r" % (e, cc_cmd))
     _OUTPUT.write("%s\n" % cc_type)
     return cc_type
 
