@@ -27,6 +27,8 @@ class SetupCannotRun(Exception):
 # Code to convert existing setup.py to bento.info
 # ====================================================
 LIVE_OBJECTS = {}
+DIST_GLOBAL = None
+
 def _process_data_files(seq):
     ret = {}
     for name, data in seq.iteritems():
@@ -94,6 +96,8 @@ def monkey_patch(top_node, type, filename):
 
 
     def new_setup(**kw):
+        global DIST_GLOBAL
+
         cmdclass = kw.get("cmdclass", {})
         try:
             _build_py = cmdclass["build_py"]
@@ -126,7 +130,7 @@ def monkey_patch(top_node, type, filename):
         kw["cmdclass"] = cmdclass
 
         dist = old_setup(**kw)
-        LIVE_OBJECTS["dist"] = dist
+        DIST_GLOBAL = dist
         return dist
 
     if type == "distutils":
@@ -181,15 +185,14 @@ def analyse_setup_py(filename, setup_args, verbose=False):
         sys.argv = _saved_argv
         sys.path = _saved_sys_path
 
-    if not "dist" in LIVE_OBJECTS:
+    dist = DIST_GLOBAL
+    if dist is None:
         raise ValueError("setup monkey-patching failed")
-    dist = LIVE_OBJECTS["dist"]
-
-    if verbose:
-        pprint('PINK', " %s analyse done " % filename)
-        pprint('PINK', "======================================================")
-
-    return dist
+    else:
+        if verbose:
+            pprint('PINK', " %s analyse done " % filename)
+            pprint('PINK', "======================================================")
+        return dist
 
 def build_pkg(dist, live_objects, top_node):
     if dist.package_dir is not None:
