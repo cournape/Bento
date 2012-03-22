@@ -23,7 +23,7 @@ from bento.commands.errors \
 
 from bento.convert.core \
     import \
-        detect_monkeys, monkey_patch, analyse_setup_py, build_pkg, LIVE_OBJECTS
+        detect_monkeys, monkey_patch, analyse_setup_py, build_pkg
 from bento.convert.utils \
     import \
         whole_test
@@ -112,8 +112,8 @@ def convert(ctx, filename, setup_args, monkey_patch_mode, verbose, output, log, 
 
     monkey_patch(ctx.top_node, monkey_patch_mode, filename)
     # analyse_setup_py put results in LIVE_OBJECTS
-    dist = analyse_setup_py(filename, setup_args)
-    pkg, options = build_pkg(dist, LIVE_OBJECTS, ctx.top_node)
+    dist, package_objects = analyse_setup_py(filename, setup_args)
+    pkg, options = build_pkg(dist, package_objects, ctx.top_node)
 
     out = static_representation(pkg, options)
     if output == '-':

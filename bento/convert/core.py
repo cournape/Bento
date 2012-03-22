@@ -26,8 +26,15 @@ class SetupCannotRun(Exception):
 # ====================================================
 # Code to convert existing setup.py to bento.info
 # ====================================================
-LIVE_OBJECTS = {}
 DIST_GLOBAL = None
+PACKAGE_OBJECTS = None
+
+class _PackageObjects(object):
+    def __init__(self):
+        self.package_data = {}
+        self.extra_data = {}
+        self.dist_data_files = []
+        self.data_files = []
 
 def _process_data_files(seq):
     ret = {}
@@ -96,7 +103,8 @@ def monkey_patch(top_node, type, filename):
 
 
     def new_setup(**kw):
-        global DIST_GLOBAL
+        global DIST_GLOBAL, PACKAGE_OBJECTS
+        package_objects = _PackageObjects()
 
         cmdclass = kw.get("cmdclass", {})
         try:
@@ -113,25 +121,24 @@ def monkey_patch(top_node, type, filename):
                 # setuptools has its own logic to deal with package_data, and
                 # do so in build_py
                 if type == "setuptools":
-                    LIVE_OBJECTS["package_data"] = _process_data_files(self.distribution.package_data)
-                else:
-                    LIVE_OBJECTS["package_data"] = {}
+                    package_objects.package_data = _process_data_files(self.distribution.package_data)
                 _build_py.run(self)
 
                 # extra_data
-                LIVE_OBJECTS["extra_data"] = get_data_files()
+                package_objects.extra_data = get_data_files()
 
                 # Those are directly created from setup data_files argument
-                LIVE_OBJECTS["dist_data_files"] = self.distribution.data_files
+                package_objects.dist_data_files = self.distribution.data_files
                 # those are created from package_data stuff
-                LIVE_OBJECTS["data_files"] = self.data_files
+                package_objects.data_files = self.data_files
 
         cmdclass["build_py"] = build_py_recorder
         kw["cmdclass"] = cmdclass
 
         dist = old_setup(**kw)
         DIST_GLOBAL = dist
-        return dist
+        PACKAGE_OBJECTS = package_objects
+        return dist, package_objects
 
     if type == "distutils":
         import distutils.core
@@ -153,6 +160,9 @@ def monkey_patch(top_node, type, filename):
                          (type, ", ".join(supported)))
 
 def analyse_setup_py(filename, setup_args, verbose=False):
+    # This is the dirty part: we run setup.py inside this process, and pass
+    # data back through global variables. Not sure if there is a better way to
+    # do this
     if verbose:
         pprint('PINK', "======================================================")
         pprint('PINK', " Analysing %s (running %s) .... " % (filename, filename))
@@ -185,6 +195,7 @@ def analyse_setup_py(filename, setup_args, verbose=False):
         sys.argv = _saved_argv
         sys.path = _saved_sys_path
 
+    live_objects = PACKAGE_OBJECTS
     dist = DIST_GLOBAL
     if dist is None:
         raise ValueError("setup monkey-patching failed")
@@ -192,9 +203,9 @@ def analyse_setup_py(filename, setup_args, verbose=False):
         if verbose:
             pprint('PINK', " %s analyse done " % filename)
             pprint('PINK', "======================================================")
-        return dist
+        return dist, live_objects
 
-def build_pkg(dist, live_objects, top_node):
+def build_pkg(dist, package_objects, top_node):
     if dist.package_dir is not None:
         for package, path in dist.package_dir.iteritems():
             if not op.samefile(package.replace(".", os.sep), path):
@@ -211,9 +222,9 @@ def build_pkg(dist, live_objects, top_node):
 
     path_options = []
     pkg.data_files = {}
-    if live_objects["package_data"]:
+    if package_objects.package_data:
         gendatafiles = {}
-        for package, files in live_objects["package_data"].iteritems():
+        for package, files in package_objects.package_data.iteritems():
             if len(files) > 0:
                 # FIXME: use nodes here instead of ugly path manipulations
                 name = "gendata_%s" % package.replace(".", "_")
@@ -225,13 +236,13 @@ def build_pkg(dist, live_objects, top_node):
                 ))
 
     extra_source_files = []
-    if live_objects["extra_data"]:
+    if package_objects.extra_data:
         extra_source_files.extend([canonalize_path(f) 
-                                  for f in live_objects["extra_data"]])
+                                  for f in package_objects.extra_data])
     pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg, top_node))
 
-    if live_objects["data_files"]:
-        data_files = live_objects["data_files"]
+    if package_objects.data_files:
+        data_files = package_objects.data_files
         for pkg_name, source_dir, _, files in data_files:
             if len(files) > 0:
                 name = "%s_data" % pkg_name.replace(".", "_")
