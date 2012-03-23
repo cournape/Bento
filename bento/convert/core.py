@@ -186,7 +186,7 @@ def analyse_setup_py(filename, setup_args, verbose=False):
         except Exception:
             e = extract_exception()
             pprint('RED', "Got exception: %s" % e)
-            raise e
+            raise
     finally:
         sys.argv = _saved_argv
         sys.path = _saved_sys_path
