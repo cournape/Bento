@@ -108,6 +108,17 @@ def monkey_patch(top_node, type, filename):
         global DIST_GLOBAL, PACKAGE_OBJECTS
         package_objects = _PackageObjects()
 
+        package_dir = kw.get("package_dir", None)
+        if package_dir:
+            keys = list(package_dir.keys())
+            if len(keys) > 1:
+                raise ConvertionError("setup call with package_dir=%r argument is not supported !" \
+                                      % package_dir)
+            elif len(keys) == 1:
+                if package_dir.values()[0] != '':
+                    raise ConvertionError("setup call with package_dir=%r argument is not supported !" \
+                                          % package_dir)
+
         cmdclass = kw.get("cmdclass", {})
         try:
             _build_py = cmdclass["build_py"]
@@ -204,11 +215,6 @@ def analyse_setup_py(filename, setup_args, verbose=False):
         return dist, live_objects
 
 def build_pkg(dist, package_objects, top_node):
-    if dist.package_dir is not None:
-        for package, path in dist.package_dir.iteritems():
-            if not op.samefile(package.replace(".", os.sep), path):
-                raise ConvertionError("setup.py with package_dir arguments is not supported (was %r)." % dist.package_dir)
-
     pkg = distutils_to_package_description(dist)
     modules = []
     for m in pkg.py_modules:
