@@ -114,7 +114,6 @@ def convert(ctx, filename, setup_args, monkey_patch_mode, verbose, output, log, 
                                  "(original error: %s)" % str(e))
 
     monkey_patch(ctx.top_node, monkey_patch_mode, filename)
-    # analyse_setup_py put results in LIVE_OBJECTS
     dist, package_objects = analyse_setup_py(filename, setup_args)
     pkg, options = build_pkg(dist, package_objects, ctx.top_node)
 
