@@ -183,6 +183,8 @@ def analyse_setup_py(filename, setup_args, verbose=False):
             execfile(filename, exec_globals)
             if type == "distutils" and "setuptools" in sys.modules and verbose:
                 pprint("YELLOW", "Setuptools detected in distutils mode !!!")
+        except ConvertionError:
+            raise
         except Exception:
             e = extract_exception()
             pprint('RED', "Got exception: %s" % e)
