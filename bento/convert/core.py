@@ -32,21 +32,67 @@ from bento.convert.errors \
 DIST_GLOBAL = None
 PACKAGE_OBJECTS = None
 
+def _convert_numpy_data_files(top_node, source_dir, files):
+    """Convert data_files pairs to the common format we use.
+
+    numpy.distutils internally keeps data as a pair (package_path, files_list),
+    where files_list is relative to the top source path. We convert this
+
+    Parameters
+    ----------
+    top_node: node
+        top directory of the source tree (as a node).
+    source_dir: str
+        the source directory (as a path string, relative to top node).
+    files: seq
+        list of files (relative to top source)
+
+    Returns
+    -------
+    pkg_name: str
+        name of the package
+    source_dir: str
+        source directory
+    target_dir: str
+        target directory
+    files: seq
+        list of files (relative to source directory)
+    """
+    source_node = top_node.find_node(source_dir)
+    if source_node is None:
+        raise ConvertionError("directory %r not found" % source_dir)
+    nodes = []
+    for f in files:
+        node = top_node.find_node(f)
+        if node is None:
+            raise ConvertionError("file %s refered in data_files not found" % f)
+        nodes.append(node)
+    pkg_name = source_dir.replace(os.sep, ".")
+    target_dir = canonalize_path(op.join("$sitedir", source_dir))
+    return pkg_name, source_dir, target_dir, [node.path_from(source_node) for node in nodes]
+
 class _PackageObjects(object):
-    def __init__(self):
+    def __init__(self, monkey_patch_mode="distutils"):
         self.package_data = {}
         self.extra_source_files = {}
         self.dist_data_files = []
         self.data_files = []
 
+        self.monkey_patch_mode = monkey_patch_mode
         self.build_lib = None
 
-    def iter_data_files(self):
+    def iter_data_files(self, top_node):
         for pkg_name, source_dir, build_dir, files in self.data_files:
             if files:
                 target_dir = relpath(build_dir, self.build_lib)
                 yield pkg_name, source_dir, op.join("$sitedir", target_dir), files
-        yield "", ".", "$sitedir", self.dist_data_files
+        if self.monkey_patch_mode == "setuptools_numpy":
+            if self.dist_data_files:
+                assert len(self.dist_data_files[0]) == 2, "Unhandled data files representation"
+                for source_dir, files in self.dist_data_files:
+                    yield _convert_numpy_data_files(top_node, source_dir, files)
+        else:
+            yield "", ".", "$sitedir", self.dist_data_files
 
 # XXX: this is where the magic happens. This is highly dependent on the
 # setup.py, whether it uses distutils, numpy.distutils, setuptools and whatnot.
@@ -106,7 +152,7 @@ def monkey_patch(top_node, type, filename):
 
     def new_setup(**kw):
         global DIST_GLOBAL, PACKAGE_OBJECTS
-        package_objects = _PackageObjects()
+        package_objects = _PackageObjects(monkey_patch_mode=type)
 
         package_dir = kw.get("package_dir", None)
         if package_dir:
@@ -233,7 +279,7 @@ def build_pkg(dist, package_objects, top_node):
                                   for f in package_objects.extra_source_files])
     pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg, top_node))
 
-    for pkg_name, source_dir, target_dir, files in package_objects.iter_data_files():
+    for pkg_name, source_dir, target_dir, files in package_objects.iter_data_files(top_node):
         if len(files) > 0:
             if len(pkg_name) > 0:
                 name = "%s_data" % pkg_name.replace(".", "_")
