@@ -19,7 +19,10 @@ from bento.commands.core \
         Command
 from bento.commands.errors \
     import \
-        UsageException, ConvertionError
+        UsageException
+from bento.convert.errors \
+    import \
+        ConvertionError
 
 from bento.convert.core \
     import \

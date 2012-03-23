@@ -28,4 +28,4 @@ from bento.commands.build_wininst \
 
 from bento.commands.errors \
     import \
-        ConvertionError, UsageException, CommandExecutionFailure
+        UsageException, CommandExecutionFailure

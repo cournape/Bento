@@ -21,10 +21,10 @@ from bento.core.pkg_objects \
 
 from bento.commands.errors \
     import \
-        UsageException, ConvertionError
-
-class SetupCannotRun(Exception):
-    pass
+        UsageException
+from bento.convert.errors \
+    import \
+        ConvertionError
 
 # ====================================================
 # Code to convert existing setup.py to bento.info

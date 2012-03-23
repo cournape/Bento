@@ -25,8 +25,7 @@ from bento.commands.api \
     import \
         HelpCommand, ConfigureCommand, BuildCommand, InstallCommand, \
         ParseCommand, SdistCommand, BuildPkgInfoCommand, BuildEggCommand, \
-        BuildWininstCommand, ConvertionError, UsageException, \
-        CommandExecutionFailure
+        BuildWininstCommand, UsageException, CommandExecutionFailure
 from bento.commands.core \
     import \
         find_hook_commands, CommandRegistry
@@ -47,9 +46,9 @@ from bento.commands.context \
 from bento.commands.wrapper_utils \
     import \
         run_cmd_in_context
-from bento.convert.commands \
+from bento.convert.api \
     import \
-        ConvertCommand, DetectTypeCommand
+        ConvertCommand, DetectTypeCommand, ConvertionError
 import bento.core.errors
 
 from bentomakerlib.package_cache \
