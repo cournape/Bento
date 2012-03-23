@@ -6,6 +6,9 @@ import ntpath
 
 import os.path as op
 
+from bento.compat.api \
+    import \
+        relpath
 from bento.conv \
     import \
         find_package, distutils_to_package_description
@@ -32,9 +35,18 @@ PACKAGE_OBJECTS = None
 class _PackageObjects(object):
     def __init__(self):
         self.package_data = {}
-        self.extra_data = {}
+        self.extra_source_files = {}
         self.dist_data_files = []
         self.data_files = []
+
+        self.build_lib = None
+
+    def iter_data_files(self):
+        for pkg_name, source_dir, build_dir, files in self.data_files:
+            if files:
+                target_dir = relpath(build_dir, self.build_lib)
+                yield pkg_name, source_dir, op.join("$sitedir", target_dir), files
+        yield "", ".", "$sitedir", self.dist_data_files
 
 def _process_data_files(seq):
     ret = {}
@@ -85,7 +97,8 @@ def monkey_patch(top_node, type, filename):
         raise UsageException("Unknown converter: %s (known converters are %s)" % 
                          (type, ", ".join(supported)))
 
-    def get_data_files():
+    def get_extra_source_files():
+        """Return the list of files included in the tarball."""
         # FIXME: handle redundancies between data files, package data files
         # (i.e. installed data files) and files included as part of modules,
         # packages, extensions, .... Given the giant mess that distutils makes
@@ -115,21 +128,25 @@ def monkey_patch(top_node, type, filename):
         class build_py_recorder(_build_py):
             def run(self):
                 _build_py.run(self)
+
+                package_objects.build_lib = self.build_lib
+
                 # package_data: data files which correspond to packages (and
                 # are installed)
 
-                # setuptools has its own logic to deal with package_data, and
-                # do so in build_py
-                if type == "setuptools":
-                    package_objects.package_data = _process_data_files(self.distribution.package_data)
+                ## setuptools has its own logic to deal with package_data, and
+                ## do so in build_py
+                #if type == "setuptools":
+                #    package_objects.package_data = _process_data_files(self.distribution.package_data)
                 _build_py.run(self)
 
-                # extra_data
-                package_objects.extra_data = get_data_files()
+                package_objects.extra_source_files = get_extra_source_files()
 
-                # Those are directly created from setup data_files argument
-                package_objects.dist_data_files = self.distribution.data_files
-                # those are created from package_data stuff
+                # This is simply the data_files argument passed to setup
+                if self.distribution.data_files is not None:
+                    package_objects.dist_data_files.extend(self.distribution.data_files)
+                # those are created from package_data stuff (the stuff included
+                # if include_package_data=True as well)
                 package_objects.data_files = self.data_files
 
         cmdclass["build_py"] = build_py_recorder
@@ -221,33 +238,22 @@ def build_pkg(dist, package_objects, top_node):
     pkg.py_modules = modules
 
     path_options = []
-    pkg.data_files = {}
-    if package_objects.package_data:
-        gendatafiles = {}
-        for package, files in package_objects.package_data.iteritems():
-            if len(files) > 0:
-                # FIXME: use nodes here instead of ugly path manipulations
-                name = "gendata_%s" % package.replace(".", "_")
-                target_dir = op.join("$gendatadir", package.replace(".", "/"))
-                data_section = DataFiles(name, files, target_dir)
-                pkg.data_files[name] = data_section
-        path_options.append(PathOption("gendatadir", "$sitedir",
-                "Directory for datafiles obtained from distutils conversion"
-                ))
+    data_sections = {}
 
     extra_source_files = []
-    if package_objects.extra_data:
+    if package_objects.extra_source_files:
         extra_source_files.extend([canonalize_path(f) 
-                                  for f in package_objects.extra_data])
+                                  for f in package_objects.extra_source_files])
     pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg, top_node))
 
-    if package_objects.data_files:
-        data_files = package_objects.data_files
-        for pkg_name, source_dir, _, files in data_files:
-            if len(files) > 0:
+    for pkg_name, source_dir, target_dir, files in package_objects.iter_data_files():
+        if len(files) > 0:
+            if len(pkg_name) > 0:
                 name = "%s_data" % pkg_name.replace(".", "_")
-                target_dir = op.join("$sitedir", pkg_name.replace(".", os.sep))
-                pkg.data_files[name] = DataFiles(name, files, target_dir, source_dir)
+            else:
+                name = "dist_data"
+            data_sections[name] = DataFiles(name, files, target_dir, source_dir)
+    pkg.data_files.update(data_sections)
 
     if dist.scripts:
         name = "%s_scripts" % pkg.name

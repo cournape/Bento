@@ -1,10 +1,7 @@
 import os
+import copy
 import shutil
 import tempfile
-
-from bento.compat.api.moves \
-    import \
-        unittest
 
 from bento.core.package \
     import \
@@ -24,8 +21,43 @@ from bento.commands.options \
 from bento.convert.commands \
     import \
         ConvertCommand
+from bento.misc.testing \
+    import \
+        SubprocessTestCase
 
-class TestConvertCommand(unittest.TestCase):
+dummy_meta_data = dict(
+        name="foo",
+        version="1.0",
+        description="a few words",
+        long_description="some more words",
+        url="http://example.com",
+        download_url="http://example.com/download",
+        author="John Doe",
+        maintainer="John Doe",
+        author_email="john@example.com",
+        maintainer_email="john@example.com",
+        license="BSD",
+        platforms=["UNIX"],
+)
+
+bento_dummy_meta_data = copy.copy(dummy_meta_data)
+bento_dummy_meta_data["platforms"] = ",".join(bento_dummy_meta_data["platforms"])
+
+bento_meta_data_template = """\
+Name: %(name)s
+Version: %(version)s
+Summary: %(description)s
+Url: %(url)s
+DownloadUrl: %(download_url)s
+Description: %(long_description)s
+Author: %(author)s
+AuthorEmail: %(author_email)s
+Maintainer: %(maintainer)s
+MaintainerEmail: %(maintainer_email)s
+License: %(license)s
+Platforms: %(platforms)s"""
+
+class TestConvertCommand(SubprocessTestCase):
     def setUp(self):
         self.save = os.getcwd()
         self.d = tempfile.mkdtemp()
@@ -44,42 +76,20 @@ class TestConvertCommand(unittest.TestCase):
         shutil.rmtree(self.d)
 
     def test_simple_package(self):
+        bento_meta_data = bento_meta_data_template % bento_dummy_meta_data
         bento_info = """\
-Name: foo
-Version: 1.0
-Summary: a few words
-Url: http://example.com
-DownloadUrl: http://example.com/download
-Description: some more
-    words
-Author: John Doe
-AuthorEmail: john@example.com
-Maintainer: John Doe
-MaintainerEmail: john@example.com
-License: BSD
-Platforms: UNIX
+%s
 
 Library:
     Packages:
         foo
-"""
+""" % bento_meta_data
 
         setup_py = """\
 from distutils.core import setup
-setup(name="foo",
-      version="1.0",
-      description="a few words",
-      long_description="some more\\nwords",
-      url="http://example.com",
-      download_url="http://example.com/download",
-      author="John Doe",
-      maintainer="John Doe",
-      author_email="john@example.com",
-      maintainer_email="john@example.com",
-      license="BSD",
-      platforms=["UNIX"],
-      packages=["foo"])
-"""
+setup(packages=["foo"], **%s)
+""" % dummy_meta_data
+
         setup_node = self.top_node.make_node("setup.py")
         setup_node.safe_write(setup_py)
 
