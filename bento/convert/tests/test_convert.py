@@ -16,3 +16,5 @@ class TestMonkeyPatch(SubprocessTestCase):
     def test_setuptools(self):
         monkey_patch("setuptools", "setup.py")
         self.assertTrue("setuptools" in sys.modules)
+
+#class TestMonkeyPatch(SubprocessTestCase):

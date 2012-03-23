@@ -77,7 +77,12 @@ class TestConvertCommand(SubprocessTestCase):
         os.chdir(self.save)
         shutil.rmtree(self.d)
 
-    def _compare_bentos(self, setup_py, bento_info):
+    def _compare_bentos(self, setup_py, bento_info, cmd_argv=None):
+        output = "foo.info"
+        if cmd_argv is None:
+            cmd_argv = []
+        cmd_argv.append("--output=%s" % output)
+
         setup_node = self.top_node.make_node("setup.py")
         setup_node.safe_write(setup_py)
 
@@ -86,14 +91,13 @@ class TestConvertCommand(SubprocessTestCase):
 
         cmd = ConvertCommand()
         opts = OptionsContext.from_command(cmd)
-        cmd_argv = ["--output=foo.info"]
 
         context = CmdContext(None, cmd_argv, opts, package, self.run_node)
         cmd.run(context)
         cmd.shutdown(context)
         context.shutdown()
 
-        gen_bento = self.top_node.find_node("foo.info")
+        gen_bento = self.top_node.find_node(output)
         self.assertEqual(gen_bento.read(), bento_info)
 
     def test_simple_package(self):
@@ -110,7 +114,7 @@ Library:
 from distutils.core import setup
 setup(packages=["foo"], **%s)
 """ % dummy_meta_data
-        self._compare_bentos(setup_py, bento_info)
+        self._compare_bentos(setup_py, bento_info, cmd_argv=["-t", "distutils"])
 
     def test_package_data_distutils(self):
         bento_meta_data = bento_meta_data_template % bento_dummy_meta_data
@@ -137,4 +141,4 @@ setup(packages=["foo"], package_data={"foo": ["*txt"]}, **%s)
         data_node.parent.mkdir()
         data_node.write("")
 
-        self._compare_bentos(setup_py, bento_info)
+        self._compare_bentos(setup_py, bento_info, cmd_argv=["-t", "distutils"])
