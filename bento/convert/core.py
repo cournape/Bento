@@ -48,17 +48,6 @@ class _PackageObjects(object):
                 yield pkg_name, source_dir, op.join("$sitedir", target_dir), files
         yield "", ".", "$sitedir", self.dist_data_files
 
-def _process_data_files(seq):
-    ret = {}
-    for name, data in seq.iteritems():
-        ndots = name.count(".")
-        if ndots > 0:
-            pdir = op.join(*[os.pardir for i in range(ndots)])
-        else:
-            pdir = ""
-        ret[name] = [op.join(pdir, f) for f in data]
-    return ret
-
 # XXX: this is where the magic happens. This is highly dependent on the
 # setup.py, whether it uses distutils, numpy.distutils, setuptools and whatnot.
 def monkey_patch(top_node, type, filename):
@@ -130,16 +119,6 @@ def monkey_patch(top_node, type, filename):
                 _build_py.run(self)
 
                 package_objects.build_lib = self.build_lib
-
-                # package_data: data files which correspond to packages (and
-                # are installed)
-
-                ## setuptools has its own logic to deal with package_data, and
-                ## do so in build_py
-                #if type == "setuptools":
-                #    package_objects.package_data = _process_data_files(self.distribution.package_data)
-                _build_py.run(self)
-
                 package_objects.extra_source_files = get_extra_source_files()
 
                 # This is simply the data_files argument passed to setup

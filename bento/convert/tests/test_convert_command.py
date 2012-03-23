@@ -3,6 +3,8 @@ import copy
 import shutil
 import tempfile
 
+import os.path as op
+
 from bento.core.package \
     import \
         PackageDescription
@@ -75,21 +77,7 @@ class TestConvertCommand(SubprocessTestCase):
         os.chdir(self.save)
         shutil.rmtree(self.d)
 
-    def test_simple_package(self):
-        bento_meta_data = bento_meta_data_template % bento_dummy_meta_data
-        bento_info = """\
-%s
-
-Library:
-    Packages:
-        foo
-""" % bento_meta_data
-
-        setup_py = """\
-from distutils.core import setup
-setup(packages=["foo"], **%s)
-""" % dummy_meta_data
-
+    def _compare_bentos(self, setup_py, bento_info):
         setup_node = self.top_node.make_node("setup.py")
         setup_node.safe_write(setup_py)
 
@@ -107,3 +95,46 @@ setup(packages=["foo"], **%s)
 
         gen_bento = self.top_node.find_node("foo.info")
         self.assertEqual(gen_bento.read(), bento_info)
+
+    def test_simple_package(self):
+        bento_meta_data = bento_meta_data_template % bento_dummy_meta_data
+        bento_info = """\
+%s
+
+Library:
+    Packages:
+        foo
+""" % bento_meta_data
+
+        setup_py = """\
+from distutils.core import setup
+setup(packages=["foo"], **%s)
+""" % dummy_meta_data
+        self._compare_bentos(setup_py, bento_info)
+
+    def test_package_data_distutils(self):
+        bento_meta_data = bento_meta_data_template % bento_dummy_meta_data
+        bento_info = """\
+%s
+
+DataFiles: foo_data
+    SourceDir: foo
+    TargetDir: $sitedir/foo
+    Files:
+        info.txt
+
+Library:
+    Packages:
+        foo
+""" % bento_meta_data
+
+        setup_py = """\
+from distutils.core import setup
+setup(packages=["foo"], package_data={"foo": ["*txt"]}, **%s)
+""" % dummy_meta_data
+
+        data_node = self.top_node.make_node(op.join("foo", "info.txt"))
+        data_node.parent.mkdir()
+        data_node.write("")
+
+        self._compare_bentos(setup_py, bento_info)
