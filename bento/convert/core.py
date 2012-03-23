@@ -134,7 +134,7 @@ def monkey_patch(top_node, type, filename):
         dist = old_setup(**kw)
         DIST_GLOBAL = dist
         PACKAGE_OBJECTS = package_objects
-        return dist, package_objects
+        return dist
 
     if type == "distutils":
         import distutils.core
