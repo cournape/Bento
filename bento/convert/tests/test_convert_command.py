@@ -5,6 +5,14 @@ import tempfile
 
 import os.path as op
 
+import bento.convert.commands
+
+from bento.commands.errors \
+    import \
+        UsageException
+from bento.compat.api.moves \
+    import \
+        unittest
 from bento.core.package \
     import \
         PackageDescription
@@ -59,8 +67,24 @@ MaintainerEmail: %(maintainer_email)s
 License: %(license)s
 Platforms: %(platforms)s"""
 
-class TestConvertCommand(SubprocessTestCase):
+def _run_convert_command(top_node, run_node, setup_py, bento_info, cmd_argv):
+    setup_node = top_node.make_node("setup.py")
+    setup_node.safe_write(setup_py)
+
+    create_fake_package_from_bento_info(top_node, bento_info)
+    package = PackageDescription.from_string(bento_info)
+
+    cmd = ConvertCommand()
+    opts = OptionsContext.from_command(cmd)
+
+    context = CmdContext(None, cmd_argv, opts, package, run_node)
+    cmd.run(context)
+    cmd.shutdown(context)
+    context.shutdown()
+
+class CommonTestCase(unittest.TestCase):
     def setUp(self):
+        super(CommonTestCase, self).setUp()
         self.save = os.getcwd()
         self.d = tempfile.mkdtemp()
         os.chdir(self.d)
@@ -77,29 +101,9 @@ class TestConvertCommand(SubprocessTestCase):
         os.chdir(self.save)
         shutil.rmtree(self.d)
 
-    def _compare_bentos(self, setup_py, bento_info, cmd_argv=None):
-        output = "foo.info"
-        if cmd_argv is None:
-            cmd_argv = []
-        cmd_argv.append("--output=%s" % output)
+        super(CommonTestCase, self).tearDown()
 
-        setup_node = self.top_node.make_node("setup.py")
-        setup_node.safe_write(setup_py)
-
-        create_fake_package_from_bento_info(self.top_node, bento_info)
-        package = PackageDescription.from_string(bento_info)
-
-        cmd = ConvertCommand()
-        opts = OptionsContext.from_command(cmd)
-
-        context = CmdContext(None, cmd_argv, opts, package, self.run_node)
-        cmd.run(context)
-        cmd.shutdown(context)
-        context.shutdown()
-
-        gen_bento = self.top_node.find_node(output)
-        self.assertEqual(gen_bento.read(), bento_info)
-
+class TestConvertCommand(SubprocessTestCase, CommonTestCase):
     def test_simple_package(self):
         bento_meta_data = bento_meta_data_template % bento_dummy_meta_data
         bento_info = """\
@@ -117,7 +121,13 @@ Library:
 from distutils.core import setup
 setup(packages=["foo"], **%s)
 """ % dummy_meta_data
-        self._compare_bentos(setup_py, bento_info, cmd_argv=["-t", "distutils"])
+
+        output = "foo.info"
+        cmd_argv = ["--output=%s" % output, "-t", "distutils"]
+
+        _run_convert_command(self.top_node, self.run_node, setup_py, bento_info, cmd_argv=cmd_argv)
+        gen_bento = self.top_node.find_node(output)
+        self.assertEqual(gen_bento.read(), bento_info)
 
     def test_package_data_distutils(self):
         bento_meta_data = bento_meta_data_template % bento_dummy_meta_data
@@ -147,4 +157,9 @@ setup(packages=["foo"], package_data={"foo": ["*txt"]}, **%s)
         data_node.parent.mkdir()
         data_node.write("")
 
-        self._compare_bentos(setup_py, bento_info, cmd_argv=["-t", "distutils"])
+        output = "foo.info"
+        cmd_argv = ["--output=%s" % output, "-t", "distutils"]
+
+        _run_convert_command(self.top_node, self.run_node, setup_py, bento_info, cmd_argv=cmd_argv)
+        gen_bento = self.top_node.find_node(output)
+        self.assertEqual(gen_bento.read(), bento_info)
