@@ -8,6 +8,9 @@ import os.path as op
 from bento.compat.api.moves \
     import \
         unittest
+from bento.core.package \
+    import \
+        PackageDescription
 from bento.core.pkg_objects \
     import \
         DataFiles
@@ -19,7 +22,7 @@ from bento.core.node \
         create_first_node
 from bento.convert.core \
     import \
-        monkey_patch, analyse_setup_py, build_pkg, _convert_numpy_data_files
+        monkey_patch, analyse_setup_py, build_pkg, _convert_numpy_data_files, prune_extra_files
 
 class CommonTest(SubprocessTestCase):
     def setUp(self):
@@ -98,3 +101,27 @@ class TestMisc(unittest.TestCase):
         pkg_name, source_dir, target_dir, files = _convert_numpy_data_files(self.top_node, source_dir, files)
 
         self.assertEqual(pkg_name, "foo.bar")
+
+    def test_prune_extra_files(self):
+        files = ["doc/foo.info", "yeah.txt", "foo/__init__.py"]
+        for f in files:
+            n = self.top_node.make_node(f)
+            n.parent.mkdir()
+            n.write("")
+
+        bento_info = """\
+Name: foo
+
+ExtraSourceFiles: yeah.txt
+
+DataFiles: doc
+    SourceDir: .
+    TargetDir: $sitedir
+    Files: doc/foo.info
+
+Library:
+    Packages: foo
+"""
+        pkg = PackageDescription.from_string(bento_info)
+        files = prune_extra_files(files, pkg, self.top_node)
+        self.assertEqual(files, ["yeah.txt"])
