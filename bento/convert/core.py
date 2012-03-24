@@ -355,57 +355,6 @@ def detect_monkeys(setup_py, show_output, log):
     else:
         raise ValueError("Unsupported converter")
 
-# Functions below should always produce posix-style paths, even on windows
-def combine_groups(data_files):
-    """Given a list of tuple (target, files), combine files together per
-    target/srcdir.
-    
-    Example
-    -------
-    
-    data_files = [('foo', ['src/file1', 'src/file2'])]
-    
-    combine_groups returns:
-        {'foo_src': {
-            'target': 'foo',
-            'srcdir': 'src',
-            'files':
-                ['file1', 'file2']}
-        }.
-    """
-
-    ret = {}
-    for data_file in data_files:
-        # FIXME: install policies should not be handled here
-        # FIXME: find the cases when entries' length are 2 vs 3 vs 4
-        if len(data_file) == 2:
-            target = posixpath.join("$sitedir", data_file[0])
-            sources = data_file[1]
-        elif len(data_file) == 3:
-            target = posixpath.join("$prefix", data_file[1])
-            sources = data_file[2]
-        else:
-            raise NotImplementedError("data files with >3 components not handled yet")
-
-        for source in sources:
-            srcdir = op.dirname(source)
-            name = canonalize_path(op.basename(source))
-
-            # Generate a unique key for target/source combination
-            key = "%s_%s" % (target.replace(op.sep, "_"), srcdir.replace(op.sep, "_"))
-            if ret.has_key(key):
-                if not (ret[key]["srcdir"] == srcdir and ret[key]["target"] == target):
-                    raise ValueError("BUG: mismatch for key %s ?" % key)
-                ret[key]["files"].append(name)
-            else:
-                d = {}
-                d["srcdir"] = srcdir
-                d["target"] = target
-                d["files"] = [name]
-                ret[key] = d
-
-    return ret
-
 def prune_file_list(files, redundant):
     """Prune a list of files relatively to a second list.
 
