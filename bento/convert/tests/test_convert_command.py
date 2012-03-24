@@ -105,6 +105,9 @@ class TestConvertCommand(SubprocessTestCase):
         bento_info = """\
 %s
 
+ExtraSourceFiles:
+    setup.py
+
 Library:
     Packages:
         foo
@@ -120,6 +123,9 @@ setup(packages=["foo"], **%s)
         bento_meta_data = bento_meta_data_template % bento_dummy_meta_data
         bento_info = """\
 %s
+
+ExtraSourceFiles:
+    setup.py
 
 DataFiles: foo_data
     SourceDir: foo

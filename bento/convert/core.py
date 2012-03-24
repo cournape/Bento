@@ -17,7 +17,7 @@ from bento.core.utils \
         pprint, extract_exception
 from bento.core.pkg_objects \
     import \
-        PathOption, DataFiles
+        DataFiles
 
 from bento.commands.errors \
     import \
@@ -72,6 +72,8 @@ def _convert_numpy_data_files(top_node, source_dir, files):
     return pkg_name, source_dir, target_dir, [node.path_from(source_node) for node in nodes]
 
 class _PackageObjects(object):
+    """This private class is used to record the distribution data in our
+    instrumented setup."""
     def __init__(self, monkey_patch_mode="distutils"):
         self.package_data = {}
         self.extra_source_files = {}
@@ -277,7 +279,6 @@ def build_pkg(dist, package_objects, top_node):
     if package_objects.extra_source_files:
         extra_source_files.extend([canonalize_path(f) 
                                   for f in package_objects.extra_source_files])
-    pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg, top_node))
 
     for pkg_name, source_dir, target_dir, files in package_objects.iter_data_files(top_node):
         if len(files) > 0:
@@ -298,6 +299,8 @@ def build_pkg(dist, package_objects, top_node):
     pkg.packages = sorted(list(set(pkg.packages)))
     options = {"path_options": path_options}
     
+    pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg, top_node))
+
     return pkg, options
 
 def prune_extra_files(files, pkg, top_node):
@@ -414,8 +417,8 @@ def prune_file_list(files, redundant):
     redundant: seq
         list of candidate files to prune.
     """
-    files_set = set([posixpath.normpath(f) for f in files if not isinstance(f, basestring)])
-    redundant_set = set([posixpath.normpath(f) for f in redundant if not isinstance(f, basestring)])
+    files_set = set([posixpath.normpath(f) for f in files])
+    redundant_set = set([posixpath.normpath(f) for f in redundant])
 
     return list(files_set.difference(redundant_set))
 
