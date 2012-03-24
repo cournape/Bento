@@ -193,7 +193,7 @@ def _test(code, setup_py, show_output, log):
 
         os.write(fid, code)
 
-        buf = cStringIO.StringIO()
+        buf = cStringIO()
         st = logged_run(cmd, buf)
 
         # FIXME: handle this correctly
