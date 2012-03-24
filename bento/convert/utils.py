@@ -1,6 +1,10 @@
 import os
 import sys
 import tempfile
+import ntpath
+import posixpath
+
+import os.path as op
 
 from six.moves import cStringIO
 
@@ -277,6 +281,17 @@ def whole_test(setup_py, verbose, log):
         return "setuptools + numpy.distutils converter"
     else:
         return "Unsupported converter"
+
+def canonalize_path(path):
+    """Convert a win32 path to unix path."""
+    head, tail = ntpath.split(path)
+    lst = [tail]
+    while head and tail:
+        head, tail = ntpath.split(head)
+        lst.insert(0, tail)
+    lst.insert(0, head)
+
+    return posixpath.join(*lst)
 
 if __name__ == "__main__":
     setup_py = sys.argv[1]

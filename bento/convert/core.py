@@ -2,7 +2,6 @@ import os
 import sys
 import warnings
 import posixpath
-import ntpath
 
 import os.path as op
 
@@ -22,6 +21,9 @@ from bento.core.pkg_objects \
 from bento.commands.errors \
     import \
         UsageException
+from bento.convert.utils \
+    import \
+        canonalize_path
 from bento.convert.errors \
     import \
         ConvertionError
@@ -421,16 +423,3 @@ def prune_file_list(files, redundant):
     redundant_set = set([posixpath.normpath(f) for f in redundant])
 
     return list(files_set.difference(redundant_set))
-
-def canonalize_path(path):
-    """Convert a win32 path to unix path."""
-    if op.sep == "/":
-        return path
-    head, tail = ntpath.split(path)
-    lst = [tail]
-    while head and tail:
-        head, tail = ntpath.split(head)
-        lst.insert(0, tail)
-    lst.insert(0, head)
-
-    return posixpath.join(*lst)
