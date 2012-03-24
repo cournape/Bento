@@ -60,9 +60,11 @@ class DataFiles(object):
         return files
 
     def __repr__(self):
-        return repr({"files": self.files,
-                     "source_dir": self.source_dir,
-                     "target_dir": self.target_dir})
+        return "DataSection(files=%r, target_dir=%r, source_dir=%r)" % \
+               (self.files, self.target_dir, self.source_dir)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 class Executable(object):
     @classmethod
