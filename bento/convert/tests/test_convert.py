@@ -3,6 +3,11 @@ import sys
 import tempfile
 import shutil
 
+import os.path as op
+
+from bento.compat.api.moves \
+    import \
+        unittest
 from bento.core.pkg_objects \
     import \
         DataFiles
@@ -14,7 +19,7 @@ from bento.core.node \
         create_first_node
 from bento.convert.core \
     import \
-        monkey_patch, analyse_setup_py, build_pkg
+        monkey_patch, analyse_setup_py, build_pkg, _convert_numpy_data_files
 
 class CommonTest(SubprocessTestCase):
     def setUp(self):
@@ -66,3 +71,30 @@ setup(name="foo", include_package_data=True, packages=["foo"])
 
         self.assertEqual(pkg.data_files, {"foo_data": DataFiles("foo_data", ["foo.info"], "$sitedir/foo", "foo")})
         self.assertEqual(pkg.extra_source_files, ["setup.py", "yeah.txt"])
+
+class TestMisc(unittest.TestCase):
+    def setUp(self):
+        self.save = os.getcwd()
+        self.d = tempfile.mkdtemp()
+        os.chdir(self.d)
+        try:
+            self.top_node = create_first_node(self.d)
+        except Exception:
+            os.chdir(self.save)
+            raise
+
+    def tearDown(self):
+        os.chdir(self.save)
+        shutil.rmtree(self.d)
+
+    def test_convert_numpy_data_files(self):
+        source_dir = "foo/bar"
+        files = [op.join(source_dir, f) for f in ["foufou", "fubar"]]
+        for f in files:
+            node = self.top_node.make_node(f)
+            node.parent.mkdir()
+            node.write("")
+
+        pkg_name, source_dir, target_dir, files = _convert_numpy_data_files(self.top_node, source_dir, files)
+
+        self.assertEqual(pkg_name, "foo.bar")
