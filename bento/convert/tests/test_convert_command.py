@@ -163,3 +163,70 @@ setup(packages=["foo"], package_data={"foo": ["*txt"]}, **%s)
         _run_convert_command(self.top_node, self.run_node, setup_py, bento_info, cmd_argv=cmd_argv)
         gen_bento = self.top_node.find_node(output)
         self.assertEqual(gen_bento.read(), bento_info)
+
+class TestMockedConvertCommand(CommonTestCase):
+    """Test the convert command UI."""
+    def setUp(self):
+        super(TestMockedConvertCommand, self).setUp()
+
+        def dummy_convert(ctx, filename, setup_args, monkey_patch_mode, verbose, output, log, show_output):
+            pass
+        self.old_convert = bento.convert.commands.convert
+        try:
+            bento.convert.commands.convert = lambda *a: None
+        except:
+            bento.convert.commands.convert = self.old_convert
+
+    def tearDown(self):
+        bento.convert.commands.convert.convert = self.old_convert
+
+        super(TestMockedConvertCommand, self).tearDown()
+
+    def test_simple(self):
+        bento_info = """\
+Name: foo
+
+Library:
+    Packages:
+        foo
+"""
+
+        setup_py = """\
+from distutils.core import setup
+setup(packages=["foo"], name="foo")
+"""
+        _run_convert_command(self.top_node, self.run_node, setup_py, bento_info, [])
+
+    def test_help(self):
+        bento_info = """\
+Name: foo
+
+Library:
+    Packages:
+        foo
+"""
+
+        setup_py = """\
+from distutils.core import setup
+setup(packages=["foo"], name="foo")
+"""
+        _run_convert_command(self.top_node, self.run_node, setup_py, bento_info, ["-h"])
+
+    def test_not_overwritten(self):
+        bento_info = """\
+Name: foo
+
+Library:
+    Packages:
+        foo
+"""
+
+        setup_py = """\
+from distutils.core import setup
+setup(packages=["foo"], name="foo")
+"""
+        self.top_node.make_node("bento.info").write("")
+        self.assertRaises(UsageException,
+                          lambda: _run_convert_command(self.top_node,
+                              self.run_node, setup_py, bento_info,
+                              ["--output=bento.info"]))
