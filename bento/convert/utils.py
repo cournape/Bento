@@ -292,6 +292,3 @@ def canonalize_path(path):
     lst.insert(0, head)
 
     return posixpath.join(*lst)
-
-if __name__ == "__main__":
-    setup_py = sys.argv[1]
