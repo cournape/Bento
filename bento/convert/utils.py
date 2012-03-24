@@ -2,19 +2,14 @@ import os
 import sys
 import tempfile
 
-if sys.version_info[0] < 3:
-    from StringIO \
-        import \
-            StringIO
-else:
-    from io \
-        import \
-            StringIO
+from six.moves import cStringIO
 
-from subprocess import \
-        PIPE, call, STDOUT, Popen
+from subprocess \
+    import \
+        PIPE, STDOUT, Popen
 
-from bento.core.utils import \
+from bento.core.utils \
+    import \
         pprint
 
 distutils_code = """\
@@ -194,7 +189,7 @@ def _test(code, setup_py, show_output, log):
 
         os.write(fid, code)
 
-        buf = StringIO()
+        buf = cStringIO.StringIO()
         st = logged_run(cmd, buf)
 
         # FIXME: handle this correctly
