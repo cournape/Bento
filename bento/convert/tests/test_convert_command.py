@@ -30,7 +30,7 @@ from bento.commands.options \
         OptionsContext
 from bento.convert.commands \
     import \
-        ConvertCommand
+        ConvertCommand, DetectTypeCommand
 from bento.misc.testing \
     import \
         SubprocessTestCase
@@ -230,3 +230,37 @@ setup(packages=["foo"], name="foo")
                           lambda: _run_convert_command(self.top_node,
                               self.run_node, setup_py, bento_info,
                               ["--output=bento.info"]))
+
+class TestMockedDetectTypeCommand(CommonTestCase):
+    """Test the detect_type command UI."""
+    def setUp(self):
+        super(TestMockedDetectTypeCommand, self).setUp()
+
+        self.old_whole_test = bento.convert.commands.whole_test
+        try:
+            bento.convert.commands.whole_test = lambda *a: None
+        except:
+            bento.convert.commands.whole_test = self.old_whole_test
+
+    def tearDown(self):
+        bento.convert.commands.convert.whole_test = self.old_whole_test
+
+        super(TestMockedDetectTypeCommand, self).tearDown()
+
+    def _run_command(self):
+        setup_node = self.top_node.make_node("setup.py")
+        setup_node.safe_write("")
+
+        create_fake_package_from_bento_info(self.top_node, "")
+        package = PackageDescription.from_string("")
+
+        cmd = DetectTypeCommand()
+        opts = OptionsContext.from_command(cmd)
+
+        context = CmdContext(None, [], opts, package, self.run_node)
+        cmd.run(context)
+        cmd.shutdown(context)
+        context.shutdown()
+
+    def test_simple(self):
+        self._run_command()
