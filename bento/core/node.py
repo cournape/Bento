@@ -591,6 +591,16 @@ class NodeWithBuild(Node):
 class _NodeContext(object):
     __slot__ = ("srcnode", "bldnode")
 
+def create_first_node(source_path):
+    """
+    source_path be an absolute path
+    """
+    root = NodeWithBuild("", None)
+    top = root.find_node(source_path)
+    if top is None:
+        raise IOError("Invalid source_path: %r" % source_path)
+    return top
+
 def create_root_with_source_tree(source_path, build_path):
     """
     Both source_path and build_path should be absolute paths

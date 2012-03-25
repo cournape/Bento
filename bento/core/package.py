@@ -319,9 +319,11 @@ def static_representation(pkg, options={}):
     if pkg.download_url:
         r.append("DownloadUrl: %s" % pkg.download_url)
     if pkg.description:
-        r.append("Description: %s" %
-                 "\n".join([' ' * indent_level  + line 
-                            for line in pkg.description.splitlines()]))
+        lines = pkg.description.splitlines()
+        description = [lines[0]]
+        if len(lines) > 1:
+            description.extend([' ' * indent_level  + line for line in lines[1:]])
+        r.append("Description: %s" % "\n".join(description))
     if pkg.author:
         r.append("Author: %s" % pkg.author)
     if pkg.author_email:
