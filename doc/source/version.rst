@@ -17,6 +17,8 @@ Fixed issues
 
     - Running bento for python 2.x after having run it for 3.x does not crash
       bento anymore
+    - Using bento installed as root should now work (#46). This is still not
+      recommended, though
 
 Internals
 ---------
@@ -27,6 +29,8 @@ Internals
       with compatibility with pip/easy_install/virtualenv and away from a
       distutils extension
     - six is now used to handle most 2/3 compatibilities.
+    - convert-related code is now in its won package, and has some decent
+      functional tests for basic features.
 
 Version 0.0.7
 =============
