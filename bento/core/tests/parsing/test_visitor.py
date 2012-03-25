@@ -112,6 +112,26 @@ lines.\
 """
         self.assertEqual(parse_and_analyse(data), self.ref)
 
+    def test_nested_indented_block2(self):
+        last_indent = " " * 4
+        data = """\
+Description: some
+    simple
+        description
+            on
+%s
+Name: foo
+""" % last_indent
+
+        self.ref["name"] = "foo"
+        self.ref["description"] = """some
+simple
+    description
+        on
+%s
+""" % last_indent
+        self.assertEqual(parse_and_analyse(data), self.ref)
+
 class TestLibrary(unittest.TestCase):
     def setUp(self):
         self.ref = _empty_description()
