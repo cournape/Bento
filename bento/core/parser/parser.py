@@ -69,7 +69,7 @@ class Parser(object):
                 fid.close()
             except IOError:
                 e = extract_exception()
-                raise BentoError("Could not write pickle file (original error was %r)" % e)
+                raise BentoError("Could not write pickle file %r (original error was %r)" % (picklefile, e))
         else:
             try:
                 fid = open(_PICKLED_PARSETAB, "wb")
