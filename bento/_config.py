@@ -13,7 +13,7 @@ try:
            PKGDATADIR
 except ImportError:
     # Arch-independent path
-    PKGDATADIR = os.path.dirname(__file__)
+    PKGDATADIR = os.path.abspath(os.path.dirname(__file__))
 
 # Windows binaries
 _CLI = os.path.join(PKGDATADIR, "commands", "cli.exe")
