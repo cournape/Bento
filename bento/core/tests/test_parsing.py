@@ -1,22 +1,12 @@
 import os
 import tempfile
-import shutil
-import sys
-
-from os.path import \
-    join, dirname
-
-if sys.version_info[0] < 3:
-    from cStringIO import StringIO
-else:
-    from io import StringIO
 
 from bento.compat.api.moves \
     import \
         unittest
 from bento.core.pkg_objects \
     import \
-        PathOption, FlagOption, Executable, DataFiles
+        PathOption, FlagOption, DataFiles
 from bento.core.options \
     import \
         PackageOptions
@@ -25,7 +15,8 @@ from bento.core.utils \
     import \
         extract_exception
 from bento \
-    import PackageDescription, static_representation
+    import \
+        PackageDescription
 from bento.compat.api \
     import \
         NamedTemporaryFile
