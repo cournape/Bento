@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import copy
 
 from bento.compat.api.moves \
     import \
@@ -38,8 +39,13 @@ def _execute_test(module_name, class_name, function_name):
 
     cmd = [sys.executable]
 
+    if sys.platform == "win32":
+        env = copy.deepcopy(os.environ)
+    else:
+        env = {}
+    env["SUBTESTPIPE"] = "1"
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            stdin=subprocess.PIPE, env={"SUBTESTPIPE": "1"})
+            stdin=subprocess.PIPE, env=env)
     out, err = p.communicate(code.encode())
     return out, err, p.returncode
 
