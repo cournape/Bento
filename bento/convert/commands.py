@@ -149,13 +149,10 @@ Usage:   bentomaker detect_type [OPTIONS]."""
         log = cStringIO()
 
         if verbose:
-            pprint("PINK",
-                   "=================================================================")
-            pprint("PINK",
-                   "Detecting used distutils extension(s) ... (This may take a while)")
+            print("=================================================================")
+            print("Detecting used distutils extension(s) ... (This may take a while)")
         monkey_patch_mode = whole_test(o.setup_file, o.verbose, log)
         if verbose:
-            pprint("PINK", "Done !")
-            pprint("PINK",
-                   "=================================================================")
-        pprint("GREEN", "Detected type: %r" % monkey_patch_mode)
+            print("Done !")
+            print("=================================================================")
+        print("Detected type: %r" % monkey_patch_mode)
