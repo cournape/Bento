@@ -1,5 +1,8 @@
 import os
 import tempfile
+import stat
+
+import os.path as op
 
 from bento.compat.api.moves \
     import \
@@ -20,9 +23,14 @@ from bento \
 from bento.compat.api \
     import \
         NamedTemporaryFile
+from bento.core.errors \
+    import \
+        BentoError
 from bento.core.parser.errors \
     import \
         ParseError
+
+from bento.core.parser import parser as parser_module
 
 #old = sys.path[:]
 #try:
@@ -125,3 +133,61 @@ Path: foo
         finally:
             os.close(fid)
             os.remove(filename)
+
+class TestParserCaching(unittest.TestCase):
+    def setUp(self):
+        wdir = tempfile.mkdtemp()
+        self.subwdir= "bar"
+        self.old = os.getcwd()
+        os.chdir(wdir)
+
+    def tearDown(self):
+        os.chdir(self.old)
+
+    def test_no_cached_failure(self):
+        """Ensure we raise an error when the cached parser file does not exists
+        and we cannot create one."""
+        os.makedirs(self.subwdir)
+        os.chmod(self.subwdir, stat.S_IREAD | stat.S_IEXEC)
+        parsetab = op.join(self.subwdir, "parsetab")
+
+        old_parsetab = parser_module._PICKLED_PARSETAB
+        try:
+            parser_module._PICKLED_PARSETAB = parsetab
+            try:
+                parser_module.Parser()
+                self.assertTrue(len(self._list_files()) == 0, "Ply created a cached file in CWD")
+                self.fail("Expected an error when creating a parser in read-only dir !")
+            except BentoError:
+                pass
+        finally:
+            parser_module._PICKLED_PARSETAB = old_parsetab
+
+    def _list_files(self):
+        """Return the list of files in cwd (including subdirectories)."""
+        created_files = []
+        for root, dirs, files in os.walk(os.getcwd()):
+            created_files.extend([op.join(root, f) for f in files])
+        return created_files
+
+    def test_read_only_cached(self):
+        """Test that we can create a parser backed by a read-only parsetab
+        file."""
+        os.makedirs(self.subwdir)
+        parsetab = op.join(self.subwdir, "parsetab")
+
+        old_parsetab = parser_module._PICKLED_PARSETAB
+        try:
+            parser_module._PICKLED_PARSETAB = parsetab
+            parser_module.Parser()
+            self.assertEqual(self._list_files(), [op.abspath(parsetab)])
+
+            os.chmod(self.subwdir, stat.S_IREAD | stat.S_IEXEC)
+            os.chmod(parsetab, stat.S_IREAD)
+
+            parser_module.Parser()
+            # This ensures ply did not write another cached file behind our back
+            self.assertEqual(self._list_files(), [op.abspath(parsetab)],
+                             "Ply created another cached parsetab file !")
+        finally:
+            parser_module._PICKLED_PARSETAB = old_parsetab
