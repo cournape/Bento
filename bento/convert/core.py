@@ -293,7 +293,7 @@ def build_pkg(dist, package_objects, top_node):
 
     if dist.scripts:
         name = "%s_scripts" % pkg.name
-        target_dir = "$eprefix"
+        target_dir = "$bindir"
         pkg.data_files[name] = DataFiles(name, dist.scripts, target_dir, ".")
 
     # numpy.distutils bug: packages are appended twice to the Distribution

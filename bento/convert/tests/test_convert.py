@@ -75,6 +75,23 @@ setup(name="foo", include_package_data=True, packages=["foo"])
         self.assertEqual(pkg.data_files, {"foo_data": DataFiles("foo_data", ["foo.info"], "$sitedir/foo", "foo")})
         self.assertEqual(pkg.extra_source_files, ["setup.py", "yeah.txt"])
 
+    def test_scripts(self):
+        top = self.top_node
+
+        top.make_node("foo").write("")
+
+        top.make_node("setup.py").write("""\
+from distutils.core import setup
+
+setup(name="foo", scripts=["foo"])
+""")
+
+        monkey_patch(top, "distutils", "setup.py")
+        dist, package_objects = analyse_setup_py("setup.py", ["-n", "-q"])
+        pkg, options = build_pkg(dist, package_objects, top)
+
+        self.assertEqual(pkg.data_files, {"foo_scripts": DataFiles("foo_scripts", ["foo"], "$bindir", ".")})
+
 class TestMisc(unittest.TestCase):
     def setUp(self):
         self.save = os.getcwd()
