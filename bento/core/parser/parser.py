@@ -1,3 +1,8 @@
+import sys
+import errno
+
+import os.path as op
+
 from ply \
     import yacc
 
@@ -13,13 +18,42 @@ from bento.core.parser.nodes \
         Node
 from bento.core.errors \
     import \
-        InternalBentoError
+        InternalBentoError, BentoError
+from bento.core.utils \
+    import \
+        extract_exception
 from bento.core.parser.errors \
     import \
         ParseError
 
 # Do not remove: this is used by PLY
 tokens = _tokens
+
+def _has_parser_changed(picklefile):
+    # FIXME: private function to determine whether ply will need to write to
+    # the pickled grammar file. Highly implementation dependent.
+    from ply.yacc import PlyLogger, get_caller_module_dict, ParserReflect, YaccError, LRTable
+    errorlog = PlyLogger(sys.stderr)
+
+    pdict = get_caller_module_dict(2)
+
+    # Collect parser information from the dictionary
+    pinfo = ParserReflect(pdict, log=errorlog)
+    pinfo.get_all()
+
+    if pinfo.error:
+        raise YaccError("Unable to build parser")
+
+    # Check signature against table files (if any)
+    signature = pinfo.signature()
+
+    # Read the tables
+    try:
+        lr = LRTable()
+        read_signature = lr.read_pickle(picklefile)
+        return read_signature != signature
+    except Exception:
+        return True
 
 class Parser(object):
     def __init__(self, lexer=None):
@@ -29,13 +63,26 @@ class Parser(object):
             self.lexer = lexer
 
         picklefile = _PICKLED_PARSETAB
-        try:
-            fid = open(_PICKLED_PARSETAB, "wb")
-            fid.close()
-        except IOError:
-            # In case of read-only support (no write access, zip import,
-            # etc...)
-            picklefile = None
+        if not op.exists(picklefile):
+            try:
+                fid = open(picklefile, "wb")
+                fid.close()
+            except IOError:
+                e = extract_exception()
+                raise BentoError("Could not write pickle file %r (original error was %r)" % (picklefile, e))
+        else:
+            try:
+                fid = open(_PICKLED_PARSETAB, "wb")
+                fid.close()
+            except IOError:
+                # In case of read-only support (no write access, zip import,
+                # etc...)
+                e = extract_exception()
+                if e.errno == errno.EACCES:
+                    if _has_parser_changed(_PICKLED_PARSETAB):
+                        raise BentoError("Cannot write new updated grammar to file %r" % _PICKLED_PARSETAB)
+                else:
+                    raise
         self.parser = yacc.yacc(start="stmt_list",
                                 picklefile=picklefile,
                                 debug=_DEBUG_YACC)
