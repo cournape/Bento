@@ -14,7 +14,7 @@ from bento.compat.api.moves \
 from bento.core.utils \
     import \
         validate_glob_pattern, expand_glob, subst_vars, to_camel_case, \
-        explode_path, same_content, cmd_is_runnable
+        explode_path, same_content, cmd_is_runnable, memoized
 
 class TestParseGlob(unittest.TestCase):
     def test_invalid(self):
@@ -127,3 +127,27 @@ class TestMisc(unittest.TestCase):
     def test_cmd_is_not_runnable(self):
         st = cmd_is_runnable(["phython", "-c", "''"])
         self.assertFalse(st)
+
+class TestMemoize(unittest.TestCase):
+    def test_simple_no_arguments(self):
+        lst = []
+        @memoized
+        def dummy_function():
+            lst.append(1)
+
+        dummy_function()
+        dummy_function()
+
+        self.assertEqual(lst, [1])
+
+    def test_simple(self):
+        lst = []
+        @memoized
+        def dummy_function(x):
+            lst.append(x)
+
+        dummy_function(1)
+        dummy_function(2)
+        dummy_function(1)
+
+        self.assertEqual(lst, [1, 2])
