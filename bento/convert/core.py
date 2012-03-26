@@ -244,9 +244,13 @@ def analyse_setup_py(filename, setup_args, verbose=False):
             # time, and setuptools screw this up by inserting stuff first. Is
             # there a better way ?
             sys.path.insert(0, op.dirname(filename))
-            execfile(filename, exec_globals)
-            if type == "distutils" and "setuptools" in sys.modules and verbose:
-                pprint("YELLOW", "Setuptools detected in distutils mode !!!")
+            fid = open(filename, "r")
+            try:
+                exec(fid.read(), exec_globals)
+                if type == "distutils" and "setuptools" in sys.modules and verbose:
+                    pprint("YELLOW", "Setuptools detected in distutils mode !!!")
+            finally:
+                fid.close()
         except ConvertionError:
             raise
         except Exception:

@@ -8,6 +8,8 @@ from bento.core import \
         PackageDescription
 from bento.core.pkg_objects import \
         Executable
+from bento.core.utils import \
+        is_string
 
 _PKG_TO_DIST = {
         "ext_modules": lambda pkg: [v for v  in \
@@ -112,7 +114,7 @@ def distutils_to_package_description(dist):
     try:
         reqs = getattr(dist, "install_requires")
         # FIXME: how to detect this correctly
-        if issubclass(type(reqs), (str, unicode)):
+        if is_string(reqs):
             reqs = [reqs]
         data['install_requires'] = reqs
     except AttributeError:
@@ -182,7 +184,7 @@ def write_pkg_info(pkg, file):
 def entry_points_from_dist(dist):
     if hasattr(dist, "entry_points"):
         from pkg_resources import split_sections
-        if isinstance(dist.entry_points, basestring):
+        if is_string(dist.entry_points):
             entry_points = {}
             sections = split_sections(dist.entry_points)
             for group, lines in sections:
