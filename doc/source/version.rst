@@ -1,7 +1,10 @@
 Version 0.0.8
 =============
 
-Released on .
+Released on 26th March 2012.
+
+While this release does not have big user-visible features, it brings lots of
+internal improvements and bug fixes, especially for the convert command.
 
 Main features:
 
