@@ -51,7 +51,8 @@ from yaku.context \
 
 from bento.core.testing \
     import \
-        create_fake_package_from_bento_infos, create_fake_package_from_bento_info
+        create_fake_package_from_bento_infos, create_fake_package_from_bento_info, \
+        require_c_compiler
 from bento.commands.tests.utils \
     import \
         prepare_configure, prepare_build, prepare_options, EncodedStringIO
@@ -238,24 +239,52 @@ class TestBuildDistutils(_TestBuildSimpleExtension):
         self._configure_context = DistutilsConfigureContext
         self._build_context = DistutilsBuildContext
 
+    @require_c_compiler("distutils")
+    def test_simple_inplace(self):
+        super(TestBuildDistutils, self).test_simple_inplace()
+
+    @require_c_compiler("distutils")
+    def test_extension_registration(self):
+        super(TestBuildDistutils, self).test_extension_registration()
+
+    @require_c_compiler("distutils")
+    def test_simple_library(self):
+        super(TestBuildDistutils, self).test_extension_registration()
+
+    @require_c_compiler("distutils")
+    def test_simple_extension(self):
+        super(TestBuildDistutils, self).test_extension_registration()
+
 class TestBuildYaku(_TestBuildSimpleExtension):
     def setUp(self):
         super(TestBuildYaku, self).setUp()
 
-        ctx = get_cfg()
-        ctx.use_tools(["ctasks", "pyext"])
-        ctx.store()
-
-        self.yaku_build = get_bld()
-
         self._configure_context = ConfigureYakuContext
         self._build_context = BuildYakuContext
 
-    def tearDown(self):
-        try:
-            self.yaku_build.store()
-        finally:
-            super(TestBuildYaku, self).tearDown()
+    @require_c_compiler("yaku")
+    def test_simple_inplace(self):
+        super(TestBuildYaku, self).test_simple_inplace()
+
+    @require_c_compiler("yaku")
+    def test_extension_registration(self):
+        super(TestBuildYaku, self).test_extension_registration()
+
+    @require_c_compiler("yaku")
+    def test_simple_library(self):
+        super(TestBuildYaku, self).test_simple_library()
+
+    @require_c_compiler("yaku")
+    def test_simple_extension(self):
+        super(TestBuildYaku, self).test_simple_extension()
+
+    @require_c_compiler("yaku")
+    def test_disable_extension(self):
+        super(TestBuildYaku, self).test_disable_extension()
+
+    @require_c_compiler("yaku")
+    def test_disable_nonexisting_extension(self):
+        super(TestBuildYaku, self).test_disable_nonexisting_extension()
 
 def _not_has_waf():
     try:

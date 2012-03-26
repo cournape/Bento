@@ -26,7 +26,7 @@ from bento.commands.options \
 
 from bento.core.testing \
     import \
-        create_fake_package_from_bento_info
+        create_fake_package_from_bento_info, require_c_compiler
 
 class TestBuildCommand(unittest.TestCase):
     def setUp(self):
@@ -106,6 +106,7 @@ Library:
 """
         self._test_dry_run(bento_info)
 
+    @require_c_compiler()
     def test_simple_extension_list_only(self):
         """Test whether install runs at all for a trivial package."""
         bento_info = """\

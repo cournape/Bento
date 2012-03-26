@@ -29,6 +29,9 @@ from bento.installed_package_description \
 from bento.commands.tests.utils \
     import \
         comparable_installed_sections
+from bento.core.testing \
+    import \
+        require_c_compiler
 
 class TestSubDirectory(unittest.TestCase):
     def setUp(self):
@@ -95,6 +98,7 @@ Library:
                          {"foo": r_section}}
         self._test_installed_sections(bento_info, r_sections)
 
+    @require_c_compiler("yaku")
     def test_extension(self):
         """Test sub_directory support for C extensions."""
         bento_info = """\
@@ -116,6 +120,7 @@ Library:
                             r_section}}
         self._test_installed_sections(bento_info, r_sections)
 
+    @require_c_compiler("yaku")
     def test_compiled_library(self):
         """Test sub_directory support for C compiled libraries."""
         bento_info = """\

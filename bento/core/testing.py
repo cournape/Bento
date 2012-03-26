@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 
 from bento.compat.api.moves \
     import \
@@ -10,17 +11,52 @@ from bento.core.package \
 from bento.core.pkg_objects \
     import \
         Extension, CompiledLibrary
+from bento.core.utils \
+    import \
+        memoized
 
 if "nose" in sys.modules:
     from ._nose_compat import install_proxy, install_result
     install_proxy()
     install_result()
 
-def skip_if(condition, msg):
+def skip_if(condition, msg=""):
     return unittest.skipIf(condition, msg)
 
 def expected_failure(f):
     return unittest.expectedFailure(f)
+
+def require_c_compiler(builder="yaku"):
+    if builder == "yaku":
+        return _require_c_compiler_yaku()
+    elif builder == "distutils":
+        return _require_c_compiler_distutils()
+    else:
+        raise ValueError("Unrecognized builder: %r" % builder)
+
+@memoized
+def _require_c_compiler_distutils():
+    from bento.commands.build_distutils import DistutilsBuilder
+    builder = DistutilsBuilder()
+    try:
+        bld_cmd, compiler = builder._setup_ext()
+        if len(compiler.executables) < 1:
+            return unittest.skipIf(True, "No C compiler available")
+        return unittest.skipIf(False, "")
+    except Exception:
+        return unittest.skipIf(True, "No C compiler available")
+
+@memoized
+def _require_c_compiler_yaku():
+    import yaku.context
+    source_path = tempfile.mkdtemp()
+    build_path = os.path.join(source_path, "build")
+    context = yaku.context.get_cfg(src_path=source_path, build_path=build_path)
+    try:
+        context.use_tools(["pyext", "ctasks"])
+        return unittest.skipIf(False, "")
+    except ValueError:
+        return unittest.skipIf(True, "No C compiler available")
 
 DUMMY_C = r"""\
 #include <Python.h>
