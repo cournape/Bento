@@ -288,6 +288,9 @@ def build_pkg(dist, package_objects, top_node):
                 name = "%s_data" % pkg_name.replace(".", "_")
             else:
                 name = "dist_data"
+            source_dir = canonalize_path(source_dir)
+            target_dir = canonalize_path(target_dir)
+            files = [canonalize_path(f) for f in files]
             data_sections[name] = DataFiles(name, files, target_dir, source_dir)
     pkg.data_files.update(data_sections)
 
