@@ -2,6 +2,8 @@ import os
 import shutil
 import tempfile
 
+import os.path as op
+
 from bento.compat.api.moves \
     import \
         unittest
@@ -94,7 +96,7 @@ Library:
 """
 
         bentos = {"bento.info": bento_info,
-                  "bar/bento.info": sub_bento_info}
+                  op.join("bar", "bento.info"): sub_bento_info}
         create_fake_package_from_bento_infos(run_node, bentos)
 
         node_pkg, r_node_pkg = self._create_package_and_reference(bento_info, r_bento_info)
@@ -131,7 +133,7 @@ Library:
 """
 
         bentos = {"bento.info": bento_info,
-                  "bar/bento.info": sub_bento_info}
+                  op.join("bar", "bento.info"): sub_bento_info}
         create_fake_package_from_bento_infos(run_node, bentos)
 
         node_pkg, r_node_pkg = self._create_package_and_reference(bento_info, r_bento_info)
@@ -307,7 +309,7 @@ Library:
         r_sections = {"pythonfiles":
                          {"foo": r_bar_section,
                           "foo.bar": r_foo_bar_section}}
-        self._test_installed_sections({"bento.info": bento_info, "foo/bento.info": sub_bento_info},
+        self._test_installed_sections({"bento.info": bento_info, op.join("foo", "bento.info"): sub_bento_info},
                                       r_sections)
 
     def test_extension(self):
@@ -331,5 +333,5 @@ Library:
         r_sections = {"extensions":
                         {"bar.foo":
                             r_section}}
-        self._test_installed_sections({"bento.info": bento_info, "bar/bento.info": sub_bento_info},
+        self._test_installed_sections({"bento.info": bento_info, op.join("bar", "bento.info"): sub_bento_info},
                                       r_sections)
