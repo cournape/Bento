@@ -455,6 +455,11 @@ class BuildContext(_ContextWithBuildDirectory):
             scheme["prefix"] = scheme["eprefix"] = self.run_node.abspath()
             scheme["sitedir"] = self.run_node.abspath()
 
+            if self.pkg.config_py:
+                target_node = self.build_node.find_node(self.pkg.config_py)
+            else:
+                target_node = None
+
             def _install_node(category, node, from_node, target_dir):
                 installed_path = subst_vars(target_dir, scheme)
                 target = os.path.join(installed_path, node.path_from(from_node))
@@ -464,12 +469,13 @@ class BuildContext(_ContextWithBuildDirectory):
             if intree:
                 for category, name, nodes, from_node, target_dir in self.outputs_registry.iter_over_category():
                     for node in nodes:
-                        if node.is_bld():
+                        if node != target_node and node.is_bld():
                             _install_node(category, node, from_node, target_dir)
             else:
                 for category, name, nodes, from_node, target_dir in self.outputs_registry.iter_over_category():
                     for node in nodes:
-                        _install_node(category, node, from_node, target_dir)
+                        if node != target_node:
+                            _install_node(category, node, from_node, target_dir)
 
 class SdistContext(CmdContext):
     def __init__(self, global_context, cmd_args, option_context, pkg, run_node):
