@@ -232,21 +232,24 @@ def configure(ctx):
         create_fake_package_from_bento_infos(top_node, bentos, bscripts)
 
         conf, configure = prepare_configure(self.run_node, bento_info, ConfigureYakuContext)
+        try:
+            hook = top_node.search("bar/bscript")
+            m = create_hook_module(hook.abspath())
+            for hook in find_pre_hooks([m], "configure"):
+                conf.pre_recurse(root.find_dir(hook.local_dir))
+                try:
+                    hook(conf)
+                finally:
+                    conf.post_recurse()
 
-        hook = top_node.search("bar/bscript")
-        m = create_hook_module(hook.abspath())
-        for hook in find_pre_hooks([m], "configure"):
-            conf.pre_recurse(root.find_dir(hook.local_dir))
-            try:
-                hook(conf)
-            finally:
-                conf.post_recurse()
-
-        test = top_node.search("bar/test")
-        if test:
-            self.failUnlessEqual(test.read(), "['fubar']")
-        else:
-            self.fail("test dummy not found")
+            test = top_node.search("bar/test")
+            if test:
+                self.failUnlessEqual(test.read(), "['fubar']")
+            else:
+                self.fail("test dummy not found")
+        finally:
+            configure.shutdown(conf)
+            conf.shutdown()
 
 class TestInstalledSections(unittest.TestCase):
     """Test registered installed sections are the expected ones when using
