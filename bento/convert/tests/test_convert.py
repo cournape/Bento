@@ -94,6 +94,7 @@ setup(name="foo", scripts=["foo"])
 
 class TestMisc(unittest.TestCase):
     def setUp(self):
+        super(TestMisc, self).setUp()
         self.save = os.getcwd()
         self.d = tempfile.mkdtemp()
         os.chdir(self.d)
@@ -106,6 +107,8 @@ class TestMisc(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.save)
         shutil.rmtree(self.d)
+
+        super(TestMisc, self).tearDown()
 
     def test_convert_numpy_data_files(self):
         source_dir = "foo/bar"
