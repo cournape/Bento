@@ -6,11 +6,13 @@ Released on .
 Main features:
 
     - Path sections can now use conditionals
+    - More reliable convert command to migrate
+      distutils/setuptools/distribute/distutils2 packages to bento
     - Single-file distribution can now include waf itself
     - Nose is not necessary to run the test suite anymore
     - Significant improvements to the distutils compatibility layer
     - LibraryDir support for backward compatibility with distutils packages
-      relying on pacakge_dir feature
+      relying on package_dir feature
 
 Fixed issues
 ------------
