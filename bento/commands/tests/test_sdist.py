@@ -25,6 +25,9 @@ from bento.commands.sdist \
 from bento.core.testing \
     import \
         create_fake_package_from_bento_infos, create_fake_package_from_bento_info
+from bento.convert.utils \
+    import \
+        canonalize_path
 
 class TestBaseSdist(unittest.TestCase):
     def setUp(self):
@@ -43,6 +46,16 @@ class TestBaseSdist(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.save)
         shutil.rmtree(self.d)
+
+    def _assert_archive_equality(self, archive, r_archive_list):
+        r_archive_list = set(canonalize_path(f) for f in r_archive_list)
+        archive = self.run_node.find_node(archive)
+        z = zipfile.ZipFile(archive.abspath(), "r")
+        try:
+            archive_list = set(z.namelist())
+            self.assertEqual(archive_list, r_archive_list)
+        finally:
+            z.close()
 
     def test_simple_package(self):
         bento_info = """\
@@ -72,11 +85,7 @@ Library:
         sdist.shutdown(context)
         context.shutdown()
 
-        archive = self.run_node.find_node(op.join("dist", "foo.zip"))
-        z = zipfile.ZipFile(archive.abspath(), "r")
-        for f in archive_list:
-            if not f in z.namelist():
-                self.failUnless(op.join("foo-1.0", f) in files)
+	self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
 
     def test_extra_source_registration(self):
         bento_info = """\
@@ -104,11 +113,7 @@ Library:
         sdist.shutdown(context)
         context.shutdown()
 
-        archive = self.run_node.find_node(op.join("dist", "foo.zip"))
-        z = zipfile.ZipFile(archive.abspath(), "r")
-        for f in archive_list:
-            if not f in z.namelist():
-                self.failUnless(op.join("foo-1.0", f) in files)
+	self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
 
     def test_extra_source_with_alias(self):
         bento_info = """\
@@ -136,11 +141,7 @@ Library:
         sdist.shutdown(context)
         context.shutdown()
 
-        archive = self.run_node.find_node(op.join("dist", "foo.zip"))
-        z = zipfile.ZipFile(archive.abspath(), "r")
-        for f in archive_list:
-            if not f in z.namelist():
-                self.failUnless(op.join("foo-1.0", f) in files)
+	self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
 
     def test_template_filling(self):
         bento_info = """\
@@ -172,8 +173,4 @@ VERSION = $VERSION
         sdist.shutdown(context)
         context.shutdown()
 
-        archive = self.run_node.find_node(op.join("dist", "foo.zip"))
-        z = zipfile.ZipFile(archive.abspath(), "r")
-        for f in archive_list:
-            if not f in z.namelist():
-                self.fail("File %s not found in archive" % (f,))
+	self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
