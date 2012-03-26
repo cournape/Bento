@@ -34,6 +34,9 @@ from bento.convert.errors \
 DIST_GLOBAL = None
 PACKAGE_OBJECTS = None
 
+def canonalized_path_to_package(path):
+    return path.replace(posixpath.sep, ".")
+
 def _convert_numpy_data_files(top_node, source_dir, files):
     """Convert data_files pairs to the common format we use.
 
@@ -69,7 +72,7 @@ def _convert_numpy_data_files(top_node, source_dir, files):
         if node is None:
             raise ConvertionError("file %s refered in data_files not found" % f)
         nodes.append(node)
-    pkg_name = source_dir.replace(os.sep, ".")
+    pkg_name = canonalized_path_to_package(source_dir)
     target_dir = canonalize_path(op.join("$sitedir", source_dir))
     return pkg_name, source_dir, target_dir, [node.path_from(source_node) for node in nodes]
 
@@ -303,20 +306,20 @@ def build_pkg(dist, package_objects, top_node):
     # instance, so we prune the list here
     pkg.packages = sorted(list(set(pkg.packages)))
     options = {"path_options": path_options}
-    
+
     pkg.extra_source_files = sorted(prune_extra_files(extra_source_files, pkg, top_node))
 
     return pkg, options
 
 def prune_extra_files(files, pkg, top_node):
-
     package_files = []
     for p in pkg.packages:
         package_files.extend(find_package(p, top_node))
+    package_files = [canonalize_path(f) for f in package_files]
 
     data_files = []
     for data_section in pkg.data_files.values():
-        data_files.extend([op.join(data_section.source_dir, f) for f in data_section.files])
+        data_files.extend([posixpath.join(data_section.source_dir, f) for f in data_section.files])
 
     redundant = package_files + data_files + pkg.py_modules
 
