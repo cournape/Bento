@@ -85,7 +85,7 @@ Library:
         sdist.shutdown(context)
         context.shutdown()
 
-	self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
+        self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
 
     def test_extra_source_registration(self):
         bento_info = """\
@@ -113,7 +113,7 @@ Library:
         sdist.shutdown(context)
         context.shutdown()
 
-	self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
+        self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
 
     def test_extra_source_with_alias(self):
         bento_info = """\
@@ -141,7 +141,7 @@ Library:
         sdist.shutdown(context)
         context.shutdown()
 
-	self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
+        self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
 
     def test_template_filling(self):
         bento_info = """\
@@ -173,4 +173,4 @@ VERSION = $VERSION
         sdist.shutdown(context)
         context.shutdown()
 
-	self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
+        self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
