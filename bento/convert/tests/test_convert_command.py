@@ -31,7 +31,7 @@ from bento.commands.options \
 from bento.convert.commands \
     import \
         ConvertCommand, DetectTypeCommand
-from bento.misc.testing \
+from bento.testing.sub_test_case \
     import \
         SubprocessTestCase
 

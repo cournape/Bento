@@ -14,7 +14,7 @@ from bento.core.package \
 from bento.core.pkg_objects \
     import \
         DataFiles
-from bento.misc.testing \
+from bento.testing.sub_test_case \
     import \
         SubprocessTestCase
 from bento.core.node \
