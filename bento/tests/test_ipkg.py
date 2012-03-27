@@ -1,12 +1,8 @@
 import os
-import sys
 import tempfile
 import shutil
 
-if sys.version_info[0] < 3:
-    from cStringIO import StringIO
-else:
-    from io import StringIO
+from six.moves import StringIO
 
 from bento.compat.api \
     import \
@@ -14,13 +10,9 @@ from bento.compat.api \
 from bento.compat.api.moves \
     import \
         unittest
-
 from bento.core.package \
     import \
         PackageDescription
-from bento.core.utils \
-    import \
-        subst_vars
 from bento.core.node \
     import \
         create_root_with_source_tree
@@ -40,7 +32,7 @@ class TestInstalledSection(unittest.TestCase):
     def test_simple(self):
         files = [("scripts/foo.py", "scripts/foo"),
                  ("scripts/bar.py", "scripts/bar.py")]
-        section = InstalledSection("pythonfiles", "section1", "source", "target", files)
+        InstalledSection("pythonfiles", "section1", "source", "target", files)
 
     def test_from_source_target(self):
         files = [("scripts/foo.py", "scripts/foo.py"),
@@ -82,7 +74,7 @@ class TestIPKG(unittest.TestCase):
         shutil.rmtree(self.top_node.abspath())
 
     def test_simple_create(self):
-        ipkg = InstalledPkgDescription(self.sections, self.meta, {})
+        InstalledPkgDescription(self.sections, self.meta, {})
 
     def test_simple_roundtrip(self):
         # FIXME: we compare the loaded json to avoid dealing with encoding
