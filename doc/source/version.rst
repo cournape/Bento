@@ -1,3 +1,16 @@
+Version 0.0.8.1
+===============
+
+Released on .
+
+Bugfix release
+
+Fixed issues
+------------
+
+    - python 2.4-ism
+    - fix in-place build/bootstrap issues for bento itself
+
 Version 0.0.8
 =============
 
