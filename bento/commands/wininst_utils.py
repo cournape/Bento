@@ -3,23 +3,18 @@ import os
 import string
 import time
 
-if sys.version_info[0] < 3:
-    from StringIO \
-        import \
-            StringIO
-else:
-    from io \
-        import \
-            StringIO
-
-from distutils.util import \
+from distutils.util \
+    import \
         get_platform
-from distutils.sysconfig import \
+from distutils.sysconfig \
+    import \
         get_python_version
 
-from bento._config import \
+from bento._config \
+    import \
         WININST_DIR
-from bento.core import \
+from bento.core \
+    import \
         PackageMetadata
 import bento
 
