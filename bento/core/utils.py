@@ -8,7 +8,6 @@ import errno
 import subprocess
 import shlex
 import traceback
-import functools
 
 try:
     from hashlib import md5
@@ -22,7 +21,7 @@ from os.path import \
 
 from bento.compat.api \
     import \
-        relpath, rename as _rename
+        relpath, rename as _rename, partial
 
 # Color handling for terminals (taken from waf)
 COLORS_LST = {

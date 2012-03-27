@@ -69,6 +69,11 @@ else:
         import \
             TarFile
 
+try:
+    from functools import partial
+except ImportError:
+    from bento.compat._functools import partial
+
 from bento.compat.misc \
     import \
         MovedModule, _MovedItems
