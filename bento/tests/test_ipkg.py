@@ -10,23 +10,15 @@ from bento.compat.api \
 from bento.compat.api.moves \
     import \
         unittest
-from bento.core.package \
-    import \
-        PackageDescription
 from bento.core.node \
     import \
         create_root_with_source_tree
+from bento.testing.misc \
+    import \
+        create_simple_ipkg_args
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription, InstalledSection, ipkg_meta_from_pkg, iter_files
-
-import bento.tests.bentos
-
-# FIXME: use correct install path instead of python package hack
-BENTOS_DIR = os.path.dirname(bento.tests.bentos.__file__)
-SPHINX_META = os.path.join(BENTOS_DIR, "sphinx_meta.info")
-
-SPHINX_META_PKG = PackageDescription.from_file(SPHINX_META)
+        InstalledPkgDescription, InstalledSection, iter_files
 
 class TestInstalledSection(unittest.TestCase):
     def test_simple(self):
@@ -44,21 +36,6 @@ class TestInstalledSection(unittest.TestCase):
                         "section1", "source", "target", files)
 
         self.assertEqual(r_section.files, section.files)
-
-def create_simple_ipkg_args(top_node):
-    files = ["scripts/foo.py", "scripts/bar.py"]
-    srcdir = "source"
-
-    nodes = [top_node.make_node(os.path.join(srcdir, f)) for f in files]
-    for n in nodes:
-        n.parent.mkdir()
-        n.write("")
-    section = InstalledSection.from_source_target_directories("pythonfiles",
-                    "section1", os.path.join("$_srcrootdir", srcdir), "$prefix/target", files)
-    sections = {"pythonfiles": {"section1": section}}
-
-    meta = ipkg_meta_from_pkg(SPHINX_META_PKG)
-    return meta, sections, nodes
 
 class TestIPKG(unittest.TestCase):
     def setUp(self):
