@@ -16,7 +16,7 @@ from bento.core.utils \
         memoized
 
 if "nose" in sys.modules:
-    from ._nose_compat import install_proxy, install_result
+    from bento.core._nose_compat import install_proxy, install_result
     install_proxy()
     install_result()
 
