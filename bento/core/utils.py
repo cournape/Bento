@@ -7,17 +7,13 @@ import shutil
 import errno
 import subprocess
 import shlex
-import traceback
 
 try:
     from hashlib import md5
 except ImportError:
     from md5 import md5
 
-from copy import deepcopy
-
-from os.path import \
-    join, split, splitext, dirname
+import os.path as op
 
 from bento.compat.api \
     import \
@@ -65,11 +61,11 @@ def pprint(color, str):
 HAS_WILDCARD = re.compile("\*")
 
 def validate_glob_pattern(pattern):
-    head, tail = split(pattern) 
+    head, tail = op.split(pattern)
     m = HAS_WILDCARD.search(head)
     if m:
         raise ValueError("Wildcard detected in directory for pattern %s" % pattern)
-    ext = splitext(tail)[1]
+    ext = op.splitext(tail)[1]
     m = HAS_WILDCARD.search(ext)
     if m:
         raise ValueError("Wildcard detected in extension for pattern %s" % pattern)
@@ -81,7 +77,7 @@ def expand_glob(pattern, ref_dir=None):
     """
     validate_glob_pattern(pattern)
     if ref_dir:
-        glob_pattern = join(ref_dir, pattern)
+        glob_pattern = op.join(ref_dir, pattern)
     else:
         glob_pattern = pattern
     matched = glob.glob(glob_pattern)
@@ -189,8 +185,8 @@ def cpu_count():
         #raise NotImplementedError('cannot determine number of cpus')
 
 def ensure_dir(path):
-    d = os.path.dirname(path)
-    if d and not os.path.exists(d):
+    d = op.dirname(path)
+    if d and not op.exists(d):
         os.makedirs(d)
 
 def normalize_path(path):
@@ -265,7 +261,7 @@ def virtualenv_prefix():
     if has_env:
         p = os.environ["VIRTUAL_ENV"]
         for d in ["bin", "Scripts"]:
-            venv_path = os.path.join(p, d, "activate_this.py")
+            venv_path = op.join(p, d, "activate_this.py")
             if os.path.exists(venv_path):
                 return p
     return None
@@ -341,8 +337,8 @@ def find_root(p):
     >>> find_root("/Users/joe")
     '/'
     """
-    while p != os.path.dirname(p):
-        p = os.path.dirname(p)
+    while p != op.dirname(p):
+        p = op.dirname(p)
     return p
 
 def explode_path(path):
@@ -357,10 +353,10 @@ def explode_path(path):
     ["/", "Users", "joe"]
     """
     ret = []
-    d, p = os.path.splitdrive(path)
+    d, p = op.splitdrive(path)
 
     while p:
-        head, tail = os.path.split(p)
+        head, tail = op.split(p)
         if head == p:
             ret.append(head)
             break
