@@ -2,7 +2,6 @@ import os
 import sys
 import shutil
 import tempfile
-import types
 
 import os.path as op
 
@@ -23,31 +22,18 @@ from bento.core.node \
 from bento.core.utils \
     import \
         subst_vars
-from bento.core \
-    import \
-        PackageDescription
 from bento.commands.context \
     import \
-        BuildContext, BuildYakuContext, ConfigureYakuContext, DistutilsBuildContext, DistutilsConfigureContext
+        BuildYakuContext, ConfigureYakuContext, DistutilsBuildContext, DistutilsConfigureContext
 from bento.commands.options \
     import \
-        OptionsContext, Option
+        OptionsContext
 from bento.commands.build \
     import \
         BuildCommand
-from bento.installed_package_description \
-    import \
-        InstalledSection
 from bento.commands.api \
     import \
         UsageException
-
-import bento.commands.build_distutils
-import bento.commands.build_yaku
-
-from yaku.context \
-    import \
-        get_bld, get_cfg
 
 from bento.core.testing \
     import \
@@ -368,7 +354,9 @@ class TestBuildWaf(_TestBuildSimpleExtension):
 class TestBuildCommand(unittest.TestCase):
     def setUp(self):
         self.d = tempfile.mkdtemp()
-        self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
+        root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
+        self.top_node = root.find_node(self.d)
+        self.build_node = root.find_node(os.path.join(self.d, "build"))
 
         self.old_dir = os.getcwd()
         os.chdir(self.d)
@@ -377,20 +365,68 @@ class TestBuildCommand(unittest.TestCase):
         os.chdir(self.old_dir)
         shutil.rmtree(self.d)
 
-    def test_simple(self):
-        root = self.root
-        top_node = root.find_node(self.d)
-
-        create_fake_package_from_bento_info(top_node, BENTO_INFO)
-        conf, configure = prepare_configure(top_node, BENTO_INFO, ConfigureYakuContext)
+    def _execute_build(self, bento_info):
+        create_fake_package_from_bento_info(self.top_node, bento_info)
+        conf, configure = prepare_configure(self.top_node, bento_info, ConfigureYakuContext)
         configure.run(conf)
         conf.shutdown()
 
         build = BuildCommand()
         opts = OptionsContext.from_command(build)
 
-        bld = BuildYakuContext(None, [], opts, conf.pkg, top_node)
+        bld = BuildYakuContext(None, [], opts, conf.pkg, self.top_node)
         build.run(bld)
+
+        return bld
+
+    def test_simple(self):
+        self._execute_build(BENTO_INFO)
+
+    def test_executables(self):
+        bento_info = """\
+Name: foo
+
+Library:
+    Packages: foo
+
+Executable: foomaker
+    Module: foomain
+    Function: main
+"""
+        self._execute_build(bento_info)
+
+    def test_config_py(self):
+        bento_info = """\
+Name: foo
+
+ConfigPy: foo/__config.py
+
+Library:
+    Packages: foo
+"""
+        self._execute_build(bento_info)
+
+    def test_meta_template_file(self):
+        bento_info = """\
+Name: foo
+
+MetaTemplateFile: foo/__package_info.py.in
+
+Library:
+    Packages: foo
+"""
+        n = self.top_node.make_node(op.join("foo", "__package_info.py.in"))
+        n.parent.mkdir()
+        n.write("""\
+NAME = $NAME
+""")
+        self._execute_build(bento_info)
+        package_info = self.build_node.find_node(op.join("foo", "__package_info.py"))
+
+        r_package_info = """\
+NAME = "foo"
+"""
+        self.assertEqual(package_info.read(), r_package_info)
 
 class TestBuildDirectoryBase(unittest.TestCase):
     def setUp(self):
