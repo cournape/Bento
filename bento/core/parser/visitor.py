@@ -43,7 +43,7 @@ class Dispatcher(object):
             "description_from_file": self.description_from_file,
             "summary": self.summary,
             "author": self.author,
-            "maintainer": self.author,
+            "maintainer": self.maintainer,
             "hook_files": self.hook_files,
             "config_py": self.config_py,
             "meta_template_file": self.meta_template_file,
@@ -130,8 +130,7 @@ class Dispatcher(object):
         return node
 
     def maintainer(self, node):
-        node.value = "".join([i.value for i in node.value])
-        return node
+        return self.author(node)
 
     def hook_files(self, node):
         if "hook_files" in self._d:
