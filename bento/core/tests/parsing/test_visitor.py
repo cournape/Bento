@@ -22,7 +22,8 @@ def parse_and_analyse(data):
 
 def _empty_description():
     d = {"libraries": {}, "path_options": {}, "flag_options": {},
-         "data_files": {}, "extra_source_files": [], "executables": {}}
+         "data_files": {}, "extra_source_files": [], "executables": {},
+         "hook_files": []}
     return d
 
 def _empty_library():
@@ -65,6 +66,17 @@ Author: John Doe
 Maintainer: John Doe
 """
         self.assertEqual(parse_and_analyse(data)["maintainer"], "John Doe")
+
+    def test_hook(self):
+        data = """\
+HookFile: bscript
+"""
+        self.assertEqual(parse_and_analyse(data)["hook_files"], ["bscript"])
+
+        data = """\
+HookFile: bscript, bscript2
+"""
+        self.assertEqual(parse_and_analyse(data)["hook_files"], ["bscript", "bscript2"])
 
 class TestDescription(unittest.TestCase):
     def setUp(self):

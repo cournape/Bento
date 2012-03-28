@@ -35,6 +35,7 @@ class Dispatcher(object):
                 "executables": {},
                 "data_files": {},
                 "extra_source_files": [],
+                "hook_files": [],
         }
         self.action_dict = {
             "empty": self.empty,
@@ -133,10 +134,7 @@ class Dispatcher(object):
         return self.author(node)
 
     def hook_files(self, node):
-        if "hook_files" in self._d:
-            self._d["hook_files"].extend(node.value)
-        else:
-            self._d["hook_files"] = node.value
+        self._d["hook_files"].extend(node.value)
 
     def config_py(self, node):
         return node
