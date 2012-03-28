@@ -229,6 +229,59 @@ Path: manpath
                                              "description": "man path"}}
         self.assertEqual(parse_and_analyse(data), descr)
 
+    def test_multiple_path_sections(self):
+        data = """\
+Path: manpath
+    Description: man path
+    Default: /usr/share/man
+
+Path: varpath
+    Description: var path
+    Default: /var
+"""
+
+        data_sections = parse_and_analyse(data)["path_options"]
+        r_data_sections = {
+                "manpath": {"name": "manpath", "description": "man path", "default": "/usr/share/man"},
+                "varpath": {"name": "varpath", "description": "var path", "default": "/var"},
+        }
+        self.assertEqual(data_sections, r_data_sections)
+
+    def test_conditional_path_section(self):
+        data_template = """\
+Path: manpath
+    Description: man path
+    if %s:
+        Default: /usr/share/woman
+    else:
+        Default: /usr/share/man
+"""
+
+        data_sections = parse_and_analyse(data_template % "true")["path_options"]
+        r_data_sections = {
+                "manpath": {"name": "manpath", "description": "man path", "default": "/usr/share/woman"},
+        }
+        self.assertEqual(data_sections, r_data_sections)
+
+        data_sections = parse_and_analyse(data_template % "false")["path_options"]
+        r_data_sections = {
+                "manpath": {"name": "manpath", "description": "man path", "default": "/usr/share/man"},
+        }
+        self.assertEqual(data_sections, r_data_sections)
+
+    def test_invalid_path_section1(self):
+        data = """\
+Path: manpath
+    Description: description
+"""
+        self.assertRaises(ValueError, lambda: parse_and_analyse(data))
+
+        data = """\
+Path: manpath
+    Default: /foo/bar
+"""
+        self.assertRaises(ValueError, lambda: parse_and_analyse(data))
+
 class TestDataFiles(unittest.TestCase):
     def test_simple(self):
         data = """\

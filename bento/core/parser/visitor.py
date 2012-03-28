@@ -308,8 +308,6 @@ class Dispatcher(object):
                 path["description"] = c.value
             elif c.type == "default":
                 path["default"] = c.value
-            elif c.type == "conditional_stmt":
-                path["default"] = c.value
             else:
                 raise SyntaxError("GNe ?")
         if len(node.children) > 1:
@@ -319,8 +317,11 @@ class Dispatcher(object):
         for node in nodes:
             update(node)
 
-        if not "description" in path or not "default" in path:
-            raise ValueError("Missing description in path section %r" %
+        if not "description" in path:
+            raise ValueError("missing description in path section %r" %
+                             (path["name"],))
+        if not "default" in path:
+            raise ValueError("missing default in path section %r" %
                              (path["name"],))
         return Node("path", value=path)
 
