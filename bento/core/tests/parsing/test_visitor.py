@@ -308,6 +308,35 @@ Library:
 
         self.assertEqual(parse_and_analyse(data), self.ref)
 
+    def test_not_flag(self):
+        data = """\
+Flag: debug
+    Default: true
+
+Library:
+    if not flag(debug):
+        Modules: foo.py, bar.py
+    else:
+        Modules:  fubar.py
+"""
+
+        self.ref["libraries"]["default"].update({"py_modules": ["fubar.py"]})
+        self.ref["flag_options"] = {"debug": {"default": "true",
+                                              "name": "debug"}}
+        self.assertEqual(parse_and_analyse(data), self.ref)
+
+    def test_not(self):
+        data = """\
+Library:
+    if not true:
+        Modules: foo.py, bar.py
+    else:
+        Modules:  fubar.py
+"""
+
+        self.ref["libraries"]["default"].update({"py_modules": ["fubar.py"]})
+        self.assertEqual(parse_and_analyse(data), self.ref)
+
 class TestExecutable(unittest.TestCase):
     def setUp(self):
         self.ref = _empty_description()
