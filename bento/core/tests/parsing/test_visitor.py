@@ -199,6 +199,26 @@ Library:
         self.ref["libraries"]["default"].update({"extensions": {"_foo": extension}})
         self.assertEqual(parse_and_analyse(data), self.ref)
 
+    def test_extension_include_dirs(self):
+        data = """\
+Library:
+    Extension: _foo
+        Sources: foo.c
+        IncludeDirs: foo
+"""
+        r_extension = {"name": "_foo", "sources": ["foo.c"], "include_dirs": ["foo"]}
+        extension = parse_and_analyse(data)["libraries"]["default"]["extensions"]["_foo"]
+        self.assertEqual(extension, r_extension)
+
+    def test_double_sources_extension(self):
+        data = """\
+Library:
+    Extension: _foo
+        Sources: foo.c
+        Sources: bar.c
+"""
+        self.assertRaises(ValueError, lambda: parse_and_analyse(data))
+
     def test_build_requires(self):
         data = """\
 Library:

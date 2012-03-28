@@ -235,6 +235,14 @@ class Dispatcher(object):
 
     def extension(self, node):
         ret = {}
+        seen = set()
+
+        def _ensure_unique(field):
+            if field in seen:
+                raise ValueError("Field %r for extension %r is specified more than once !" % (field, ret["name"]))
+            else:
+                seen.add(field)
+
         def update(extension_dict, c):
             if type(c) == list:
                 for i in c:
@@ -242,15 +250,11 @@ class Dispatcher(object):
             elif c.type == "name":
                 ret["name"] = c.value
             elif c.type == "sources":
-                if "sources" in ret:
-                    ret["sources"].extend(c.value)
-                else:
-                    ret["sources"] = c.value
+                _ensure_unique("sources")
+                ret["sources"] = c.value
             elif c.type == "include_dirs":
-                if "include_dirs" in ret:
-                    ret["include_dirs"].extend(c.value)
-                else:
-                    ret["include_dirs"] = c.value
+                _ensure_unique("include_dirs")
+                ret["include_dirs"] = c.value
             else:
                 raise ValueError("Gne ?")
         for c in [node.children[0]] + node.children[1]:
