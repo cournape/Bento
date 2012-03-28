@@ -60,6 +60,12 @@ Author: John Doe
         self.ref.update({"author": "John Doe"})
         self.assertEqual(parse_and_analyse(data), self.ref)
 
+    def test_maintainer(self):
+        data = """\
+Maintainer: John Doe
+"""
+        self.assertEqual(parse_and_analyse(data)["maintainer"], "John Doe")
+
 class TestDescription(unittest.TestCase):
     def setUp(self):
         self.ref = _empty_description()
@@ -131,6 +137,13 @@ simple
 %s
 """ % last_indent
         self.assertEqual(parse_and_analyse(data), self.ref)
+
+    def test_description_from_file(self):
+        data = """\
+DescriptionFromFile: foo.rst
+"""
+        ret = parse_and_analyse(data)
+        self.assertEqual(ret["description_from_file"], "foo.rst")
 
 class TestLibrary(unittest.TestCase):
     def setUp(self):
@@ -324,6 +337,27 @@ Library:
         self.ref["flag_options"] = {"debug": {"default": "true",
                                               "name": "debug"}}
         self.assertEqual(parse_and_analyse(data), self.ref)
+
+    def test_missing_flag(self):
+        data = """\
+Flag: debug
+    Default: true
+
+Library:
+    if flag(ddebug):
+        Modules: bar.py
+"""
+        self.assertRaises(ValueError, lambda: parse_and_analyse(data))
+
+        data = """\
+Flag: debug
+    Default: true
+
+Library:
+    if not flag(ddebug):
+        Modules: bar.py
+"""
+        self.assertRaises(ValueError, lambda: parse_and_analyse(data))
 
     def test_not(self):
         data = """\
