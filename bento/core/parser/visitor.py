@@ -269,16 +269,23 @@ class Dispatcher(object):
 
     def compiled_library(self, node):
         ret = {"sources": [], "include_dirs": []}
+        seen = set()
+
+        def _ensure_unique(field):
+            if field in seen:
+                raise ValueError("Field %r for compiled library %r is specified more than once !" % (field, ret["name"]))
+            else:
+                seen.add(field)
+
         def update(compiled_library_dict, c):
-            if type(c) == list:
-                for i in c:
-                    update(compiled_library_dict, i)
-            elif c.type == "name":
+            if c.type == "name":
                 ret["name"] = c.value
             elif c.type == "sources":
-                ret["sources"].extend(c.value)
+                _ensure_unique("sources")
+                ret["sources"] = c.value
             elif c.type == "include_dirs":
-                ret["include_dirs"].extend(c.value)
+                _ensure_unique("include_dirs")
+                ret["include_dirs"] = c.value
             else:
                 raise ValueError("Unknown node %s" % c)
         for c in [node.children[0]] + node.children[1]:

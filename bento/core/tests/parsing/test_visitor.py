@@ -235,6 +235,26 @@ Library:
         self.ref["libraries"]["default"].update({"install_requires": ["foo"]})
         self.assertEqual(parse_and_analyse(data), self.ref)
 
+    def test_compiled_library_include_dirs(self):
+        data = """\
+Library:
+    CompiledLibrary: _foo
+        Sources: foo.c
+        IncludeDirs: foo
+"""
+        r_compiled_library = {"name": "_foo", "sources": ["foo.c"], "include_dirs": ["foo"]}
+        compiled_library = parse_and_analyse(data)["libraries"]["default"]["compiled_libraries"]["_foo"]
+        self.assertEqual(compiled_library, r_compiled_library)
+
+    def test_double_sources_compiled_library(self):
+        data = """\
+Library:
+    CompiledLibrary: _foo
+        Sources: foo.c
+        Sources: bar.c
+"""
+        self.assertRaises(ValueError, lambda: parse_and_analyse(data))
+
 class TestPath(unittest.TestCase):
     def test_simple(self):
         data = """\
