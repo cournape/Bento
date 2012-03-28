@@ -409,11 +409,8 @@ MODE_777 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | \
     stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
 
 class CommaListLexer(object):
-    def __init__(self, instream=None):
-        if instream is not None:
-            self._lexer = shlex.shlex(instream, posix=True)
-        else:
-            self._lexer = shlex.shlex(posix=True)
+    def __init__(self, instream):
+        self._lexer = shlex.shlex(instream, posix=True)
         self._lexer.whitespace += ','
         self._lexer.wordchars += './()*-'
         self.eof = self._lexer.eof
@@ -421,8 +418,8 @@ class CommaListLexer(object):
     def get_token(self):
         return self._lexer.get_token()
 
-def comma_list_split(str):
-    lexer = CommaListLexer(str)
+def comma_list_split(s):
+    lexer = CommaListLexer(s)
     ret = []
     t = lexer.get_token()
     while t != lexer.eof:

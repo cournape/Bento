@@ -14,7 +14,7 @@ from bento.compat.api.moves \
 from bento.core.utils \
     import \
         validate_glob_pattern, expand_glob, subst_vars, to_camel_case, \
-        explode_path, same_content, cmd_is_runnable, memoized
+        explode_path, same_content, cmd_is_runnable, memoized, comma_list_split
 
 class TestParseGlob(unittest.TestCase):
     def test_invalid(self):
@@ -151,3 +151,7 @@ class TestMemoize(unittest.TestCase):
         dummy_function(1)
 
         self.assertEqual(lst, [1, 2])
+
+class TestCommaListSplit(unittest.TestCase):
+    def test_simple(self):
+        self.assertEqual(comma_list_split("-a,-b"), ["-a", "-b"])
