@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+import mock
 
 try:
     from hashlib import md5
@@ -8,6 +9,7 @@ except ImportError:
     from md5 import md5
 
 import os.path as op
+import distutils.msvccompiler
 
 from bento._config \
     import \
@@ -45,38 +47,38 @@ class TestWininstUtils(moves.unittest.TestCase):
         ipkg = InstalledPkgDescription(sections, meta, {})
         get_inidata(ipkg)
 
+    @mock.patch('distutils.msvccompiler.get_build_version', lambda: 9.0)
     def test_create_exe(self):
         # FIXME: do a real test here
         meta, sections, nodes = create_simple_ipkg_args(self.top_node)
         ipkg = InstalledPkgDescription(sections, meta, {})
 
-        import distutils.msvccompiler
-        old_get_build_version = distutils.msvccompiler.get_build_version
+        fid, arcname = tempfile.mkstemp(prefix="zip")
         try:
-            distutils.msvccompiler.get_build_version = lambda: 9.0
-            fid, arcname = tempfile.mkstemp(prefix="zip")
-            try:
-                create_exe(ipkg, arcname, "some-name.exe")
-            finally:
-                os.close(fid)
+            create_exe(ipkg, arcname, "some-name.exe")
         finally:
-            distutils.msvccompiler.get_build_version = old_get_build_version
+            os.close(fid)
 
 class TestGetExeBytes(moves.unittest.TestCase):
-    def test_get_exe_bytes(self):
-        import distutils.msvccompiler
-        old_get_build_version = distutils.msvccompiler.get_build_version
+    def _test_get_exe_bytes(self, version, exe_name):
+        exe_name = op.join(WININST_DIR, exe_name)
+        distutils.msvccompiler.get_build_version = lambda: version
+        binary_header = get_exe_bytes()
+        fid = open(exe_name, "rb")
         try:
-            for version, exe_name in zip((9.0, 8.0, 7.1),
-                    ("wininst-9.0.exe", "wininst-8.0.exe", "wininst-7.1.exe")):
-                exe_name = op.join(WININST_DIR, exe_name)
-                distutils.msvccompiler.get_build_version = lambda: version
-                binary_header = get_exe_bytes()
-                fid = open(exe_name, "rb")
-                try:
-                    r_md5 = md5(fid.read())
-                    self.assertEqual(md5(binary_header).hexdigest(), r_md5.hexdigest())
-                finally:
-                    fid.close()
+            r_md5 = md5(fid.read())
+            self.assertEqual(md5(binary_header).hexdigest(), r_md5.hexdigest())
         finally:
-            distutils.msvccompiler.get_build_version = old_get_build_version
+            fid.close()
+
+    @mock.patch('distutils.msvccompiler.get_build_version', lambda: 9.0)
+    def test_get_exe_bytes_9(self):
+        self._test_get_exe_bytes(9.0, "wininst-9.0.exe")
+
+    @mock.patch('distutils.msvccompiler.get_build_version', lambda: 9.0)
+    def test_get_exe_bytes_8(self):
+        self._test_get_exe_bytes(8.0, "wininst-8.0.exe")
+
+    @mock.patch('distutils.msvccompiler.get_build_version', lambda: 7.1)
+    def test_get_exe_bytes_7_1(self):
+        self._test_get_exe_bytes(7.1, "wininst-7.1.exe")
