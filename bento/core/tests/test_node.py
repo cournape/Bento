@@ -1,6 +1,9 @@
 import os
 import sys
 import pickle
+import tempfile
+import shutil
+import copy
 
 from bento.compat.api.moves \
     import \
@@ -48,6 +51,18 @@ class TestNode(unittest.TestCase):
         self.assertEqual([child.abspath() for child in getattr(n, "children", [])],
                          [child.abspath() for child in getattr(n, "children", [])])
 
+    def test_str_repr(self):
+        d = tempfile.mkdtemp()
+        try:
+            r_n = os.path.abspath(os.path.join(d, "foo.txt"))
+            node = self.root.make_node(r_n)
+            self.assertEqual(str(node), "foo.txt")
+            self.assertEqual(repr(node), r_n)
+        finally:
+            shutil.rmtree(d)
+
+    def test_invalid_copy(self):
+        self.assertRaises(NotImplementedError, lambda: copy.copy(self.root))
 class TestNodeWithBuild(unittest.TestCase):
     def setUp(self):
         top = os.getcwd()
