@@ -394,13 +394,6 @@ def extract_exception():
     """
     return sys.exc_info()[1]
 
-if sys.version_info[0] < 3:
-    def gen_next(g):
-        return g.next()
-else:
-    def gen_next(g):
-        return next(g)
-
 # We cannot use octal literal for compat with python 3.x
 MODE_755 = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | \
     stat.S_IROTH | stat.S_IXOTH

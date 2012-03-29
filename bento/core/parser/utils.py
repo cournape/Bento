@@ -1,8 +1,6 @@
 import sys
 
-from bento.core.utils \
-    import \
-        gen_next
+import six
 
 class Peeker(object):
     """Generator to enable "peeking" the next item
@@ -34,13 +32,16 @@ class Peeker(object):
             self.peek = self._peek_dummy
         self._dummy = dummy
 
+    def __next__(self):
+        return self.next()
+
     def next(self):
         if self._cache:
             i = self._cache
             self._cache = None
             return i
         else:
-            return gen_next(self._it)
+            return six.advance_iterator(self._it)
         #self._cache = None
         #return i
 
@@ -49,7 +50,7 @@ class Peeker(object):
             return self._cache
         else:
             try:
-                i = gen_next(self._it)
+                i = six.advance_iterator(self._it)
             except StopIteration:
                 return self._dummy
             self._cache = i
@@ -59,7 +60,7 @@ class Peeker(object):
         if self._cache:
             return self._cache
         else:
-            i = gen_next(self._it)
+            i = six.advance_iterator(self._it)
             self._cache = i
             return i
 
@@ -73,12 +74,15 @@ class BackwardGenerator(object):
         self._previous = None
 
     def next(self):
-        c = gen_next(self._gen)
+        c = six.advance_iterator(self._gen)
         if len(self._cache) == 2:
             old, new = self._cache
             self._cache = [new]
         self._cache.append(c)
         return c
+
+    def __next__(self):
+        return self.next()
 
     def previous(self):
         if len(self._cache) < 2:
@@ -87,12 +91,6 @@ class BackwardGenerator(object):
 
     def __iter__(self):
         return self
-
-if sys.version_info[0] > 2:
-    BackwardGenerator.__next__ = BackwardGenerator.next
-    del BackwardGenerator.next
-    Peeker.__next__ = Peeker.next
-    del Peeker.next
 
 def print_tokens_simple(lexer):
     while True:
