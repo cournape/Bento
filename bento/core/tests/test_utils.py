@@ -1,9 +1,13 @@
 import os
 import tempfile
 import shutil
+import mock
 
 import os.path as op
 
+from six.moves \
+    import \
+        StringIO
 from bento.compat.api \
     import \
         NamedTemporaryFile
@@ -14,7 +18,8 @@ from bento.compat.api.moves \
 from bento.core.utils \
     import \
         validate_glob_pattern, expand_glob, subst_vars, to_camel_case, \
-        explode_path, same_content, cmd_is_runnable, memoized, comma_list_split
+        explode_path, same_content, cmd_is_runnable, memoized, comma_list_split, \
+        cpu_count, normalize_path, unnormalize_path
 
 class TestParseGlob(unittest.TestCase):
     def test_invalid(self):
@@ -155,3 +160,27 @@ class TestMemoize(unittest.TestCase):
 class TestCommaListSplit(unittest.TestCase):
     def test_simple(self):
         self.assertEqual(comma_list_split("-a,-b"), ["-a", "-b"])
+
+class TestPathNormalization(unittest.TestCase):
+    def test_simple(self):
+        self.assertEqual(normalize_path(r"foo\bar"), "foo/bar")
+        self.assertEqual(unnormalize_path("foo/bar"), r"foo\bar")
+
+class TestCpuCount(unittest.TestCase):
+    def test_native(self):
+        self.assertTrue(cpu_count() > 0)
+
+    @mock.patch("sys.platform", "win32")
+    def test_win32(self):
+        old = os.environ.get("NUMBER_OF_PROCESSORS", None)
+        try:
+            os.environ["NUMBER_OF_PROCESSORS"] = "2"
+            self.assertEqual(cpu_count(), 2)
+        finally:
+            if old is not None:
+                os.environ["NUMBER_OF_PROCESSORS"] = old
+
+    @mock.patch("sys.platform", "bsd")
+    @mock.patch("os.popen", lambda s: StringIO("3"))
+    def test_bsd(self):
+        self.assertEqual(cpu_count(), 3)
