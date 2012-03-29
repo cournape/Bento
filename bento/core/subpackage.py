@@ -126,9 +126,14 @@ def flatten_subpackage_compiled_libraries(spkg, top_node):
 
     ret = {}
     for name, clib in spkg.compiled_libraries.items():
-        sources = resolve_glob(clib.sources, local_node.abspath())
-        sources = [local_node.find_node(s).path_from(top_node) \
-                   for s in sources]
+        nodes = []
+        for source in clib.sources:
+            _nodes = local_node.ant_glob(source)
+            if len(_nodes) < 1:
+                raise IOError("Pattern %r did not resolve to anything !" % source)
+            else:
+                nodes.extend(_nodes)
+        sources = [node.path_from(top_node) for node in nodes]
         include_dirs = [
                 local_node.find_node(d).path_from(top_node) \
                 for d in clib.include_dirs]

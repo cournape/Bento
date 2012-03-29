@@ -45,6 +45,21 @@ class TestTranslation(unittest.TestCase):
         finally:
             shutil.rmtree(d)
 
+    def _test_compiled_library(self, tree, clib, spkg, sources, include_dirs):
+        d = tempfile.mkdtemp()
+        try:
+            top = create_first_node(d)
+            create_fake_tree(top, tree)
+            clibs = subpackage.flatten_subpackage_compiled_libraries(
+                    spkg, top)
+            self.failUnless("bar.clib" in clibs)
+            clib = clibs["bar.clib"]
+            self.assertEqual(clib.sources, sources)
+            self.assertEqual(clib.include_dirs, include_dirs)
+        finally:
+            shutil.rmtree(d)
+
+
     def test_compiled_library(self):
         tree = [
             "bar/src/clib.c",
@@ -57,15 +72,21 @@ class TestTranslation(unittest.TestCase):
                         rdir="bar",
                         compiled_libraries={"clib": clib})
 
-        d = tempfile.mkdtemp()
-        try:
-            top = create_first_node(d)
-            create_fake_tree(top, tree)
-            clibs = subpackage.flatten_subpackage_compiled_libraries(
-                    spkg, top)
-            self.failUnless("bar.clib" in clibs)
-            clib = clibs["bar.clib"]
-            self.assertEqual(clib.sources, ["bar/src/clib.c"])
-            self.assertEqual(clib.include_dirs, ["bar"])
-        finally:
-            shutil.rmtree(d)
+        self._test_compiled_library(tree, clib, spkg, ["bar/src/clib.c"], ["bar"])
+
+    def test_compiled_library_glob(self):
+        tree = [
+            "bar/src/clib.c",
+            "bar/src/clib2.c",
+            "bar/src/clib3.f",
+            "bar/bento.info",
+            "bento.info"]
+        clib = pkg_objects.CompiledLibrary("clib",
+                        sources=["src/*.c", "src/*.f"],
+                        include_dirs=["."])
+        spkg = package.SubPackageDescription(
+                        rdir="bar",
+                        compiled_libraries={"clib": clib})
+
+        self._test_compiled_library(tree, clib, spkg, ["bar/src/clib.c", "bar/src/clib2.c", "bar/src/clib3.f"],
+                                    ["bar"])
