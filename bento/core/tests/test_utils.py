@@ -3,6 +3,7 @@ import sys
 import mock
 import tempfile
 import shutil
+import errno
 
 import os.path as op
 
@@ -18,9 +19,14 @@ from bento.compat.api.moves \
 
 from bento.core.utils \
     import \
-        subst_vars, to_camel_case, ensure_dir, \
+        subst_vars, to_camel_case, ensure_dir, rename, \
         explode_path, same_content, cmd_is_runnable, memoized, comma_list_split, \
         cpu_count, normalize_path, unnormalize_path, pprint, virtualenv_prefix
+
+def raise_oserror(err):
+    ex = OSError()
+    ex.errno = err
+    raise ex
 
 class TestSubstVars(unittest.TestCase):
     def test_subst_vars_simple(self):
@@ -114,6 +120,32 @@ class TestMisc(unittest.TestCase):
             self.assertTrue(op.exists(new_dir))
         finally:
             shutil.rmtree(d)
+
+    def _test_rename(self):
+        d = tempfile.mkdtemp()
+        try:
+            f = op.join(d, "f.txt")
+            fid = open(f, "wt")
+            try:
+                fid.write("")
+            finally:
+                fid.close()
+            g = op.join(d, "g.txt")
+            rename(f, g)
+            self.assertTrue(op.exists(g))
+        finally:
+            shutil.rmtree(d)
+
+    def test_rename(self):
+        self._test_rename()
+
+    @mock.patch("bento.core.utils._rename", lambda x, y: raise_oserror(errno.EXDEV))
+    def test_rename_exdev_failure(self):
+        self._test_rename()
+
+    @mock.patch("bento.core.utils._rename", lambda x, y: raise_oserror(errno.EBUSY))
+    def test_rename_failure(self):
+        self.assertRaises(OSError, self._test_rename)
 
 class TestMemoize(unittest.TestCase):
     def test_simple_no_arguments(self):
