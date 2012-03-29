@@ -1,10 +1,6 @@
 import os
 import sys
-import tempfile
-import shutil
 import mock
-
-import os.path as op
 
 from six.moves \
     import \
@@ -18,38 +14,9 @@ from bento.compat.api.moves \
 
 from bento.core.utils \
     import \
-        validate_glob_pattern, expand_glob, subst_vars, to_camel_case, \
+        subst_vars, to_camel_case, \
         explode_path, same_content, cmd_is_runnable, memoized, comma_list_split, \
         cpu_count, normalize_path, unnormalize_path, pprint, virtualenv_prefix
-
-class TestParseGlob(unittest.TestCase):
-    def test_invalid(self):
-        # Test we raise a ValueError at unwanted pattern
-        for p in ["*/a", "src.*", "dir1/dir*/foo"]:
-            self.failUnlessRaises(ValueError, lambda: validate_glob_pattern(p))
-
-    def test_simple(self):
-        # Test simple pattern matching
-        d = tempfile.mkdtemp("flopflop")
-        try:
-            open(op.join(d, "foo1.py"), "w").close()
-            open(op.join(d, "foo2.py"), "w").close()
-            f = sorted(expand_glob("*.py", d))
-            self.assertEqual(f, ["foo1.py", "foo2.py"])
-        finally:
-            shutil.rmtree(d)
-
-    def test_simple2(self):
-        # Test another pattern matching, with pattern including directory
-        d = tempfile.mkdtemp("flopflop")
-        try:
-            os.makedirs(op.join(d, "common"))
-            open(op.join(d, "common", "foo1.py"), "w").close()
-            open(op.join(d, "common", "foo2.py"), "w").close()
-            f = sorted(expand_glob(op.join("common", "*.py"), d))
-            self.assertEqual(f, [op.join("common", "foo1.py"), op.join("common", "foo2.py")])
-        finally:
-            shutil.rmtree(d)
 
 class TestSubstVars(unittest.TestCase):
     def test_subst_vars_simple(self):

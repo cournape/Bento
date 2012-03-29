@@ -1,5 +1,5 @@
 from bento.core.utils import \
-    expand_glob, normalize_path
+    normalize_path
 
 class FlagOption(object):
     def __init__(self, name, default_value, description=None):
@@ -49,15 +49,6 @@ class DataFiles(object):
             self.source_dir = source_dir
         else:
             self.source_dir = "."
-
-    # FIXME: this function should not really be here...
-    def resolve_glob(self):
-        """Expand any glob pattern in the files section relatively to the
-        current value for source direcory."""
-        files = []
-        for f in self.files:
-            files.extend(expand_glob(f, self.source_dir))
-        return files
 
     def __repr__(self):
         return "DataSection(files=%r, target_dir=%r, source_dir=%r)" % \

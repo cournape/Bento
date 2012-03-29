@@ -60,37 +60,6 @@ def pprint(color, s, fout=None):
         fout = sys.stderr
     fout.write('%s%s%s\n' % (COLORS(color), s, COLORS('NORMAL')))
 
-HAS_WILDCARD = re.compile("\*")
-
-def validate_glob_pattern(pattern):
-    head, tail = op.split(pattern)
-    m = HAS_WILDCARD.search(head)
-    if m:
-        raise ValueError("Wildcard detected in directory for pattern %s" % pattern)
-    ext = op.splitext(tail)[1]
-    m = HAS_WILDCARD.search(ext)
-    if m:
-        raise ValueError("Wildcard detected in extension for pattern %s" % pattern)
-
-def expand_glob(pattern, ref_dir=None):
-    """Expand list of files matching the given pattern, relatively to ref_dir.
-
-    If no file is matched, a ValueError is raised.
-    """
-    validate_glob_pattern(pattern)
-    if ref_dir:
-        glob_pattern = op.join(ref_dir, pattern)
-    else:
-        glob_pattern = pattern
-    matched = glob.glob(glob_pattern)
-    if len(matched) < 1:
-        raise IOError("no files following pattern %s from %r found" % (pattern, ref_dir))
-
-    if ref_dir:
-        return [relpath(i, ref_dir) for i in matched]
-    else:
-        return matched
-
 _IDPATTERN = "[a-zA-Z_][a-zA-Z_0-9]*"
 _DELIM = "$"
 
@@ -196,18 +165,6 @@ def normalize_path(path):
 
 def unnormalize_path(path):
     return path.replace("/", "\\")
-
-def resolve_glob(files, reference_path=None):
-    """Resolve all glob patterns in the given list
-
-    Parameters
-    ----------
-    files: seq
-    """
-    ret = []
-    for f in files:
-        ret.extend(expand_glob(f, reference_path))
-    return ret
 
 def rename(source, target):
     try:
