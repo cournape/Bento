@@ -19,7 +19,7 @@ from bento.core.utils \
     import \
         validate_glob_pattern, expand_glob, subst_vars, to_camel_case, \
         explode_path, same_content, cmd_is_runnable, memoized, comma_list_split, \
-        cpu_count, normalize_path, unnormalize_path
+        cpu_count, normalize_path, unnormalize_path, pprint
 
 class TestParseGlob(unittest.TestCase):
     def test_invalid(self):
@@ -165,6 +165,12 @@ class TestPathNormalization(unittest.TestCase):
     def test_simple(self):
         self.assertEqual(normalize_path(r"foo\bar"), "foo/bar")
         self.assertEqual(unnormalize_path("foo/bar"), r"foo\bar")
+
+class TestPPrint(unittest.TestCase):
+    def test_simple(self):
+        s = StringIO()
+        pprint("RED", "foo", s)
+        self.assertEqual(s.getvalue(), "\x1b[01;31mfoo\x1b[0m\n")
 
 class TestCpuCount(unittest.TestCase):
     def test_native(self):

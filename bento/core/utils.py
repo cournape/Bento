@@ -55,8 +55,10 @@ class foo(object):
         return get_color(a)
 COLORS = foo()
 
-def pprint(color, str):
-    sys.stderr.write('%s%s%s\n' % (COLORS(color), str, COLORS('NORMAL')))
+def pprint(color, s, fout=None):
+    if fout is None:
+        fout = sys.stderr
+    fout.write('%s%s%s\n' % (COLORS(color), s, COLORS('NORMAL')))
 
 HAS_WILDCARD = re.compile("\*")
 
