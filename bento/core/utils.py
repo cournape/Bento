@@ -259,13 +259,14 @@ def same_content(f1, f2):
 def virtualenv_prefix():
     """Return the virtual environment prefix if running python is "virtualized"
     (i.e. run inside virtualenv), None otherwise."""
-    has_env = "VIRTUAL_ENV" in os.environ
-    if has_env:
-        p = os.environ["VIRTUAL_ENV"]
-        for d in ["bin", "Scripts"]:
-            venv_path = op.join(p, d, "activate_this.py")
-            if os.path.exists(venv_path):
-                return p
+    try:
+        real_prefix = sys.real_prefix
+        if real_prefix != sys.prefix:
+            return op.normpath(sys.prefix)
+        else:
+            return None
+    except AttributeError:
+        return None
     return None
 
 def to_camel_case(s):

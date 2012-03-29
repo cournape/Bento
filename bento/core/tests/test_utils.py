@@ -1,4 +1,5 @@
 import os
+import sys
 import tempfile
 import shutil
 import mock
@@ -19,7 +20,7 @@ from bento.core.utils \
     import \
         validate_glob_pattern, expand_glob, subst_vars, to_camel_case, \
         explode_path, same_content, cmd_is_runnable, memoized, comma_list_split, \
-        cpu_count, normalize_path, unnormalize_path, pprint
+        cpu_count, normalize_path, unnormalize_path, pprint, virtualenv_prefix
 
 class TestParseGlob(unittest.TestCase):
     def test_invalid(self):
@@ -171,6 +172,16 @@ class TestPPrint(unittest.TestCase):
         s = StringIO()
         pprint("RED", "foo", s)
         self.assertEqual(s.getvalue(), "\x1b[01;31mfoo\x1b[0m\n")
+
+class TestVirtualEnvPrefix(unittest.TestCase):
+    @mock.patch("sys.real_prefix", sys.prefix, create=True)
+    def test_no_virtualenv(self):
+        self.assertEqual(virtualenv_prefix(), None)
+
+    @mock.patch("sys.real_prefix", sys.prefix, create=True)
+    @mock.patch("sys.prefix", "yoyo")
+    def test_virtualenv(self):
+        self.assertEqual(virtualenv_prefix(), "yoyo")
 
 class TestCpuCount(unittest.TestCase):
     def test_native(self):
