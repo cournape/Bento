@@ -218,13 +218,13 @@ def virtualenv_prefix():
     (i.e. run inside virtualenv), None otherwise."""
     try:
         real_prefix = sys.real_prefix
+    except AttributeError:
+        return None
+    else:
         if real_prefix != sys.prefix:
             return op.normpath(sys.prefix)
         else:
             return None
-    except AttributeError:
-        return None
-    return None
 
 def to_camel_case(s):
     """Transform a string to camel case convention."""
@@ -400,9 +400,11 @@ class memoized(object):
           # uncachable -- for instance, passing a list as an argument.
           # Better to not cache than to blow up entirely.
           return self.func(*args)
+
     def __repr__(self):
        """Return the function's docstring."""
        return self.func.__doc__
+
     def __get__(self, obj, objtype):
        """Support instance methods."""
        return partial(self.__call__, obj)
