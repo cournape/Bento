@@ -171,6 +171,36 @@ class TestMemoize(unittest.TestCase):
 
         self.assertEqual(lst, [1, 2])
 
+    def test_mutable_argument(self):
+        lst = []
+        @memoized
+        def dummy_function(x):
+            lst.extend(x)
+
+        dummy_function([1])
+        dummy_function([2])
+        dummy_function([1])
+
+        self.assertEqual(lst, [1, 2, 1])
+
+    def test_meta(self):
+        @memoized
+        def dummy_function():
+            """some dummy doc"""
+        self.assertEqual(repr(dummy_function), "some dummy doc")
+
+    def test_instance_method(self):
+        lst = []
+        class Foo(object):
+            @memoized
+            def dummy_function(self, x):
+                lst.append(x)
+        foo = Foo()
+        foo.dummy_function(1)
+        foo.dummy_function(1)
+
+        self.assertEqual(lst, [1])
+
 class TestCommaListSplit(unittest.TestCase):
     def test_simple(self):
         self.assertEqual(comma_list_split("-a,-b"), ["-a", "-b"])
