@@ -62,8 +62,8 @@ ExtraSourceFiles:
     bento/compat/tests/*.py,
     bento/distutils/tests/*.py,
     bento/tests/*.py,
-    bento/tests/bentos/*.py,
-    bento/tests/bentos/*.info
+    bento/testing/bentos/*.py,
+    bento/testing/bentos/*.info
 
 Library:
     Packages:
@@ -77,8 +77,8 @@ Library:
         bento.core.platforms,
         bento.distutils,
         bento.distutils.commands,
-        bento.misc,
         bento.private,
+        bento.testing,
         bentomakerlib
     if flag(bundle):
         Packages:
