@@ -490,10 +490,6 @@ def p_in_conditional_stmts(p):
     """
     p[0] = p[1]
 
-def p_conditional_if_error(p):
-    """conditional_stmt : IF error"""
-    raise ParseError(error_msg(p[2], "Error in if statement"))
-
 def p_conditional_if_only(p):
     """conditional_stmt : IF test COLON INDENT in_conditional_stmts DEDENT"""
     p[0] = Node("conditional", value=p[2], children=[p[5]])
@@ -830,27 +826,26 @@ def p_version(p):
     p[0] = Node("version", value=p[1])
 
 def p_error(p):
-    # FIXME: this logic is buggy, think more about debug vs non-debug modes
-    if _DEBUG_YACC:
-        raise ParseError(error_msg(p, None))
+    if p is None:
+        raise InternalBentoError("Unknown parsing error (parser/lexer bug ? Please report this with your bento.info)")
     else:
-        if p is None:
-            raise InternalBentoError("Unknown parsing error (parser/lexer bug ? Please report this with your bento.info)")
-        else:
-            msg = "yacc: Syntax error at line %d, Token(%s, %r)" % \
-                    (p.lineno, p.type, p.value)
-            raise ParseError(msg, p)
-
-def error_msg(p, error_msg):
-    if p is not None:
-        msg = ["Syntax error at line number %d, token %s (%r)" % \
-               (p.lineno, p.type, p.value)]
-        if error_msg is not None:
-            msg += ["    %s" % error_msg]
+        msg = "yacc: Syntax error at line %d, Token(%s, %r)" % \
+                (p.lineno, p.type, p.value)
         if hasattr(p.lexer, "lexdata"):
             data = p.lexer.lexdata.splitlines()
-            msg += ["    Line %d -> %r" % (p.lineno, data[p.lineno-1])]
-        else:
-            msg += ["    Line %d" % (p.lineno)]
-        return "\n".join(msg)
-    return "Unhandled token"
+            msg += "\n\t%r" % (data[p.lineno-1],)
+        raise ParseError(msg, p)
+
+#def error_msg(p, error_msg):
+#    if p is not None:
+#        msg = ["Syntax error at line number %d, token %s (%r)" % \
+#               (p.lineno, p.type, p.value)]
+#        if error_msg is not None:
+#            msg += ["    %s" % error_msg]
+#        if hasattr(p.lexer, "lexdata"):
+#            data = p.lexer.lexdata.splitlines()
+#            msg += ["    Line %d -> %r" % (p.lineno, data[p.lineno-1])]
+#        else:
+#            msg += ["    Line %d" % (p.lineno)]
+#        return "\n".join(msg)
+#    return "Unhandled token"

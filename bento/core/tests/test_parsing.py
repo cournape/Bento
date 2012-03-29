@@ -51,14 +51,10 @@ class TestParseError(unittest.TestCase):
         text = """\
 NName: foo
 """
-        self.assertRaises(ParseError, lambda : PackageDescription.from_string(text))
-
-        try:
-            PackageDescription.from_string(text)
-            raise AssertionError("Should raise here !")
-        except ParseError:
-            e = extract_exception()
-            self.assertEqual(str(e), "yacc: Syntax error at line 1, Token(WORD, 'NName')")
+        error_msg = """\
+yacc: Syntax error at line 1, Token\(WORD, 'NName'\)
+\t'NName: foo'"""
+        self.assertRaisesRegexp(ParseError, error_msg, lambda : PackageDescription.from_string(text))
 
     def test_simple_filename(self):
         f = self.f
