@@ -1,7 +1,10 @@
 [report]
 # Remove obsolete code, bundled code or code that cannot be tested
-omit = bento/distutils/*
-       bento/private/*
+#  - private and compat/ stuff are bundled code
+#  - convert is mostly run in subprocesses - we need to fix coverage first to
+#  that it can be picked up
+#  - commands/build_pkg_info and parse are obsolete commands
+omit = bento/private/*
        bento/convert/*
        bento/compat/inspect*
        bento/compat/dist.py
