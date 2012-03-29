@@ -6,10 +6,6 @@ from bento._config \
     import \
         _CLI
 
-from bento.installed_package_description \
-    import \
-        InstalledSection
-
 SYS_EXECUTABLE = os.path.normpath(sys.executable)
 
 SCRIPT_TEXT = """\
@@ -123,7 +119,6 @@ def create_win32_script(name, executable, scripts_node):
     ext = '-script.py'
     launcher = _CLI
 
-    old = ['.py','.pyc','.pyo']
     new_header = re.sub('(?i)pythonw.exe', 'python.exe', header)
 
     if os.path.exists(new_header[2:-1]) or sys.platform != 'win32':
