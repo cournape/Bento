@@ -1,6 +1,5 @@
 import os
 import sys
-import string
 import zipfile
 import tempfile
 

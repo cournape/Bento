@@ -1,6 +1,5 @@
 import sys
 import os
-import string
 import time
 
 from distutils.util \
@@ -143,7 +142,7 @@ def get_inidata(ipkg):
 
     # Escape newline characters
     def escape(s):
-        return string.replace(s, "\n", "\\n")
+        return s.replace("\n", "\\n")
 
     for name in ["author", "author_email", "summary", "maintainer",
                  "maintainer_email", "name", "url", "version"]:
@@ -152,7 +151,7 @@ def get_inidata(ipkg):
             name = "description"
         if data:
             info = info + ("\n    %s: %s" % \
-                           (string.capitalize(name), escape(data)))
+                           (name.capitalize(), escape(data)))
             lines.append("%s=%s" % (name, escape(data)))
 
     # The [setup] section contains entries controlling
@@ -175,4 +174,4 @@ def get_inidata(ipkg):
     build_info = "Built %s with bento-%s" % \
                  (time.ctime(time.time()), bento.__version__)
     lines.append("build_info=%s" % build_info)
-    return string.join(lines, "\n")
+    return "\n".join(lines)
