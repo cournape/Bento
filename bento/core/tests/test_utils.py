@@ -1,6 +1,10 @@
 import os
 import sys
 import mock
+import tempfile
+import shutil
+
+import os.path as op
 
 from six.moves \
     import \
@@ -14,7 +18,7 @@ from bento.compat.api.moves \
 
 from bento.core.utils \
     import \
-        subst_vars, to_camel_case, \
+        subst_vars, to_camel_case, ensure_dir, \
         explode_path, same_content, cmd_is_runnable, memoized, comma_list_split, \
         cpu_count, normalize_path, unnormalize_path, pprint, virtualenv_prefix
 
@@ -100,6 +104,16 @@ class TestMisc(unittest.TestCase):
     def test_cmd_is_not_runnable(self):
         st = cmd_is_runnable(["phython", "-c", "''"])
         self.assertFalse(st)
+
+    def test_simple_ensure_dir(self):
+        d = tempfile.mkdtemp()
+        try:
+            new_dir = op.join(d, "foo", "bar")
+            new_file = op.join(new_dir, "fubar.txt")
+            ensure_dir(new_file)
+            self.assertTrue(op.exists(new_dir))
+        finally:
+            shutil.rmtree(d)
 
 class TestMemoize(unittest.TestCase):
     def test_simple_no_arguments(self):
