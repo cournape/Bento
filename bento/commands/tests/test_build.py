@@ -18,7 +18,7 @@ from bento.core.testing\
         expected_failure, skip_if
 from bento.core.node \
     import \
-        create_root_with_source_tree
+        create_base_nodes
 from bento.core.utils \
     import \
         subst_vars
@@ -76,9 +76,7 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         self.d = tempfile.mkdtemp()
         os.chdir(self.d)
 
-        root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
-        self.top_node = root._ctx.srcnode
-        self.build_node = root._ctx.bldnode
+        self.top_node, self.build_node, self.run_node = create_base_nodes(self.d, os.path.join(self.d, "build"))
 
         # Those should be set by subclasses
         self._configure_context = None
@@ -354,9 +352,7 @@ class TestBuildWaf(_TestBuildSimpleExtension):
 class TestBuildCommand(unittest.TestCase):
     def setUp(self):
         self.d = tempfile.mkdtemp()
-        root = create_root_with_source_tree(self.d, os.path.join(self.d, "build"))
-        self.top_node = root.find_node(self.d)
-        self.build_node = root.find_node(os.path.join(self.d, "build"))
+        self.top_node, self.build_node, self.run_node = create_base_nodes(self.d, os.path.join(self.d, "build"))
 
         self.old_dir = os.getcwd()
         os.chdir(self.d)
@@ -432,9 +428,8 @@ class TestBuildDirectoryBase(unittest.TestCase):
     def setUp(self):
         self.d = tempfile.mkdtemp()
 
-        self.root = create_root_with_source_tree(self.d, os.path.join(self.d, "yoyobuild"))
-        self.top_node = self.root.find_node(self.d)
-        self.run_node = self.top_node
+        self.top_node, self.build_node, self.run_node = create_base_nodes(self.d,
+                os.path.join(self.d, "yoyobuild"))
 
         self.old_dir = os.getcwd()
         os.chdir(self.d)

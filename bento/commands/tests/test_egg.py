@@ -11,7 +11,7 @@ from bento._config \
         IPKG_PATH
 from bento.core.node \
     import \
-        create_root_with_source_tree
+        create_base_nodes
 from bento.core.package \
     import \
         PackageDescription
@@ -21,12 +21,6 @@ from bento.core \
 from bento.core.pkg_objects \
     import \
         Extension
-from bento.installed_package_description \
-    import \
-        InstalledPkgDescription, ipkg_meta_from_pkg
-from bento.conv \
-    import \
-        to_distutils_meta
 
 from bento.commands.egg_utils \
     import \
@@ -118,10 +112,8 @@ class TestEggInfo(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp()
 
         os.chdir(self.tmpdir)
-        root = create_root_with_source_tree(self.tmpdir, os.path.join(self.tmpdir, "build"))
-        self.run_node = root.find_node(self.tmpdir)
-        self.top_node = self.run_node._ctx.srcnode
-        self.build_node = self.run_node._ctx.bldnode
+        self.top_node, self.build_node, self.run_node = \
+                create_base_nodes(self.tmpdir, os.path.join(self.tmpdir, "build"))
 
     def tearDown(self):
         if self.old_dir:
