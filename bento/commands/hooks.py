@@ -5,9 +5,6 @@ import re
 from bento.compat \
     import \
         inspect as compat_inspect
-from bento.commands.core \
-    import \
-        command
 from bento.core.utils \
     import \
         extract_exception
@@ -64,7 +61,6 @@ def find_pre_hooks(modules, cmd_name):
     """
     pre_hooks = []
     for module in modules:
-        yo = [f for f in vars(module).values() if isinstance(f, PreHookWrapper)]
         pre_hooks.extend([f for f in vars(module).values() if isinstance(f,
             PreHookWrapper) and f.cmd_name == cmd_name])
     return pre_hooks
@@ -112,8 +108,6 @@ class PostHookWrapper(_HookWrapperBase):
     pass
 
 def _make_hook_decorator(command_name, kind):
-    name = "%s_%s" % (kind, command_name)
-    help_bypass = False
     def decorator(f):
         local_dir = os.path.dirname(compat_inspect.stack()[1][1])
         if kind == "post":
