@@ -83,12 +83,9 @@ def set_scheme_unix(scheme, options, package):
         raise NotImplementedError("Customizing exec_prefix without " \
                                   "customizing prefix is not implemented yet")
     elif options.prefix is None and options.eprefix is None:
-        # XXX: what is real_prefix used for
         venv_prefix = virtualenv_prefix()
         if venv_prefix is not None:
             scheme["prefix"] = scheme["eprefix"] = venv_prefix
-        elif 'real_prefix' in sys.__dict__:
-            raise NotImplementedError("sys.__dict__['real_prefix'] == True not supported yet")
         elif sys.platform == "darwin":
             scheme["prefix"] = op.normpath(sys.prefix)
             scheme["eprefix"] = op.normpath(sys.exec_prefix)
@@ -255,8 +252,7 @@ def _compute_scheme(package_options):
     scheme, scheme_opts_d = get_scheme(sys.platform)
 
     # XXX: abstract away those, as it is copied from distutils
-    py_version = sys.version.split()[0]
-    scheme['py_version_short'] = py_version[0:3]
+    scheme['py_version_short'] = ".".join(str(part) for part in sys.version_info[:2])
     scheme['pkgname'] = package_options.name
 
     for name, f in package_options.path_options.items():
