@@ -145,6 +145,11 @@ class GlobalContext(object):
         """Specify that command cmd_name_before should run after cmd_name."""
         self._scheduler.set_after(cmd_name, cmd_name_after)
 
+    def retrieve_dependencies(self, cmd_name):
+        """Return the ordered list of command names to run before the given
+        command name."""
+        return self._scheduler.order(cmd_name)
+
     #---------
     # Hook API
     #---------

@@ -65,12 +65,6 @@ else:
 
 SCRIPT_NAME = 'bentomaker'
 
-CMD_SCHEDULER = CommandScheduler()
-CMD_SCHEDULER.set_before("build", "configure")
-CMD_SCHEDULER.set_before("build_egg", "build")
-CMD_SCHEDULER.set_before("build_wininst", "build")
-CMD_SCHEDULER.set_before("install", "build")
-
 # Path relative to build directory
 CMD_DATA_DUMP = os.path.join(_SUB_BUILD_DIR, "cmd_data.db")
 
@@ -241,7 +235,12 @@ def main(argv=None):
         raise UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
 
     global_context = GlobalContext(CommandRegistry(), ContextRegistry(),
-                                   OPTIONS_REGISTRY, CMD_SCHEDULER)
+                                   OPTIONS_REGISTRY, CommandScheduler())
+    global_context.set_before("build", "configure")
+    global_context.set_before("build_egg", "build")
+    global_context.set_before("build_wininst", "build")
+    global_context.set_before("install", "build")
+
     if cmd_name and cmd_name not in ["convert"] or not cmd_name:
         return _wrapped_main(global_context, popts, run_node, top_node, build_node)
     else:
@@ -392,7 +391,7 @@ def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
         pkg, package_options):
     cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
 
-    deps = CMD_SCHEDULER.order(cmd_name)
+    deps = global_context.retrieve_dependencies(cmd_name)
     for cmd_name in deps:
         cmd = global_context.retrieve_command(cmd_name)
         cmd_argv = _get_cmd_data_provider(cmd_data_db).get_argv(cmd_name)
