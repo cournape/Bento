@@ -26,7 +26,7 @@ from bento.commands.context \
         ConfigureYakuContext
 from bento.commands.configure \
     import \
-        _compute_scheme, set_scheme_unix
+        _compute_scheme, set_scheme_unix, set_scheme_win32
 
 BENTO_INFO = """\
 Name: Sphinx
@@ -104,6 +104,31 @@ UNIX_REFERENCE = {
         'pkgdatadir': '$datadir/$pkgname'
 }
 
+WIN32_REFERENCE = {
+        'destdir': None,
+        'prefix': None,
+        'eprefix': r'$prefix',
+        'bindir': r'$eprefix\Scripts',
+        'sbindir': r'$eprefix\Scripts',
+        'libexecdir': r'$eprefix\Scripts',
+        'sysconfdir': r'$prefix\etc',
+        'sharedstatedir': r'$prefix\com',
+        'localstatedir': r'$prefix\var',
+        'libdir': r'$eprefix\lib',
+        'includedir': r'$prefix\include',
+        'datarootdir': r'$prefix\share',
+        'datadir': r'$datarootdir',
+        'mandir': r'$datarootdir\man',
+        'infodir': r'$datarootdir\info',
+        'localedir': r'$datarootdir\locale',
+        'docdir': r'$datarootdir\doc\$pkgname',
+        'htmldir': r'$docdir',
+        'dvidir': r'$docdir',
+        'psdir': r'$docdir',
+        'pdfdir': r'$docdir',
+        'sitedir': r'$prefix\Lib\site-packages',
+        'pkgdatadir': r'$datadir\$pkgname'
+    }
 MOCK_DEBIAN_SCHEME = {
         'purelib': '$base/local/lib/python$py_version_short/dist-packages',
         'headers': '$base/local/include/python$py_version_short/$dist_name',
@@ -111,9 +136,9 @@ MOCK_DEBIAN_SCHEME = {
 }
 
 
-class TestScheme(unittest.TestCase):
+class TestUnixScheme(unittest.TestCase):
     def setUp(self):
-        super(TestScheme, self).setUp()
+        super(TestUnixScheme, self).setUp()
         options = mock.Mock()
         options.eprefix = None
         options.prefix = None
@@ -131,7 +156,7 @@ class TestScheme(unittest.TestCase):
 
     @mock.patch("sys.platform", "linux2")
     @mock.patch("sys.version_info", (2, 4, 4, 'final', 0))
-    def test_unix_scheme_default(self):
+    def test_scheme_default(self):
         bento_info = """\
 Name: foo
 """
@@ -156,7 +181,7 @@ Name: foo
     @mock.patch("sys.prefix", "/Library/Frameworks/Python.framework/Versions/2.8")
     @mock.patch("sys.exec_prefix", "/Exec/Library/Frameworks/Python.framework/Versions/2.8")
     @mock.patch("sys.version_info", (2, 4, 4, 'final', 0))
-    def test_unix_scheme_default_darwin(self):
+    def test_scheme_default_darwin(self):
         bento_info = """\
 Name: foo
 """
@@ -179,7 +204,7 @@ Name: foo
 
     @mock.patch("sys.platform", "linux2")
     @mock.patch("sys.version_info", (2, 7, 2, 'final', 0))
-    def test_unix_scheme_with_prefix(self):
+    def test_scheme_with_prefix(self):
         bento_info = """\
 Name: foo
 """
@@ -218,7 +243,7 @@ Name: foo
             self.assertEqual(UNIX_REFERENCE[k], v)
 
     @mock.patch("sys.platform", "linux2")
-    def test_unix_scheme_with_eprefix_fail(self):
+    def test_scheme_with_eprefix_fail(self):
         bento_info = """\
 Name: foo
 """
@@ -229,7 +254,7 @@ Name: foo
     @mock.patch("sys.platform", "linux2")
     @mock.patch("sys.version_info", (2, 7, 2, 'final', 0))
     @mock.patch("distutils.command.install.INSTALL_SCHEMES", {"unix_local": MOCK_DEBIAN_SCHEME}, create=True)
-    def test_unix_scheme_debian(self):
+    def test_scheme_debian(self):
         bento_info = """\
 Name: foo
 """
@@ -253,7 +278,7 @@ Name: foo
 
     @mock.patch("sys.platform", "linux2")
     @mock.patch("bento.commands.configure.virtualenv_prefix", lambda: "/home/guido/.env")
-    def test_unix_scheme_venv(self):
+    def test_scheme_venv(self):
         bento_info = """\
 Name: foo
 """
@@ -270,3 +295,68 @@ Name: foo
         # Check that other values in scheme have not been modified
         for k, v in scheme.items():
             self.assertEqual(UNIX_REFERENCE[k], v)
+
+class TestWin32Scheme(unittest.TestCase):
+    def setUp(self):
+        super(TestWin32Scheme, self).setUp()
+        options = mock.Mock()
+        options.eprefix = None
+        options.prefix = None
+
+        self.options = options
+
+    def _compute_scheme(self, bento_info, options):
+        package_options = PackageOptions.from_string(bento_info)
+        pkg = PackageDescription.from_string(bento_info)
+        scheme = _compute_scheme(package_options)
+        set_scheme_win32(scheme, options, pkg)
+
+        return scheme
+
+    @mock.patch("sys.platform", "win32")
+    @mock.patch("sys.version_info", (2, 4, 4, 'final', 0))
+    @mock.patch("sys.prefix", r"C:\Python24")
+    @mock.patch("sys.exec_prefix", r"C:\Python24")
+    def test_scheme_default(self):
+        bento_info = """\
+Name: foo
+"""
+        self.options.prefix = self.eprefix = None
+
+        scheme = self._compute_scheme(bento_info, self.options)
+        prefix = scheme.pop("prefix")
+        eprefix = scheme.pop("eprefix")
+        py_version_short = scheme.pop("py_version_short")
+        pkgname = scheme.pop("pkgname")
+
+        self.assertEqual(prefix, sys.prefix)
+        self.assertEqual(eprefix, sys.exec_prefix)
+        self.assertEqual(pkgname, "foo")
+        self.assertEqual(py_version_short, "2.4")
+
+        # Check that other values in scheme have not been modified
+        scheme.pop("destdir")
+        for k, v in scheme.items():
+            self.assertEqual(WIN32_REFERENCE[k], v, "discrepency for path %s" % k)
+
+    @mock.patch("sys.platform", "win32")
+    def test_scheme_prefix(self):
+        bento_info = """\
+Name: foo
+"""
+        self.options.prefix = r"C:\foo"
+        self.eprefix = None
+
+        scheme = self._compute_scheme(bento_info, self.options)
+        prefix = scheme.pop("prefix")
+        eprefix = scheme.pop("eprefix")
+        scheme.pop("py_version_short")
+        scheme.pop("pkgname")
+
+        self.assertEqual(prefix, r"C:\foo")
+        self.assertEqual(eprefix, r"C:\foo")
+
+        # Check that other values in scheme have not been modified
+        scheme.pop("destdir")
+        for k, v in scheme.items():
+            self.assertEqual(WIN32_REFERENCE[k], v, "discrepency for path %s" % k)
