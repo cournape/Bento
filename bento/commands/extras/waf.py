@@ -1,8 +1,6 @@
 import os
 import sys
-import shutil
 import logging
-import collections
 
 import os.path as op
 
@@ -14,8 +12,6 @@ from bento.commands.api \
 from bento.commands.utils \
     import \
         is_using_cython
-
-import six
 
 if "WAFDIR" in os.environ:
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
@@ -54,12 +50,6 @@ from bento.commands.options \
 from bento.commands.context \
     import \
         ConfigureContext, BuildContext
-from bento.installed_package_description \
-    import \
-        InstalledSection
-from bento.core.utils \
-    import \
-        normalize_path
 
 WAF_TOP = os.path.join(WAFDIR, os.pardir)
 
