@@ -2,34 +2,23 @@ import sys
 import os
 import os.path as op
 
-try:
-    from cPickle import loads, dumps
-except ImportError:
-    from pickle import loads, dumps
+from six import moves
 
-from bento.compat.api \
+from bento.core.utils \
     import \
-        rename
-from bento.core.utils import \
-        pprint, subst_vars, ensure_dir, virtualenv_prefix
+        subst_vars, virtualenv_prefix
 from bento.core.platforms import \
         get_scheme
-from bento.core import \
-        PackageOptions, PackageDescription
 from bento._config \
     import \
         CONFIGURED_STATE_DUMP, BENTO_SCRIPT
 
-from bento.commands.core import \
-        Command, Option, OptionGroup
-from bento.core.subpackage \
+from bento.commands.core \
     import \
-        get_extensions, get_compiled_libraries, get_packages
+        Command, Option
 from bento.commands.errors \
     import \
         UsageException
-
-import yaku.context
 
 class _ConfigureState(object):
     def __init__(self, bento_script, pkg, paths=None, flags=None, user_data=None):
@@ -53,11 +42,11 @@ class _ConfigureState(object):
 
     def dump(self, node):
         node.parent.mkdir()
-        node.safe_write(dumps(self), 'wb')
+        node.safe_write(moves.cPickle.dumps(self), 'wb')
 
     @classmethod
     def from_dump(cls, node):
-        return loads(node.read('rb'))
+        return moves.cPickle.loads(node.read('rb'))
 
 def set_scheme_unix(scheme, options, package):
     # This mess is the simplest solution I can think of to support:
