@@ -65,8 +65,6 @@ else:
 
 SCRIPT_NAME = 'bentomaker'
 
-CONTEXT_REGISTRY = ContextRegistry()
-
 CMD_SCHEDULER = CommandScheduler()
 CMD_SCHEDULER.set_before("build", "configure")
 CMD_SCHEDULER.set_before("build_egg", "build")
@@ -168,16 +166,17 @@ def register_options_special(global_context):
     context.parser.print_help = print_help
     OPTIONS_REGISTRY.register("globals", context)
 
-def register_command_contexts():
-    CONTEXT_REGISTRY.set_default(CmdContext)
-    if not CONTEXT_REGISTRY.is_registered("configure"):
-        CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
-    if not CONTEXT_REGISTRY.is_registered("build"):
-        CONTEXT_REGISTRY.register("build", BuildYakuContext)
-    if not CONTEXT_REGISTRY.is_registered("sdist"):
-        CONTEXT_REGISTRY.register("sdist", SdistContext)
-    if not CONTEXT_REGISTRY.is_registered("help"):
-        CONTEXT_REGISTRY.register("help", HelpContext)
+def register_command_contexts(global_context):
+    global_context.register_default_context(CmdContext)
+    default_mapping = (
+            ("configure", ConfigureYakuContext),
+            ("build", BuildYakuContext),
+            ("sdist", SdistContext),
+            ("help", HelpContext))
+
+    for cmd_name, context_klass in default_mapping:
+        if not global_context.is_command_context_registered(cmd_name):
+            global_context.register_context(cmd_name, context_klass)
 
 # All the global state/registration stuff goes here
 def register_stuff(global_context):
@@ -185,7 +184,7 @@ def register_stuff(global_context):
     for cmd_name in global_context.command_names():
         register_options(global_context, cmd_name)
     register_options_special(global_context)
-    register_command_contexts()
+    register_command_contexts(global_context)
 
 def set_main(top_node, build_node):
     # Some commands work without a bento description file (convert, help)
@@ -241,7 +240,7 @@ def main(argv=None):
     if run_node != build_node and run_node.is_bld():
         raise UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
 
-    global_context = GlobalContext(CommandRegistry(), CONTEXT_REGISTRY,
+    global_context = GlobalContext(CommandRegistry(), ContextRegistry(),
                                    OPTIONS_REGISTRY, CMD_SCHEDULER)
     if cmd_name and cmd_name not in ["convert"] or not cmd_name:
         return _wrapped_main(global_context, popts, run_node, top_node, build_node)
@@ -397,7 +396,7 @@ def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
     for cmd_name in deps:
         cmd = global_context.retrieve_command(cmd_name)
         cmd_argv = _get_cmd_data_provider(cmd_data_db).get_argv(cmd_name)
-        ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
+        ctx_klass = global_context.retrieve_context(cmd_name)
         run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, ctx_klass,
                 run_node, top_node, pkg, package_options)
 
@@ -406,14 +405,14 @@ def is_help_only(cmd_name, cmd_argv):
     o, a = p.parser.parse_args(cmd_argv)
     return o.help is True
 
-def run_cmd(global_ctx, cmd_name, cmd_opts, run_node, top_node, build_node):
+def run_cmd(global_ctx, cmd_name, cmd_argv, run_node, top_node, build_node):
     cmd = global_ctx.retrieve_command(cmd_name)
 
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:
         options_ctx = OPTIONS_REGISTRY.retrieve(cmd_name)
-        ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
-        ctx = ctx_klass(global_ctx, cmd_opts, options_ctx, PackageDescription(), run_node)
+        ctx_klass = global_ctx.retrieve_context(cmd_name)
+        ctx = ctx_klass(global_ctx, cmd_argv, options_ctx, PackageDescription(), run_node)
         # XXX: hack for help command to get option context for any command
         # without making help depends on bentomakerlib
         ctx.options_registry = OPTIONS_REGISTRY
@@ -425,23 +424,23 @@ def run_cmd(global_ctx, cmd_name, cmd_opts, run_node, top_node, build_node):
         raise UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))
 
     package_options = __get_package_options(top_node)
-    pkg = _get_package_with_user_flags(cmd_name, cmd_opts, package_options, top_node, build_node)
-    if is_help_only(cmd_name, cmd_opts):
+    pkg = _get_package_with_user_flags(cmd_name, cmd_argv, package_options, top_node, build_node)
+    if is_help_only(cmd_name, cmd_argv):
         options_context = OPTIONS_REGISTRY.retrieve(cmd_name)
         p = options_context.parser
-        o, a = p.parse_args(cmd_opts)
+        o, a = p.parse_args(cmd_argv)
         if o.help:
             p.print_help()
     else:
         run_dependencies(global_ctx, cmd_name, run_node, top_node, build_node,
                 pkg, package_options)
 
-        ctx_klass = CONTEXT_REGISTRY.retrieve(cmd_name)
-        run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_opts, ctx_klass,
+        ctx_klass = global_ctx.retrieve_context(cmd_name)
+        run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass,
                 run_node, top_node, pkg, package_options)
 
         cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
-        _set_cmd_data_provider(cmd_name, cmd_opts, cmd_data_db)
+        _set_cmd_data_provider(cmd_name, cmd_argv, cmd_data_db)
 
 def noexc_main(argv=None):
     def _print_debug():

@@ -79,6 +79,9 @@ class GlobalContext(object):
     #--------------------
     # Command Context API
     #--------------------
+    def register_default_context(self, klass):
+        self._contexts_registry.set_default(klass)
+
     def register_context(self, cmd_name, klass):
         self._contexts_registry.register(cmd_name, klass)
 
@@ -90,6 +93,10 @@ class GlobalContext(object):
             return self._commands_registry.public_command_names()
         else:
             return self._commands_registry.command_names()
+
+    def is_command_context_registered(self, cmd_name):
+        """Return True if the command context is registered."""
+        return self._contexts_registry.is_registered(cmd_name)
 
     #--------------------
     # Command Options API
