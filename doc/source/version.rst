@@ -1,3 +1,22 @@
+Version 0.1
+===========
+
+Released on .
+
+Main features:
+
+        - waf backend: cython tool automatically loaded if cython files are
+          detected in sources
+
+Fixed issues
+------------
+
+Internals
+---------
+
+        - Test coverage has been significantly improved
+        - Lots of code style fixes to make the codebase more consistent
+
 Version 0.0.8.1
 ===============
 

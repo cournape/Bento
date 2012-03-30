@@ -11,6 +11,9 @@ import bento
 from bento.commands.api \
     import \
         UsageException
+from bento.commands.utils \
+    import \
+        is_using_cython
 
 import six
 
@@ -165,6 +168,9 @@ class ConfigureWafContext(ConfigureContext):
                     if len(v.extensions) > 0 or len(v.compiled_libraries) > 0:
                         has_compiled_code = True
                         break
+
+        has_cython_code = is_using_cython(pkg)
+
         conf = self.waf_context
         if has_compiled_code:
             conf.load("compiler_c")
@@ -172,6 +178,8 @@ class ConfigureWafContext(ConfigureContext):
             conf.load("python")
             conf.check_python_version((2,4,2))
             conf.check_python_headers()
+        if has_cython_code:
+            conf.load("cython", tooldir=[PKG_PATH])
         self._old_path = None
 
     def pre_recurse(self, local_node):
