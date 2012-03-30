@@ -27,6 +27,8 @@ if not os.path.exists(WAFDIR):
     $WAFDIR contains the 'waflib' directory""" % WAFDIR)
 sys.path.insert(0, os.path.dirname(WAFDIR))
 
+PKG_PATH = op.dirname(__file__)
+
 from waflib.Context \
     import \
         create_context
