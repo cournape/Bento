@@ -13,7 +13,10 @@ from bento.core.node \
 
 from bento.commands.context \
     import \
-        ConfigureYakuContext, CmdContext
+        ConfigureYakuContext
+from bento.commands.cmd_contexts \
+    import \
+        ContextWithBuildDirectory
 from bento.commands.tests.utils \
     import \
         prepare_configure, prepare_build
@@ -66,7 +69,7 @@ class TestBuildCommand(unittest.TestCase):
             install = InstallCommand()
             opts = OptionsContext.from_command(install)
 
-            inst = CmdContext(None, ["--list-files"], opts, conf.pkg, self.top_node)
+            inst = ContextWithBuildDirectory(None, ["--list-files"], opts, conf.pkg, self.top_node)
             install.run(inst)
         finally:
             shutil.rmtree(install_prefix)
@@ -79,7 +82,7 @@ class TestBuildCommand(unittest.TestCase):
             install = InstallCommand()
             opts = OptionsContext.from_command(install)
 
-            inst = CmdContext(None, [], opts, conf.pkg, self.top_node)
+            inst = ContextWithBuildDirectory(None, [], opts, conf.pkg, self.top_node)
             install.run(inst)
         finally:
             shutil.rmtree(install_prefix)

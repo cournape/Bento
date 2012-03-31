@@ -35,7 +35,7 @@ from bento.commands.context \
         GlobalContext, ContextRegistry
 from bento.commands.cmd_contexts \
     import \
-        CmdContext, SdistContext
+        CmdContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.core \
     import \
         CommandRegistry
@@ -119,6 +119,8 @@ def register_command_contexts():
         CONTEXT_REGISTRY.register("build", BuildYakuContext)
     if not CONTEXT_REGISTRY.is_registered("sdist"):
         CONTEXT_REGISTRY.register("sdist", SdistContext)
+    if not CONTEXT_REGISTRY.is_registered("install"):
+        CONTEXT_REGISTRY.register("install", ContextWithBuildDirectory)
 
 def register_commands(commands_registry):
     commands_registry.register("configure", ConfigureCommand())

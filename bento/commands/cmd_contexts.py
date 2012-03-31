@@ -72,53 +72,17 @@ class CmdContext(object):
         # TODO: kept for compatibility. Remove it ?
         if run_node is not None:
             self.top_node = run_node._ctx.srcnode
-            self.build_node = run_node._ctx.bldnode
             # cur_node refers to the current path when recursing into sub directories
             self.cur_node = self.top_node
         else:
             self.top_node = None
-            self.build_node = None
-
-        if self.pkg.sub_directory:
-            self.top_or_sub_directory_node = self.top_node.make_node(self.pkg.sub_directory)
-            self.build_or_sub_directory_node = self.build_node.make_node(self.pkg.sub_directory)
-        else:
-            self.top_or_sub_directory_node = self.top_node
-            self.build_or_sub_directory_node = self.build_node
-
-        self._configured_state = None
 
         # Recursive related members
         self.local_node = None
         self.local_pkg = None
 
-    def make_source_node(self, path):
-        n = self.top_node.find_node(path)
-        if n is None:
-            raise IOError("file %s not found" % (op.join(self.top_node.abspath(), path)))
-        else:
-            return n
-
-    def make_build_node(self, path):
-        n = self.build_node.make_node(path)
-        n.parent.mkdir()
-        return n
-
     def get_command_arguments(self):
         return self.cmd_argv
-
-    def _get_configured_state(self):
-        if self._configured_state is None:
-            dump_node = self.build_node.find_node(CONFIGURED_STATE_DUMP)
-            if dump_node is None:
-                raise IOError("%s not found" % CONFIGURED_STATE_DUMP)
-            else:
-                self._configured_state = _ConfigureState.from_dump(dump_node)
-        return self._configured_state
-
-    def get_paths_scheme(self):
-        state = self._get_configured_state()
-        return state.paths
 
     def recurse_manager(self, local_node):
         """
@@ -171,20 +135,56 @@ class CmdContext(object):
     def shutdown(self):
         pass
 
-class _ContextWithBuildDirectory(CmdContext):
+class ContextWithBuildDirectory(CmdContext):
     def __init__(self, *a, **kw):
-        CmdContext.__init__(self, *a, **kw)
+        super(ContextWithBuildDirectory, self).__init__(*a, **kw)
         self.build_root = self.run_node.make_node("build")
 
-class ConfigureContext(_ContextWithBuildDirectory):
-    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
-        CmdContext.__init__(self, global_context, cmd_argv, options_context, pkg, run_node)
+        # TODO: kept for compatibility. Remove it ?
+        assert self.run_node is not None
+        self.top_node = self.run_node._ctx.srcnode
+        self.build_node = self.run_node._ctx.bldnode
 
+        self._configured_state = None
+
+        if self.pkg.sub_directory:
+            self.top_or_sub_directory_node = self.top_node.make_node(self.pkg.sub_directory)
+            self.build_or_sub_directory_node = self.build_node.make_node(self.pkg.sub_directory)
+        else:
+            self.top_or_sub_directory_node = self.top_node
+            self.build_or_sub_directory_node = self.build_node
+
+        # FIXME: removed this
+        self._configured_state = None
+
+    def make_source_node(self, path):
+        n = self.top_node.find_node(path)
+        if n is None:
+            raise IOError("file %s not found" % (op.join(self.top_node.abspath(), path)))
+        else:
+            return n
+
+    def make_build_node(self, path):
+        n = self.build_node.make_node(path)
+        n.parent.mkdir()
+        return n
+
+    def _get_configured_state(self):
+        if self._configured_state is None:
+            dump_node = self.build_node.find_node(CONFIGURED_STATE_DUMP)
+            if dump_node is None:
+                raise IOError("%s not found" % CONFIGURED_STATE_DUMP)
+            else:
+                self._configured_state = _ConfigureState.from_dump(dump_node)
+        return self._configured_state
+
+    def get_paths_scheme(self):
+        state = self._get_configured_state()
+        return state.paths
+
+class ConfigureContext(ContextWithBuildDirectory):
     def setup(self):
         pass
-
-    def shutdown(self):
-        CmdContext.shutdown(self)
 
 class _Dummy(object):
     pass
@@ -302,7 +302,7 @@ def write_template(top_node, pkg):
     output.safe_write(output_content)
     return output
 
-class BuildContext(_ContextWithBuildDirectory):
+class BuildContext(ContextWithBuildDirectory):
     def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
         super(BuildContext, self).__init__(global_context, cmd_argv, options_context, pkg, run_node)
         self.builder_registry = BuilderRegistry()
