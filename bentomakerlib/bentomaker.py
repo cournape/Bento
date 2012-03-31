@@ -390,17 +390,6 @@ def _get_package_with_user_flags(global_context, cmd_name, cmd_argv, package_opt
     bento_info = top_node.find_node(BENTO_SCRIPT)
     return _get_cached_package().get_package(bento_info, flag_values)
 
-def _get_subpackage(pkg, top, local_node):
-    rpath = local_node.path_from(top)
-    k = os.path.join(rpath, "bento.info")
-    if local_node == top:
-        return pkg
-    else:
-        if k in pkg.subpackages:
-            return pkg.subpackages[k]
-        else:
-            return None
-
 def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
         pkg, package_options):
     cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
