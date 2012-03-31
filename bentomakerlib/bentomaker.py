@@ -112,6 +112,17 @@ def __get_package_options(top_node):
         __PACKAGE_OPTIONS = _get_cached_package().get_options(n.abspath())
         return __PACKAGE_OPTIONS
 
+class GlobalOptions(object):
+    def __init__(self, cmd_name, cmd_opts, show_usage, build_directory,
+            bento_info, show_version, show_full_version):
+        self.cmd_name = cmd_name
+        self.cmd_opts = cmd_opts
+        self.show_usage = show_usage
+        self.build_directory = build_directory
+        self.bento_info = bento_info
+        self.show_version = show_version
+        self.show_full_version = show_full_version
+
 #================================
 #   Create the command line UI
 #================================
@@ -217,11 +228,11 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
     popts = parse_global_options(global_context, argv)
-    cmd_name = popts["cmd_name"]
+    cmd_name = popts.cmd_name
 
     # FIXME: top_node vs srcnode
-    source_root = os.path.join(os.getcwd(), os.path.dirname(popts["bento_info"]))
-    build_root = os.path.join(os.getcwd(), popts["build_directory"])
+    source_root = os.path.join(os.getcwd(), os.path.dirname(popts.bento_info))
+    build_root = os.path.join(os.getcwd(), popts.build_directory)
 
     # FIXME: create_root_with_source_tree should return source node and build
     # node so that we don't have to find them and take the risk of
@@ -318,41 +329,44 @@ def parse_global_options(global_context, argv):
             cmd_args = argv[i:]
             break
 
-    ret = {"cmd_name": None, "cmd_opts": None}
+    cmd_name = None
+    cmd_opts = None
     if cmd_args:
-        ret["cmd_name"] = cmd_args[0]
-        ret["cmd_opts"] = cmd_args[1:]
+        cmd_name = cmd_args[0]
+        cmd_opts = cmd_args[1:]
 
     o, a = context.parser.parse_args(global_args)
-    ret["show_usage"] = o.show_help
-    ret["build_directory"] = o.build_directory
+    show_usage = o.show_help
+    build_directory = o.build_directory
     if not os.path.basename(o.bento_info) == BENTO_SCRIPT:
         context.parser.error("Invalid value for --bento-info: %r (basename should be %r)" % \
                              (o.bento_info, BENTO_SCRIPT))
 
-    ret["bento_info"] = o.bento_info
-    ret["show_version"] = o.show_version
-    ret["show_full_version"] = o.show_full_version
+    bento_info = o.bento_info
+    show_version = o.show_version
+    show_full_version = o.show_full_version
 
-    return ret
+    global_options = GlobalOptions(cmd_name, cmd_opts, show_usage,
+            build_directory, bento_info, show_version, show_full_version)
+    return global_options
 
 def _main(global_context, popts, run_node, top_node, build_node):
-    if popts["show_version"]:
+    if popts.show_version:
         print(bento.__version__)
         return 0
 
-    if popts["show_full_version"]:
+    if popts.show_full_version:
         print(bento.__version__ + "git" + bento.__git_revision__)
         return 0
 
-    if popts["show_usage"]:
+    if popts.show_usage:
         ctx_klass = global_context.retrieve_context("help")
         cmd = global_context.retrieve_command('help')
         cmd.run(ctx_klass(global_context, [], global_context.retrieve_options_context('help'), None, None))
         return 0
 
-    cmd_name = popts["cmd_name"]
-    cmd_opts = popts["cmd_opts"]
+    cmd_name = popts.cmd_name
+    cmd_opts = popts.cmd_opts
 
     if not cmd_name:
         print("Type '%s help' for usage." % SCRIPT_NAME)
