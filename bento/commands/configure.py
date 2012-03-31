@@ -189,7 +189,7 @@ def _setup_options_parser(options_context, package_options):
 
     flag_opts = {}
     if package_options.flag_options:
-        flags_group = p.add_group("optional_features", "Optional features")
+        p.add_group("optional_features", "Optional features")
         for name, v in package_options.flag_options.items():
             flag_opts[name] = Option(
                     "--%s" % v.name,
@@ -210,7 +210,6 @@ Usage: bentomaker configure [OPTIONS]"""
         self.flags = package_options.flag_options.keys()
 
     def run(self, ctx):
-        run_node = ctx.run_node
         bento_script = ctx.top_node.find_node(BENTO_SCRIPT)
         if bento_script is None:
             raise IOError("%s not found ?" % BENTO_SCRIPT)
