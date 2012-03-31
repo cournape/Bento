@@ -101,8 +101,14 @@ class GlobalContext(object):
     #--------------------
     # Command Options API
     #--------------------
+    def register_options_context(self, cmd_name, klass):
+        return self._options_registry.register(cmd_name, klass)
+
     def retrieve_options_context(self, cmd_name):
         return self._options_registry.retrieve(cmd_name)
+
+    def is_options_context_registered(self, cmd_name):
+        return self._options_registry.is_registered(cmd_name)
 
     def add_option_group(self, cmd_name, name, title):
         """Add a new option group for the given command.

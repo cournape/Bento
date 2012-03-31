@@ -86,8 +86,6 @@ def _set_cmd_data_provider(cmd_name, cmd_argv, dump_node):
     __CMD_DATA_STORE.set(cmd_name, cmd_argv)
     __CMD_DATA_STORE.store(dump_node.abspath())
 
-OPTIONS_REGISTRY = OptionsRegistry()
-
 __CACHED_PACKAGE = None
 def _set_cached_package(node):
     global __CACHED_PACKAGE
@@ -141,7 +139,7 @@ def register_options(global_context, cmd_name):
     cmd_klass = global_context.retrieve_command(cmd_name)
     usage = cmd_klass.long_descr.splitlines()[1]
     context = OptionsContext.from_command(cmd_klass, usage=usage)
-    OPTIONS_REGISTRY.register(cmd_name, context)
+    global_context.register_options_context(cmd_name, context)
 
 def register_options_special(global_context):
     # Register options for special topics not attached to a "real" command
@@ -150,15 +148,15 @@ def register_options_special(global_context):
     def print_usage():
         print(get_usage(global_context))
     context.parser.print_help = print_usage
-    OPTIONS_REGISTRY.register("commands", context)
+    global_context.register_options_context("commands", context)
 
     context = OptionsContext()
     def print_help():
-        global_options = OPTIONS_REGISTRY.retrieve("")
+        global_options = global_context.retrieve_options_context("")
         p = global_options.parser
         return(p.print_help())
     context.parser.print_help = print_help
-    OPTIONS_REGISTRY.register("globals", context)
+    global_context.register_options_context("globals", context)
 
 def register_command_contexts(global_context):
     global_context.register_default_context(CmdContext)
@@ -206,6 +204,9 @@ def set_main(top_node, build_node):
     return modules
 
 def main(argv=None):
+    global_context = GlobalContext(CommandRegistry(), ContextRegistry(),
+                                   OptionsRegistry(), CommandScheduler())
+
     if hasattr(os, "getuid"):
         if os.getuid() == 0:
             pprint("RED", "Using bentomaker under root/sudo is *strongly* discouraged - do you want to continue ? y/N")
@@ -215,7 +216,7 @@ def main(argv=None):
 
     if argv is None:
         argv = sys.argv[1:]
-    popts = parse_global_options(argv)
+    popts = parse_global_options(global_context, argv)
     cmd_name = popts["cmd_name"]
 
     # FIXME: top_node vs srcnode
@@ -234,8 +235,6 @@ def main(argv=None):
     if run_node != build_node and run_node.is_bld():
         raise UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
 
-    global_context = GlobalContext(CommandRegistry(), ContextRegistry(),
-                                   OPTIONS_REGISTRY, CommandScheduler())
     global_context.set_before("build", "configure")
     global_context.set_before("build_egg", "build")
     global_context.set_before("build_wininst", "build")
@@ -258,7 +257,8 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         n = top_node.find_node(BENTO_SCRIPT)
         if n:
             package_options = __get_package_options(top_node)
-            _setup_options_parser(OPTIONS_REGISTRY.retrieve("configure"), package_options)
+            _setup_options_parser(global_context.retrieve_options_context("configure"),
+                                  package_options)
         else:
             import warnings
             warnings.warn("No %r file in current directory - not all options "
@@ -278,7 +278,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
     # FIXME: this registered options for new commands registered in hook. It
     # should be made all in one place (hook and non-hook)
     for cmd_name in global_context.command_names(public_only=False):
-        if not OPTIONS_REGISTRY.is_registered(cmd_name):
+        if not global_context.is_options_context_registered(cmd_name):
             register_options(global_context, cmd_name)
 
     for cmd_name in global_context.command_names():
@@ -293,7 +293,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         if mods:
             mods[0].shutdown()
 
-def parse_global_options(argv):
+def parse_global_options(global_context, argv):
     context = OptionsContext(usage="%prog [options] [cmd_name [cmd_options]]")
     context.add_option(Option("--version", "-v", dest="show_version", action="store_true",
                               help="Version"))
@@ -308,7 +308,7 @@ def parse_global_options(argv):
                               help="Display help and exit"))
     context.parser.set_defaults(show_version=False, show_full_version=False, show_help=False,
                                 build_directory="build", bento_info="bento.info")
-    OPTIONS_REGISTRY.register("", context)
+    global_context.register_options_context("", context)
 
     global_args, cmd_args = [], []
     for i, a in enumerate(argv):
@@ -348,7 +348,7 @@ def _main(global_context, popts, run_node, top_node, build_node):
     if popts["show_usage"]:
         ctx_klass = global_context.retrieve_context("help")
         cmd = global_context.retrieve_command('help')
-        cmd.run(ctx_klass(global_context, [], OPTIONS_REGISTRY.retrieve('help'), None, None))
+        cmd.run(ctx_klass(global_context, [], global_context.retrieve_options_context('help'), None, None))
         return 0
 
     cmd_name = popts["cmd_name"]
@@ -363,13 +363,13 @@ def _main(global_context, popts, run_node, top_node, build_node):
         else:
             run_cmd(global_context, cmd_name, cmd_opts, run_node, top_node, build_node)
 
-def _get_package_with_user_flags(cmd_name, cmd_argv, package_options, top_node, build_node):
+def _get_package_with_user_flags(global_context, cmd_name, cmd_argv, package_options, top_node, build_node):
     from bento.commands.configure import _get_flag_values
 
     cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
     configure_argv = _get_cmd_data_provider(cmd_data_db).get_argv("configure")
 
-    p = OPTIONS_REGISTRY.retrieve("configure")
+    p = global_context.retrieve_options_context("configure")
     o, a = p.parser.parse_args(configure_argv)
     flag_values = _get_flag_values(package_options.flag_options.keys(), o)
 
@@ -399,8 +399,8 @@ def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
         run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, ctx_klass,
                 run_node, top_node, pkg, package_options)
 
-def is_help_only(cmd_name, cmd_argv):
-    p = OPTIONS_REGISTRY.retrieve(cmd_name)
+def is_help_only(global_context, cmd_name, cmd_argv):
+    p = global_context.retrieve_options_context(cmd_name)
     o, a = p.parser.parse_args(cmd_argv)
     return o.help is True
 
@@ -409,12 +409,12 @@ def run_cmd(global_ctx, cmd_name, cmd_argv, run_node, top_node, build_node):
 
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:
-        options_ctx = OPTIONS_REGISTRY.retrieve(cmd_name)
+        options_ctx = global_ctx.retrieve_options_context(cmd_name)
         ctx_klass = global_ctx.retrieve_context(cmd_name)
         ctx = ctx_klass(global_ctx, cmd_argv, options_ctx, PackageDescription(), run_node)
         # XXX: hack for help command to get option context for any command
         # without making help depends on bentomakerlib
-        ctx.options_registry = OPTIONS_REGISTRY
+        ctx.options_registry = global_ctx._options_registry
         cmd.run(ctx)
         return
 
@@ -423,9 +423,9 @@ def run_cmd(global_ctx, cmd_name, cmd_argv, run_node, top_node, build_node):
         raise UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))
 
     package_options = __get_package_options(top_node)
-    pkg = _get_package_with_user_flags(cmd_name, cmd_argv, package_options, top_node, build_node)
-    if is_help_only(cmd_name, cmd_argv):
-        options_context = OPTIONS_REGISTRY.retrieve(cmd_name)
+    pkg = _get_package_with_user_flags(global_ctx, cmd_name, cmd_argv, package_options, top_node, build_node)
+    if is_help_only(global_ctx, cmd_name, cmd_argv):
+        options_context = global_ctx.retrieve_options_context(cmd_name)
         p = options_context.parser
         o, a = p.parse_args(cmd_argv)
         if o.help:
