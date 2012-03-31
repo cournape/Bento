@@ -113,10 +113,10 @@ def __get_package_options(top_node):
         return __PACKAGE_OPTIONS
 
 class GlobalOptions(object):
-    def __init__(self, cmd_name, cmd_opts, show_usage, build_directory,
+    def __init__(self, cmd_name, cmd_argv, show_usage, build_directory,
             bento_info, show_version, show_full_version):
         self.cmd_name = cmd_name
-        self.cmd_opts = cmd_opts
+        self.cmd_argv = cmd_argv
         self.show_usage = show_usage
         self.build_directory = build_directory
         self.bento_info = bento_info
@@ -330,10 +330,10 @@ def parse_global_options(global_context, argv):
             break
 
     cmd_name = None
-    cmd_opts = None
+    cmd_argv = None
     if cmd_args:
         cmd_name = cmd_args[0]
-        cmd_opts = cmd_args[1:]
+        cmd_argv = cmd_args[1:]
 
     o, a = context.parser.parse_args(global_args)
     show_usage = o.show_help
@@ -346,7 +346,7 @@ def parse_global_options(global_context, argv):
     show_version = o.show_version
     show_full_version = o.show_full_version
 
-    global_options = GlobalOptions(cmd_name, cmd_opts, show_usage,
+    global_options = GlobalOptions(cmd_name, cmd_argv, show_usage,
             build_directory, bento_info, show_version, show_full_version)
     return global_options
 
@@ -366,7 +366,7 @@ def _main(global_context, popts, run_node, top_node, build_node):
         return 0
 
     cmd_name = popts.cmd_name
-    cmd_opts = popts.cmd_opts
+    cmd_argv = popts.cmd_argv
 
     if not cmd_name:
         print("Type '%s help' for usage." % SCRIPT_NAME)
@@ -375,7 +375,7 @@ def _main(global_context, popts, run_node, top_node, build_node):
         if not global_context.is_command_registered(cmd_name):
             raise UsageException("%s: Error: unknown command %r" % (SCRIPT_NAME, cmd_name))
         else:
-            run_cmd(global_context, cmd_name, cmd_opts, run_node, top_node, build_node)
+            run_cmd(global_context, cmd_name, cmd_argv, run_node, top_node, build_node)
 
 def _get_package_with_user_flags(global_context, cmd_name, cmd_argv, package_options, top_node, build_node):
     from bento.commands.configure import _get_flag_values
