@@ -82,7 +82,7 @@ def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None)
         for k in ipkg._path_variables:
             d[k] = wininst_paths[k]
         ipkg.update_paths(d)
-        file_sections = ipkg.resolve_paths(src_root_node.abspath())
+        file_sections = ipkg.resolve_paths(src_root_node)
 
         def write_content(source, target, kind):
             zid.write(source.abspath(), target.abspath())
