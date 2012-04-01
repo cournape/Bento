@@ -88,8 +88,8 @@ Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
             help_args = _args
             cmd_name = cmd_args[0]
 
-        options_context = ctx.options_registry.retrieve(cmd_name)
         if ctx.options_registry.is_registered(cmd_name):
+            options_context = ctx.options_registry.retrieve(cmd_name)
             p = options_context.parser
             p.print_help()
         else:

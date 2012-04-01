@@ -14,16 +14,21 @@ from bento.core.node \
     import \
         create_base_nodes
 
+# FIXME: nose is broken - needed to make it happy
 if sys.platform == "darwin":
     import bento.commands.build_mpkg
+
+from bento.commands.errors \
+    import \
+        UsageException
 
 from bentomakerlib.bentomaker \
     import \
         main
 
-class TestMain(unittest.TestCase):
+class Common(unittest.TestCase):
     def setUp(self):
-        super(TestMain, self).setUp()
+        super(Common, self).setUp()
 
         self.d = tempfile.mkdtemp()
         self.old = os.getcwd()
@@ -38,12 +43,17 @@ class TestMain(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.old)
         shutil.rmtree(self.d)
-        super(TestMain, self).tearDown()
+        super(Common, self).tearDown()
 
+class TestSpecialCommands(Common):
     # FIXME: stupid mock to reset global state between tests
     @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
-    def test_no_bento(self):
-        main([])
+    def test_help_globals(self):
+        main(["help", "globals"])
+
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    def test_help_commands(self):
+        main(["help", "commands"])
 
     @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_global_options_version(self):
@@ -57,9 +67,15 @@ class TestMain(unittest.TestCase):
     def test_usage(self):
         main(["--help"])
 
-    #@mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
-    #def test_help_non_existing_command(self):
-    #    main(["help", "floupi"])
+
+class TestMain(Common):
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    def test_no_bento(self):
+        main([])
+
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    def test_help_non_existing_command(self):
+        self.assertRaises(UsageException, lambda: main(["help", "floupi"]))
 
     @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_configure_help(self):
@@ -84,4 +100,3 @@ Name: foo
 """
         self.top_node.make_node("bento.info").write(bento_info)
         main(["configure"])
-
