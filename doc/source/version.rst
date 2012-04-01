@@ -1,7 +1,7 @@
 Version 0.0.8.1
 ===============
 
-Released on .
+Released on 1st April 2012.
 
 Bugfix release
 
