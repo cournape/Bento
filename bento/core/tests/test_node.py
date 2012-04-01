@@ -63,6 +63,25 @@ class TestNode(unittest.TestCase):
 
     def test_invalid_copy(self):
         self.assertRaises(NotImplementedError, lambda: copy.copy(self.root))
+
+    def test_delete(self):
+        d = tempfile.mkdtemp()
+        try:
+            old = os.getcwd()
+            try:
+                os.chdir(d)
+                cwd_node = self.root.find_node(d)
+                assert cwd_node is not None
+                n = cwd_node.make_node("foo.txt")
+                n.write("foo")
+                self.assertEqual(n.read(), "foo")
+                n.delete()
+                self.assertEqual(cwd_node.listdir(), [])
+            finally:
+                os.chdir(old)
+        finally:
+            shutil.rmtree(d)
+
 class TestNodeWithBuild(unittest.TestCase):
     def setUp(self):
         top = os.getcwd()
