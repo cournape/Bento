@@ -100,3 +100,19 @@ Name: foo
 """
         self.top_node.make_node("bento.info").write(bento_info)
         main(["configure"])
+
+class TestRunningEnvironment(Common):
+    def test_in_sub_directory(self):
+        bento_info = """\
+Name: foo
+"""
+        self.top_node.make_node("bento.info").write(bento_info)
+
+        subdir_node = self.top_node.make_node("subdir")
+        subdir_node.mkdir()
+
+        try:
+            os.chdir(subdir_node.abspath())
+            self.assertRaises(UsageException, lambda: main(["--bento-info=../bento.info", "configure"]))
+        finally:
+            os.chdir(self.top_node.abspath())
