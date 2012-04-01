@@ -18,6 +18,12 @@ from bento.core.node \
 # FIXME: nose is broken - needed to make it happy
 if sys.platform == "darwin":
     import bento.commands.build_mpkg
+# FIXME: nose is broken - needed to make it happy
+import bento.commands.build_yaku
+# FIXME: nose is broken - needed to make it happy
+from bento.compat.dist \
+    import \
+        DistributionMetadata
 
 from bento.commands.errors \
     import \
@@ -125,6 +131,53 @@ Name: foo
     @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_install(self):
         main(["install"])
+
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    def test_sdist(self):
+        main(["sdist"])
+
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    def test_build_egg(self):
+        main(["build_egg"])
+
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    @unittest.skipIf(sys.platform != "win32", "wininst is win32-only test")
+    def test_wininst(self):
+        main(["build_wininst"])
+
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    @unittest.skipIf(sys.platform != "darwin", "mpkg is darwin-only test")
+    def test_mpkg(self):
+        main(["build_mpkg"])
+
+class TestConvertCommand(Common):
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    def test_convert(self):
+        self.top_node.make_node("setup.py").write("""\
+from distutils.core import setup
+
+setup(name="foo")
+""")
+        main(["convert"])
+        n = self.top_node.find_node("bento.info")
+        r_bento = """\
+Name: foo
+Version: 0.0.0
+Summary: UNKNOWN
+Url: UNKNOWN
+DownloadUrl: UNKNOWN
+Description: UNKNOWN
+Author: UNKNOWN
+AuthorEmail: UNKNOWN
+Maintainer: UNKNOWN
+MaintainerEmail: UNKNOWN
+License: UNKNOWN
+Platforms: UNKNOWN
+
+ExtraSourceFiles:
+    setup.py
+"""
+        self.assertEqual(n.read(), r_bento)
 
 class TestRunningEnvironment(Common):
     def test_in_sub_directory(self):

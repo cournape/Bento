@@ -174,6 +174,9 @@ def register_command_contexts(global_context):
     default_mapping = (
             ("configure", ConfigureYakuContext),
             ("build", BuildYakuContext),
+            ("build_egg", ContextWithBuildDirectory),
+            ("build_wininst", ContextWithBuildDirectory),
+            ("build_mpkg", ContextWithBuildDirectory),
             ("install", ContextWithBuildDirectory),
             ("sdist", SdistContext),
             ("help", HelpContext))
