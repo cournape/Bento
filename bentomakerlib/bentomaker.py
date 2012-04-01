@@ -42,7 +42,7 @@ from bento.commands.hooks \
 from bento.commands.context \
     import \
         CmdContext, BuildYakuContext, ConfigureYakuContext, ContextRegistry, \
-        HelpContext, GlobalContext, SdistContext
+        HelpContext, GlobalContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.wrapper_utils \
     import \
         run_cmd_in_context
@@ -174,6 +174,7 @@ def register_command_contexts(global_context):
     default_mapping = (
             ("configure", ConfigureYakuContext),
             ("build", BuildYakuContext),
+            ("install", ContextWithBuildDirectory),
             ("sdist", SdistContext),
             ("help", HelpContext))
 

@@ -102,6 +102,30 @@ Name: foo
         self.top_node.make_node("bento.info").write(bento_info)
         main(["configure"])
 
+class TestMainCommands(Common):
+    def setUp(self):
+        super(TestMainCommands, self).setUp()
+
+        bento_info = """\
+Name: foo
+"""
+        self.top_node.make_node("bento.info").write(bento_info)
+
+    def tearDown(self):
+        super(TestMainCommands, self).tearDown()
+
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    def test_configure(self):
+        main(["configure"])
+
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    def test_build(self):
+        main(["build"])
+
+    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
+    def test_install(self):
+        main(["install"])
+
 class TestRunningEnvironment(Common):
     def test_in_sub_directory(self):
         bento_info = """\
