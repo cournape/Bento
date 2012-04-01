@@ -1,0 +1,11 @@
+bento comes with a decent test suite which contains both unit and functional
+tests.
+
+The test suite depends on the following:
+	- mock
+	- unittest2 for python < 2.7
+	- multiprocessing for python < 2.6
+
+The test suite can be run as follows with nose::
+
+	python -m nose.core bento bentomakerlib
