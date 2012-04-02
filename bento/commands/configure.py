@@ -205,6 +205,9 @@ Usage: bentomaker configure [OPTIONS]"""
     def __init__(self):
         Command.__init__(self)
 
+    def register_options(self, options_context, package_options=None):
+        _setup_options_parser(options_context, package_options)
+
     def _setup_flags_and_scheme(self, package_options):
         self.scheme = _compute_scheme(package_options)
         self.flags = package_options.flag_options.keys()

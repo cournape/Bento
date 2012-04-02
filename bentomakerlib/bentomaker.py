@@ -4,6 +4,7 @@
 import sys
 import os
 import traceback
+import warnings
 
 import bento
 
@@ -102,11 +103,15 @@ def register_commands(global_context):
             bento.commands.build_mpkg.BuildMpkgCommand(), public=False)
         global_context.set_before("build_mpkg", "build")
 
-def register_options(global_context, cmd_name):
-    cmd_klass = global_context.retrieve_command(cmd_name)
-    usage = cmd_klass.long_descr.splitlines()[1]
-    context = OptionsContext.from_command(cmd_klass, usage=usage)
+def register_options(global_context, cmd_name, package_options=None):
+    """Register options for the given command."""
+    cmd = global_context.retrieve_command(cmd_name)
+    usage = cmd.long_descr.splitlines()[1]
+    context = OptionsContext.from_command(cmd, usage=usage)
     global_context.register_options_context(cmd_name, context)
+
+    if package_options is not None and hasattr(cmd, "register_options"):
+        cmd.register_options(context, package_options)
 
 def register_options_special(global_context):
     # Register options for special topics not attached to a "real" command
@@ -144,8 +149,6 @@ def register_command_contexts(global_context):
 # All the global state/registration stuff goes here
 def register_stuff(global_context):
     register_commands(global_context)
-    for cmd_name in global_context.command_names():
-        register_options(global_context, cmd_name)
     register_options_special(global_context)
     register_command_contexts(global_context)
 
@@ -202,30 +205,14 @@ def main(argv=None):
     if cmd_name and cmd_name not in ["convert"]:
         return _wrapped_main(global_context, popts, run_node, top_node, build_node)
     else:
-        register_stuff(global_context)
         # XXX: is cached package necessary here ?
         cached_package = None
+        register_stuff(global_context)
+        for cmd_name in global_context.command_names():
+            register_options(global_context, cmd_name)
         return _main(global_context, cached_package, popts, run_node, top_node, build_node)
 
 def _wrapped_main(global_context, popts, run_node, top_node, build_node):
-    def _big_ugly_hack(cached_package):
-        # FIXME: huge ugly hack - we need to specify once and for all when the
-        # package info is parsed and available, so that we can define options
-        # and co for commands
-        from bento.commands.configure import _setup_options_parser
-        # FIXME: logic to handle codepaths which work without a bento.info
-        # should be put in one place
-        n = top_node.find_node(BENTO_SCRIPT)
-        if n:
-            package_options = cached_package.get_options(n)
-            _setup_options_parser(global_context.retrieve_options_context("configure"),
-                                  package_options)
-        else:
-            import warnings
-            warnings.warn("No %r file in current directory - not all options "
-                          "will be displayed" % BENTO_SCRIPT)
-            return
-
     # Some commands work without a bento description file (convert, help)
     # FIXME: this should not be called here then - clearly separate commands
     # which require bento.info from the ones who do not
@@ -234,9 +221,13 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         db_node = build_node.make_node(DB_FILE)
         cached_package = CachedPackage(db_node)
         pkg = cached_package.get_package(bento_info_node)
+        package_options = cached_package.get_options(bento_info_node)
         mods = set_main(pkg, top_node, build_node)
     else:
+        warnings.warn("No %r file in current directory - not all options "
+                      "will be displayed" % BENTO_SCRIPT)
         cached_package = None
+        package_options = None
         mods = []
 
     if mods:
@@ -244,15 +235,16 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
     for command in find_hook_commands(mods):
         global_context.register_command(command.name, command)
     register_stuff(global_context)
-    _big_ugly_hack(cached_package)
+
+    for cmd_name in global_context.command_names():
+        register_options(global_context, cmd_name, package_options)
     if mods:
         mods[0].options(global_context)
-
     # FIXME: this registered options for new commands registered in hook. It
     # should be made all in one place (hook and non-hook)
     for cmd_name in global_context.command_names(public_only=False):
         if not global_context.is_options_context_registered(cmd_name):
-            register_options(global_context, cmd_name)
+            register_options(global_context, cmd_name, package_options)
 
     for cmd_name in global_context.command_names():
         for hook in find_pre_hooks(mods, cmd_name):
