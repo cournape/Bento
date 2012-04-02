@@ -1,21 +1,8 @@
-import getopt
-import copy
-
 from optparse \
     import \
-        Option, OptionGroup, OptionParser
+        Option
 
 import bento
-
-from bento._config \
-    import \
-        BENTO_SCRIPT
-from bento.core.utils \
-    import \
-        to_camel_case
-from bento.commands.options \
-    import \
-        OptionsContext
 
 from bento.commands.errors \
     import \
