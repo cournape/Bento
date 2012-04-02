@@ -54,37 +54,29 @@ class Common(unittest.TestCase):
 
 class TestSpecialCommands(Common):
     # FIXME: stupid mock to reset global state between tests
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_help_globals(self):
         main(["help", "globals"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_help_commands(self):
         main(["help", "commands"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_global_options_version(self):
         main(["--version"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_global_options_full_version(self):
         main(["--full-version"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_usage(self):
         main(["--help"])
 
 
 class TestMain(Common):
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_no_bento(self):
         main([])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_help_non_existing_command(self):
         self.assertRaises(UsageException, lambda: main(["help", "floupi"]))
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_configure_help(self):
         bento_info = """\
 Name: foo
@@ -92,7 +84,6 @@ Name: foo
         self.top_node.make_node("bento.info").write(bento_info)
         main(["configure", "--help"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_help_command(self):
         bento_info = """\
 Name: foo
@@ -100,7 +91,6 @@ Name: foo
         self.top_node.make_node("bento.info").write(bento_info)
         main(["help", "configure"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_configure(self):
         bento_info = """\
 Name: foo
@@ -120,38 +110,30 @@ Name: foo
     def tearDown(self):
         super(TestMainCommands, self).tearDown()
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_configure(self):
         main(["configure"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_build(self):
         main(["build"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_install(self):
         main(["install"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_sdist(self):
         main(["sdist"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_build_egg(self):
         main(["build_egg"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     @unittest.skipIf(sys.platform != "win32", "wininst is win32-only test")
     def test_wininst(self):
         main(["build_wininst"])
 
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     @unittest.skipIf(sys.platform != "darwin", "mpkg is darwin-only test")
     def test_mpkg(self):
         main(["build_mpkg"])
 
 class TestConvertCommand(Common):
-    @mock.patch("bentomakerlib.bentomaker.__CACHED_PACKAGE", None)
     def test_convert(self):
         self.top_node.make_node("setup.py").write("""\
 from distutils.core import setup

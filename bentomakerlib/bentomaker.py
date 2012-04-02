@@ -68,32 +68,6 @@ SCRIPT_NAME = 'bentomaker'
 # Path relative to build directory
 CMD_DATA_DUMP = os.path.join(_SUB_BUILD_DIR, "cmd_data.db")
 
-__CACHED_PACKAGE = None
-def _set_cached_package(node):
-    global __CACHED_PACKAGE
-    if __CACHED_PACKAGE is not None:
-        raise ValueError("Global cached package already set !")
-    else:
-        __CACHED_PACKAGE = CachedPackage(node)
-        return __CACHED_PACKAGE
-
-def _get_cached_package():
-    global __CACHED_PACKAGE
-    if __CACHED_PACKAGE is None:
-        raise ValueError("Global cached package not set yet !")
-    else:
-        return __CACHED_PACKAGE
-
-__PACKAGE_OPTIONS = None
-def __get_package_options(top_node):
-    global __PACKAGE_OPTIONS
-    if __PACKAGE_OPTIONS:
-        return __PACKAGE_OPTIONS
-    else:
-        n = top_node.find_node(BENTO_SCRIPT)
-        __PACKAGE_OPTIONS = _get_cached_package().get_options(n.abspath())
-        return __PACKAGE_OPTIONS
-
 class GlobalOptions(object):
     def __init__(self, cmd_name, cmd_argv, show_usage, build_directory,
             bento_info, show_version, show_full_version):
@@ -175,19 +149,7 @@ def register_stuff(global_context):
     register_options_special(global_context)
     register_command_contexts(global_context)
 
-def set_main(top_node, build_node):
-    # Some commands work without a bento description file (convert, help)
-    # FIXME: this should not be called here then - clearly separate commands
-    # which require bento.info from the ones who do not
-    n = top_node.find_node(BENTO_SCRIPT)
-    if n is None:
-        return []
-
-    _set_cached_package(build_node.make_node(DB_FILE))
-
-    pkg = _get_cached_package().get_package(n)
-    #create_package_description(BENTO_SCRIPT)
-
+def set_main(pkg, top_node, build_node):
     modules = []
     hook_files = pkg.hook_files
     for name, spkg in pkg.subpackages.items():
@@ -237,14 +199,16 @@ def main(argv=None):
     global_context.set_before("build_wininst", "build")
     global_context.set_before("install", "build")
 
-    if cmd_name and cmd_name not in ["convert"] or not cmd_name:
+    if cmd_name and cmd_name not in ["convert"]:
         return _wrapped_main(global_context, popts, run_node, top_node, build_node)
     else:
         register_stuff(global_context)
-        return _main(global_context, popts, run_node, top_node, build_node)
+        # XXX: is cached package necessary here ?
+        cached_package = None
+        return _main(global_context, cached_package, popts, run_node, top_node, build_node)
 
 def _wrapped_main(global_context, popts, run_node, top_node, build_node):
-    def _big_ugly_hack():
+    def _big_ugly_hack(cached_package):
         # FIXME: huge ugly hack - we need to specify once and for all when the
         # package info is parsed and available, so that we can define options
         # and co for commands
@@ -253,7 +217,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         # should be put in one place
         n = top_node.find_node(BENTO_SCRIPT)
         if n:
-            package_options = __get_package_options(top_node)
+            package_options = cached_package.get_options(n)
             _setup_options_parser(global_context.retrieve_options_context("configure"),
                                   package_options)
         else:
@@ -262,13 +226,25 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
                           "will be displayed" % BENTO_SCRIPT)
             return
 
-    mods = set_main(top_node, build_node)
+    # Some commands work without a bento description file (convert, help)
+    # FIXME: this should not be called here then - clearly separate commands
+    # which require bento.info from the ones who do not
+    bento_info_node = top_node.find_node(BENTO_SCRIPT)
+    if bento_info_node is not None:
+        db_node = build_node.make_node(DB_FILE)
+        cached_package = CachedPackage(db_node)
+        pkg = cached_package.get_package(bento_info_node)
+        mods = set_main(pkg, top_node, build_node)
+    else:
+        cached_package = None
+        mods = []
+
     if mods:
         mods[0].startup(global_context)
     for command in find_hook_commands(mods):
         global_context.register_command(command.name, command)
     register_stuff(global_context)
-    _big_ugly_hack()
+    _big_ugly_hack(cached_package)
     if mods:
         mods[0].options(global_context)
 
@@ -285,7 +261,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
             global_context.add_post_hook(hook, cmd_name)
 
     try:
-        return _main(global_context, popts, run_node, top_node, build_node)
+        return _main(global_context, cached_package, popts, run_node, top_node, build_node)
     finally:
         if mods:
             mods[0].shutdown()
@@ -336,7 +312,7 @@ def parse_global_options(global_context, argv):
             build_directory, bento_info, show_version, show_full_version)
     return global_options
 
-def _main(global_context, popts, run_node, top_node, build_node):
+def _main(global_context, cached_package, popts, run_node, top_node, build_node):
     if popts.show_version:
         print(bento.__version__)
         return 0
@@ -361,9 +337,10 @@ def _main(global_context, popts, run_node, top_node, build_node):
         if not global_context.is_command_registered(cmd_name):
             raise UsageException("%s: Error: unknown command %r" % (SCRIPT_NAME, cmd_name))
         else:
-            run_cmd(global_context, cmd_name, cmd_argv, run_node, top_node, build_node)
+            run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_node, build_node)
 
-def _get_package_with_user_flags(global_context, package_options, configure_argv, top_node, build_node):
+def _get_package_with_user_flags(global_context, package_options,
+        cached_package, configure_argv, top_node, build_node):
     from bento.commands.configure import _get_flag_values
 
     p = global_context.retrieve_options_context("configure")
@@ -371,7 +348,7 @@ def _get_package_with_user_flags(global_context, package_options, configure_argv
     flag_values = _get_flag_values(package_options.flag_options.keys(), o)
 
     bento_info = top_node.find_node(BENTO_SCRIPT)
-    return _get_cached_package().get_package(bento_info, flag_values)
+    return cached_package.get_package(bento_info, flag_values)
 
 def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
         pkg, package_options, cmd_data_store):
@@ -388,7 +365,7 @@ def is_help_only(global_context, cmd_name, cmd_argv):
     o, a = p.parser.parse_args(cmd_argv)
     return o.help is True
 
-def run_cmd(global_ctx, cmd_name, cmd_argv, run_node, top_node, build_node):
+def run_cmd(global_ctx, cached_package, cmd_name, cmd_argv, run_node, top_node, build_node):
     cmd = global_ctx.retrieve_command(cmd_name)
 
     # XXX: fix this special casing (commands which do not need a pkg instance)
@@ -406,13 +383,14 @@ def run_cmd(global_ctx, cmd_name, cmd_argv, run_node, top_node, build_node):
     if bento_info is None:
         raise UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))
 
-    package_options = __get_package_options(top_node)
+    package_options = cached_package.get_options(bento_info)
 
     cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
     cmd_data_store = CommandDataProvider.from_file(cmd_data_db.abspath())
     configure_argv = cmd_data_store.get_argv("configure")
 
-    pkg = _get_package_with_user_flags(global_ctx, package_options, configure_argv, top_node, build_node)
+    pkg = _get_package_with_user_flags(global_ctx, package_options,
+            cached_package, configure_argv, top_node, build_node)
     if is_help_only(global_ctx, cmd_name, cmd_argv):
         options_context = global_ctx.retrieve_options_context(cmd_name)
         p = options_context.parser
