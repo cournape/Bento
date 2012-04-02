@@ -211,13 +211,59 @@ Name: foo
         def check_cmd_data(q):
             from bentomakerlib.bentomaker \
                 import \
-                    _get_cmd_data_provider, CMD_DATA_DUMP
+                    CommandDataProvider, CMD_DATA_DUMP
 
             cmd_data_db = self.build_node.find_node(CMD_DATA_DUMP)
-            q.put(_get_cmd_data_provider(cmd_data_db).get_argv("configure"))
+            if cmd_data_db is None:
+                raise IOError()
+            cmd_data_store = CommandDataProvider.from_file(cmd_data_db.abspath())
+            q.put(cmd_data_store.get_argv("configure"))
 
         q = multiprocessing.Queue()
         p = multiprocessing.Process(target=check_cmd_data, args=(q,))
         p.start()
-        self.assertEqual(q.get(), ["--prefix=/fubar"])
+        self.assertEqual(q.get(timeout=1), ["--prefix=/fubar"])
         p.join()
+
+    def test_flags(self):
+        """Test that flag value specified on the command line are correctly
+        stored between run."""
+        # We use subprocesses to emulate how bentomaker would run itself - this
+        # is more of a functional test than a unit test.
+        bento_info = """\
+Name: foo
+
+Flag: debug
+    Description: debug flag
+    Default: true
+
+HookFile: bscript
+
+Library:
+    if flag(debug):
+        Modules: foo
+    else:
+        Modules: bar
+"""
+        self.top_node.make_node("bento.info").write(bento_info)
+        self.top_node.make_node("bscript").write("""\
+import sys
+from bento.commands import hooks
+
+@hooks.pre_build
+def pre_build(context):
+    if not context.pkg.py_modules == ['bar']:
+        sys.exit(57)
+""")
+        self.top_node.make_node("foo.py").write("")
+        self.top_node.make_node("bar.py").write("")
+
+        p = multiprocessing.Process(target=main, args=(['configure', '--debug=false'],))
+        p.start()
+        p.join()
+
+        p = multiprocessing.Process(target=main, args=(['build'],))
+        p.start()
+        p.join()
+
+        self.assertEqual(p.exitcode, 0)

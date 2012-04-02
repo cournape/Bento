@@ -68,24 +68,6 @@ SCRIPT_NAME = 'bentomaker'
 # Path relative to build directory
 CMD_DATA_DUMP = os.path.join(_SUB_BUILD_DIR, "cmd_data.db")
 
-# FIXME: those private functions hiding global variables are horrible - they
-# are a dirty workaround until a better solution to pass nodes to the
-# underlying implementation is found (Node instances can only be created once
-# the source and build directories are known)
-__CMD_DATA_STORE = None
-def _get_cmd_data_provider(dump_node):
-    global __CMD_DATA_STORE
-    if __CMD_DATA_STORE is None:
-        __CMD_DATA_STORE = CommandDataProvider.from_file(dump_node.abspath())
-    return __CMD_DATA_STORE
-
-def _set_cmd_data_provider(cmd_name, cmd_argv, dump_node):
-    global __CMD_DATA_STORE
-    if __CMD_DATA_STORE is None:
-        _get_cmd_data_provider(dump_node)
-    __CMD_DATA_STORE.set(cmd_name, cmd_argv)
-    __CMD_DATA_STORE.store(dump_node.abspath())
-
 __CACHED_PACKAGE = None
 def _set_cached_package(node):
     global __CACHED_PACKAGE
@@ -381,11 +363,8 @@ def _main(global_context, popts, run_node, top_node, build_node):
         else:
             run_cmd(global_context, cmd_name, cmd_argv, run_node, top_node, build_node)
 
-def _get_package_with_user_flags(global_context, cmd_name, cmd_argv, package_options, top_node, build_node):
+def _get_package_with_user_flags(global_context, package_options, configure_argv, top_node, build_node):
     from bento.commands.configure import _get_flag_values
-
-    cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
-    configure_argv = _get_cmd_data_provider(cmd_data_db).get_argv("configure")
 
     p = global_context.retrieve_options_context("configure")
     o, a = p.parser.parse_args(configure_argv)
@@ -395,13 +374,11 @@ def _get_package_with_user_flags(global_context, cmd_name, cmd_argv, package_opt
     return _get_cached_package().get_package(bento_info, flag_values)
 
 def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
-        pkg, package_options):
-    cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
-
+        pkg, package_options, cmd_data_store):
     deps = global_context.retrieve_dependencies(cmd_name)
     for cmd_name in deps:
         cmd = global_context.retrieve_command(cmd_name)
-        cmd_argv = _get_cmd_data_provider(cmd_data_db).get_argv(cmd_name)
+        cmd_argv = cmd_data_store.get_argv(cmd_name)
         ctx_klass = global_context.retrieve_context(cmd_name)
         run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, ctx_klass,
                 run_node, top_node, pkg, package_options)
@@ -430,7 +407,12 @@ def run_cmd(global_ctx, cmd_name, cmd_argv, run_node, top_node, build_node):
         raise UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))
 
     package_options = __get_package_options(top_node)
-    pkg = _get_package_with_user_flags(global_ctx, cmd_name, cmd_argv, package_options, top_node, build_node)
+
+    cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
+    cmd_data_store = CommandDataProvider.from_file(cmd_data_db.abspath())
+    configure_argv = cmd_data_store.get_argv("configure")
+
+    pkg = _get_package_with_user_flags(global_ctx, package_options, configure_argv, top_node, build_node)
     if is_help_only(global_ctx, cmd_name, cmd_argv):
         options_context = global_ctx.retrieve_options_context(cmd_name)
         p = options_context.parser
@@ -439,14 +421,14 @@ def run_cmd(global_ctx, cmd_name, cmd_argv, run_node, top_node, build_node):
             p.print_help()
     else:
         run_dependencies(global_ctx, cmd_name, run_node, top_node, build_node,
-                pkg, package_options)
+                pkg, package_options, cmd_data_store)
 
         ctx_klass = global_ctx.retrieve_context(cmd_name)
         run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass,
                 run_node, top_node, pkg, package_options)
 
-        cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
-        _set_cmd_data_provider(cmd_name, cmd_argv, cmd_data_db)
+        cmd_data_store.set(cmd_name, cmd_argv)
+        cmd_data_store.store(cmd_data_db.abspath())
 
 def noexc_main(argv=None):
     def _print_debug():
