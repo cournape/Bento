@@ -181,6 +181,14 @@ def main(argv=None):
     popts = parse_global_options(global_context, argv)
     cmd_name = popts.cmd_name
 
+    if popts.show_version:
+        print(bento.__version__)
+        return
+
+    if popts.show_full_version:
+        print(bento.__version__ + "git" + bento.__git_revision__)
+        return
+
     # FIXME: top_node vs srcnode
     source_root = os.path.join(os.getcwd(), os.path.dirname(popts.bento_info))
     build_root = os.path.join(os.getcwd(), popts.build_directory)
@@ -305,19 +313,11 @@ def parse_global_options(global_context, argv):
     return global_options
 
 def _main(global_context, cached_package, popts, run_node, top_node, build_node):
-    if popts.show_version:
-        print(bento.__version__)
-        return 0
-
-    if popts.show_full_version:
-        print(bento.__version__ + "git" + bento.__git_revision__)
-        return 0
-
     if popts.show_usage:
         ctx_klass = global_context.retrieve_context("help")
         cmd = global_context.retrieve_command('help')
         cmd.run(ctx_klass(global_context, [], global_context.retrieve_options_context('help'), None, None))
-        return 0
+        return
 
     cmd_name = popts.cmd_name
     cmd_argv = popts.cmd_argv
