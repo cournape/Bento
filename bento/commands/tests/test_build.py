@@ -22,9 +22,12 @@ from bento.core.node \
 from bento.core.utils \
     import \
         subst_vars
-from bento.commands.context \
+from bento.commands.distutils_contexts \
     import \
-        BuildYakuContext, ConfigureYakuContext, DistutilsBuildContext, DistutilsConfigureContext
+        DistutilsBuildContext, DistutilsConfigureContext
+from bento.commands.yaku_contexts \
+    import \
+        BuildYakuContext, ConfigureYakuContext
 from bento.commands.options \
     import \
         OptionsContext

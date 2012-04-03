@@ -1,6 +1,6 @@
 import os.path as op
 
-from bento.commands.cmd_contexts \
+from bento.commands.command_contexts \
     import \
         ConfigureContext, BuildContext
 

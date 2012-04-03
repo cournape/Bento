@@ -22,7 +22,7 @@ from bento.core.node \
 from bento.core.testing \
     import \
         create_fake_package_from_bento_info
-from bento.commands.cmd_contexts \
+from bento.commands.command_contexts \
     import \
         CmdContext
 from bento.commands.options \

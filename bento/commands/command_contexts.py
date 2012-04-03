@@ -496,3 +496,11 @@ class SdistContext(CmdContext):
         self._node_pkg._extra_source_nodes.append(node)
         if archive_name:
             self._node_pkg._aliased_source_nodes[node] = archive_name
+
+class HelpContext(CmdContext):
+    def __init__(self, *a, **kw):
+        super(HelpContext, self).__init__(*a, **kw)
+        self.short_descriptions = {}
+        for cmd_name in self._global_context.command_names(public_only=False):
+            cmd = self._global_context.retrieve_command(cmd_name)
+            self.short_descriptions[cmd_name] = cmd.short_descr

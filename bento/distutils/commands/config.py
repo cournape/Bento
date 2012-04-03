@@ -29,9 +29,6 @@ class config(old_config):
         return install.scheme
 
     def run(self):
-        from bento.commands.configure import ConfigureCommand
-        from bento.commands.context import ConfigureYakuContext
-
         dist = self.distribution
 
         scheme = self._get_install_scheme()

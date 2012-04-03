@@ -7,9 +7,12 @@ from bento.core \
 from bento.commands.core \
     import \
         HelpCommand, Command
-from bento.commands.context \
+from bento.commands.command_contexts \
     import \
-        HelpContext, CmdContext, GlobalContext
+        HelpContext, CmdContext
+from bento.commands.contexts \
+    import \
+        GlobalContext
 from bento.commands.options \
     import \
         OptionsContext

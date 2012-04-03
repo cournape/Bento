@@ -47,7 +47,7 @@ from bento.core.node_package \
 from bento.commands.options \
     import \
         Option
-from bento.commands.context \
+from bento.commands.command_contexts \
     import \
         ConfigureContext, BuildContext
 

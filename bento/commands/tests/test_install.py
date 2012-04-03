@@ -11,10 +11,10 @@ from bento.core.node \
     import \
         create_root_with_source_tree
 
-from bento.commands.context \
+from bento.commands.yaku_contexts \
     import \
         ConfigureYakuContext
-from bento.commands.cmd_contexts \
+from bento.commands.command_contexts \
     import \
         ContextWithBuildDirectory
 from bento.commands.tests.utils \

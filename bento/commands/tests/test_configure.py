@@ -21,7 +21,7 @@ from bento.core.node \
 from bento.commands.tests.utils \
     import \
         prepare_configure
-from bento.commands.context \
+from bento.commands.yaku_contexts \
     import \
         ConfigureYakuContext
 from bento.commands.configure \

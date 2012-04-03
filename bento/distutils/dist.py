@@ -30,10 +30,10 @@ from bento.core.package \
 from bento.core.options \
     import \
         PackageOptions
-from bento.commands.context \
+from bento.commands.contexts \
     import \
         GlobalContext
-from bento.commands.cmd_contexts \
+from bento.commands.command_contexts \
     import \
         CmdContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.registries \

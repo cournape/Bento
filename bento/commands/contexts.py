@@ -1,23 +1,3 @@
-import os.path as op
-
-import yaku.context
-
-from bento.core.subpackage \
-    import \
-        get_extensions, get_compiled_libraries
-from bento.commands.cmd_contexts \
-    import \
-        CmdContext, ConfigureContext, BuildContext, SdistContext, \
-        ContextWithBuildDirectory
-from bento.commands.yaku_contexts \
-    import \
-        ConfigureYakuContext, BuildYakuContext
-from bento.commands.distutils_contexts \
-    import \
-        DistutilsBuildContext, DistutilsConfigureContext
-from bento.commands.distutils_contexts \
-    import \
-        DistutilsBuildContext, DistutilsConfigureContext
 from bento.commands.registries \
     import \
         CommandRegistry, ContextRegistry, OptionsRegistry
@@ -151,11 +131,3 @@ class GlobalContext(object):
 
     def retrieve_post_hooks(self, cmd_name):
         return self._hooks_registry.retrieve_post_hooks(cmd_name)
-
-class HelpContext(CmdContext):
-    def __init__(self, *a, **kw):
-        super(HelpContext, self).__init__(*a, **kw)
-        self.short_descriptions = {}
-        for cmd_name in self._global_context.command_names(public_only=False):
-            cmd = self._global_context.retrieve_command(cmd_name)
-            self.short_descriptions[cmd_name] = cmd.short_descr

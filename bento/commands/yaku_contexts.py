@@ -9,7 +9,7 @@ from bento.core.node_package \
 from bento.core.subpackage \
     import \
         get_extensions, get_compiled_libraries
-from bento.commands.cmd_contexts \
+from bento.commands.command_contexts \
     import \
         ConfigureContext, BuildContext
 from bento.core.errors \

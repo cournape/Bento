@@ -23,7 +23,7 @@ from bento.commands.build \
 from bento.commands.options \
     import \
         OptionsContext
-from bento.commands.context \
+from bento.commands.yaku_contexts \
     import \
         ConfigureYakuContext, BuildYakuContext
 

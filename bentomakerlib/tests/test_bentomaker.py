@@ -25,7 +25,7 @@ from bento.convert.api \
 from bento.commands.api \
     import \
         CommandExecutionFailure
-from bento.commands.context \
+from bento.commands.contexts \
     import \
         GlobalContext
 

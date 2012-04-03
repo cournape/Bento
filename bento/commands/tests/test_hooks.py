@@ -13,7 +13,7 @@ from bento.core.node \
 from bento.core.testing \
     import \
         create_fake_package_from_bento_infos
-from bento.commands.context \
+from bento.commands.command_contexts \
     import \
         ConfigureContext
 from bento.commands.hooks \

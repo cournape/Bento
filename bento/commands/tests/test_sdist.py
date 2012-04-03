@@ -16,7 +16,7 @@ from bento.core.node \
 from bento.commands.options \
     import \
         OptionsContext
-from bento.commands.cmd_contexts \
+from bento.commands.command_contexts \
     import \
         SdistContext
 from bento.commands.sdist \

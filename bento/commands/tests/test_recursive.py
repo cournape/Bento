@@ -22,7 +22,7 @@ from bento.core.node_package \
 from bento.commands.hooks \
     import \
         create_hook_module, find_pre_hooks
-from bento.commands.context \
+from bento.commands.yaku_contexts \
     import \
         ConfigureYakuContext
 from bento.installed_package_description \
