@@ -35,7 +35,6 @@ class HookRegistry(object):
         return self._post_hooks.get(cmd_name, [])
 
 __COMMANDS_OVERRIDE = {}
-__INIT_FUNCS = {}
 
 def override_command(command, func):
     global __COMMANDS_OVERRIDE
@@ -84,6 +83,51 @@ def find_post_hooks(modules, cmd_name):
             PostHookWrapper) and f.cmd_name == cmd_name])
     return post_hooks
 
+def find_startup_hooks(modules):
+    """Retrieve all startup hook instances defined in given modules list.
+
+    This should be used to find hooks defined through the hook.startup.
+
+    Parameters
+    ----------
+    modules: seq
+        list of modules to look into
+    """
+    hooks = []
+    for module in modules:
+        hooks.extend([f for f in vars(module).values() if isinstance(f, StartupHook)])
+    return hooks
+
+def find_shutdown_hooks(modules):
+    """Retrieve all shutdown hook instances defined in given modules list.
+
+    This should be used to find hooks defined through the hook.shutdown.
+
+    Parameters
+    ----------
+    modules: seq
+        list of modules to look into
+    """
+    hooks = []
+    for module in modules:
+        hooks.extend([f for f in vars(module).values() if isinstance(f, ShutdownHook)])
+    return hooks
+
+def find_options_hooks(modules):
+    """Retrieve all options hook instances defined in given modules list.
+
+    This should be used to find hooks defined through the hook.options.
+
+    Parameters
+    ----------
+    modules: seq
+        list of modules to look into
+    """
+    hooks = []
+    for module in modules:
+        hooks.extend([f for f in vars(module).values() if isinstance(f, OptionsHook)])
+    return hooks
+
 def get_command_override(cmd_name):
     global __COMMANDS_OVERRIDE
     return __COMMANDS_OVERRIDE.get(cmd_name, [])
@@ -105,6 +149,25 @@ class PreHookWrapper(_HookWrapperBase):
     pass
 
 class PostHookWrapper(_HookWrapperBase):
+    pass
+
+class _GlobalHookBase(object):
+    def __init__(self, func):
+        self._func = func
+
+    def __call__(self, ctx):
+        return self._func(ctx)
+
+    def __getattr__(self, k):
+        return getattr(self._func, k)
+
+class StartupHook(_GlobalHookBase):
+    pass
+
+class ShutdownHook(_GlobalHookBase):
+    pass
+
+class OptionsHook(_GlobalHookBase):
     pass
 
 def _make_hook_decorator(command_name, kind):
@@ -130,25 +193,13 @@ def override(f):
     override_command(f.__name__, f)
 
 def options(f):
-    __INIT_FUNCS["options"] = f
-    return lambda context: f(context)
+    return OptionsHook(f)
 
 def startup(f):
-    __INIT_FUNCS["startup"] = f
-    return lambda context: f(context)
+    return StartupHook(f)
 
 def shutdown(f):
-    __INIT_FUNCS["shutdown"] = f
-    return lambda context: f(context)
-
-def dummy_startup(ctx):
-    pass
-
-def dummy_options(ctx):
-    pass
-
-def dummy_shutdown():
-    pass
+    return ShutdownHook(f)
 
 def create_hook_module(target):
     import imp
@@ -172,17 +223,4 @@ def create_hook_module(target):
         sys.path.pop(0)
 
     module.root_path = main_file
-    if not "startup" in __INIT_FUNCS:
-        module.startup = dummy_startup
-    else:
-        module.startup = __INIT_FUNCS["startup"]
-    if not "options" in __INIT_FUNCS:
-        module.options = dummy_options
-    else:
-        module.options = __INIT_FUNCS["options"]
-    if not "shutdown" in __INIT_FUNCS:
-        module.shutdown = dummy_shutdown
-    else:
-        module.shutdown = __INIT_FUNCS["shutdown"]
-
     return module

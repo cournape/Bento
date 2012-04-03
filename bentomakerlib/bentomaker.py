@@ -42,7 +42,8 @@ from bento.commands.options \
 
 from bento.commands.hooks \
     import \
-        find_pre_hooks, find_post_hooks, create_hook_module
+        find_pre_hooks, find_post_hooks, create_hook_module, find_startup_hooks, \
+        find_shutdown_hooks, find_options_hooks
 from bento.commands.context \
     import \
         CmdContext, BuildYakuContext, ConfigureYakuContext, \
@@ -241,16 +242,26 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         package_options = None
         mods = []
 
-    if mods:
-        mods[0].startup(global_context)
+    startup_hooks = find_startup_hooks(mods)
+    option_hooks = find_options_hooks(mods)
+    shutdown_hooks = find_shutdown_hooks(mods)
+
+    if startup_hooks:
+        # FIXME: there should be an error or a warning if startup defined in
+        # mods beyond the first one
+        startup_hooks[0](global_context)
+
     for command in find_hook_commands(mods):
         global_context.register_command(command.name, command)
     register_stuff(global_context)
-
     for cmd_name in global_context.command_names():
         register_options(global_context, cmd_name, package_options)
-    if mods:
-        mods[0].options(global_context)
+
+    if option_hooks:
+        # FIXME: there should be an error or a warning if shutdown defined in
+        # mods beyond the first one
+        option_hooks[0](global_context)
+
     # FIXME: this registered options for new commands registered in hook. It
     # should be made all in one place (hook and non-hook)
     for cmd_name in global_context.command_names(public_only=False):
@@ -266,8 +277,8 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
     try:
         return _main(global_context, cached_package, popts, run_node, top_node, build_node)
     finally:
-        if mods:
-            mods[0].shutdown()
+        if shutdown_hooks:
+            shutdown_hooks[0](global_context)
 
 def parse_global_options(global_context, argv):
     context = OptionsContext(usage="%prog [options] [cmd_name [cmd_options]]")
