@@ -135,7 +135,7 @@ Usage:   bentomaker install [OPTIONS]."""
                                 help="List installed files (do not install anything)",
                                 action="store_true", dest="list_files")]
     def run(self, ctx):
-        argv = ctx.get_command_arguments()
+        argv = ctx.command_argv
         p = ctx.options_context.parser
         o, a = p.parse_args(argv)
         if o.help:

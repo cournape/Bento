@@ -218,7 +218,7 @@ Usage: bentomaker configure [OPTIONS]"""
             raise IOError("%s not found ?" % BENTO_SCRIPT)
 
         self._setup_flags_and_scheme(ctx.package_options)
-        args = ctx.get_command_arguments()
+        args = ctx.command_argv
         o, a = ctx.options_context.parser.parse_args(args)
         if o.help:
             ctx.options_context.parser.print_help()

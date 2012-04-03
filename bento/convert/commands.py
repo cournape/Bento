@@ -51,7 +51,7 @@ Usage:   bentomaker convert [OPTIONS] setup.py"""
                dest="setup_args")]
 
     def run(self, ctx):
-        argv = ctx.get_command_arguments()
+        argv = ctx.command_argv
         p = ctx.options_context.parser
         o, a = p.parse_args(argv)
         if o.help:
@@ -138,7 +138,7 @@ Usage:   bentomaker detect_type [OPTIONS]."""
         optparse.Option("-v", "--verbose", help="verbose run", action="store_true")]
 
     def run(self, ctx):
-        argv = ctx.get_command_arguments()
+        argv = ctx.command_argv
         p = ctx.options_context.parser
         o, a = p.parse_args(argv)
         if o.help:

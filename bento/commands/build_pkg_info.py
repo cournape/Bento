@@ -24,7 +24,7 @@ Usage:   bentomaker build_pkg_info [OPTIONS]"""
     ]
 
     def run(self, ctx):
-        argv = ctx.get_command_arguments()
+        argv = ctx.command_argv
         p = ctx.options_context.parser
         o, a = p.parse_args(argv)
         if o.help:

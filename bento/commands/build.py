@@ -43,9 +43,8 @@ Usage:   bentomaker build [OPTIONS]."""
         Command.__init__(self, *a, **kw)
 
     def run(self, ctx):
-        argv = ctx.get_command_arguments()
         p = ctx.options_context.parser
-        o, a = p.parse_args(argv)
+        o, a = p.parse_args(ctx.command_argv)
         if o.help:
             p.print_help()
             return

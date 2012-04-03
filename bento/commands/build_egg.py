@@ -36,7 +36,7 @@ Usage:   bentomaker build_egg [OPTIONS]"""
                                   help="Output directory", default="dist")]
 
     def run(self, ctx):
-        argv = ctx.get_command_arguments()
+        argv = ctx.command_argv
         p = ctx.options_context.parser
         o, a = p.parse_args(argv)
         if o.help:

@@ -65,7 +65,7 @@ Usage:   bentomaker sdist [OPTIONS]."""
                                   help="Archive filename (default: $pkgname-$version.$archive_extension)")]
 
     def run(self, ctx):
-        argv = ctx.get_command_arguments()
+        argv = ctx.command_argv
         p = ctx.options_context.parser
         o, a =  p.parse_args(argv)
         if o.help:

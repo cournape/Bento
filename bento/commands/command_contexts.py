@@ -53,18 +53,18 @@ class DummyContextManager(object):
         self.post()
 
 class CmdContext(object):
-    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
+    def __init__(self, global_context, command_argv, options_context, pkg, run_node):
         self._global_context = global_context
         self.pkg = pkg
 
         self.options_context = options_context
-        o, a = options_context.parser.parse_args(cmd_argv)
+        o, a = options_context.parser.parse_args(command_argv)
         if o.help:
             self.help = True
         else:
             self.help = False
 
-        self.cmd_argv = cmd_argv
+        self.command_argv = command_argv
 
         # CWD node
         self.run_node = run_node
@@ -80,9 +80,6 @@ class CmdContext(object):
         # Recursive related members
         self.local_node = None
         self.local_pkg = None
-
-    def get_command_arguments(self):
-        return self.cmd_argv
 
     def recurse_manager(self, local_node):
         """
@@ -303,12 +300,12 @@ def write_template(top_node, pkg):
     return output
 
 class BuildContext(ContextWithBuildDirectory):
-    def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
-        super(BuildContext, self).__init__(global_context, cmd_argv, options_context, pkg, run_node)
+    def __init__(self, global_context, command_argv, options_context, pkg, run_node):
+        super(BuildContext, self).__init__(global_context, command_argv, options_context, pkg, run_node)
         self.builder_registry = BuilderRegistry()
         self.section_writer = SectionWriter()
 
-        o, a = self.options_context.parser.parse_args(cmd_argv)
+        o, a = self.options_context.parser.parse_args(command_argv)
         if o.inplace:
             self.inplace = True
         else:

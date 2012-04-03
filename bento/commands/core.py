@@ -51,7 +51,7 @@ Purpose: Show help on a command or other topic.
 Usage:   bentomaker help [TOPIC] or bentomaker help [COMMAND]."""
     short_descr = "gives help on a given topic or command."
     def run(self, ctx):
-        cmd_args = ctx.get_command_arguments()
+        cmd_args = ctx.command_argv
         p = ctx.options_context.parser
         o, a = p.parse_args(cmd_args)
         if o.help:
