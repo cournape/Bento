@@ -232,7 +232,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         package_options = cached_package.get_options(bento_info_node)
         mods = set_main(pkg, top_node, build_node)
     else:
-        warnings.warn("No %r file in current directory - not all options "
+        warnings.warn("No %r file in current directory - only generic options "
                       "will be displayed" % BENTO_SCRIPT)
         cached_package = None
         package_options = None
