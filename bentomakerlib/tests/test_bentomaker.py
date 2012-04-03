@@ -6,7 +6,6 @@ import shutil
 import os.path as op
 
 import multiprocessing
-import mock
 
 from bento.compat.api.moves \
     import \
@@ -14,6 +13,20 @@ from bento.compat.api.moves \
 from bento.core.node \
     import \
         create_base_nodes
+from bento.core.utils \
+    import \
+        extract_exception
+from bento.core.parser.api \
+    import \
+        ParseError
+from bento.convert.api \
+    import \
+        ConvertionError
+from bento.commands.api \
+    import \
+        CommandExecutionFailure
+
+import bentomakerlib.bentomaker
 
 # FIXME: nose is broken - needed to make it happy
 if sys.platform == "darwin":
@@ -251,3 +264,33 @@ def pre_build(context):
         p.join()
 
         self.assertEqual(p.exitcode, 0)
+
+def raise_function(klass):
+    raise klass()
+
+class TestBentomakerError(Common):
+    def _assert_raises(self, error_code):
+        try:
+            noexc_main()
+        except SystemExit:
+            e = extract_exception()
+            self.assertEqual(e.code, error_code)
+
+    def test_simple(self):
+        errors = (
+            (UsageException, 1),
+            (ParseError, 2),
+            (ConvertionError, 3),
+            (CommandExecutionFailure, 4),
+            (bento.core.errors.ConfigurationError, 8),
+            (bento.core.errors.BuildError, 16),
+            (bento.core.errors.InvalidPackage, 32),
+            (Exception, 1),
+        )
+        for klass, error_code in errors:
+            old_main = bentomakerlib.bentomaker.main
+            bentomakerlib.bentomaker.main = lambda argv: raise_function(klass)
+            try:
+                self._assert_raises(error_code)
+            finally:
+                bentomakerlib.bentomaker.main = old_main

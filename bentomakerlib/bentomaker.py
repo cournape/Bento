@@ -415,8 +415,10 @@ def noexc_main(argv=None):
         pprint('RED', "(You can see the traceback by setting the " \
                       "BENTOMAKER_DEBUG=1 environment variable)")
 
+    # FIXME: I must have been high that day. Fix this with proper exception
+    # hierarchy
     try:
-        ret = main(argv)
+        main(argv)
     except UsageException:
         _print_debug()
         e = extract_exception()
@@ -464,7 +466,6 @@ Please report this on bento issue tracker:
         e = extract_exception()
         pprint('RED',  msg % (SCRIPT_NAME, SCRIPT_NAME, e.__class__, str(e)))
         sys.exit(1)
-    sys.exit(ret)
 
 if __name__ == '__main__':
     noexc_main()

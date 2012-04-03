@@ -1,15 +1,18 @@
 class ParseError(Exception):
-    def __init__(self, msg, token):
+    def __init__(self, msg="", token=None):
         self.msg = msg
-        self.lineno = token.lineno
-        self.tp = token.type
-        self.value = token.value
         self.token = token
+        if token is not None:
+            self.lineno = token.lineno
+            self.tp = token.type
+            self.value = token.value
+        else:
+            self.lineno = self.tp = self.value = None
         self.filename = None
         Exception.__init__(self, msg)
 
     def __str__(self):
-        if self.filename is None:
+        if self.filename is None or self.token is None:
             return Exception.__str__(self)
         else:
             msg = '  File "%(file)s", line %(lineno)d\n' \
