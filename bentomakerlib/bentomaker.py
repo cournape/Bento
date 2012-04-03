@@ -45,11 +45,11 @@ from bento.commands.options \
 
 from bento.commands.hooks \
     import \
-        find_pre_hooks, find_post_hooks, create_hook_module, find_startup_hooks, \
+        find_pre_hooks, find_post_hooks, find_startup_hooks, \
         find_shutdown_hooks, find_options_hooks
 from bento.commands.context \
     import \
-        CmdContext, BuildYakuContext, ConfigureYakuContext, \
+        BuildYakuContext, ConfigureYakuContext, \
         HelpContext, GlobalContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.wrapper_utils \
     import \
