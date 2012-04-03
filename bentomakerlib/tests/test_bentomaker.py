@@ -25,6 +25,9 @@ from bento.convert.api \
 from bento.commands.api \
     import \
         CommandExecutionFailure
+from bento.commands.context \
+    import \
+        GlobalContext
 
 import bentomakerlib.bentomaker
 
@@ -44,7 +47,7 @@ from bento.commands.errors \
 
 from bentomakerlib.bentomaker \
     import \
-        main, noexc_main
+        main, noexc_main, _wrapped_main, parse_global_options
 
 class Common(unittest.TestCase):
     def setUp(self):
@@ -294,3 +297,67 @@ class TestBentomakerError(Common):
                 self._assert_raises(error_code)
             finally:
                 bentomakerlib.bentomaker.main = old_main
+
+class TestStartupHook(Common):
+    def setUp(self):
+        super(TestStartupHook, self).setUp()
+
+        bento_info = """\
+Name: foo
+
+HookFile: bscript
+"""
+        self.top_node.make_node("bento.info").write(bento_info)
+
+    def test_simple(self):
+        bscript = """\
+from bento.commands import hooks
+
+@hooks.startup
+def startup(context):
+    context.seen = True
+"""
+        self.top_node.make_node("bscript").write(bscript)
+
+        global_context = GlobalContext()
+        popts = parse_global_options(global_context, ["configure"])
+
+        _wrapped_main(global_context, popts, self.run_node, self.top_node,
+                self.build_node)
+        self.assertTrue(getattr(global_context, "seen", False))
+
+    def test_register_command(self):
+        bscript = """\
+from bento.commands import hooks
+from bento.commands.core import Command
+
+@hooks.startup
+def startup(context):
+    context.register_command("foo", Command)
+"""
+        self.top_node.make_node("bscript").write(bscript)
+
+        global_context = GlobalContext()
+        popts = parse_global_options(global_context, ["configure"])
+
+        _wrapped_main(global_context, popts, self.run_node, self.top_node,
+                self.build_node)
+        self.assertTrue(global_context.is_command_registered("foo"))
+
+    def test_register_existing_command(self):
+        bscript = """\
+from bento.commands import hooks
+from bento.commands.core import Command
+
+@hooks.startup
+def startup(context):
+    context.register_command("configure", Command)
+"""
+        self.top_node.make_node("bscript").write(bscript)
+
+        global_context = GlobalContext()
+        popts = parse_global_options(global_context, ["configure"])
+
+        self.assertRaises(ValueError, _wrapped_main,
+                          global_context, popts, self.run_node, self.top_node,
+                           self.build_node)
