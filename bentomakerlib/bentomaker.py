@@ -388,22 +388,15 @@ def run_cmd(global_ctx, cached_package, cmd_name, cmd_argv, run_node, top_node, 
 
     pkg = _get_package_with_user_flags(global_ctx, package_options,
             cached_package, configure_argv, top_node, build_node)
-    if is_help_only(global_ctx, cmd_name, cmd_argv):
-        options_context = global_ctx.retrieve_options_context(cmd_name)
-        p = options_context.parser
-        o, a = p.parse_args(cmd_argv)
-        if o.help:
-            p.print_help()
-    else:
-        run_dependencies(global_ctx, cmd_name, run_node, top_node, build_node,
-                pkg, package_options, cmd_data_store)
+    run_dependencies(global_ctx, cmd_name, run_node, top_node, build_node,
+            pkg, package_options, cmd_data_store)
 
-        ctx_klass = global_ctx.retrieve_context(cmd_name)
-        run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass,
-                run_node, top_node, pkg, package_options)
+    ctx_klass = global_ctx.retrieve_context(cmd_name)
+    run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass,
+            run_node, top_node, pkg, package_options)
 
-        cmd_data_store.set(cmd_name, cmd_argv)
-        cmd_data_store.store(cmd_data_db.abspath())
+    cmd_data_store.set(cmd_name, cmd_argv)
+    cmd_data_store.store(cmd_data_db.abspath())
 
 def noexc_main(argv=None):
     def _print_debug():
