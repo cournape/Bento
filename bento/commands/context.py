@@ -60,20 +60,20 @@ class GlobalContext(object):
         """Return True if the command is registered."""
         return self._commands_registry.is_registered(cmd_name)
 
-    #--------------------
-    # Command Context API
-    #--------------------
-    def register_context(self, cmd_name, klass):
-        self._contexts_registry.register(cmd_name, klass)
-
-    def retrieve_context(self, cmd_name):
-        return self._contexts_registry.retrieve(cmd_name)
-
     def command_names(self, public_only=True):
         if public_only:
             return self._commands_registry.public_command_names()
         else:
             return self._commands_registry.command_names()
+
+    #--------------------
+    # Command Context API
+    #--------------------
+    def register_command_context(self, cmd_name, klass):
+        self._contexts_registry.register(cmd_name, klass)
+
+    def retrieve_command_context(self, cmd_name):
+        return self._contexts_registry.retrieve(cmd_name)
 
     def is_command_context_registered(self, cmd_name):
         """Return True if the command context is registered."""

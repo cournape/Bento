@@ -139,7 +139,7 @@ def register_options_special(global_context):
 
 def register_command_contexts(global_context):
    # global_context.register_default_context(CmdContext)
-    default_mapping = defaultdict(lambda: CmdContext)
+    default_mapping = defaultdict(lambda: ContextWithBuildDirectory)
     default_mapping.update(dict([
             ("configure", ConfigureYakuContext),
             ("build", BuildYakuContext),
@@ -152,7 +152,7 @@ def register_command_contexts(global_context):
 
     for cmd_name in global_context.command_names(public_only=False):
         if not global_context.is_command_context_registered(cmd_name):
-            global_context.register_context(cmd_name, default_mapping[cmd_name])
+            global_context.register_command_context(cmd_name, default_mapping[cmd_name])
 
 # All the global state/registration stuff goes here
 def register_stuff(global_context):
@@ -319,7 +319,7 @@ def parse_global_options(global_context, argv):
 
 def _main(global_context, cached_package, popts, run_node, top_node, build_node):
     if popts.show_usage:
-        ctx_klass = global_context.retrieve_context("help")
+        ctx_klass = global_context.retrieve_command_context("help")
         cmd = global_context.retrieve_command('help')
         cmd.run(ctx_klass(global_context, [], global_context.retrieve_options_context('help'), None, None))
         return
@@ -353,7 +353,7 @@ def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
     for cmd_name in deps:
         cmd = global_context.retrieve_command(cmd_name)
         cmd_argv = cmd_data_store.get_argv(cmd_name)
-        ctx_klass = global_context.retrieve_context(cmd_name)
+        ctx_klass = global_context.retrieve_command_context(cmd_name)
         run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, ctx_klass,
                 run_node, top_node, pkg, package_options)
 
@@ -368,7 +368,7 @@ def run_cmd(global_ctx, cached_package, cmd_name, cmd_argv, run_node, top_node, 
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:
         options_ctx = global_ctx.retrieve_options_context(cmd_name)
-        ctx_klass = global_ctx.retrieve_context(cmd_name)
+        ctx_klass = global_ctx.retrieve_command_context(cmd_name)
         ctx = ctx_klass(global_ctx, cmd_argv, options_ctx, PackageDescription(), run_node)
         # XXX: hack for help command to get option context for any command
         # without making help depends on bentomakerlib
@@ -396,7 +396,7 @@ def run_cmd(global_ctx, cached_package, cmd_name, cmd_argv, run_node, top_node, 
     run_dependencies(global_ctx, cmd_name, run_node, top_node, build_node,
             pkg, package_options, cmd_data_store)
 
-    ctx_klass = global_ctx.retrieve_context(cmd_name)
+    ctx_klass = global_ctx.retrieve_command_context(cmd_name)
     run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass,
             run_node, top_node, pkg, package_options)
 

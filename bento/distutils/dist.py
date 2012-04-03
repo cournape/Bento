@@ -180,7 +180,7 @@ class BentoDistribution(Distribution):
         set_main(self.pkg, self.top_node, self.build_node)
 
     def run_command_in_context(self, cmd_name, cmd_argv):
-        cmd_context_klass = self.global_context.retrieve_context(cmd_name)
+        cmd_context_klass = self.global_context.retrieve_command_context(cmd_name)
         cmd = self.global_context.retrieve_command(cmd_name)
         return bento.commands.wrapper_utils.run_cmd_in_context(self.global_context,
                                                                cmd,
