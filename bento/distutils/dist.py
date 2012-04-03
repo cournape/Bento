@@ -39,7 +39,7 @@ from bento.commands.command_contexts \
 from bento.commands.registries \
     import \
         CommandRegistry, ContextRegistry, OptionsRegistry
-from bento.commands.yaku_contexts \
+from bento.backends.yaku_backend \
     import \
         ConfigureYakuContext, BuildYakuContext
 from bento.commands.build_egg \

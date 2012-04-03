@@ -23,7 +23,7 @@ from bento.commands.build \
 from bento.commands.options \
     import \
         OptionsContext
-from bento.commands.yaku_contexts \
+from bento.backends.yaku_backend \
     import \
         ConfigureYakuContext, BuildYakuContext
 
@@ -62,7 +62,7 @@ def prepare_options(cmd_name, cmd, context_klass):
     # FIXME: the way new options are registered for custom contexts sucks:
     # there should be a context class independent way to do it
     if context_klass.__name__ == "BuildWafContext":
-        from bento.commands.extras.waf import register_options
+        from bento.backends.waf_backend import register_options
         register_options(g_context)
     return opts
 

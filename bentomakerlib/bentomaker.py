@@ -47,12 +47,12 @@ from bento.commands.hooks \
     import \
         find_pre_hooks, find_post_hooks, find_startup_hooks, \
         find_shutdown_hooks, find_options_hooks
+from bento.backends.yaku_backend \
+    import \
+        BuildYakuContext, ConfigureYakuContext
 from bento.commands.command_contexts \
     import \
         HelpContext, SdistContext, ContextWithBuildDirectory
-from bento.commands.yaku_contexts \
-    import \
-        BuildYakuContext, ConfigureYakuContext
 from bento.commands.wrapper_utils \
     import \
         run_cmd_in_context, set_main

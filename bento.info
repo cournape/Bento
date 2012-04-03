@@ -68,9 +68,9 @@ ExtraSourceFiles:
 Library:
     Packages:
         bento,
+        bento.backends,
         bento.compat,
         bento.commands,
-        bento.commands.extras,
         bento.convert,
         bento.core,
         bento.core.parser,

@@ -22,10 +22,10 @@ from bento.core.node \
 from bento.core.utils \
     import \
         subst_vars
-from bento.commands.distutils_contexts \
+from bento.backends.distutils_backend \
     import \
         DistutilsBuildContext, DistutilsConfigureContext
-from bento.commands.yaku_contexts \
+from bento.backends.yaku_backend \
     import \
         BuildYakuContext, ConfigureYakuContext
 from bento.commands.options \
@@ -275,8 +275,8 @@ class TestBuildYaku(_TestBuildSimpleExtension):
 
 def _not_has_waf():
     try:
-        import bento.commands.extras.waf
-        bento.commands.extras.waf.disable_output()
+        import bento.backends.waf_backend
+        bento.backends.waf_backend.disable_output()
         return False
     except UsageException:
         return True
@@ -297,7 +297,7 @@ class TestBuildWaf(_TestBuildSimpleExtension):
     def _create_contexts(self, bentos, bscripts=None, configure_args=None, build_args=None):
         conf, configure, bld, build = super(TestBuildWaf, self)._create_contexts(
                 bentos, bscripts, configure_args, build_args)
-        from bento.commands.extras.waf import make_stream_logger
+        from bento.backends.waf_backend import make_stream_logger
         bld.waf_context.logger = make_stream_logger("build", cStringIO())
 
         return conf, configure, bld, build
@@ -342,7 +342,7 @@ class TestBuildWaf(_TestBuildSimpleExtension):
         if _not_has_waf():
             return
         else:
-            from bento.commands.extras.waf import ConfigureWafContext, BuildWafContext
+            from bento.backends.waf_backend import ConfigureWafContext, BuildWafContext
 
             self._configure_context = ConfigureWafContext
             self._build_context = BuildWafContext
@@ -488,8 +488,10 @@ class TestBuildDirectoryWaf(TestBuildDirectoryBase):
 
     @skip_no_waf
     def test_simple_waf(self):
-        from bento.commands.extras.waf import ConfigureWafContext, BuildWafContext, \
-                                              make_stream_logger, register_options
+        from bento.backends.waf_backend \
+            import \
+                ConfigureWafContext, BuildWafContext, make_stream_logger, \
+                register_options
 
         top_node = self.top_node
 

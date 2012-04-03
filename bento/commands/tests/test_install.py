@@ -11,7 +11,7 @@ from bento.core.node \
     import \
         create_root_with_source_tree
 
-from bento.commands.yaku_contexts \
+from bento.backends.yaku_backend \
     import \
         ConfigureYakuContext
 from bento.commands.command_contexts \
