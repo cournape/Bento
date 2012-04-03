@@ -490,8 +490,7 @@ class TestBuildDirectoryWaf(TestBuildDirectoryBase):
     def test_simple_waf(self):
         from bento.backends.waf_backend \
             import \
-                ConfigureWafContext, BuildWafContext, make_stream_logger, \
-                register_options
+                ConfigureWafContext, BuildWafContext, make_stream_logger
 
         top_node = self.top_node
 
