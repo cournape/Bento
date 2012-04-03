@@ -29,7 +29,10 @@ from bento.commands.api \
         BuildWininstCommand, UsageException, CommandExecutionFailure
 from bento.commands.core \
     import \
-        find_hook_commands, CommandRegistry
+        find_hook_commands
+from bento.commands.registries \
+    import \
+        CommandRegistry
 from bento.commands.dependency \
     import \
         CommandScheduler, CommandDataProvider

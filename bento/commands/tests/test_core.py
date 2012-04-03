@@ -13,11 +13,11 @@ from bento.commands.context \
 from bento.commands.options \
     import \
         OptionsContext
-import bento.commands.core
+import bento.commands.registries
 
 class TestHelpCommand(unittest.TestCase):
     def setUp(self):
-        registry = bento.commands.core.CommandRegistry()
+        registry = bento.commands.registries.CommandRegistry()
 
         # help command assumes those always exist
         registry.register("configure", Command)

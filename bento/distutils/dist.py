@@ -36,7 +36,7 @@ from bento.commands.context \
 from bento.commands.cmd_contexts \
     import \
         CmdContext, SdistContext, ContextWithBuildDirectory
-from bento.commands.core \
+from bento.commands.registries \
     import \
         CommandRegistry
 from bento.commands.yaku_contexts \
