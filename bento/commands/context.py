@@ -63,9 +63,6 @@ class GlobalContext(object):
     #--------------------
     # Command Context API
     #--------------------
-    def register_default_context(self, klass):
-        self._contexts_registry.set_default(klass)
-
     def register_context(self, cmd_name, klass):
         self._contexts_registry.register(cmd_name, klass)
 

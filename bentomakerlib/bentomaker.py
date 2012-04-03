@@ -20,6 +20,9 @@ from bento._config \
 from bento.core \
     import \
         PackageDescription
+from bento.compat.api \
+    import \
+        defaultdict
 import bento.core.node
 
 from bento.commands.api \
@@ -135,8 +138,9 @@ def register_options_special(global_context):
     global_context.register_options_context("globals", context)
 
 def register_command_contexts(global_context):
-    global_context.register_default_context(CmdContext)
-    default_mapping = (
+   # global_context.register_default_context(CmdContext)
+    default_mapping = defaultdict(lambda: CmdContext)
+    default_mapping.update(dict([
             ("configure", ConfigureYakuContext),
             ("build", BuildYakuContext),
             ("build_egg", ContextWithBuildDirectory),
@@ -144,11 +148,11 @@ def register_command_contexts(global_context):
             ("build_mpkg", ContextWithBuildDirectory),
             ("install", ContextWithBuildDirectory),
             ("sdist", SdistContext),
-            ("help", HelpContext))
+            ("help", HelpContext)]))
 
-    for cmd_name, context_klass in default_mapping:
+    for cmd_name in global_context.command_names(public_only=False):
         if not global_context.is_command_context_registered(cmd_name):
-            global_context.register_context(cmd_name, context_klass)
+            global_context.register_context(cmd_name, default_mapping[cmd_name])
 
 # All the global state/registration stuff goes here
 def register_stuff(global_context):
