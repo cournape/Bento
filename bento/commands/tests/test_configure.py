@@ -18,6 +18,9 @@ from bento.core \
 from bento.core.node \
     import \
         create_root_with_source_tree
+from bento.commands.wrapper_utils \
+    import \
+        run_command_in_context
 from bento.commands.tests.utils \
     import \
         prepare_configure
@@ -59,9 +62,7 @@ class TestConfigureCommand(unittest.TestCase):
         run_node = root.find_node(self.d)
 
         conf, configure = prepare_configure(run_node, BENTO_INFO, ConfigureYakuContext)
-        configure.run(conf)
-        configure.shutdown(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
     def test_flags(self):
         bento_info = """\
@@ -74,9 +75,7 @@ Flag: floupi
         run_node = self.root.find_node(self.d)
 
         conf, configure = prepare_configure(run_node, bento_info, ConfigureYakuContext, ["--floupi=false"])
-        configure.run(conf)
-        configure.shutdown(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
 UNIX_REFERENCE = {
         'destdir': "/",

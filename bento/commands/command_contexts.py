@@ -66,16 +66,16 @@ class CmdContext(object):
 
         self.command_argv = command_argv
 
+        # All of run/top/cur nodes are set to the same value for the base
+        # context: without a bento.info available, neither build directory, nor
+        # out-of-tree concepts make much sense.
+
         # CWD node
         self.run_node = run_node
         # Top source node (the one containing the top bento.info)
-        # TODO: kept for compatibility. Remove it ?
-        if run_node is not None:
-            self.top_node = run_node._ctx.srcnode
-            # cur_node refers to the current path when recursing into sub directories
-            self.cur_node = self.top_node
-        else:
-            self.top_node = None
+        self.top_node = run_node
+        # cur_node refers to the current path when recursing into sub directories
+        self.cur_node = run_node
 
         # Recursive related members
         self.local_node = None
@@ -126,10 +126,16 @@ class CmdContext(object):
         self.local_node = None
         self.local_pkg = None
 
+    # This is run before the associated command pre-hooks
     def init(self):
         pass
 
-    def shutdown(self):
+    # This is run after the associated command pre-hooks, but before the command run function
+    def configure(self):
+        pass
+
+    # This is run after the associated command post_hooks
+    def finish(self):
         pass
 
 class ContextWithBuildDirectory(CmdContext):
@@ -180,8 +186,7 @@ class ContextWithBuildDirectory(CmdContext):
         return state.paths
 
 class ConfigureContext(ContextWithBuildDirectory):
-    def setup(self):
-        pass
+    pass
 
 class _Dummy(object):
     pass
@@ -369,9 +374,6 @@ class BuildContext(ContextWithBuildDirectory):
         if from_node is None:
             from_node = self.build_node
         self.outputs_registry.register_outputs(category_name, section_name, nodes, from_node, target_dir)
-
-    def shutdown(self):
-        CmdContext.shutdown(self)
 
     def _compute_extension_name(self, extension_name):
         if self.local_node is None:

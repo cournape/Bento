@@ -26,7 +26,7 @@ class ConfigureYakuContext(ConfigureContext):
         source_path = run_node._ctx.srcnode.path_from(run_node)
         self.yaku_context = yaku.context.get_cfg(src_path=source_path, build_path=build_path)
 
-    def setup(self):
+    def configure(self):
         extensions = get_extensions(self.pkg, self.run_node)
         libraries = get_compiled_libraries(self.pkg, self.run_node)
 
@@ -39,8 +39,8 @@ class ConfigureYakuContext(ConfigureContext):
                     e = extract_exception()
                     raise ConfigurationError(str(e))
 
-    def shutdown(self):
-        super(ConfigureYakuContext, self).shutdown()
+    def finish(self):
+        super(ConfigureYakuContext, self).finish()
         self.yaku_context.store()
 
     def pre_recurse(self, local_node):
@@ -91,8 +91,8 @@ class BuildYakuContext(BuildContext):
         self.builder_registry.register_category("compiled_libraries",
             _builder_factory("compiled_libraries", build_compiled_library))
 
-    def shutdown(self):
-        super(BuildYakuContext, self).shutdown()
+    def finish(self):
+        super(BuildYakuContext, self).finish()
         self.yaku_context.store()
 
     def compile(self):

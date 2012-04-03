@@ -202,9 +202,6 @@ Purpose: configure the project
 Usage: bentomaker configure [OPTIONS]"""
     short_descr = "configure the project."
 
-    def __init__(self):
-        Command.__init__(self)
-
     def register_options(self, options_context, package_options=None):
         _setup_options_parser(options_context, package_options)
 
@@ -227,7 +224,6 @@ Usage: bentomaker configure [OPTIONS]"""
         set_scheme_options(self.scheme, o, ctx.pkg)
         flag_vals = _get_flag_values(self.flags, o)
 
-        ctx.setup()
         s = _ConfigureState(bento_script, ctx.pkg, self.scheme, flag_vals, {})
 
         dump_node = ctx.build_node.make_node(CONFIGURED_STATE_DUMP)

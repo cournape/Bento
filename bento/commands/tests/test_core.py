@@ -1,15 +1,23 @@
+import os
+
 from bento.compat.api.moves \
     import \
         unittest
 from bento.core \
     import \
         PackageDescription
+from bento.core.node \
+    import \
+        create_first_node
 from bento.commands.core \
     import \
         HelpCommand, Command
 from bento.commands.command_contexts \
     import \
         HelpContext, CmdContext
+from bento.commands.wrapper_utils \
+    import \
+        run_command_in_context
 from bento.commands.contexts \
     import \
         GlobalContext
@@ -20,6 +28,8 @@ import bento.commands.registries
 
 class TestHelpCommand(unittest.TestCase):
     def setUp(self):
+        self.run_node = create_first_node(os.getcwd())
+
         registry = bento.commands.registries.CommandRegistry()
 
         # help command assumes those always exist
@@ -41,9 +51,9 @@ class TestHelpCommand(unittest.TestCase):
             options.add_option(option)
         global_context = GlobalContext(self.registry, None, None, None)
         pkg = PackageDescription()
-        context = HelpContext(global_context, [], options, pkg, None)
+        context = HelpContext(global_context, [], options, pkg, self.run_node)
 
-        help.run(context)
+        run_command_in_context(context, help)
 
     def test_command(self):
         help = HelpCommand()
@@ -51,7 +61,7 @@ class TestHelpCommand(unittest.TestCase):
         for option in HelpCommand.common_options:
             options.add_option(option)
         pkg = PackageDescription()
-        context = CmdContext(None, ["configure"], options, pkg, None)
+        context = CmdContext(None, ["configure"], options, pkg, self.run_node)
         context.options_registry = self.options_registry
 
-        help.run(context)
+        run_command_in_context(context, help)

@@ -22,6 +22,9 @@ from bento.core.testing \
 from bento.commands.tests.utils \
     import \
         prepare_configure, prepare_build
+from bento.commands.wrapper_utils\
+    import \
+        run_command_in_context
 from bento.installed_package_description \
     import \
         InstalledSection
@@ -65,12 +68,10 @@ Library:
         create_fake_package_from_bento_info(self.top_node, bento_info)
 
         conf, configure = prepare_configure(self.run_node, bento_info)
-        configure.run(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
         bld, build = prepare_build(self.top_node, conf.pkg, conf.package_options)
-        build.run(bld)
-        bld.shutdown()
+        run_command_in_context(bld, build)
 
         sections = bld.section_writer.sections
 

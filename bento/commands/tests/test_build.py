@@ -28,6 +28,12 @@ from bento.backends.distutils_backend \
 from bento.backends.yaku_backend \
     import \
         BuildYakuContext, ConfigureYakuContext
+from bento.commands.hooks \
+    import \
+        PreHookWrapper
+from bento.commands.wrapper_utils \
+    import \
+        run_command_in_context
 from bento.commands.options \
     import \
         OptionsContext
@@ -108,9 +114,8 @@ class _TestBuildSimpleExtension(unittest.TestCase):
     def _prepare(self, bentos, bscripts=None, configure_args=None, build_args=None):
         conf, configure, bld, build = self._create_contexts(bentos, bscripts,
                 configure_args, build_args)
+        run_command_in_context(bld, build)
 
-        build.run(bld)
-        build.shutdown(bld)
         return conf, configure, bld, build
 
     def _create_contexts(self, bentos, bscripts=None, configure_args=None, build_args=None):
@@ -119,8 +124,7 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         create_fake_package_from_bento_infos(top_node, bentos, bscripts)
 
         conf, configure = prepare_configure(top_node, bentos["bento.info"], self._configure_context)
-        configure.run(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
         bld, build = prepare_build(top_node, conf.pkg,
                 conf.package_options, self._build_context, build_args)
@@ -144,14 +148,9 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
     def test_disable_extension(self):
         conf, configure, bld, build = self._create_contexts({"bento.info": BENTO_INFO_WITH_EXT})
-
-        bld.pre_recurse(self.top_node)
-        try:
-            bld.disable_extension("foo")
-        finally:
-            bld.post_recurse()
-        build.run(bld)
-        build.shutdown(bld)
+        pre_hook = PreHookWrapper(lambda context: context.disable_extension("foo"),
+                                  "build", self.d)
+        run_command_in_context(bld, build, pre_hooks=[pre_hook])
 
         assert "extensions" not in bld.section_writer.sections
 
@@ -159,13 +158,9 @@ class _TestBuildSimpleExtension(unittest.TestCase):
     def test_disable_nonexisting_extension(self):
         conf, configure, bld, build = self._create_contexts({"bento.info": BENTO_INFO_WITH_EXT})
 
-        bld.pre_recurse(self.top_node)
-        try:
-            bld.disable_extension("foo2")
-        finally:
-            bld.post_recurse()
-        build.run(bld)
-        build.shutdown(bld)
+        pre_hook = PreHookWrapper(lambda context: context.disable_extension("foo2"),
+                                  "build", self.d)
+        run_command_in_context(bld, build, pre_hooks=[pre_hook])
 
         assert "extensions" not in bld.section_writer.sections
 
@@ -184,18 +179,13 @@ Library:
         bentos = {"bento.info": bento_info}
 
         conf, configure, bld, build = self._create_contexts(bentos)
-        configure.run(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
-        #bld, build = prepare_build(top_node, conf.pkg, context_klass=self._build_context)
-        bld.pre_recurse(top_node)
-        try:
-            builder = self._builder_factory(bld)
-            bld.register_builder("_bar", builder)
-        finally:
-            bld.post_recurse()
-        build.run(bld)
-        build.shutdown(bld)
+        def pre_build(context):
+            builder = self._builder_factory(context)
+            context.register_builder("_bar", builder)
+        pre_hook = PreHookWrapper(pre_build, "build", self.d)
+        run_command_in_context(bld, build, pre_hooks=[pre_hook])
 
         sections = bld.section_writer.sections["extensions"]
         self.failUnless(len(sections) == 2)
@@ -367,14 +357,13 @@ class TestBuildCommand(unittest.TestCase):
     def _execute_build(self, bento_info):
         create_fake_package_from_bento_info(self.top_node, bento_info)
         conf, configure = prepare_configure(self.top_node, bento_info, ConfigureYakuContext)
-        configure.run(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
         build = BuildCommand()
         opts = OptionsContext.from_command(build)
 
         bld = BuildYakuContext(None, [], opts, conf.pkg, self.top_node)
-        build.run(bld)
+        run_command_in_context(bld, build)
 
         return bld
 
@@ -447,28 +436,26 @@ class TestBuildDirectory(TestBuildDirectoryBase):
 
         create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
         conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, ConfigureYakuContext)
-        configure.run(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
         build = BuildCommand()
         opts = OptionsContext.from_command(build)
 
         bld = BuildYakuContext(None, [], opts, conf.pkg, top_node)
-        build.run(bld)
+        run_command_in_context(bld, build)
 
     def test_simple_distutils(self):
         top_node = self.top_node
 
         create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
         conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, DistutilsConfigureContext)
-        configure.run(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
         build = BuildCommand()
         opts = OptionsContext.from_command(build)
 
         bld = DistutilsBuildContext(None, [], opts, conf.pkg, top_node)
-        build.run(bld)
+        run_command_in_context(bld, build)
 
 class TestBuildDirectoryWaf(TestBuildDirectoryBase):
     def setUp(self):
@@ -496,8 +483,7 @@ class TestBuildDirectoryWaf(TestBuildDirectoryBase):
 
         create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
         conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, ConfigureWafContext)
-        configure.run(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
         build = BuildCommand()
         #opts = OptionsContext.from_command(build)
@@ -505,4 +491,4 @@ class TestBuildDirectoryWaf(TestBuildDirectoryBase):
 
         bld = BuildWafContext(None, [], opts, conf.pkg, top_node)
         bld.waf_context.logger = make_stream_logger("build", cStringIO())
-        build.run(bld)
+        run_command_in_context(bld, build)

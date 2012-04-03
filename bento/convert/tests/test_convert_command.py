@@ -79,8 +79,8 @@ def _run_convert_command(top_node, run_node, setup_py, bento_info, cmd_argv):
 
     context = CmdContext(None, cmd_argv, opts, package, run_node)
     cmd.run(context)
-    cmd.shutdown(context)
-    context.shutdown()
+    cmd.finish(context)
+    context.finish()
 
 class CommonTestCase(unittest.TestCase):
     def setUp(self):
@@ -259,8 +259,8 @@ class TestMockedDetectTypeCommand(CommonTestCase):
 
         context = CmdContext(None, [], opts, package, self.run_node)
         cmd.run(context)
-        cmd.shutdown(context)
-        context.shutdown()
+        cmd.finish(context)
+        context.finish()
 
     def test_simple(self):
         self._run_command()

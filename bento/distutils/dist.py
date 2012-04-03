@@ -182,15 +182,9 @@ class BentoDistribution(Distribution):
     def run_command_in_context(self, cmd_name, cmd_argv):
         cmd_context_klass = self.global_context.retrieve_command_context(cmd_name)
         cmd = self.global_context.retrieve_command(cmd_name)
-        return bento.commands.wrapper_utils.run_cmd_in_context(self.global_context,
-                                                               cmd,
-                                                               cmd_name,
-                                                               cmd_argv,
-                                                               cmd_context_klass,
-                                                               self.run_node,
-                                                               self.top_node,
-                                                               self.pkg,
-                                                               self.package_options)
+        return bento.commands.wrapper_utils.resolve_and_run_command(self.global_context,
+            cmd, cmd_name, cmd_argv, cmd_context_klass, self.run_node,
+            self.top_node, self.pkg, self.package_options)
 
     def has_data_files(self):
         return len(self.pkg.data_files) > 0        

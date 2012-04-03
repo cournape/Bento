@@ -27,7 +27,10 @@ Usage: command's usage (default description)
     def run(self, ctx):
         raise NotImplementedError("run method should be implemented by command classes.")
 
-    def shutdown(self, ctx):
+    def init(self, ctx):
+        pass
+
+    def finish(self, ctx):
         pass
 
 class WrappedCommand(Command):

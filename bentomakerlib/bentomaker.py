@@ -55,7 +55,7 @@ from bento.commands.command_contexts \
         HelpContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.wrapper_utils \
     import \
-        run_cmd_in_context, set_main
+        resolve_and_run_command, set_main
 from bento.commands.contexts \
     import \
         GlobalContext
@@ -359,7 +359,7 @@ def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
         cmd = global_context.retrieve_command(cmd_name)
         cmd_argv = cmd_data_store.get_argv(cmd_name)
         ctx_klass = global_context.retrieve_command_context(cmd_name)
-        run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, ctx_klass,
+        resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, ctx_klass,
                 run_node, top_node, pkg, package_options)
 
 def is_help_only(global_context, cmd_name, cmd_argv):
@@ -402,7 +402,7 @@ def run_cmd(global_ctx, cached_package, cmd_name, cmd_argv, run_node, top_node, 
             pkg, package_options, cmd_data_store)
 
     ctx_klass = global_ctx.retrieve_command_context(cmd_name)
-    run_cmd_in_context(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass,
+    resolve_and_run_command(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass,
             run_node, top_node, pkg, package_options)
 
     cmd_data_store.set(cmd_name, cmd_argv)

@@ -17,6 +17,9 @@ from bento.backends.yaku_backend \
 from bento.commands.command_contexts \
     import \
         ContextWithBuildDirectory
+from bento.commands.wrapper_utils \
+    import \
+        run_command_in_context
 from bento.commands.tests.utils \
     import \
         prepare_configure, prepare_build
@@ -52,12 +55,10 @@ class TestBuildCommand(unittest.TestCase):
         cmd_argv = ["--prefix=%s" % install_prefix, "--exec-prefix=%s" % install_prefix]
 
         conf, configure = prepare_configure(top_node, bento_info, ConfigureYakuContext, cmd_argv)
-        configure.run(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
         bld, build = prepare_build(top_node, conf.pkg, conf.package_options)
-        build.run(bld)
-        build.shutdown(bld)
+        run_command_in_context(bld, build)
 
         return conf, configure, bld, build
 
@@ -70,7 +71,7 @@ class TestBuildCommand(unittest.TestCase):
             opts = OptionsContext.from_command(install)
 
             inst = ContextWithBuildDirectory(None, ["--list-files"], opts, conf.pkg, self.top_node)
-            install.run(inst)
+            run_command_in_context(inst, install)
         finally:
             shutil.rmtree(install_prefix)
 
@@ -83,7 +84,7 @@ class TestBuildCommand(unittest.TestCase):
             opts = OptionsContext.from_command(install)
 
             inst = ContextWithBuildDirectory(None, [], opts, conf.pkg, self.top_node)
-            install.run(inst)
+            run_command_in_context(inst, install)
         finally:
             shutil.rmtree(install_prefix)
 

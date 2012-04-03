@@ -22,6 +22,9 @@ from bento.commands.command_contexts \
 from bento.commands.sdist \
     import \
         SdistCommand
+from bento.commands.wrapper_utils \
+    import \
+        run_command_in_context
 from bento.core.testing \
     import \
         create_fake_package_from_bento_infos, create_fake_package_from_bento_info
@@ -81,9 +84,7 @@ Library:
         cmd_argv = ["--output-file=foo.zip", "--format=zip"]
 
         context = SdistContext(None, cmd_argv, opts, package, self.run_node)
-        sdist.run(context)
-        sdist.shutdown(context)
-        context.shutdown()
+        run_command_in_context(context, sdist)
 
         self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
 
@@ -109,9 +110,7 @@ Library:
 
         context = SdistContext(None, cmd_argv, opts, package, self.run_node)
         context.register_source_node(self.top_node.find_node("yeah.info"))
-        sdist.run(context)
-        sdist.shutdown(context)
-        context.shutdown()
+        run_command_in_context(context, sdist)
 
         self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
 
@@ -137,9 +136,7 @@ Library:
 
         context = SdistContext(None, cmd_argv, opts, package, self.run_node)
         context.register_source_node(self.top_node.find_node("yeah.info"), archive_name="bohou.info")
-        sdist.run(context)
-        sdist.shutdown(context)
-        context.shutdown()
+        run_command_in_context(context, sdist)
 
         self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)
 
@@ -169,8 +166,6 @@ VERSION = $VERSION
         cmd_argv = ["--output-file=foo.zip", "--format=zip"]
 
         context = SdistContext(None, cmd_argv, opts, package, self.run_node)
-        sdist.run(context)
-        sdist.shutdown(context)
-        context.shutdown()
+        run_command_in_context(context, sdist)
 
         self._assert_archive_equality(op.join("dist", "foo.zip"), archive_list)

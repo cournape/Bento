@@ -182,8 +182,8 @@ class ConfigureWafContext(ConfigureContext):
         self.waf_context.path = self._old_path
         ConfigureContext.post_recurse(self)
 
-    def shutdown(self):
-        super(ConfigureWafContext, self).shutdown()
+    def finish(self):
+        super(ConfigureWafContext, self).finish()
         self.waf_context.store()
 
 def ext_name_to_path(name):
@@ -348,6 +348,6 @@ class BuildWafContext(BuildContext):
                 sys.stdout.flush()
                 sys.stderr.write(Logs.colors.cursor_on)
 
-    def shutdown(self):
-        super(BuildWafContext, self).shutdown()
+    def finish(self):
+        super(BuildWafContext, self).finish()
         self.waf_context.store()

@@ -22,6 +22,9 @@ from bento.core.node_package \
 from bento.commands.hooks \
     import \
         create_hook_module, find_pre_hooks
+from bento.commands.wrapper_utils\
+    import \
+        run_command_in_context
 from bento.backends.yaku_backend \
     import \
         ConfigureYakuContext
@@ -248,8 +251,8 @@ def configure(ctx):
             else:
                 self.fail("test dummy not found")
         finally:
-            configure.shutdown(conf)
-            conf.shutdown()
+            configure.finish(conf)
+            conf.finish()
 
 class TestInstalledSections(unittest.TestCase):
     """Test registered installed sections are the expected ones when using
@@ -272,12 +275,10 @@ class TestInstalledSections(unittest.TestCase):
         create_fake_package_from_bento_infos(self.top_node, bento_infos)
 
         conf, configure = prepare_configure(self.run_node, bento_infos["bento.info"])
-        configure.run(conf)
-        conf.shutdown()
+        run_command_in_context(conf, configure)
 
         bld, build = prepare_build(self.top_node, conf.pkg, conf.package_options)
-        build.run(bld)
-        bld.shutdown()
+        run_command_in_context(bld, build)
 
         sections = bld.section_writer.sections
 

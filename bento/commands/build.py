@@ -39,9 +39,6 @@ Usage:   bentomaker build [OPTIONS]."""
                                   help="Verbose output (yaku build only)",
                                   action="store_true")]
 
-    def __init__(self, *a, **kw):
-        Command.__init__(self, *a, **kw)
-
     def run(self, ctx):
         p = ctx.options_context.parser
         o, a = p.parse_args(ctx.command_argv)
@@ -52,7 +49,8 @@ Usage:   bentomaker build [OPTIONS]."""
         ctx.compile()
         ctx.post_compile()
 
-    def shutdown(self, ctx):
+    def finish(self, ctx):
+        super(BuildCommand, self).finish(ctx)
         n = ctx.build_node.make_node(IPKG_PATH)
         ctx.section_writer.store(n.abspath(), ctx.pkg)
 
