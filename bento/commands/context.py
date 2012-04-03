@@ -18,16 +18,23 @@ from bento.commands.distutils_contexts \
 from bento.commands.distutils_contexts \
     import \
         DistutilsBuildContext, DistutilsConfigureContext
+from bento.commands.registries \
+    import \
+        CommandRegistry, ContextRegistry, OptionsRegistry
+from bento.commands.dependency \
+    import \
+        CommandScheduler
 from bento.commands.hooks \
     import \
         HookRegistry
 
 class GlobalContext(object):
-    def __init__(self, commands_registry, contexts_registry, options_registry, commands_scheduler):
-        self._commands_registry = commands_registry
-        self._contexts_registry = contexts_registry
-        self._options_registry = options_registry
-        self._scheduler = commands_scheduler
+    def __init__(self, commands_registry=None, contexts_registry=None,
+            options_registry=None, commands_scheduler=None):
+        self._commands_registry = commands_registry or CommandRegistry()
+        self._contexts_registry = contexts_registry or ContextRegistry()
+        self._options_registry = options_registry or OptionsRegistry()
+        self._scheduler = commands_scheduler or CommandScheduler()
         self._hooks_registry = HookRegistry()
 
     #------------
