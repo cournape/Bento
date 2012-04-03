@@ -8,14 +8,10 @@ from bento.compat.api \
     import \
         relpath
 
-from bento.commands.options \
-    import \
-        OptionsContext
 from bento.commands.hooks \
     import \
-        get_command_override, create_hook_module
+        create_hook_module
 
-# FIXME: consolidate this code with bentomakerlib
 def run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, context_klass,
         run_node, top_node, package, package_options):
     """Run the given Command instance inside its context, including any hook
@@ -27,10 +23,7 @@ def run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, context_klass,
     # this needs to be known in option context ?
     context.package_options = package_options
 
-    if get_command_override(cmd_name):
-        cmd_funcs = get_command_override(cmd_name)
-    else:
-        cmd_funcs = [(cmd.run, top_node.abspath())]
+    cmd_funcs = [(cmd.run, top_node.abspath())]
 
     try:
         def _run_hooks(hooks):

@@ -34,17 +34,6 @@ class HookRegistry(object):
     def retrieve_post_hooks(self, cmd_name):
         return self._post_hooks.get(cmd_name, [])
 
-__COMMANDS_OVERRIDE = {}
-
-def override_command(command, func):
-    global __COMMANDS_OVERRIDE
-    local_dir = os.path.dirname(compat_inspect.stack()[2][1])
-
-    if __COMMANDS_OVERRIDE.has_key(command):
-        __COMMANDS_OVERRIDE[command].append((func, local_dir))
-    else:
-        __COMMANDS_OVERRIDE[command] = [(func, local_dir)]
-
 def find_pre_hooks(modules, cmd_name):
     """Retrieve all pre hooks instances defined in given modules list.
 
@@ -128,10 +117,6 @@ def find_options_hooks(modules):
         hooks.extend([f for f in vars(module).values() if isinstance(f, OptionsHook)])
     return hooks
 
-def get_command_override(cmd_name):
-    global __COMMANDS_OVERRIDE
-    return __COMMANDS_OVERRIDE.get(cmd_name, [])
-
 class _HookWrapperBase(object):
     def __init__(self, func, cmd_name, local_dir):
         self._func = func
@@ -188,9 +173,6 @@ post_build = _make_hook_decorator("build", "post")
 pre_build = _make_hook_decorator("build", "pre")
 post_sdist = _make_hook_decorator("sdist", "post")
 pre_sdist = _make_hook_decorator("sdist", "pre")
-
-def override(f):
-    override_command(f.__name__, f)
 
 def options(f):
     return OptionsHook(f)
