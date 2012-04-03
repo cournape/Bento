@@ -32,13 +32,13 @@ from bento.core.options \
         PackageOptions
 from bento.commands.context \
     import \
-        GlobalContext, ContextRegistry
+        GlobalContext
 from bento.commands.cmd_contexts \
     import \
         CmdContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.registries \
     import \
-        CommandRegistry
+        CommandRegistry, ContextRegistry
 from bento.commands.yaku_contexts \
     import \
         ConfigureYakuContext, BuildYakuContext

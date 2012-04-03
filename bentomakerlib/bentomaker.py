@@ -32,7 +32,7 @@ from bento.commands.core \
         find_hook_commands
 from bento.commands.registries \
     import \
-        CommandRegistry
+        CommandRegistry, ContextRegistry
 from bento.commands.dependency \
     import \
         CommandScheduler, CommandDataProvider
@@ -45,7 +45,7 @@ from bento.commands.hooks \
         find_pre_hooks, find_post_hooks, create_hook_module
 from bento.commands.context \
     import \
-        CmdContext, BuildYakuContext, ConfigureYakuContext, ContextRegistry, \
+        CmdContext, BuildYakuContext, ConfigureYakuContext, \
         HelpContext, GlobalContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.wrapper_utils \
     import \

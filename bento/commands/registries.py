@@ -28,3 +28,30 @@ class CommandRegistry(object):
 
     def public_command_names(self):
         return [k for k in self._klasses.keys() if not k in self._privates]
+
+class ContextRegistry(object):
+    def __init__(self, default=None):
+        self._contexts = {}
+        self.set_default(default)
+
+    def set_default(self, default):
+        self._default = default
+
+    def is_registered(self, cmd_name):
+        return cmd_name in self._contexts
+
+    def register(self, cmd_name, context):
+        if cmd_name in self._contexts:
+            raise ValueError("context for command %r already registered !" % cmd_name)
+        else:
+            self._contexts[cmd_name] = context
+
+    def retrieve(self, cmd_name):
+        context = self._contexts.get(cmd_name, None)
+        if context is None:
+            if self._default is None:
+                raise ValueError("No context registered for command %r" % cmd_name)
+            else:
+                return self._default
+        else:
+            return context
