@@ -32,13 +32,13 @@ from bento.commands.core \
         find_hook_commands
 from bento.commands.registries \
     import \
-        CommandRegistry, ContextRegistry
+        CommandRegistry, ContextRegistry, OptionsRegistry
 from bento.commands.dependency \
     import \
         CommandScheduler, CommandDataProvider
 from bento.commands.options \
     import \
-        OptionsRegistry, OptionsContext, Option
+        OptionsContext, Option
 
 from bento.commands.hooks \
     import \

@@ -28,7 +28,7 @@ class TestHelpCommand(unittest.TestCase):
         registry.register("build_egg", Command)
         self.registry = registry
 
-        self.options_registry = bento.commands.options.OptionsRegistry()
+        self.options_registry = bento.commands.registries.OptionsRegistry()
         self.options_registry.register("configure", OptionsContext())
 
     def test_simple(self):

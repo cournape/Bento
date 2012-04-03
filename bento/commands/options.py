@@ -54,25 +54,3 @@ class OptionsContext(object):
         grp = optparse.OptionGroup(self.parser, title)
         self._groups[name] = grp
         self.parser.add_option_group(grp)
-
-class OptionsRegistry(object):
-    """Registry for command -> option context"""
-    def __init__(self):
-        # command line name -> context *instance*
-        self._contexts = {}
-
-    def register(self, cmd_name, options_context):
-        if cmd_name in self._contexts:
-            raise ValueError("options context for command %r already registered !" % cmd_name)
-        else:
-            self._contexts[cmd_name] = options_context
-
-    def is_registered(self, cmd_name):
-        return cmd_name in self._contexts
-
-    def retrieve(self, cmd_name):
-        options_context = self._contexts.get(cmd_name, None)
-        if options_context is None:
-            raise ValueError("No options context registered for cmd_name %r" % cmd_name)
-        else:
-            return options_context

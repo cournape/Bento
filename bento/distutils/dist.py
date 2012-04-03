@@ -38,7 +38,7 @@ from bento.commands.cmd_contexts \
         CmdContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.registries \
     import \
-        CommandRegistry, ContextRegistry
+        CommandRegistry, ContextRegistry, OptionsRegistry
 from bento.commands.yaku_contexts \
     import \
         ConfigureYakuContext, BuildYakuContext
@@ -55,7 +55,7 @@ from bento.commands.api \
         ConfigureCommand, BuildCommand, InstallCommand, SdistCommand
 from bento.commands.options \
     import \
-        OptionsRegistry, OptionsContext
+        OptionsContext
 from bento.distutils.commands.config \
     import \
         config
