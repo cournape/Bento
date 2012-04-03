@@ -371,6 +371,11 @@ def run_cmd(global_ctx, cached_package, cmd_name, cmd_argv, run_node, top_node, 
         cmd.run(ctx)
         return
 
+    if is_help_only(global_ctx, cmd_name, cmd_argv):
+        options_context = global_ctx.retrieve_options_context(cmd_name)
+        options_context.parser.print_help()
+        return
+
     bento_info = top_node.find_node(BENTO_SCRIPT)
     if bento_info is None:
         raise UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))

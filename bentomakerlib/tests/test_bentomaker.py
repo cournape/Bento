@@ -69,6 +69,8 @@ class TestSpecialCommands(Common):
     def test_usage(self):
         main(["--help"])
 
+    def test_command_help(self):
+        main(["configure", "--help"])
 
 class TestMain(Common):
     def test_no_bento(self):
