@@ -177,7 +177,7 @@ class BentoDistribution(Distribution):
         self.run_node = root._ctx.srcnode
 
         self.global_context = global_context_factory(self.package_options)
-        modules = set_main(self.top_node, self.build_node, self.pkg)
+        set_main(self.pkg, self.top_node, self.build_node)
 
     def run_command_in_context(self, cmd_name, cmd_argv):
         cmd_context_klass = self.global_context.retrieve_context(cmd_name)

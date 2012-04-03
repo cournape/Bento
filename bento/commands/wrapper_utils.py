@@ -1,9 +1,5 @@
 import os
-import sys
 
-from bento._config \
-    import \
-        BENTO_SCRIPT
 from bento.compat.api \
     import \
         relpath
@@ -57,19 +53,12 @@ def run_cmd_in_context(global_context, cmd, cmd_name, cmd_argv, context_klass,
 
     return cmd, context
 
-# Same as above: consolidate this with bentomakerlib
-def set_main(top_node, build_node, pkg):
-    # Some commands work without a bento description file (convert, help)
-    # FIXME: this should not be called here then - clearly separate commands
-    # which require bento.info from the ones who do not
-    n = top_node.find_node(BENTO_SCRIPT)
-    if n is None:
-        return []
-
+def set_main(pkg, top_node, build_node):
     modules = []
     hook_files = pkg.hook_files
     for name, spkg in pkg.subpackages.items():
         hook_files.extend([os.path.join(spkg.rdir, h) for h in spkg.hook_files])
+
     # TODO: find doublons
     for f in hook_files:
         hook_node = top_node.make_node(f)

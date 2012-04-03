@@ -50,7 +50,7 @@ from bento.commands.context \
         HelpContext, GlobalContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.wrapper_utils \
     import \
-        run_cmd_in_context
+        run_cmd_in_context, set_main
 from bento.convert.api \
     import \
         ConvertCommand, DetectTypeCommand, ConvertionError
@@ -155,19 +155,6 @@ def register_stuff(global_context):
     register_commands(global_context)
     register_options_special(global_context)
     register_command_contexts(global_context)
-
-def set_main(pkg, top_node, build_node):
-    modules = []
-    hook_files = pkg.hook_files
-    for name, spkg in pkg.subpackages.items():
-        hook_files.extend([os.path.join(spkg.rdir, h) for h in spkg.hook_files])
-    # TODO: find doublons
-    for f in hook_files:
-        hook_node = top_node.make_node(f)
-        if hook_node is None or not os.path.exists(hook_node.abspath()):
-            raise ValueError("Hook file %s not found" % f)
-        modules.append(create_hook_module(hook_node.abspath()))
-    return modules
 
 def main(argv=None):
     global_context = GlobalContext(CommandRegistry(), ContextRegistry(),
