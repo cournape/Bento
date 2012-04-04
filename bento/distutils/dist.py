@@ -89,16 +89,16 @@ def _setup_cmd_classes(attrs):
     attrs["cmdclass"] = cmdclass
     return attrs
 
-CONTEXT_REGISTRY = ContextRegistry()
-
 def global_context_factory(package_options):
+    context_registry = ContextRegistry()
+
     # FIXME: factor this out with the similar code in bentomakerlib
     options_registry = OptionsRegistry()
     # This is a dummy for now, to fulfill global_context API
     cmd_scheduler = CommandScheduler()
     commands_registry = CommandRegistry()
     register_commands(commands_registry)
-    register_command_contexts()
+    register_command_contexts(context_registry)
     for cmd_name in commands_registry.command_names():
         if not options_registry.is_registered(cmd_name):
             cmd = commands_registry.retrieve(cmd_name)
@@ -107,20 +107,20 @@ def global_context_factory(package_options):
 
     configure_options_context = options_registry.retrieve("configure")
     _setup_options_parser(configure_options_context, package_options)
-    global_context = GlobalContext(commands_registry, CONTEXT_REGISTRY,
+    global_context = GlobalContext(commands_registry, context_registry,
                                    options_registry, cmd_scheduler)
     return global_context
 
-def register_command_contexts():
-    CONTEXT_REGISTRY.set_default(CmdContext)
-    if not CONTEXT_REGISTRY.is_registered("configure"):
-        CONTEXT_REGISTRY.register("configure", ConfigureYakuContext)
-    if not CONTEXT_REGISTRY.is_registered("build"):
-        CONTEXT_REGISTRY.register("build", BuildYakuContext)
-    if not CONTEXT_REGISTRY.is_registered("sdist"):
-        CONTEXT_REGISTRY.register("sdist", SdistContext)
-    if not CONTEXT_REGISTRY.is_registered("install"):
-        CONTEXT_REGISTRY.register("install", ContextWithBuildDirectory)
+def register_command_contexts(context_registry):
+    context_registry.set_default(CmdContext)
+    if not context_registry.is_registered("configure"):
+        context_registry.register("configure", ConfigureYakuContext)
+    if not context_registry.is_registered("build"):
+        context_registry.register("build", BuildYakuContext)
+    if not context_registry.is_registered("sdist"):
+        context_registry.register("sdist", SdistContext)
+    if not context_registry.is_registered("install"):
+        context_registry.register("install", ContextWithBuildDirectory)
 
 def register_commands(commands_registry):
     commands_registry.register("configure", ConfigureCommand())
