@@ -169,6 +169,7 @@ class ConfigureWafContext(ConfigureContext):
             conf.check_python_version((2,4,2))
             conf.check_python_headers()
         if has_cython_code:
+            # FIXME: how to make sure the tool loaded successfully ?
             conf.load("cython", tooldir=[PKG_PATH])
         self._old_path = None
 
