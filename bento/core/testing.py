@@ -39,8 +39,7 @@ def _require_c_compiler_distutils():
     from bento.commands.build_distutils import DistutilsBuilder
     builder = DistutilsBuilder()
     try:
-        bld_cmd, compiler = builder._setup_ext()
-        if len(compiler.executables) < 1:
+        if len(builder.ext_bld_cmd.compiler.executables) < 1:
             return unittest.skipIf(True, "No C compiler available")
         return unittest.skipIf(False, "")
     except Exception:

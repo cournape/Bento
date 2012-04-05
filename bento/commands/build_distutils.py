@@ -14,6 +14,8 @@ from bento.commands.errors \
     import \
         CommandExecutionFailure
 
+import bento.core.errors
+
 def toyext_to_distext(e):
     """Convert a bento Extension instance to a distutils
     Extension."""
@@ -48,27 +50,46 @@ class DistutilsBuilder(object):
         build = self._dist.get_command_obj("build")
         self._build_base = build.build_base
 
-    def _setup_cmd(self, cmd, t):
-        from distutils.ccompiler import new_compiler
-        from distutils.sysconfig import customize_compiler
-        from distutils.command.build import build
+        self.ext_bld_cmd = self._setup_build_ext()
+        self.clib_bld_cmd = self._setup_build_clib()
 
+    def _setup_build_ext(self):
+        # Horrible hack to initialize build_ext: build_ext initialization is
+        # partially done within the run function (!), and is bypassed if no
+        # extensions is available. We fake it just enough so that run does all
+        # the initialization without trying to actually build anything.
         build = self._dist.get_command_obj("build")
-        bld_cmd = build.get_finalized_command(cmd)
+        bld_cmd = build.get_finalized_command("build_ext")
+        bld_cmd.initialize_options()
+        bld_cmd.finalize_options()
+        old_build_extensions = bld_cmd.build_extensions
+        try:
+            bld_cmd.build_extensions = lambda: None
+            bld_cmd.extensions = [None]
+            bld_cmd.run()
+        finally:
+            bld_cmd.build_extensions = old_build_extensions
 
-        compiler = new_compiler(compiler=bld_cmd.compiler,
-                                dry_run=bld_cmd.dry_run,
-                                force=bld_cmd.force)
-        customize_compiler(compiler)
-        return bld_cmd, compiler
+        return bld_cmd
 
-    def _setup_clib(self):
-        from distutils.command.build_clib import build_clib
-        return self._setup_cmd("build_clib", "compiled_libraries")
+    def _setup_build_clib(self):
+        # Horrible hack to initialize build_ext: build_ext initialization is
+        # partially done within the run function (!), and is bypassed if no
+        # extensions is available. We fake it just enough so that run does all
+        # the initialization without trying to actually build anything.
+        build = self._dist.get_command_obj("build")
+        bld_cmd = build.get_finalized_command("build_clib")
+        bld_cmd.initialize_options()
+        bld_cmd.finalize_options()
+        old_build_libraries = bld_cmd.build_libraries
+        try:
+            bld_cmd.build_libraries = lambda ignored: None
+            bld_cmd.libraries = [None]
+            bld_cmd.run()
+        finally:
+            bld_cmd.build_libraries = old_build_libraries
 
-    def _setup_ext(self):
-        from distutils.command.build_ext import build_ext
-        return self._setup_cmd("build_ext", "extensions")
+        return bld_cmd
 
     def _extension_filename(self, name, cmd):
         m = module_to_path(name)
@@ -83,14 +104,13 @@ class DistutilsBuilder(object):
     def build_extension(self, extension):
         import distutils.errors
 
-        dist = self._dist
-        dist.ext_modules = [toyext_to_distext(extension)]
+        dist_extension = toyext_to_distext(extension)
 
-        bld_cmd, compiler = self._setup_ext()
+        bld_cmd = self.ext_bld_cmd
         try:
-            bld_cmd.run()
+            bld_cmd.build_extension(dist_extension)
 
-            base, filename = os.path.split(self._extension_filename(extension.name, bld_cmd))
+            base, filename = os.path.split(self._extension_filename(dist_extension.name, bld_cmd))
             fullname = os.path.join(bld_cmd.build_lib, base, filename)
             return [relpath(fullname, self._build_base)]
         except distutils.errors.DistutilsError:
@@ -100,10 +120,8 @@ class DistutilsBuilder(object):
     def build_compiled_library(self, library):
         import distutils.errors
 
-        dist = self._dist
-        dist.libraries = [to_dist_compiled_library(library)]
-
-        bld_cmd, compiler = self._setup_clib()
+        bld_cmd = self.clib_bld_cmd
+        compiler = bld_cmd.compiler
         base, filename = os.path.split(self._compiled_library_filename(library.name, compiler))
         old_build_clib = bld_cmd.build_clib
         if base:
@@ -123,11 +141,13 @@ class DistutilsBuilder(object):
                     e = extract_exception()
                     if e.errno != errno.ENOENT:
                         raise
-                bld_cmd.run()
+                build_info = {"sources": library.sources,
+                        "include_dirs": library.include_dirs}
+                bld_cmd.build_libraries([(library.name, build_info)])
 
                 return [relpath(target, self._build_base)]
             except distutils.errors.DistutilsError:
                 e = extract_exception()
-                raise BuildError(str(e))
+                raise bento.core.errors.BuildError(str(e))
         finally:
             bld_cmd.build_clib = old_build_clib
