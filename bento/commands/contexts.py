@@ -83,7 +83,7 @@ class GlobalContext(object):
         title: str
             title of the group
         """
-        ctx = self._options_registry.get_options(cmd_name)
+        ctx = self._options_registry.retrieve(cmd_name)
         ctx.add_group(name, title)
 
     def add_option(self, cmd_name, option, group=None):
