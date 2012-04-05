@@ -77,6 +77,9 @@ Library:
 """
 
 class _TestBuildSimpleExtension(unittest.TestCase):
+    # Those should be set by subclasses
+    _configure_context = None
+    _build_context = None
     def setUp(self):
         self.save = None
         self.d = None
@@ -85,25 +88,24 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         self.d = tempfile.mkdtemp()
         os.chdir(self.d)
 
-        self.top_node, self.build_node, self.run_node = create_base_nodes(self.d, os.path.join(self.d, "build"))
+        try:
+            self.top_node, self.build_node, self.run_node = \
+                    create_base_nodes(self.d, os.path.join(self.d, "build"))
 
-        # Those should be set by subclasses
-        self._configure_context = None
-        self._build_context = None
+            def builder_factory(build_context):
+                def _dummy(extension):
+                    from_node = self.build_node
 
-        def builder_factory(build_context):
-            def _dummy(extension):
-                from_node = self.build_node
+                    pkg_dir = op.dirname(extension.name.replace('.', op.sep))
+                    target_dir = op.join('$sitedir', pkg_dir)
+                    build_context.outputs_registry.register_outputs("extensions",
+                        extension.name, [], from_node, target_dir)
+                return _dummy
 
-                pkg_dir = op.dirname(extension.name.replace('.', op.sep))
-                target_dir = op.join('$sitedir', pkg_dir)
-                build_context.outputs_registry.register_outputs("extensions",
-                    extension.name, [], from_node, target_dir)
-            return _dummy
-
-        self._builder_factory = builder_factory
-
-        #self._dummy_builder = None
+            self._builder_factory = builder_factory
+        except:
+            os.chdir(self.save)
+            raise
 
     def tearDown(self):
         if self.save:
