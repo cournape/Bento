@@ -11,6 +11,8 @@ Main features:
           when building C extensions in the bento.info file directly
         - add sphinx command to build a package documentation if it uses
           sphinx.
+        - add tweak_builder function to build contexts to simplify simple
+          builder customization (e.g. include_dirs, defines, etc...)
 
 Fixed issues
 ------------
