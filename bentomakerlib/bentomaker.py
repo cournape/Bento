@@ -47,6 +47,9 @@ from bento.commands.hooks \
     import \
         find_pre_hooks, find_post_hooks, find_startup_hooks, \
         find_shutdown_hooks, find_options_hooks
+from bento.backends.utils \
+    import \
+        load_backend
 from bento.backends.yaku_backend \
     import \
         BuildYakuContext, ConfigureYakuContext
@@ -232,7 +235,16 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         cached_package = CachedPackage(db_node)
         pkg = cached_package.get_package(bento_info_node)
         package_options = cached_package.get_options(bento_info_node)
+
+        if pkg.use_backends:
+            if len(pkg.use_backends) > 1:
+                raise ValueError("Only up to one backend supported for now")
+            else:
+                assert global_context.backend is None
+                global_context.backend = load_backend(pkg.use_backends[0])()
+
         mods = set_main(pkg, top_node, build_node)
+
     else:
         warnings.warn("No %r file in current directory - only generic options "
                       "will be displayed" % BENTO_SCRIPT)
@@ -249,12 +261,16 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         # mods beyond the first one
         startup_hooks[0](global_context)
 
+    if global_context.backend:
+        global_context.backend.register_command_contexts(global_context)
     for command in find_hook_commands(mods):
         global_context.register_command(command.name, command)
     register_stuff(global_context)
     for cmd_name in global_context.command_names():
         register_options(global_context, cmd_name, package_options)
 
+    if global_context.backend:
+        global_context.backend.register_options_contexts(global_context)
     if option_hooks:
         # FIXME: there should be an error or a warning if shutdown defined in
         # mods beyond the first one
