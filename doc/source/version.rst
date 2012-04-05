@@ -7,6 +7,10 @@ Main features:
 
         - waf backend: cython tool automatically loaded if cython files are
           detected in sources
+        - UseBackends feature: allows to declare which build backend to use
+          when building C extensions in the bento.info file directly
+        - add sphinx command to build a package documentation if it uses
+          sphinx.
 
 Fixed issues
 ------------
@@ -20,6 +24,8 @@ Internals
         - last hook-related global variables have been removed
         - bentomaker itself does not use global variables anymore for either
           caching or command/context/option registration
+        - add Backend concept: a backend knows how to register itself, to avoid
+          having to register command, context and options contexts separately
 
 Version 0.0.8.1
 ===============
