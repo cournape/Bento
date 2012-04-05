@@ -17,6 +17,8 @@ class GlobalContext(object):
         self._scheduler = commands_scheduler or CommandScheduler()
         self._hooks_registry = HookRegistry()
 
+        self.backend = None
+
     #------------
     # Command API
     #------------
@@ -131,3 +133,9 @@ class GlobalContext(object):
 
     def retrieve_post_hooks(self, cmd_name):
         return self._hooks_registry.retrieve_post_hooks(cmd_name)
+
+    #------------
+    # Backend API
+    #------------
+    def register_backend(self, backend):
+        self.backend = backend

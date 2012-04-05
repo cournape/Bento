@@ -1,5 +1,8 @@
 import os.path as op
 
+from bento.backends.core \
+    import \
+        AbstractBackend
 from bento.commands.command_contexts \
     import \
         ConfigureContext, BuildContext
@@ -52,3 +55,8 @@ class DistutilsBuildContext(BuildContext):
                 builder = reg.builder(category, name)
                 extension = extension.extension_from(extension.ref_node)
                 builder(extension)
+
+class DistutilsBackend(AbstractBackend):
+    def register_command_contexts(self, context):
+        context.register_command_context("configure", DistutilsConfigureContext)
+        context.register_command_context("build", DistutilsBuildContext)

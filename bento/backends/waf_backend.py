@@ -12,6 +12,9 @@ from bento.commands.api \
 from bento.commands.utils \
     import \
         is_using_cython
+from bento.backends.core \
+    import \
+        AbstractBackend
 
 if "WAFDIR" in os.environ:
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
@@ -352,3 +355,11 @@ class BuildWafContext(BuildContext):
     def finish(self):
         super(BuildWafContext, self).finish()
         self.waf_context.store()
+
+class WafBackend(AbstractBackend):
+    def register_command_contexts(self, context):
+        context.register_command_context("configure", ConfigureWafContext)
+        context.register_command_context("build", BuildWafContext)
+
+    def register_options_contexts(self, context):
+        register_options(context)

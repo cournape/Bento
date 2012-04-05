@@ -15,6 +15,9 @@ from bento.commands.command_contexts \
 from bento.core.errors \
     import \
         ConfigurationError
+from bento.backends.core \
+    import \
+        AbstractBackend
 
 import yaku.context
 import yaku.errors
@@ -136,3 +139,7 @@ class BuildYakuContext(BuildContext):
         self.yaku_context.path = self._old_path
         super(BuildYakuContext, self).post_recurse()
 
+class YakuBackend(AbstractBackend):
+    def register_command_contexts(self, context):
+        context.register_command_context("configure", ConfigureYakuContext)
+        context.register_command_context("build", BuildYakuContext)
