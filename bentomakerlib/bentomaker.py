@@ -29,7 +29,8 @@ from bento.commands.api \
     import \
         HelpCommand, ConfigureCommand, BuildCommand, InstallCommand, \
         ParseCommand, SdistCommand, BuildPkgInfoCommand, BuildEggCommand, \
-        BuildWininstCommand, UsageException, CommandExecutionFailure
+        BuildWininstCommand, UsageException, CommandExecutionFailure, \
+        SphinxCommand
 from bento.commands.core \
     import \
         find_hook_commands
@@ -107,6 +108,7 @@ def register_commands(global_context):
     global_context.register_command("sdist", SdistCommand())
     global_context.register_command("build_egg", BuildEggCommand())
     global_context.register_command("build_wininst", BuildWininstCommand())
+    global_context.register_command("sphinx", SphinxCommand())
 
     global_context.register_command("build_pkg_info", BuildPkgInfoCommand(), public=False)
     global_context.register_command("parse", ParseCommand(), public=False)

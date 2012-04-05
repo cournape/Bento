@@ -25,6 +25,9 @@ from bento.commands.build_egg \
 from bento.commands.build_wininst \
     import \
         BuildWininstCommand
+from bento.commands.sphinx \
+    import \
+        SphinxCommand
 
 from bento.commands.errors \
     import \
