@@ -228,11 +228,11 @@ class TestBuildDistutils(_TestBuildSimpleExtension):
 
     @require_c_compiler("distutils")
     def test_simple_library(self):
-        super(TestBuildDistutils, self).test_extension_registration()
+        super(TestBuildDistutils, self).test_simple_library()
 
     @require_c_compiler("distutils")
     def test_simple_extension(self):
-        super(TestBuildDistutils, self).test_extension_registration()
+        super(TestBuildDistutils, self).test_simple_extension()
 
 class TestBuildYaku(_TestBuildSimpleExtension):
     def setUp(self):
