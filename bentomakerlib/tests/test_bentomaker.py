@@ -344,6 +344,37 @@ def startup(context):
                 self.build_node)
         self.assertTrue(global_context.is_command_registered("foo"))
 
+    def test_register_command_with_options(self):
+        bscript = """\
+from bento.commands import hooks
+from bento.commands.core import Command
+from bento.commands.options import OptionsContext, Option
+
+class DocCommand(Command):
+    def run(self, context):
+        pass
+
+@hooks.startup
+def startup(context):
+    cmd = DocCommand()
+    context.register_command("doc", cmd)
+
+    options_context = OptionsContext.from_command(cmd)
+    options_context.add_option(Option("--some-weird-option"))
+    context.register_options_context("doc", options_context)
+"""
+        self.top_node.make_node("bscript").write(bscript)
+
+        global_context = GlobalContext()
+        popts = parse_global_options(global_context, ["doc"])
+
+        _wrapped_main(global_context, popts, self.run_node, self.top_node,
+                self.build_node)
+        p = global_context.retrieve_options_context("doc").parser
+        o, a = p.parse_args(["--some-weird-option=46"])
+        self.assertEqual(o.some_weird_option, "46")
+
+
     def test_register_existing_command(self):
         bscript = """\
 from bento.commands import hooks

@@ -120,10 +120,12 @@ def register_options(global_context, cmd_name, package_options=None):
     cmd = global_context.retrieve_command(cmd_name)
     usage = cmd.long_descr.splitlines()[1]
     context = OptionsContext.from_command(cmd, usage=usage)
-    global_context.register_options_context(cmd_name, context)
 
-    if package_options is not None and hasattr(cmd, "register_options"):
-        cmd.register_options(context, package_options)
+    if not global_context.is_options_context_registered(cmd_name):
+        global_context.register_options_context(cmd_name, context)
+
+        if package_options is not None and hasattr(cmd, "register_options"):
+            cmd.register_options(context, package_options)
 
 def register_options_special(global_context):
     # Register options for special topics not attached to a "real" command
