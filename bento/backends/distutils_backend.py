@@ -31,7 +31,7 @@ class DistutilsBuildContext(BuildContext):
         self._distutils_builder = DistutilsBuilder(verbosity=self.verbose, build_base=build_path)
 
         def _builder_factory(category, builder):
-            def _build(extension):
+            def _build(extension, **kw):
                 outputs = builder(extension)
                 nodes = [self.build_node.find_node(o) for o in outputs]
                 from_node = self.build_node

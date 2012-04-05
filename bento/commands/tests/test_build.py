@@ -193,6 +193,41 @@ Library:
         self.failUnless(len(sections) == 2)
         self.failUnless(len(sections["_bar"].files) == 0)
 
+    def test_extension_tweak(self):
+        bento_info = """\
+Name: foo
+
+Library:
+    Extension: _foo
+        Sources: src/foo.c
+    Extension: _bar
+        Sources: src/bar.c
+"""
+        bentos = {"bento.info": bento_info}
+
+        conf, configure, bld, build = self._create_contexts(bentos)
+        run_command_in_context(conf, configure)
+
+        # To check that include_dirs is passed along the slightly
+        # over-engineered callchain, we wrap the default build with a function
+        # that check the include_dirs is step up correctly.
+        def pre_build(context):
+            context.tweak_builder("_bar", include_dirs=["fubar"])
+        pre_hook = PreHookWrapper(pre_build, "build", self.d)
+        old_default_builder = bld.default_builder
+        try:
+            def _builder_wrapper(extension, **kw):
+                if extension.name == "_bar":
+                    self.assertTrue(kw.get("include_dirs", []) == ["fubar"])
+                return old_default_builder(extension, **kw)
+            bld.default_builder = _builder_wrapper
+            run_command_in_context(bld, build, pre_hooks=[pre_hook])
+        finally:
+            bld.default_builder = old_default_builder
+
+        sections = bld.section_writer.sections["extensions"]
+        self.failUnless(len(sections) == 2)
+
     def test_simple_library(self):
         conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_CLIB})
         sections = bld.section_writer.sections["compiled_libraries"]

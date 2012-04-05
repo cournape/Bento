@@ -74,8 +74,12 @@ class BuildYakuContext(BuildContext):
         self.jobs = jobs
 
         def _builder_factory(category, builder):
-            def _build(extension):
-                outputs = builder(self.yaku_context, extension)
+            def _build(extension, include_dirs=None):
+                env = {}
+                if include_dirs:
+                    env["include_dirs"] = include_dirs
+
+                outputs = builder(self.yaku_context, extension, env=env)
                 nodes = [self.build_node.make_node(o) for o in outputs]
 
                 p = self.build_node.find_node(nodes[0].parent.bldpath())
