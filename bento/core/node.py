@@ -10,6 +10,8 @@ certainly mine :) We removed a few things which are not useful for bento.
 """
 import os, shutil, re, sys
 
+import os.path as op
+
 from bento.compat.api \
     import \
         rename
@@ -633,7 +635,11 @@ def create_root_with_source_tree(source_path, build_path):
 
     return root
 
-def create_base_nodes(source_path, build_path, run_path=None):
+def create_base_nodes(source_path=None, build_path=None, run_path=None):
+    if source_path is None:
+        source_path = os.getcwd()
+    if build_path is None:
+        build_path = op.join(source_path, "build")
     if run_path is None:
         run_path = source_path
     root = create_root_with_source_tree(source_path, build_path)
