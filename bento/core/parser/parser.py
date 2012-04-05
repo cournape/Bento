@@ -173,6 +173,7 @@ def p_meta_stmt(p):
                  | meta_config_py_stmt
                  | meta_meta_template_file_stmt
                  | meta_subento_stmt
+                 | meta_use_backends_stmt
     """
     p[0] = p[1]
 
@@ -306,6 +307,10 @@ def p_dummy(p):
 def p_meta_subento_stmt(p):
     """meta_subento_stmt : SUBENTO_ID COLON comma_list"""
     p[0] = Node("subento", value=p[3].value)
+
+def p_meta_use_backends_stmt(p):
+    """meta_use_backends_stmt : USE_BACKENDS_ID COLON comma_list"""
+    p[0] = Node("use_backends", value=p[3].value)
 
 def p_meta_hook_file_stmt(p):
     """meta_hook_file_stmt : HOOK_FILE_ID COLON comma_list

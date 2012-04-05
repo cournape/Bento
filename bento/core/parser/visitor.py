@@ -49,6 +49,7 @@ class Dispatcher(object):
             "config_py": self.config_py,
             "meta_template_file": self.meta_template_file,
             "subento": self.subento,
+            "use_backends": self.use_backends,
             # Library
             "library": self.library,
             "library_name": self.library_name,
@@ -105,7 +106,7 @@ class Dispatcher(object):
                           "maintainer", "maintainer_email", "license",
                           "platforms", "classifiers", "hook_files",
                           "config_py", "description_from_file",
-                          "meta_template_file", "keywords"]:
+                          "meta_template_file", "keywords", "use_backends"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
                 self._d["path_options"].update({c.value["name"]: c.value})
@@ -300,6 +301,9 @@ class Dispatcher(object):
 
     def sub_directory(self, node):
         return Node("sub_directory", value=node.value)
+
+    def use_backends(self, node):
+        return Node("use_backends", value=node.value)
 
     #-----------------
     #   Path option

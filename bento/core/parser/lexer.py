@@ -27,7 +27,7 @@ tokens = ('COLON', 'DOUBLE_COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'BUILD_REQUIRES_ID', 'INSTALL_REQUIRES_ID',
           'DOWNLOAD_URL_ID', 'HOOK_FILE_ID', 'CONFIG_PY_ID', 'NOT_OP',
           'SUBENTO_ID', 'DESCRIPTION_FROM_FILE_ID', 'META_TEMPLATE_FILE_ID',
-          'SUB_DIRECTORY_ID')
+          'SUB_DIRECTORY_ID', 'USE_BACKENDS_ID')
 
 ESCAPING_CHAR = dict([(t, False) for t in tokens])
 ESCAPING_CHAR["BACKSLASH"] = True
@@ -74,6 +74,7 @@ META_FIELDS_ID = {
     "DescriptionFromFile": "DESCRIPTION_FROM_FILE_ID",
     "MetaTemplateFile": "META_TEMPLATE_FILE_ID",
     "SubDirectory": "SUB_DIRECTORY_ID",
+    "UseBackends": "USE_BACKENDS_ID",
 }
 
 CONDITIONAL_ID = {
@@ -129,6 +130,7 @@ FIELD_TYPE = {
     "META_TEMPLATE_FILE_ID": "WORD",
     "KEYWORDS_ID": "WORDS",
     "SUB_DIRECTORY_ID": "WORDS",
+    "USE_BACKENDS_ID": "WORDS",
 }
 
 # Special characters: everytime one is added/changed, update t_WORD

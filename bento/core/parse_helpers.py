@@ -17,7 +17,8 @@ def extract_top_dicts(d):
             "meta_template_file": None,
             "flag_options": [],
             "path_options": [],
-            "subento": []}
+            "subento": [],
+            "use_backends": []}
     options = {}
 
     for k in _METADATA_FIELDS:

@@ -218,7 +218,7 @@ class PackageDescription:
             classifiers=None, provides=None, obsoletes=None, executables=None,
             hook_files=None, config_py=None, compiled_libraries=None,
             subpackages=None, description_from_file=None, meta_template_file=None,
-            keywords=None, sub_directory=None):
+            keywords=None, sub_directory=None, use_backends=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
 
@@ -262,6 +262,8 @@ class PackageDescription:
             self.executables = {}
         else:
             self.executables = executables
+
+        self.use_backends = use_backends or []
 
         pkgs = []
         for p in self.packages:

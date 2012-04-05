@@ -67,6 +67,17 @@ Maintainer: John Doe
 """
         self.assertEqual(parse_and_analyse(data)["maintainer"], "John Doe")
 
+    def test_use_backends(self):
+        data = """\
+UseBackends: foo
+"""
+        self.assertEqual(parse_and_analyse(data)["use_backends"], ["foo"])
+
+        data = """\
+UseBackends: foo, bar
+"""
+        self.assertEqual(parse_and_analyse(data)["use_backends"], ["foo", "bar"])
+
     def test_hook(self):
         data = """\
 HookFile: bscript
