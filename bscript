@@ -10,21 +10,18 @@ import bento
 from bento._config \
     import \
         DISTCHECK_DIR
-from bento.core.errors \
-    import \
-        BentoError
 from bento.commands.errors \
     import \
         CommandExecutionFailure
 from bento.commands.core \
     import \
         Command
-from bento.core.utils \
-    import \
-        pprint, cmd_is_runnable
 from bento.compat.api \
     import \
         rename, TarFile
+from bento.core.utils \
+    import \
+        pprint, cmd_is_runnable
 
 from bento.commands import hooks
 
