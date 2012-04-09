@@ -1,5 +1,4 @@
 import os
-import warnings
 
 from copy \
     import \
@@ -22,7 +21,7 @@ from bento.compat.api \
         relpath
 from bento.core.subpackage \
     import \
-        SubPackageDescription, get_extensions, get_compiled_libraries, get_packages
+        SubPackageDescription
 from bento.core.parse_helpers \
     import \
         extract_top_dicts, extract_top_dicts_subento
