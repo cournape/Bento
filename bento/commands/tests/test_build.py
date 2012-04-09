@@ -357,6 +357,10 @@ class TestBuildWaf(_TestBuildSimpleExtension):
     def test_simple_inplace(self):
         super(TestBuildWaf, self).test_simple_inplace()
 
+    @skip_no_waf
+    def test_extension_tweak(self):
+        super(TestBuildWaf, self).test_extension_tweak()
+
     def setUp(self):
         self._fake_output = None
         self._stderr = sys.stderr
