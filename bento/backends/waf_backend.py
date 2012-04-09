@@ -153,6 +153,10 @@ class ConfigureWafContext(ConfigureContext):
         waf_context.logger = Logs.make_logger(path, 'cfg')
         self.waf_context = waf_context
 
+        self._old_path = None
+
+    def configure(self):
+        pkg = self.pkg
         # FIXME: this is wrong (not taking into account sub packages)
         has_compiled_code = len(pkg.extensions) > 0 or len(pkg.compiled_libraries) > 0
         if not has_compiled_code:
@@ -174,8 +178,6 @@ class ConfigureWafContext(ConfigureContext):
         if has_cython_code:
             # FIXME: how to make sure the tool loaded successfully ?
             conf.load("cython", tooldir=[PKG_PATH])
-        self._old_path = None
-
     def pre_recurse(self, local_node):
         ConfigureContext.pre_recurse(self, local_node)
         self._old_path = self.waf_context.path
