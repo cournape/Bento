@@ -66,7 +66,7 @@ from bento.commands.contexts \
 from bento.convert.api \
     import \
         ConvertCommand, DetectTypeCommand, ConvertionError
-import bento.core.errors
+import bento.errors
 
 from bentomakerlib.package_cache \
     import \
@@ -462,17 +462,17 @@ def noexc_main(argv=None):
         e = extract_exception()
         _print_error("".join(e.args))
         sys.exit(4)
-    except bento.core.errors.ConfigurationError:
+    except bento.errors.ConfigurationError:
         _print_debug()
         e = extract_exception()
         _print_error(e)
         sys.exit(8)
-    except bento.core.errors.BuildError:
+    except bento.errors.BuildError:
         _print_debug()
         e = extract_exception()
         _print_error(e)
         sys.exit(16)
-    except bento.core.errors.InvalidPackage:
+    except bento.errors.InvalidPackage:
         _print_debug()
         e = extract_exception()
         _print_error(e)

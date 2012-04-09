@@ -26,7 +26,7 @@ from bento.core.subpackage \
 from bento.core.parse_helpers \
     import \
         extract_top_dicts, extract_top_dicts_subento
-from bento.core.errors \
+from bento.errors \
     import \
         InvalidPackage, InternalBentoError
 

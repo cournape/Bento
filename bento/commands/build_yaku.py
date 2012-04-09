@@ -11,7 +11,7 @@ from bento.commands.errors \
 from bento.core.utils \
     import \
         cpu_count, extract_exception
-import bento.core.errors
+import bento.errors
 
 import yaku.task_manager
 import yaku.context

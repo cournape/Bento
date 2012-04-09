@@ -1,7 +1,7 @@
 from bento.private.version \
     import \
         NormalizedVersion, is_valid_version, suggest_normalized_version
-from bento.core.errors \
+from bento.errors \
     import \
         InvalidPackage
 

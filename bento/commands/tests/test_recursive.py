@@ -10,7 +10,7 @@ from bento.compat.api.moves \
 from bento.core \
     import \
         PackageDescription, PackageOptions
-from bento.core.errors \
+from bento.errors \
     import \
         InvalidPackage
 from bento.core.node \

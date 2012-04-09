@@ -1,4 +1,4 @@
-from bento.core.errors \
+from bento.errors \
     import \
         InvalidPackage
 from bento.core.meta \

@@ -2,7 +2,7 @@ import os
 
 import bento.core.node
 
-from bento.core.errors import \
+from bento.errors import \
         InvalidPackage
 from bento.core import \
         PackageDescription

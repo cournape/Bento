@@ -1,6 +1,6 @@
-import bento.core.errors
+import bento.errors
 
-class ConvertionError(bento.core.errors.BentoError):
+class ConvertionError(bento.errors.BentoError):
     pass
 
 class SetupCannotRun(ConvertionError):

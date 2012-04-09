@@ -12,7 +12,7 @@ from bento.core.subpackage \
 from bento.commands.command_contexts \
     import \
         ConfigureContext, BuildContext
-from bento.core.errors \
+from bento.errors \
     import \
         ConfigurationError
 from bento.backends.core \

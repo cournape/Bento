@@ -4,7 +4,7 @@ import string
 
 import os.path as op
 
-from bento.core.errors \
+from bento.errors \
     import \
         InvalidPackage
 from bento.core.utils \

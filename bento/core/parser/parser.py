@@ -16,7 +16,7 @@ from bento._config \
 from bento.core.parser.nodes \
     import \
         Node
-from bento.core.errors \
+from bento.errors \
     import \
         InternalBentoError, BentoError
 from bento.core.utils \

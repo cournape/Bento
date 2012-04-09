@@ -23,7 +23,7 @@ from bento \
 from bento.compat.api \
     import \
         NamedTemporaryFile
-from bento.core.errors \
+from bento.errors \
     import \
         BentoError
 from bento.core.parser.errors \

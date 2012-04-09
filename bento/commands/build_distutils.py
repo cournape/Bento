@@ -14,7 +14,7 @@ from bento.commands.errors \
     import \
         CommandExecutionFailure
 
-import bento.core.errors
+import bento.errors
 
 def toyext_to_distext(e):
     """Convert a bento Extension instance to a distutils
@@ -148,6 +148,6 @@ class DistutilsBuilder(object):
                 return [relpath(target, self._build_base)]
             except distutils.errors.DistutilsError:
                 e = extract_exception()
-                raise bento.core.errors.BuildError(str(e))
+                raise bento.errors.BuildError(str(e))
         finally:
             bld_cmd.build_clib = old_build_clib

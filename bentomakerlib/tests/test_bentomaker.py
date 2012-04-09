@@ -285,9 +285,9 @@ class TestBentomakerError(Common):
             (ParseError, 2),
             (ConvertionError, 3),
             (CommandExecutionFailure, 4),
-            (bento.core.errors.ConfigurationError, 8),
-            (bento.core.errors.BuildError, 16),
-            (bento.core.errors.InvalidPackage, 32),
+            (bento.errors.ConfigurationError, 8),
+            (bento.errors.BuildError, 16),
+            (bento.errors.InvalidPackage, 32),
             (Exception, 1),
         )
         for klass, error_code in errors:
