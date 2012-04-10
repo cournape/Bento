@@ -344,9 +344,9 @@ def parse_global_options(global_context, argv):
 
 def _main(global_context, cached_package, popts, run_node, top_node, build_node):
     if popts.show_usage:
-        ctx_klass = global_context.retrieve_command_context("help")
+        context_klass = global_context.retrieve_command_context("help")
         cmd = global_context.retrieve_command('help')
-        cmd.run(ctx_klass(global_context, [], global_context.retrieve_options_context('help'), None, None))
+        cmd.run(context_klass(global_context, [], global_context.retrieve_options_context('help'), None, None))
         return
 
     cmd_name = popts.cmd_name
@@ -378,8 +378,8 @@ def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
     for cmd_name in deps:
         cmd = global_context.retrieve_command(cmd_name)
         cmd_argv = cmd_data_store.get_argv(cmd_name)
-        ctx_klass = global_context.retrieve_command_context(cmd_name)
-        resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, ctx_klass,
+        context_klass = global_context.retrieve_command_context(cmd_name)
+        resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
                 run_node, top_node, pkg, package_options)
 
 def is_help_only(global_context, cmd_name, cmd_argv):
@@ -387,22 +387,22 @@ def is_help_only(global_context, cmd_name, cmd_argv):
     o, a = p.parser.parse_args(cmd_argv)
     return o.help is True
 
-def run_cmd(global_ctx, cached_package, cmd_name, cmd_argv, run_node, top_node, build_node):
-    cmd = global_ctx.retrieve_command(cmd_name)
+def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_node, build_node):
+    cmd = global_context.retrieve_command(cmd_name)
 
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:
-        options_ctx = global_ctx.retrieve_options_context(cmd_name)
-        ctx_klass = global_ctx.retrieve_command_context(cmd_name)
-        ctx = ctx_klass(global_ctx, cmd_argv, options_ctx, PackageDescription(), run_node)
+        options_context = global_context.retrieve_options_context(cmd_name)
+        context_klass = global_context.retrieve_command_context(cmd_name)
+        context = context_klass(global_context, cmd_argv, options_context, PackageDescription(), run_node)
         # XXX: hack for help command to get option context for any command
         # without making help depends on bentomakerlib
-        ctx.options_registry = global_ctx._options_registry
-        cmd.run(ctx)
+        context.options_registry = global_context._options_registry
+        cmd.run(context)
         return
 
-    if is_help_only(global_ctx, cmd_name, cmd_argv):
-        options_context = global_ctx.retrieve_options_context(cmd_name)
+    if is_help_only(global_context, cmd_name, cmd_argv):
+        options_context = global_context.retrieve_options_context(cmd_name)
         options_context.parser.print_help()
         return
 
@@ -416,13 +416,13 @@ def run_cmd(global_ctx, cached_package, cmd_name, cmd_argv, run_node, top_node, 
     cmd_data_store = CommandDataProvider.from_file(cmd_data_db.abspath())
     configure_argv = cmd_data_store.get_argv("configure")
 
-    pkg = _get_package_with_user_flags(global_ctx, package_options,
+    pkg = _get_package_with_user_flags(global_context, package_options,
             cached_package, configure_argv, top_node, build_node)
-    run_dependencies(global_ctx, cmd_name, run_node, top_node, build_node,
+    run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
             pkg, package_options, cmd_data_store)
 
-    ctx_klass = global_ctx.retrieve_command_context(cmd_name)
-    resolve_and_run_command(global_ctx, cmd, cmd_name, cmd_argv, ctx_klass,
+    context_klass = global_context.retrieve_command_context(cmd_name)
+    resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
             run_node, top_node, pkg, package_options)
 
     cmd_data_store.set(cmd_name, cmd_argv)
