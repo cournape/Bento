@@ -509,3 +509,9 @@ class HelpContext(CmdContext):
         for cmd_name in self._global_context.command_names(public_only=False):
             cmd = self._global_context.retrieve_command(cmd_name)
             self.short_descriptions[cmd_name] = cmd.short_descr
+
+    def retrieve_options_context(self, cmd_name):
+        return self._global_context.retrieve_options_context(cmd_name)
+
+    def is_options_context_registered(self, cmd_name):
+        return self._global_context.is_options_context_registered(cmd_name)

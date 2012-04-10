@@ -14,7 +14,7 @@ from bento.commands.core \
         HelpCommand, Command
 from bento.commands.command_contexts \
     import \
-        HelpContext, CmdContext
+        HelpContext
 from bento.commands.wrapper_utils \
     import \
         run_command_in_context
@@ -49,7 +49,8 @@ class TestHelpCommand(unittest.TestCase):
         options = OptionsContext()
         for option in HelpCommand.common_options:
             options.add_option(option)
-        global_context = GlobalContext(self.registry, None, None, None)
+        global_context = GlobalContext(commands_registry=self.registry,
+                options_registry=self.options_registry)
         pkg = PackageDescription()
         context = HelpContext(global_context, [], options, pkg, self.run_node)
 
@@ -61,7 +62,9 @@ class TestHelpCommand(unittest.TestCase):
         for option in HelpCommand.common_options:
             options.add_option(option)
         pkg = PackageDescription()
-        context = CmdContext(None, ["configure"], options, pkg, self.run_node)
-        context.options_registry = self.options_registry
+
+        global_context = GlobalContext(commands_registry=self.registry,
+                options_registry=self.options_registry)
+        context = HelpContext(global_context, ["configure"], options, pkg, self.run_node)
 
         run_command_in_context(context, help)

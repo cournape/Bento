@@ -395,9 +395,6 @@ def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_no
         options_context = global_context.retrieve_options_context(cmd_name)
         context_klass = global_context.retrieve_command_context(cmd_name)
         context = context_klass(global_context, cmd_argv, options_context, PackageDescription(), run_node)
-        # XXX: hack for help command to get option context for any command
-        # without making help depends on bentomakerlib
-        context.options_registry = global_context._options_registry
         cmd.run(context)
         return
 
