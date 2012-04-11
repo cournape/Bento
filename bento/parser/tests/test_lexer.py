@@ -5,7 +5,7 @@ from unittest \
 from bento.core.utils \
     import \
         extract_exception, is_string
-from bento.core.parser.lexer \
+from bento.parser.lexer \
     import \
         MyLexer, indent_generator, post_process
 

@@ -16,7 +16,7 @@ from bento.core.node \
 from bento.core.utils \
     import \
         extract_exception
-from bento.core.parser.api \
+from bento.parser.api \
     import \
         ParseError
 from bento.commands.contexts \

@@ -6,14 +6,14 @@ import os.path as op
 from ply \
     import yacc
 
-from bento.core.parser.lexer \
+from bento.parser.lexer \
     import \
         MyLexer, tokens as _tokens
 
 from bento._config \
     import \
         _PICKLED_PARSETAB, _OPTIMIZE_LEX, _DEBUG_YACC
-from bento.core.parser.nodes \
+from bento.parser.nodes \
     import \
         Node
 from bento.errors \

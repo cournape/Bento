@@ -23,7 +23,7 @@ except ImportError:
     from md5 import md5
 import warnings
 
-from bento.core.parser.api \
+from bento.parser.api \
     import \
         raw_parse
 from bento.core.package \

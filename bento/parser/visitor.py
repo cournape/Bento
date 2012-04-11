@@ -1,7 +1,7 @@
 import sys
 import copy
 
-from bento.core.parser.nodes \
+from bento.parser.nodes \
     import \
         Node
 

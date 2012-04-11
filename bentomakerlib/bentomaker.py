@@ -11,7 +11,7 @@ import bento
 from bento.core.utils \
     import \
         pprint, extract_exception
-from bento.core.parser.api \
+from bento.parser.api \
     import \
         ParseError
 from bento._config \

@@ -9,10 +9,10 @@ from unittest \
     import \
         TestCase
 
-from bento.core.parser.nodes \
+from bento.parser.nodes \
     import \
         ast_pprint
-from bento.core.parser.parser \
+from bento.parser.parser \
     import \
         parse
 

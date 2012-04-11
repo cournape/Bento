@@ -8,7 +8,7 @@ from bento.errors \
         UsageException
 from bento.commands.core import \
         Command, Option
-from bento.core.parser.api \
+from bento.parser.api \
     import \
         build_ast_from_data, ParseError
 from bento.core.utils \

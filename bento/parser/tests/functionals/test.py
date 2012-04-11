@@ -4,13 +4,13 @@ import sys
 from bento.compat.api.moves \
     import \
         unittest
-from bento.core.parser.nodes \
+from bento.parser.nodes \
     import \
         ast_walk
-from bento.core.parser.visitor \
+from bento.parser.visitor \
     import \
         Dispatcher
-from bento.core.parser.parser \
+from bento.parser.parser \
     import \
         parse as _parse
 

@@ -4,7 +4,7 @@ from ply.lex \
 
 import six
 
-from bento.core.parser.utils \
+from bento.parser.utils \
     import \
         Peeker, BackwardGenerator
 __all__ = ["MyLexer"]

@@ -27,7 +27,7 @@ from bento.errors \
     import \
         BentoError, ParseError
 
-from bento.core.parser import parser as parser_module
+from bento.parser import parser as parser_module
 
 #old = sys.path[:]
 #try:
