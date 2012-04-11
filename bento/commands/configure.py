@@ -202,19 +202,22 @@ Purpose: configure the project
 Usage: bentomaker configure [OPTIONS]"""
     short_descr = "configure the project."
 
+    def __init__(self, *a, **kw):
+        super(ConfigureCommand, self).__init__(*a, **kw)
+        self.scheme = {}
+        self.flags = []
+
     def register_options(self, options_context, package_options=None):
         _setup_options_parser(options_context, package_options)
 
-    def _setup_flags_and_scheme(self, package_options):
-        self.scheme = _compute_scheme(package_options)
-        self.flags = package_options.flag_options.keys()
+        self.scheme.update(_compute_scheme(package_options))
+        self.flags.extend(package_options.flag_options.keys())
 
     def run(self, ctx):
         bento_script = ctx.top_node.find_node(BENTO_SCRIPT)
         if bento_script is None:
             raise IOError("%s not found ?" % BENTO_SCRIPT)
 
-        self._setup_flags_and_scheme(ctx.package_options)
         args = ctx.command_argv
         o, a = ctx.options_context.parser.parse_args(args)
         if o.help:

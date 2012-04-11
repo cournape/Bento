@@ -13,6 +13,13 @@ from bento.compat.api.moves \
     import \
         unittest
 
+
+from bento.core.options \
+    import \
+        PackageOptions
+from bento.core.package \
+    import \
+        PackageDescription
 from bento.core.testing\
     import \
         expected_failure, skip_if
@@ -50,7 +57,9 @@ from bento.core.testing \
         require_c_compiler
 from bento.commands.tests.utils \
     import \
-        prepare_configure, prepare_build, prepare_options, EncodedStringIO
+        prepare_configure, prepare_build, EncodedStringIO, \
+        prepare_command, create_global_context
+
 
 BENTO_INFO_WITH_EXT = """\
 Name: foo
@@ -320,11 +329,25 @@ class TestBuildWaf(_TestBuildSimpleExtension):
     #            setattr(self, m, skip_no_waf(a))
 
     def _run_configure(self, bentos, bscripts=None, configure_argv=None, build_argv=None):
-        conf, configure, bld, build = super(TestBuildWaf, self)._run_configure(
-                bentos, bscripts, configure_argv, build_argv)
         from bento.backends.waf_backend import make_stream_logger
-        bld.waf_context.logger = make_stream_logger("build", cStringIO())
+        from bento.backends.waf_backend import WafBackend
 
+        top_node = self.top_node
+
+        bento_info = bentos["bento.info"]
+        package = PackageDescription.from_string(bento_info)
+        package_options = PackageOptions.from_string(bento_info)
+
+        create_fake_package_from_bento_info(top_node, bento_info)
+        top_node.make_node("bento.info").safe_write(bento_info)
+
+        global_context = create_global_context(package, package_options, WafBackend())
+        conf, configure = prepare_command(global_context, "configure",
+                configure_argv, package, package_options, top_node)
+        run_command_in_context(conf, configure)
+
+        bld, build = prepare_command(global_context, "build", build_argv, package, package_options, top_node)
+        bld.waf_context.logger = make_stream_logger("build", cStringIO())
         return conf, configure, bld, build
 
     @skip_no_waf
@@ -514,20 +537,21 @@ class TestBuildDirectoryWaf(TestBuildDirectoryBase):
 
     @skip_no_waf
     def test_simple_waf(self):
-        from bento.backends.waf_backend \
-            import \
-                ConfigureWafContext, BuildWafContext, make_stream_logger
+        from bento.backends.waf_backend import make_stream_logger
+        from bento.backends.waf_backend import WafBackend
 
         top_node = self.top_node
 
+        package = PackageDescription.from_string(BENTO_INFO_WITH_EXT)
+        package_options = PackageOptions.from_string(BENTO_INFO_WITH_EXT)
+
         create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
-        conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, ConfigureWafContext)
+        top_node.make_node("bento.info").safe_write(BENTO_INFO_WITH_EXT)
+
+        global_context = create_global_context(package, package_options, WafBackend())
+        conf, configure = prepare_command(global_context, "configure", [], package, package_options, top_node)
         run_command_in_context(conf, configure)
 
-        build = BuildCommand()
-        #opts = OptionsContext.from_command(build)
-        opts = prepare_options("build", build, BuildWafContext)
-
-        bld = BuildWafContext(None, [], opts, conf.pkg, top_node)
+        bld, build = prepare_command(global_context, "build", [], package, package_options, top_node)
         bld.waf_context.logger = make_stream_logger("build", cStringIO())
         run_command_in_context(bld, build)

@@ -1,86 +1,90 @@
-import os
-import sys
 import os.path as op
 
-if sys.version_info[0] < 3:
-    from cStringIO import StringIO
-else:
-    from io import StringIO
+from six.moves \
+    import \
+        StringIO
 
-
-from bento.core \
-    import \
-        PackageDescription, PackageOptions
-from bento.core.package \
-    import \
-        raw_parse, raw_to_pkg_kw, build_ast_from_raw_dict, PackageDescription
-from bento.commands.configure \
-    import \
-        ConfigureCommand, _setup_options_parser
-from bento.commands.build \
-    import \
-        BuildCommand
-from bento.commands.options \
-    import \
-        OptionsContext
 from bento.backends.yaku_backend \
     import \
         ConfigureYakuContext, BuildYakuContext
-
-class FakeGlobalContext(object):
-    def __init__(self):
-        self._cmd_opts = {}
-
-    def add_option(self, command_name, option, group=None):
-        self._cmd_opts[command_name].add_option(option, group)
+from bento.commands.build \
+    import \
+        BuildCommand
+from bento.commands.configure \
+    import \
+        ConfigureCommand
+from bento.commands.contexts \
+    import \
+        GlobalContext
+from bento.commands.options \
+    import \
+        OptionsContext
+from bento.core \
+    import \
+        PackageDescription, PackageOptions
 
 def prepare_configure(run_node, bento_info, context_klass=ConfigureYakuContext, cmd_argv=None):
     if cmd_argv is None:
         cmd_argv = []
-
-    top_node = run_node._ctx.srcnode
-    top_node.make_node("bento.info").safe_write(bento_info)
-
-    package = PackageDescription.from_string(bento_info)
-    package_options = PackageOptions.from_string(bento_info)
-
-    configure = ConfigureCommand()
-    opts = OptionsContext.from_command(configure)
-
-    # FIXME: this emulates the big ugly hack inside bentomaker.
-    _setup_options_parser(opts, package_options)
-
-    context = context_klass(None, cmd_argv, opts, package, run_node)
-    context.package_options = package_options
-
-    return context, configure
-
-def prepare_options(cmd_name, cmd, context_klass):
-    opts = OptionsContext.from_command(cmd)
-    g_context = FakeGlobalContext()
-    g_context._cmd_opts[cmd_name] = opts
-    # FIXME: the way new options are registered for custom contexts sucks:
-    # there should be a context class independent way to do it
-    if context_klass.__name__ == "BuildWafContext":
-        from bento.backends.waf_backend import register_options
-        register_options(g_context)
-    return opts
+    return _prepare_command(run_node, bento_info, ConfigureCommand, context_klass, cmd_argv)
 
 def prepare_build(run_node, bento_info, context_klass=BuildYakuContext, cmd_argv=None):
     if cmd_argv is None:
         cmd_argv = []
-    build = BuildCommand()
-    opts = prepare_options("build", build, context_klass)
+    return _prepare_command(run_node, bento_info, BuildCommand, context_klass, cmd_argv)
 
+def _prepare_command(run_node, bento_info, cmd_klass, context_klass, cmd_argv):
     top_node = run_node._ctx.srcnode
     top_node.make_node("bento.info").safe_write(bento_info)
 
     package = PackageDescription.from_string(bento_info)
     package_options = PackageOptions.from_string(bento_info)
 
-    bld = context_klass(None, cmd_argv, opts, package, run_node)
-    bld.package_options = package_options
-    return bld, build
+    cmd = cmd_klass()
+    options_context = OptionsContext.from_command(cmd)
+
+    cmd.register_options(options_context, package_options)
+
+    context = context_klass(None, cmd_argv, options_context, package, run_node)
+    context.package_options = package_options
+    return context, cmd
+
+def create_global_context(package, package_options, backend=None):
+    global_context = GlobalContext()
+    if backend:
+        global_context.backend = backend
+
+    build = BuildCommand()
+    configure = ConfigureCommand()
+
+    commands = (("configure", configure), ("build", build))
+
+    for cmd_name, cmd in commands:
+        global_context.register_command(cmd_name, cmd)
+        options_context = OptionsContext.from_command(cmd)
+        global_context.register_options_context(cmd_name, options_context)
+
+    global_context.backend.register_command_contexts(global_context)
+    global_context.backend.register_options_contexts(global_context)
+
+    for cmd_name, cmd in commands:
+        options_context = global_context.retrieve_options_context(cmd_name)
+        cmd.register_options(options_context, package_options)
+
+    return global_context
+
+def prepare_command(global_context, cmd_name, cmd_argv, package, package_options, run_node):
+    if cmd_argv is None:
+        cmd_argv = []
+
+    def _create_context(cmd_name):
+        context_klass = global_context.retrieve_command_context(cmd_name)
+        options_context = global_context.retrieve_options_context(cmd_name)
+        context = context_klass(global_context, cmd_argv, options_context, package, run_node)
+        context.package_options = package_options
+        return context
+
+    return _create_context(cmd_name), global_context.retrieve_command(cmd_name)
 
 # Super ugly stuff to make waf and nose happy: nose happily override
 # sys.stdout/sys.stderr, and waf expects real files (with encoding and co). We
@@ -95,6 +99,9 @@ class EncodedStringIO(object):
 
     def write(self, data):
         return self._data.write(data)
+
+    def flush(self):
+        self._data.flush()
 
 def comparable_installed_sections(sections):
     # Hack to compare compiled sections without having to hardcode the exact,

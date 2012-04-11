@@ -30,6 +30,9 @@ Usage: command's usage (default description)
     def init(self, ctx):
         pass
 
+    def register_options(self, options_context, package_options=None):
+        pass
+
     def finish(self, ctx):
         pass
 
