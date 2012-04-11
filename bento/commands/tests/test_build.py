@@ -113,14 +113,14 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         if self.d:
             shutil.rmtree(self.d)
 
-    def _prepare(self, bentos, bscripts=None, configure_args=None, build_args=None):
-        conf, configure, bld, build = self._create_contexts(bentos, bscripts,
-                configure_args, build_args)
+    def _run_configure_and_build(self, bentos, bscripts=None, configure_argv=None, build_argv=None):
+        conf, configure, bld, build = self._run_configure(bentos, bscripts,
+                configure_argv, build_argv)
         run_command_in_context(bld, build)
 
         return conf, configure, bld, build
 
-    def _create_contexts(self, bentos, bscripts=None, configure_args=None, build_args=None):
+    def _run_configure(self, bentos, bscripts=None, configure_argv=None, build_argv=None):
         top_node = self.top_node
 
         create_fake_package_from_bento_infos(top_node, bentos, bscripts)
@@ -128,8 +128,8 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         conf, configure = prepare_configure(top_node, bentos["bento.info"], self._configure_context)
         run_command_in_context(conf, configure)
 
-        bld, build = prepare_build(top_node, conf.pkg,
-                conf.package_options, self._build_context, build_args)
+        bld, build = prepare_build(top_node, bentos["bento.info"], self._build_context, build_argv)
+
         return conf, configure, bld, build
 
     def _resolve_isection(self, node, isection):
@@ -138,10 +138,10 @@ class _TestBuildSimpleExtension(unittest.TestCase):
         return isection
 
     def test_no_extension(self):
-        self._prepare({"bento.info": BENTO_INFO})
+        self._run_configure_and_build({"bento.info": BENTO_INFO})
 
     def test_simple_extension(self):
-        conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_EXT})
+        conf, configure, bld, build = self._run_configure_and_build({"bento.info": BENTO_INFO_WITH_EXT})
 
         sections = bld.section_writer.sections["extensions"]
         for extension in conf.pkg.extensions.values():
@@ -149,7 +149,7 @@ class _TestBuildSimpleExtension(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
     def test_disable_extension(self):
-        conf, configure, bld, build = self._create_contexts({"bento.info": BENTO_INFO_WITH_EXT})
+        conf, configure, bld, build = self._run_configure({"bento.info": BENTO_INFO_WITH_EXT})
         pre_hook = PreHookWrapper(lambda context: context.disable_extension("foo"),
                                   "build", self.d)
         run_command_in_context(bld, build, pre_hooks=[pre_hook])
@@ -158,7 +158,7 @@ class _TestBuildSimpleExtension(unittest.TestCase):
 
     @expected_failure
     def test_disable_nonexisting_extension(self):
-        conf, configure, bld, build = self._create_contexts({"bento.info": BENTO_INFO_WITH_EXT})
+        conf, configure, bld, build = self._run_configure({"bento.info": BENTO_INFO_WITH_EXT})
 
         pre_hook = PreHookWrapper(lambda context: context.disable_extension("foo2"),
                                   "build", self.d)
@@ -180,8 +180,7 @@ Library:
 """
         bentos = {"bento.info": bento_info}
 
-        conf, configure, bld, build = self._create_contexts(bentos)
-        run_command_in_context(conf, configure)
+        conf, configure, bld, build = self._run_configure(bentos)
 
         def pre_build(context):
             builder = self._builder_factory(context)
@@ -205,8 +204,7 @@ Library:
 """
         bentos = {"bento.info": bento_info}
 
-        conf, configure, bld, build = self._create_contexts(bentos)
-        run_command_in_context(conf, configure)
+        conf, configure, bld, build = self._run_configure(bentos)
 
         # To check that include_dirs is passed along the slightly
         # over-engineered callchain, we wrap the default build with a function
@@ -229,14 +227,14 @@ Library:
         self.failUnless(len(sections) == 2)
 
     def test_simple_library(self):
-        conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_CLIB})
+        conf, configure, bld, build = self._run_configure_and_build({"bento.info": BENTO_INFO_WITH_CLIB})
         sections = bld.section_writer.sections["compiled_libraries"]
         for library in conf.pkg.compiled_libraries.values():
             isection = self._resolve_isection(bld.run_node, sections[library.name])
             self.assertTrue(os.path.exists(os.path.join(isection.source_dir, isection.files[0][0])))
 
     def test_simple_inplace(self):
-        conf, configure, bld, build = self._prepare({"bento.info": BENTO_INFO_WITH_EXT}, build_args=["-i"])
+        _, _, bld, build = self._run_configure_and_build({"bento.info": BENTO_INFO_WITH_EXT}, build_argv=["-i"])
         sections = bld.section_writer.sections["extensions"]
         source_dir = bld.top_node.abspath()
         for section in sections.values():
@@ -321,9 +319,9 @@ class TestBuildWaf(_TestBuildSimpleExtension):
     #        if isinstance(a, types.MethodType) and _NOSE_CONFIG.testMatch.match(m):
     #            setattr(self, m, skip_no_waf(a))
 
-    def _create_contexts(self, bentos, bscripts=None, configure_args=None, build_args=None):
-        conf, configure, bld, build = super(TestBuildWaf, self)._create_contexts(
-                bentos, bscripts, configure_args, build_args)
+    def _run_configure(self, bentos, bscripts=None, configure_argv=None, build_argv=None):
+        conf, configure, bld, build = super(TestBuildWaf, self)._run_configure(
+                bentos, bscripts, configure_argv, build_argv)
         from bento.backends.waf_backend import make_stream_logger
         bld.waf_context.logger = make_stream_logger("build", cStringIO())
 

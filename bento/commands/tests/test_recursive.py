@@ -277,7 +277,7 @@ class TestInstalledSections(unittest.TestCase):
         conf, configure = prepare_configure(self.run_node, bento_infos["bento.info"])
         run_command_in_context(conf, configure)
 
-        bld, build = prepare_build(self.top_node, conf.pkg, conf.package_options)
+        bld, build = prepare_build(self.top_node, bento_infos["bento.info"])
         run_command_in_context(bld, build)
 
         sections = bld.section_writer.sections

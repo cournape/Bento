@@ -66,13 +66,19 @@ def prepare_options(cmd_name, cmd, context_klass):
         register_options(g_context)
     return opts
 
-def prepare_build(run_node, pkg, package_options, context_klass=BuildYakuContext, args=None):
-    if args is None:
-        args = []
+def prepare_build(run_node, bento_info, context_klass=BuildYakuContext, cmd_argv=None):
+    if cmd_argv is None:
+        cmd_argv = []
     build = BuildCommand()
     opts = prepare_options("build", build, context_klass)
 
-    bld = context_klass(None, args, opts, pkg, run_node)
+    top_node = run_node._ctx.srcnode
+    top_node.make_node("bento.info").safe_write(bento_info)
+
+    package = PackageDescription.from_string(bento_info)
+    package_options = PackageOptions.from_string(bento_info)
+
+    bld = context_klass(None, cmd_argv, opts, package, run_node)
     bld.package_options = package_options
     return bld, build
 
