@@ -333,7 +333,7 @@ from bento.commands.core import Command
 
 @hooks.startup
 def startup(context):
-    context.register_command("foo", Command)
+    context.register_command("foo", Command())
 """
         self.top_node.make_node("bscript").write(bscript)
 
