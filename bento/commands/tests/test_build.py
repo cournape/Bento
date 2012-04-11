@@ -47,10 +47,6 @@ from bento.commands.options \
 from bento.commands.build \
     import \
         BuildCommand
-from bento.commands.api \
-    import \
-        UsageException
-
 from bento.core.testing \
     import \
         create_fake_package_from_bento_infos, create_fake_package_from_bento_info, \
@@ -59,6 +55,9 @@ from bento.commands.tests.utils \
     import \
         prepare_configure, prepare_build, EncodedStringIO, \
         prepare_command, create_global_context
+from bento.errors \
+    import \
+        UsageException
 
 
 BENTO_INFO_WITH_EXT = """\

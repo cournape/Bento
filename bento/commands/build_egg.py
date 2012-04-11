@@ -16,9 +16,6 @@ from bento.commands.core \
     import \
         Command, Option
 
-from bento.commands.errors \
-    import \
-        UsageException
 from bento.commands.core import \
         Command
 from bento.commands.egg_utils import \

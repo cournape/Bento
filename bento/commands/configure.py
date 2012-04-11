@@ -16,7 +16,7 @@ from bento._config \
 from bento.commands.core \
     import \
         Command, Option
-from bento.commands.errors \
+from bento.errors \
     import \
         UsageException
 

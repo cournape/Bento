@@ -29,8 +29,7 @@ from bento.commands.api \
     import \
         HelpCommand, ConfigureCommand, BuildCommand, InstallCommand, \
         ParseCommand, SdistCommand, BuildPkgInfoCommand, BuildEggCommand, \
-        BuildWininstCommand, UsageException, CommandExecutionFailure, \
-        SphinxCommand
+        BuildWininstCommand, SphinxCommand
 from bento.commands.core \
     import \
         find_hook_commands
@@ -65,7 +64,7 @@ from bento.commands.contexts \
         GlobalContext
 from bento.convert.api \
     import \
-        ConvertCommand, DetectTypeCommand, ConvertionError
+        ConvertCommand, DetectTypeCommand
 import bento.errors
 
 from bentomakerlib.package_cache \
@@ -181,7 +180,7 @@ def main(argv=None):
             pprint("RED", "Using bentomaker under root/sudo is *strongly* discouraged - do you want to continue ? y/N")
             ans = raw_input()
             if not ans.lower() in ["y", "yes"]:
-                raise UsageException("bentomaker execution canceld (not using bentomaker with admin privileges)")
+                raise bento.errors.UsageException("bentomaker execution canceld (not using bentomaker with admin privileges)")
 
     if argv is None:
         argv = sys.argv[1:]
@@ -208,9 +207,9 @@ def main(argv=None):
     top_node = root.find_node(source_root)
     build_node = root.find_node(build_root)
     if run_node != top_node and run_node.is_src():
-        raise UsageException("You cannot execute bentomaker in a subdirectory of the source tree !")
+        raise bento.errors.UsageException("You cannot execute bentomaker in a subdirectory of the source tree !")
     if run_node != build_node and run_node.is_bld():
-        raise UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
+        raise bento.errors.UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
 
     global_context.set_before("build", "configure")
     global_context.set_before("build_egg", "build")
@@ -357,7 +356,7 @@ def _main(global_context, cached_package, popts, run_node, top_node, build_node)
         return 1
     else:
         if not global_context.is_command_registered(cmd_name):
-            raise UsageException("%s: Error: unknown command %r" % (SCRIPT_NAME, cmd_name))
+            raise bento.errors.UsageException("%s: Error: unknown command %r" % (SCRIPT_NAME, cmd_name))
         else:
             run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_node, build_node)
 
@@ -405,7 +404,7 @@ def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_no
 
     bento_info = top_node.find_node(BENTO_SCRIPT)
     if bento_info is None:
-        raise UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))
+        raise bento.errors.UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))
 
     package_options = cached_package.get_options(bento_info)
 
@@ -439,41 +438,11 @@ def noexc_main(argv=None):
     # hierarchy
     try:
         main(argv)
-    except UsageException:
-        _print_debug()
-        e = extract_exception()
-        _print_error(str(e))
-        sys.exit(1)
-    except ParseError:
+    except bento.errors.BentoError:
         _print_debug()
         e = extract_exception()
         _print_error(str(e))
         sys.exit(2)
-    except ConvertionError:
-        _print_debug()
-        e = extract_exception()
-        _print_error("".join(e.args))
-        sys.exit(3)
-    except CommandExecutionFailure:
-        _print_debug()
-        e = extract_exception()
-        _print_error("".join(e.args))
-        sys.exit(4)
-    except bento.errors.ConfigurationError:
-        _print_debug()
-        e = extract_exception()
-        _print_error(e)
-        sys.exit(8)
-    except bento.errors.BuildError:
-        _print_debug()
-        e = extract_exception()
-        _print_error(e)
-        sys.exit(16)
-    except bento.errors.InvalidPackage:
-        _print_debug()
-        e = extract_exception()
-        _print_error(e)
-        sys.exit(32)
     except Exception:
         msg = """\
 %s: Error: %s crashed (uncaught exception %s: %s).

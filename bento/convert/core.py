@@ -18,15 +18,12 @@ from bento.core.pkg_objects \
     import \
         DataFiles
 
-from bento.commands.errors \
+from bento.errors \
     import \
-        UsageException
+        UsageException, ConvertionError
 from bento.convert.utils \
     import \
         canonalize_path
-from bento.convert.errors \
-    import \
-        ConvertionError
 
 # ====================================================
 # Code to convert existing setup.py to bento.info

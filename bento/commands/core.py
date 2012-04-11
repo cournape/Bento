@@ -4,7 +4,7 @@ from optparse \
 
 import bento
 
-from bento.commands.errors \
+from bento.errors \
     import \
         UsageException
 

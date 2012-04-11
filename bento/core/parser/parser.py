@@ -18,13 +18,10 @@ from bento.core.parser.nodes \
         Node
 from bento.errors \
     import \
-        InternalBentoError, BentoError
+        InternalBentoError, BentoError, ParseError
 from bento.core.utils \
     import \
         extract_exception
-from bento.core.parser.errors \
-    import \
-        ParseError
 
 # Do not remove: this is used by PLY
 tokens = _tokens

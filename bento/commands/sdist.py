@@ -7,7 +7,7 @@ from bento.core.node_package \
     import \
         NodeRepresentation
 
-from bento.commands.errors \
+from bento.errors \
     import \
         UsageException
 from bento.commands.core \

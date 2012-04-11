@@ -8,7 +8,7 @@ from bento.conv import \
 from bento._config \
     import \
         BENTO_SCRIPT
-from bento.commands.errors \
+from bento.errors \
     import \
         UsageException
 from bento.commands.core import \

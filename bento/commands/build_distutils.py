@@ -10,7 +10,7 @@ from bento.compat.api \
 from bento.installed_package_description \
     import \
         InstalledSection
-from bento.commands.errors \
+from bento.errors \
     import \
         CommandExecutionFailure
 

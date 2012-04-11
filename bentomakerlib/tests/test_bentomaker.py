@@ -19,15 +19,13 @@ from bento.core.utils \
 from bento.core.parser.api \
     import \
         ParseError
-from bento.convert.api \
-    import \
-        ConvertionError
-from bento.commands.api \
-    import \
-        CommandExecutionFailure
 from bento.commands.contexts \
     import \
         GlobalContext
+from bento.errors \
+    import \
+        UsageException, CommandExecutionFailure, ConvertionError
+
 
 import bentomakerlib.bentomaker
 
@@ -40,10 +38,6 @@ import bento.commands.build_yaku
 from bento.compat.dist \
     import \
         DistributionMetadata
-
-from bento.commands.errors \
-    import \
-        UsageException
 
 from bentomakerlib.bentomaker \
     import \
@@ -272,29 +266,28 @@ def raise_function(klass):
     raise klass()
 
 class TestBentomakerError(Common):
-    def _assert_raises(self, error_code):
-        try:
-            noexc_main()
-        except SystemExit:
-            e = extract_exception()
-            self.assertEqual(e.code, error_code)
-
     def test_simple(self):
         errors = (
-            (UsageException, 1),
+            (UsageException, 2),
             (ParseError, 2),
-            (ConvertionError, 3),
-            (CommandExecutionFailure, 4),
-            (bento.errors.ConfigurationError, 8),
-            (bento.errors.BuildError, 16),
-            (bento.errors.InvalidPackage, 32),
+            (ConvertionError, 2),
+            (CommandExecutionFailure, 2),
+            (bento.errors.ConfigurationError, 2),
+            (bento.errors.BuildError, 2),
+            (bento.errors.InvalidPackage, 2),
             (Exception, 1),
         )
         for klass, error_code in errors:
             old_main = bentomakerlib.bentomaker.main
             bentomakerlib.bentomaker.main = lambda argv: raise_function(klass)
             try:
-                self._assert_raises(error_code)
+                try:
+                    noexc_main()
+                except SystemExit:
+                    e = extract_exception()
+                    self.assertEqual(e.code, error_code,
+                                     "Expected error code %d for exception type(%r)" % \
+                                             (error_code, klass))
             finally:
                 bentomakerlib.bentomaker.main = old_main
 

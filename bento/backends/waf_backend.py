@@ -6,15 +6,15 @@ import os.path as op
 
 import bento
 
-from bento.commands.api \
-    import \
-        UsageException
 from bento.commands.utils \
     import \
         is_using_cython
 from bento.backends.core \
     import \
         AbstractBackend
+from bento.errors \
+    import \
+        UsageException
 
 if "WAFDIR" in os.environ:
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")

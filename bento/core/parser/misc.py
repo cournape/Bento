@@ -10,7 +10,7 @@ from bento.core.parser.nodes \
 from bento.core.parser.visitor \
     import \
         Dispatcher
-from bento.core.parser.errors \
+from bento.errors \
     import \
         ParseError
 

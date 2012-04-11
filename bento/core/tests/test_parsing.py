@@ -25,10 +25,7 @@ from bento.compat.api \
         NamedTemporaryFile
 from bento.errors \
     import \
-        BentoError
-from bento.core.parser.errors \
-    import \
-        ParseError
+        BentoError, ParseError
 
 from bento.core.parser import parser as parser_module
 

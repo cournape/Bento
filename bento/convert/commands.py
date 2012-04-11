@@ -17,13 +17,9 @@ from bento.core.package \
 from bento.commands.core \
     import \
         Command
-from bento.commands.errors \
+from bento.errors \
     import \
-        UsageException
-from bento.convert.errors \
-    import \
-        ConvertionError
-
+        UsageException, ConvertionError
 from bento.convert.core \
     import \
         detect_monkeys, monkey_patch, analyse_setup_py, build_pkg

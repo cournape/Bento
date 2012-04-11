@@ -9,9 +9,6 @@ from bento._config \
 from bento.installed_package_description import \
     InstalledPkgDescription, iter_files
 
-from bento.commands.errors \
-    import \
-        UsageException
 from bento.commands.core import \
     Command, Option
 from bento.core.utils import \

@@ -7,7 +7,7 @@ import os.path as op
 
 import bento.convert.commands
 
-from bento.commands.errors \
+from bento.errors \
     import \
         UsageException
 from bento.compat.api.moves \

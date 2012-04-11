@@ -26,9 +26,6 @@ from bento.conv import \
 from bento.installed_package_description import \
         InstalledPkgDescription, iter_files
 
-from bento.commands.errors \
-    import \
-        UsageException
 from bento.commands.core import \
         Command
 from bento.commands.egg_utils import \
