@@ -195,14 +195,11 @@ def create_hook_module(target):
 
     sys.path.insert(0, os.path.dirname(main_file))
     try:
-        try:
-            exec(compile(code, main_file, 'exec'), module.__dict__)
-            sys.modules[module_name] = module
-        except SyntaxError:
-            e = extract_exception()
-            raise SyntaxError("Invalid syntax in hook file %s, line %s" % (main_file, e.lineno))
-    finally:
-        sys.path.pop(0)
+        exec(compile(code, main_file, 'exec'), module.__dict__)
+        sys.modules[module_name] = module
+    except SyntaxError:
+        e = extract_exception()
+        raise SyntaxError("Invalid syntax in hook file %s, line %s" % (main_file, e.lineno))
 
     module.root_path = main_file
     return module
