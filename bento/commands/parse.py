@@ -5,12 +5,12 @@ from pprint import \
 
 from bento.errors \
     import \
-        UsageException
+        UsageException, ParseError
 from bento.commands.core import \
         Command, Option
 from bento.parser.api \
     import \
-        build_ast_from_data, ParseError
+        build_ast_from_data
 from bento.core.utils \
     import \
         extract_exception

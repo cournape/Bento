@@ -11,9 +11,6 @@ import bento
 from bento.core.utils \
     import \
         pprint, extract_exception
-from bento.parser.api \
-    import \
-        ParseError
 from bento._config \
     import \
         BENTO_SCRIPT, DB_FILE, _SUB_BUILD_DIR
