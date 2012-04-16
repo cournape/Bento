@@ -10,7 +10,7 @@ import bento
 from bento._config \
     import \
         DISTCHECK_DIR
-from bento.commands.errors \
+from bento.errors \
     import \
         CommandExecutionFailure
 from bento.commands.core \
