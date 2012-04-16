@@ -1,6 +1,7 @@
+import imp
 import os
-import sys
 import re
+import sys
 
 from bento.compat \
     import \
@@ -184,8 +185,6 @@ def shutdown(f):
     return ShutdownHook(f)
 
 def create_hook_module(target):
-    import imp
-
     safe_name = SAFE_MODULE_NAME.sub("_", target, len(target))
     module_name = "bento_hook_%s" % safe_name
     main_file = os.path.abspath(target)
