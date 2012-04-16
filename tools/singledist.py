@@ -2,12 +2,13 @@
 Script to build a single-file distribution of bento. This code is
 mostly taken from waf
 """
+import base64
 import os
 import re
 import sys
 import glob
-import StringIO
 import optparse
+import StringIO
 from hashlib import md5
 
 import os.path as op
@@ -88,7 +89,7 @@ def create_script(config):
 
     script_name = config["script_name"]
     extra_files = config["extra_files"]
-    print "Creating self-contained script %r in %s" % (script_name, os.getcwd())
+    print("Creating self-contained script %r in %s" % (script_name, os.getcwd()))
     mw = "tmp-foo-" + VERSION
 
     zip_type = "bz2"
@@ -156,37 +157,25 @@ def create_script(config):
     cnt = f.read()
     f.close()
 
-    def find_unused(kd, ch):
-        for i in xrange(35, 125):
-            for j in xrange(35, 125):
-                if i==j: continue
-                if i == 39 or j == 39: continue
-                if i == 92 or j == 92: continue
-                s = chr(i) + chr(j)
-                if -1 == kd.find(s):
-                    return (kd.replace(ch, s), s)
-        raise
-
     m = md5()
     m.update(cnt)
     REVISION = m.hexdigest()
     reg = re.compile('^REVISION=(.*)', re.M)
     code1 = reg.sub(r'REVISION="%s"' % REVISION, code1)
 
-    # The reverse order prevent collisions
-    (cnt, C2) = find_unused(cnt, '\r')
-    (cnt, C1) = find_unused(cnt, '\n')
     f = open(script_name, 'wb')
-    f.write(code1.replace("C1='x'", "C1='%s'" % C1).replace("C2='x'", "C2='%s'" % C2))
+    #f.write(code1.replace("C1='x'", "C1='%s'" % C1).replace("C2='x'", "C2='%s'" % C2))
+    f.write(code1)
     f.write('#==>\n')
     f.write('#')
-    f.write(cnt)
+    f.write(base64.b64encode(cnt))
     f.write('\n')
     f.write('#<==\n')
     f.close()
 
     if sys.platform != 'win32':
-        os.chmod(script_name, 0755)
+        from bento.core.utils import MODE_755
+        os.chmod(script_name, MODE_755)
     os.unlink('%s.tar.%s' % (mw, zip_type))
 
 def main(argv=None):

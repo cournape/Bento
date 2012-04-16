@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # encoding: ISO8859-1
+import base64
 import os
 import sys
 
@@ -40,7 +41,8 @@ def unpack_dir(dir):
             if f.readline()!=b('#<==\n'): err(c % 2)
             break
     if not txt: err(c % 3)
-    txt = txt[1:-1].replace(b(C1), b('\n')).replace(b(C2), b('\r'))
+    txt = base64.b64decode(txt[1:-1])
+    #txt = txt[1:-1].replace(b(C1), b('\n')).replace(b(C2), b('\r'))
 
     import shutil, tarfile
     try:
