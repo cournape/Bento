@@ -205,6 +205,7 @@ def create_hook_module(target):
         exec(compile(code, main_file, 'exec'), module.__dict__)
         sys.modules[module_name] = module
     except Exception:
+        sys.path.pop(0)
         e = extract_exception()
         tb = sys.exc_info()[2]
         s = StringIO()
