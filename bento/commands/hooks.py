@@ -2,6 +2,11 @@ import imp
 import os
 import re
 import sys
+import traceback
+
+from six.moves \
+    import \
+        StringIO
 
 from bento.compat \
     import \
@@ -9,6 +14,9 @@ from bento.compat \
 from bento.core.utils \
     import \
         extract_exception
+from bento.errors \
+    import \
+        InvalidHook
 
 SAFE_MODULE_NAME = re.compile("[^a-zA-Z_]")
 
@@ -196,9 +204,17 @@ def create_hook_module(target):
     try:
         exec(compile(code, main_file, 'exec'), module.__dict__)
         sys.modules[module_name] = module
-    except SyntaxError:
+    except Exception:
         e = extract_exception()
-        raise SyntaxError("Invalid syntax in hook file %s, line %s" % (main_file, e.lineno))
+        tb = sys.exc_info()[2]
+        s = StringIO()
+        traceback.print_tb(tb, file=s)
+        msg = """\
+Could not import hook file %r: caught exception %r
+Original traceback (most recent call last)
+%s\
+""" % (main_file, e, s.getvalue())
+        raise InvalidHook(msg)
 
     module.root_path = main_file
     return module

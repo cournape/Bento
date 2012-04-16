@@ -47,6 +47,9 @@ class ParseError(BentoError):
     def __repr__(self):
         return self.__str__()
 
+class InvalidHook(BentoError):
+    pass
+
 class CommandExecutionFailure(BentoError):
     pass
 
