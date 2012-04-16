@@ -63,7 +63,6 @@ class Common(unittest.TestCase):
         super(Common, self).tearDown()
 
 class TestSpecialCommands(Common):
-    # FIXME: stupid mock to reset global state between tests
     def test_help_globals(self):
         main(["help", "globals"])
 
