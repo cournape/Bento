@@ -126,6 +126,9 @@ class CmdContext(object):
         self.local_node = None
         self.local_pkg = None
 
+    def get_parsed_arguments(self):
+        return self.options_context.parser.parse_args(self.command_argv)
+
     # This is run before the associated command pre-hooks
     def init(self):
         pass
