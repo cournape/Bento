@@ -16,15 +16,12 @@ from bento.core.node \
 from bento.core.utils \
     import \
         extract_exception
-from bento.parser.api \
-    import \
-        ParseError
 from bento.commands.contexts \
     import \
         GlobalContext
 from bento.errors \
     import \
-        UsageException, CommandExecutionFailure, ConvertionError
+        UsageException, CommandExecutionFailure, ConvertionError, ParseError
 
 
 import bentomakerlib.bentomaker
