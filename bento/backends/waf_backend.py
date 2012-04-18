@@ -165,7 +165,7 @@ class ConfigureWafContext(ConfigureContext):
         if needs_compiler:
             conf.load("compiler_c")
             conf.env["PYTHON"] = [sys.executable]
-            conf.load("custom_python")
+            conf.load("python")
             #conf.check_python_version((2,4,2))
             conf.check_python_headers()
 
