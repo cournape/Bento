@@ -19,7 +19,7 @@ from bento.core.testing \
 
 from bento.commands.utils \
     import \
-        is_using_cython
+        has_cython_code
 
 class TestIsUingCython(unittest.TestCase):
     def setUp(self):
@@ -44,7 +44,7 @@ Library:
         create_fake_package_from_bento_infos(self.run_node, bentos)
 
         pkg = PackageDescription.from_string(bento_info)
-        self.assertTrue(is_using_cython(pkg))
+        self.assertTrue(has_cython_code(pkg))
 
     def test_simple_no_cython(self):
         bento_info = """\
@@ -56,7 +56,7 @@ Library:
         create_fake_package_from_bento_infos(self.run_node, bentos)
 
         pkg = PackageDescription.from_string(bento_info)
-        self.assertFalse(is_using_cython(pkg))
+        self.assertFalse(has_cython_code(pkg))
 
     def test_sub_package(self):
         bento_info = """\
@@ -75,4 +75,4 @@ Library:
         create_fake_package_from_bento_infos(self.run_node, bentos)
 
         pkg = PackageDescription.from_string(bento_info)
-        self.assertTrue(is_using_cython(pkg))
+        self.assertTrue(has_cython_code(pkg))

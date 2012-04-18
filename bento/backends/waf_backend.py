@@ -8,7 +8,7 @@ import bento
 
 from bento.commands.utils \
     import \
-        is_using_cython
+        has_compiled_code, has_cython_code
 from bento.backends.core \
     import \
         AbstractBackend
@@ -158,26 +158,21 @@ class ConfigureWafContext(ConfigureContext):
     def configure(self):
         pkg = self.pkg
         # FIXME: this is wrong (not taking into account sub packages)
-        has_compiled_code = len(pkg.extensions) > 0 or len(pkg.compiled_libraries) > 0
-        if not has_compiled_code:
-            if pkg.subpackages:
-                for v in pkg.subpackages.values():
-                    if len(v.extensions) > 0 or len(v.compiled_libraries) > 0:
-                        has_compiled_code = True
-                        break
-
-        has_cython_code = is_using_cython(pkg)
+        needs_compiler = has_compiled_code(pkg)
+        needs_cython = has_compiled_code(pkg)
 
         conf = self.waf_context
-        if has_compiled_code:
+        if needs_compiler:
             conf.load("compiler_c")
             conf.env["PYTHON"] = [sys.executable]
-            conf.load("python")
-            conf.check_python_version((2,4,2))
+            conf.load("custom_python")
+            #conf.check_python_version((2,4,2))
             conf.check_python_headers()
-        if has_cython_code:
+
+        if needs_cython:
             # FIXME: how to make sure the tool loaded successfully ?
             conf.load("cython", tooldir=[PKG_PATH])
+
     def pre_recurse(self, local_node):
         ConfigureContext.pre_recurse(self, local_node)
         self._old_path = self.waf_context.path
