@@ -29,7 +29,7 @@ if not os.path.exists(WAFDIR):
     $WAFDIR contains the 'waflib' directory""" % WAFDIR)
 sys.path.insert(0, os.path.dirname(WAFDIR))
 
-PKG_PATH = op.dirname(__file__)
+WAF_TOOLDIR = op.join(op.dirname(__file__), "waf_tools")
 
 from waflib.Context \
     import \
@@ -165,13 +165,13 @@ class ConfigureWafContext(ConfigureContext):
         if needs_compiler:
             conf.load("compiler_c")
             conf.env["PYTHON"] = [sys.executable]
-            conf.load("python")
-            #conf.check_python_version((2,4,2))
+            conf.load("custom_python", tooldir=[WAF_TOOLDIR])
+            conf.check_python_version((2,4,2))
             conf.check_python_headers()
 
         if needs_cython:
             # FIXME: how to make sure the tool loaded successfully ?
-            conf.load("cython", tooldir=[PKG_PATH])
+            conf.load("cython", tooldir=[WAF_TOOLDIR])
 
     def pre_recurse(self, local_node):
         ConfigureContext.pre_recurse(self, local_node)
