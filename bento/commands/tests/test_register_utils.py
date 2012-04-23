@@ -1,3 +1,4 @@
+import os
 import shutil
 import tempfile
 import urllib2
@@ -14,7 +15,7 @@ import mock
 from bento.commands.register_utils \
     import \
         build_post_data, encode_multipart, post_to_server, DEFAULT_REALM, \
-        DEFAULT_REPOSITORY, PyPIConfig, parse_pypirc, parse_pypirc
+        PyPIConfig, parse_pypirc
 from bento.compat.api.moves \
     import \
         unittest
@@ -189,6 +190,14 @@ class TestReadPyPIDefault(unittest.TestCase):
         shutil.rmtree(self.d)
 
     def test_read_pypirc(self):
+        # Guard to make sure we don't write an actual file by mistake
+        try:
+            fp = open(op.join(op.expanduser("~"), ".pypirc"), "rt")
+            fp.close()
+            raise ValueError()
+        except IOError:
+            pass
+
         fp = open(op.join(op.expanduser("~"), ".pypirc"), "wt")
         try:
             fp.write("")
