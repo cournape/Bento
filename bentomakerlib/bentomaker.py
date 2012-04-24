@@ -428,8 +428,9 @@ def noexc_main(argv=None):
             traceback.print_tb(tb)
     def _print_error(msg):
         pprint('RED', msg)
-        pprint('RED', "(You can see the traceback by setting the " \
-                      "BENTOMAKER_DEBUG=1 environment variable)")
+        if not BENTOMAKER_DEBUG:
+            pprint('RED', "(You can see the traceback by setting the " \
+                          "BENTOMAKER_DEBUG=1 environment variable)")
 
     # FIXME: I must have been high that day. Fix this with proper exception
     # hierarchy
