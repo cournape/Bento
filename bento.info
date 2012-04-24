@@ -70,6 +70,7 @@ Library:
     Packages:
         bento,
         bento.backends,
+        bento.backends.waf_tools,
         bento.compat,
         bento.commands,
         bento.convert,
