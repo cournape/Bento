@@ -28,3 +28,6 @@ from bento.commands.build_wininst \
 from bento.commands.sphinx \
     import \
         SphinxCommand
+from bento.commands.register \
+    import \
+        RegisterPyPI

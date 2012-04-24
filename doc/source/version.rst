@@ -13,6 +13,7 @@ Main features:
           sphinx.
         - add tweak_builder function to build contexts to simplify simple
           builder customization (e.g. include_dirs, defines, etc...)
+        - register_pypi command to register the package on PyPI
 
 Fixed issues
 ------------
