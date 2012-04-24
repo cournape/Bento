@@ -42,7 +42,7 @@ class TestCommand(Command):
         else:
             suffix = ""
         p = ctx.options_context.parser
-        o, a = p.parse_args(ctx.get_command_arguments())
+        o, a = p.parse_args(ctx.command_argv)
         if sys.version_info[:2] < (2, 5):
             # XXX: would be good to understand why shell=True is necessary here
             cmd = [sys.executable, "-c", "'import nose; nose.core.main()'"]
