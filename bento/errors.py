@@ -67,3 +67,6 @@ class SetupCannotRun(ConvertionError):
 
 class UnsupportedFeature(ConvertionError):
     pass
+
+class InvalidPyPIConfig(BentoError):
+    pass

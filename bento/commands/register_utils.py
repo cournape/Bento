@@ -12,6 +12,9 @@ from bento.conv \
 from bento.core.utils \
     import \
         extract_exception
+from bento.errors \
+    import \
+        InvalidPyPIConfig
 
 DEFAULT_REPOSITORY = 'http://pypi.python.org/pypi'
 DEFAULT_REALM = 'pypi'
@@ -35,7 +38,7 @@ def _read_new_format(config, repository):
             _servers = ['pypi']
         else:
             # the file is not properly defined
-            return PyPIConfig()
+            raise InvalidPyPIConfig("No index-servers section or pypi section")
     for server in _servers:
         current = PyPIConfig()
         current.username = config.get(server, 'username')
@@ -54,7 +57,7 @@ def _read_new_format(config, repository):
 
         if (current.server == repository or current.repository == repository):
             return current
-    return PyPIConfig()
+    raise InvalidPyPIConfig("No section for repository %r found" % repository)
 
 def _read_old_format(config):
     server = 'server-login'

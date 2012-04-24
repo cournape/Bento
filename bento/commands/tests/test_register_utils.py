@@ -148,15 +148,21 @@ repository:http://testpypi.python.org
 [distutils]
 index-servers =
     test
+    pypi
 
 [test]
 username:cdavid
 password:yoyo
 repository:http://testpypi.python.org
+
+[pypi]
+username:david
+password:yeye
+repository:http://pypi.python.org
 """
-        config = parse_pypirc(StringIO(data))
-        self.assertEqual(config.username, None)
-        self.assertEqual(config.password, None)
+        config = parse_pypirc(StringIO(data), "pypi")
+        self.assertEqual(config.username, "david")
+        self.assertEqual(config.password, "yeye")
 
         config = parse_pypirc(StringIO(data), repository="test")
         self.assertEqual(config.username, "cdavid")
