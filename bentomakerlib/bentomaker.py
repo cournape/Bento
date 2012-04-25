@@ -375,15 +375,14 @@ def _get_package_user_flags(global_context, package_options, configure_argv):
 
     return flag_values
 
-def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
-        package, package_options):
+def run_dependencies(global_context, cmd_name, run_node, top_node, build_node, package):
     deps = global_context.retrieve_dependencies(cmd_name)
     for cmd_name in deps:
         cmd = global_context.retrieve_command(cmd_name)
         cmd_argv = global_context.retrieve_command_argv(cmd_name)
         context_klass = global_context.retrieve_command_context(cmd_name)
         resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
-                run_node, top_node, package, package_options)
+                run_node, top_node, package)
 
 def is_help_only(global_context, cmd_name, cmd_argv):
     p = global_context.retrieve_options_context(cmd_name)
@@ -417,12 +416,11 @@ def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_no
     flag_values = _get_package_user_flags(global_context, package_options, configure_argv)
     package = cached_package.get_package(bento_info, flag_values)
 
-    run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
-            package, package_options)
+    run_dependencies(global_context, cmd_name, run_node, top_node, build_node, package)
 
     context_klass = global_context.retrieve_command_context(cmd_name)
     resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
-            run_node, top_node, package, package_options)
+            run_node, top_node, package)
 
     global_context.save_command_argv(cmd_name, cmd_argv)
     global_context.store()
