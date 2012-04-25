@@ -81,6 +81,9 @@ class CmdContext(object):
         self.local_node = None
         self.local_pkg = None
 
+    def package_scheme(self):
+        return self._global_context.retrieve_package_scheme()
+
     def recurse_manager(self, local_node):
         """
         Return a dummy object to use for recurse if one wants to use context

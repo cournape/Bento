@@ -1,3 +1,6 @@
+from bento.commands.configure \
+    import \
+        _compute_scheme
 from bento.commands.registries \
     import \
         CommandRegistry, ContextRegistry, OptionsRegistry
@@ -135,6 +138,11 @@ class GlobalContext(object):
 
     def register_package_options(self, package_options):
         self._package_options = package_options
+
+    def retrieve_package_scheme(self):
+        """Return the path scheme, including any custom path defined in the
+        bento.info script (Path sections)."""
+        return _compute_scheme(self._package_options)
 
     #-----------------------
     # Command dependency API
