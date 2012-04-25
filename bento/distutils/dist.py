@@ -109,6 +109,7 @@ def global_context_factory(package_options):
     _setup_options_parser(configure_options_context, package_options)
     global_context = GlobalContext(None, commands_registry, context_registry,
                                    options_registry, cmd_scheduler)
+    global_context.register_package_options(package_options)
     return global_context
 
 def register_command_contexts(context_registry):
@@ -148,8 +149,7 @@ class BentoDistribution(Distribution):
         else:
             bento_info = attrs["bento.info"]
         self.pkg = PackageDescription.from_file(bento_info)
-        self.package_options = PackageOptions.from_file(bento_info)
-
+        package_options = PackageOptions.from_file(bento_info)
 
         attrs = _setup_cmd_classes(attrs)
 
@@ -176,7 +176,7 @@ class BentoDistribution(Distribution):
         self.build_node = root._ctx.bldnode
         self.run_node = root._ctx.srcnode
 
-        self.global_context = global_context_factory(self.package_options)
+        self.global_context = global_context_factory(package_options)
         set_main(self.pkg, self.top_node, self.build_node)
 
     def run_command_in_context(self, cmd_name, cmd_argv):
