@@ -60,7 +60,7 @@ class TestCommand(Command):
             if not cmd_is_runnable(cmd + ["-h"]):
                 raise CommandExecutionFailure(
                         "nose not available for program %r - needed to test bento !" % cmd[0])
-            cmd.extend(["-s", "-v", "bento"])
+            cmd.extend(["-s", "-v", "bento", "bentomakerlib"])
             shell = False
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
         stdout, stderr = p.communicate()
