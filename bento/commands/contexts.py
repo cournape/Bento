@@ -25,6 +25,7 @@ class GlobalContext(object):
         self._hooks_registry = HookRegistry()
 
         self.backend = None
+        self._package_options = None
 
         self._command_data_db = command_data_db
         if command_data_db is None:
@@ -81,8 +82,20 @@ class GlobalContext(object):
     #--------------------
     # Command Options API
     #--------------------
-    def register_options_context(self, cmd_name, klass):
-        return self._options_registry.register(cmd_name, klass)
+    def register_options_context_without_command(self, name, context):
+        """Register options_context for special 'commands' that has no command
+        context attached to them
+
+        This is typically used for global help, and other help-only commands
+        such as 'globals'."""
+        return self._options_registry.register(name, context)
+
+    def register_options_context(self, cmd_name, context):
+        cmd = self.retrieve_command(cmd_name)
+        if self._package_options is not None and hasattr(cmd, "register_options"):
+            cmd.register_options(context, self._package_options)
+
+        return self._options_registry.register(cmd_name, context)
 
     def retrieve_options_context(self, cmd_name):
         return self._options_registry.retrieve(cmd_name)
@@ -119,6 +132,9 @@ class GlobalContext(object):
         """
         ctx = self._options_registry.retrieve(cmd_name)
         ctx.add_option(option, group)
+
+    def register_package_options(self, package_options):
+        self._package_options = package_options
 
     #-----------------------
     # Command dependency API

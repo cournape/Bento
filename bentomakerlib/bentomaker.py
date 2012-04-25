@@ -121,7 +121,7 @@ def register_commands(global_context):
             bento.commands.build_mpkg.BuildMpkgCommand(), public=False)
         global_context.set_before("build_mpkg", "build")
 
-def register_options(global_context, cmd_name, package_options=None):
+def register_options(global_context, cmd_name):
     """Register options for the given command."""
     cmd = global_context.retrieve_command(cmd_name)
     usage = cmd.long_descr.splitlines()[1]
@@ -130,9 +130,6 @@ def register_options(global_context, cmd_name, package_options=None):
     if not global_context.is_options_context_registered(cmd_name):
         global_context.register_options_context(cmd_name, context)
 
-        if package_options is not None and hasattr(cmd, "register_options"):
-            cmd.register_options(context, package_options)
-
 def register_options_special(global_context):
     # Register options for special topics not attached to a "real" command
     # (e.g. 'commands')
@@ -140,7 +137,7 @@ def register_options_special(global_context):
     def print_usage():
         print(get_usage(global_context))
     context.parser.print_help = print_usage
-    global_context.register_options_context("commands", context)
+    global_context.register_options_context_without_command("commands", context)
 
     context = OptionsContext()
     def print_help():
@@ -148,7 +145,7 @@ def register_options_special(global_context):
         p = global_options.parser
         return(p.print_help())
     context.parser.print_help = print_help
-    global_context.register_options_context("globals", context)
+    global_context.register_options_context_without_command("globals", context)
 
 def register_command_contexts(global_context):
    # global_context.register_default_context(CmdContext)
@@ -216,7 +213,7 @@ def main(argv=None):
     global_context = GlobalContext(build_node.make_node(CMD_DATA_DUMP),
                                    CommandRegistry(), ContextRegistry(),
                                    OptionsRegistry(), CommandScheduler())
-    global_context.register_options_context("", options_context)
+    global_context.register_options_context_without_command("", options_context)
 
     global_context.set_before("build", "configure")
     global_context.set_before("build_egg", "build")
@@ -250,6 +247,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
             else:
                 assert global_context.backend is None
                 global_context.backend = load_backend(package.use_backends[0])()
+        global_context.register_package_options(package_options)
 
         mods = set_main(package, top_node, build_node)
 
@@ -275,7 +273,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         global_context.register_command(command.name, command)
     register_stuff(global_context)
     for cmd_name in global_context.command_names():
-        register_options(global_context, cmd_name, package_options)
+        register_options(global_context, cmd_name)
 
     if global_context.backend:
         global_context.backend.register_options_contexts(global_context)
@@ -288,7 +286,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
     # should be made all in one place (hook and non-hook)
     for cmd_name in global_context.command_names(public_only=False):
         if not global_context.is_options_context_registered(cmd_name):
-            register_options(global_context, cmd_name, package_options)
+            register_options(global_context, cmd_name)
 
     for cmd_name in global_context.command_names():
         for hook in find_pre_hooks(mods, cmd_name):
