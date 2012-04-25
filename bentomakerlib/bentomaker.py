@@ -241,17 +241,17 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
     if bento_info_node is not None:
         db_node = build_node.make_node(DB_FILE)
         cached_package = CachedPackage(db_node)
-        pkg = cached_package.get_package(bento_info_node)
+        package = cached_package.get_package(bento_info_node)
         package_options = cached_package.get_options(bento_info_node)
 
-        if pkg.use_backends:
-            if len(pkg.use_backends) > 1:
+        if package.use_backends:
+            if len(package.use_backends) > 1:
                 raise ValueError("Only up to one backend supported for now")
             else:
                 assert global_context.backend is None
-                global_context.backend = load_backend(pkg.use_backends[0])()
+                global_context.backend = load_backend(package.use_backends[0])()
 
-        mods = set_main(pkg, top_node, build_node)
+        mods = set_main(package, top_node, build_node)
 
     else:
         warnings.warn("No %r file in current directory - only generic options "
@@ -378,14 +378,14 @@ def _get_package_user_flags(global_context, package_options, configure_argv):
     return flag_values
 
 def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
-        pkg, package_options):
+        package, package_options):
     deps = global_context.retrieve_dependencies(cmd_name)
     for cmd_name in deps:
         cmd = global_context.retrieve_command(cmd_name)
         cmd_argv = global_context.retrieve_command_argv(cmd_name)
         context_klass = global_context.retrieve_command_context(cmd_name)
         resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
-                run_node, top_node, pkg, package_options)
+                run_node, top_node, package, package_options)
 
 def is_help_only(global_context, cmd_name, cmd_argv):
     p = global_context.retrieve_options_context(cmd_name)
