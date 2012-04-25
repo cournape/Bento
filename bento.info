@@ -53,6 +53,7 @@ ExtraSourceFiles:
     setup_common.py,
     bootstrap.py,
     bento/backends/tests/*.py,
+    bento/backends/waf_tools/*py,
     bento/commands/tests/*.py,
     bento/compat/tests/*.py,
     bento/convert/tests/*.py,
@@ -70,7 +71,6 @@ Library:
     Packages:
         bento,
         bento.backends,
-        bento.backends.waf_tools,
         bento.compat,
         bento.commands,
         bento.convert,
