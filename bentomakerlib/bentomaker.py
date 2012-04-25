@@ -174,9 +174,6 @@ def register_stuff(global_context):
     register_command_contexts(global_context)
 
 def main(argv=None):
-    global_context = GlobalContext(CommandRegistry(), ContextRegistry(),
-                                   OptionsRegistry(), CommandScheduler())
-
     if hasattr(os, "getuid"):
         if os.getuid() == 0:
             pprint("RED", "Using bentomaker under root/sudo is *strongly* discouraged - do you want to continue ? y/N")
@@ -186,7 +183,10 @@ def main(argv=None):
 
     if argv is None:
         argv = sys.argv[1:]
-    popts = parse_global_options(global_context, argv)
+
+    options_context = create_global_options_context()
+    popts = parse_global_options(options_context, argv)
+
     cmd_name = popts.cmd_name
 
     if popts.show_version:
@@ -212,6 +212,10 @@ def main(argv=None):
         raise bento.errors.UsageException("You cannot execute bentomaker in a subdirectory of the source tree !")
     if run_node != build_node and run_node.is_bld():
         raise bento.errors.UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
+
+    global_context = GlobalContext(CommandRegistry(), ContextRegistry(),
+                                   OptionsRegistry(), CommandScheduler())
+    global_context.register_options_context("", options_context)
 
     global_context.set_before("build", "configure")
     global_context.set_before("build_egg", "build")
@@ -297,7 +301,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
         if shutdown_hooks:
             shutdown_hooks[0](global_context)
 
-def parse_global_options(global_context, argv):
+def create_global_options_context():
     context = OptionsContext(usage="%prog [options] [cmd_name [cmd_options]]")
     context.add_option(Option("--version", "-v", dest="show_version", action="store_true",
                               help="Version"))
@@ -312,8 +316,9 @@ def parse_global_options(global_context, argv):
                               help="Display help and exit"))
     context.parser.set_defaults(show_version=False, show_full_version=False, show_help=False,
                                 build_directory="build", bento_info="bento.info")
-    global_context.register_options_context("", context)
+    return context
 
+def parse_global_options(context, argv):
     global_args, cmd_args = [], []
     for i, a in enumerate(argv):
         if a.startswith("-"):

@@ -38,7 +38,7 @@ from bento.compat.dist \
 
 from bentomakerlib.bentomaker \
     import \
-        main, noexc_main, _wrapped_main, parse_global_options
+        main, noexc_main, _wrapped_main, parse_global_options, create_global_options_context
 
 class Common(unittest.TestCase):
     def setUp(self):
@@ -312,7 +312,8 @@ def startup(context):
         self.top_node.make_node("bscript").write(bscript)
 
         global_context = GlobalContext()
-        popts = parse_global_options(global_context, ["configure"])
+        options_context = create_global_options_context()
+        popts = parse_global_options(options_context, ["configure"])
 
         _wrapped_main(global_context, popts, self.run_node, self.top_node,
                 self.build_node)
@@ -330,7 +331,8 @@ def startup(context):
         self.top_node.make_node("bscript").write(bscript)
 
         global_context = GlobalContext()
-        popts = parse_global_options(global_context, ["configure"])
+        options_context = create_global_options_context()
+        popts = parse_global_options(options_context, ["configure"])
 
         _wrapped_main(global_context, popts, self.run_node, self.top_node,
                 self.build_node)
@@ -358,7 +360,8 @@ def startup(context):
         self.top_node.make_node("bscript").write(bscript)
 
         global_context = GlobalContext()
-        popts = parse_global_options(global_context, ["doc"])
+        options_context = create_global_options_context()
+        popts = parse_global_options(options_context, ["doc"])
 
         _wrapped_main(global_context, popts, self.run_node, self.top_node,
                 self.build_node)
@@ -379,7 +382,8 @@ def startup(context):
         self.top_node.make_node("bscript").write(bscript)
 
         global_context = GlobalContext()
-        popts = parse_global_options(global_context, ["configure"])
+        options_context = create_global_options_context()
+        popts = parse_global_options(options_context, ["configure"])
 
         self.assertRaises(ValueError, _wrapped_main,
                           global_context, popts, self.run_node, self.top_node,
