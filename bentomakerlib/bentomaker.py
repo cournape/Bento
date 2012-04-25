@@ -6,11 +6,11 @@ import os
 import traceback
 import warnings
 
+import bento
+
 from six.moves \
     import \
         cPickle
-
-import bento
 
 from bento.core.utils \
     import \
@@ -362,16 +362,14 @@ def _main(global_context, cached_package, popts, run_node, top_node, build_node)
         else:
             run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_node, build_node)
 
-def _get_package_with_user_flags(global_context, package_options,
-        cached_package, configure_argv, top_node, build_node):
+def _get_package_user_flags(global_context, package_options, configure_argv):
     from bento.commands.configure import _get_flag_values
 
     p = global_context.retrieve_options_context("configure")
     o, a = p.parser.parse_args(configure_argv)
     flag_values = _get_flag_values(package_options.flag_options.keys(), o)
 
-    bento_info = top_node.find_node(BENTO_SCRIPT)
-    return cached_package.get_package(bento_info, flag_values)
+    return flag_values
 
 def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
         pkg, package_options, cmd_data_store):
@@ -414,14 +412,15 @@ def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_no
     cmd_data_store = read_or_create_dict(cmd_data_db.abspath())
     configure_argv = cmd_data_store.get("configure", [])
 
-    pkg = _get_package_with_user_flags(global_context, package_options,
-            cached_package, configure_argv, top_node, build_node)
+    flag_values = _get_package_user_flags(global_context, package_options, configure_argv)
+    package = cached_package.get_package(bento_info, flag_values)
+
     run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
-            pkg, package_options, cmd_data_store)
+            package, package_options, cmd_data_store)
 
     context_klass = global_context.retrieve_command_context(cmd_name)
     resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
-            run_node, top_node, pkg, package_options)
+            run_node, top_node, package, package_options)
 
     cmd_data_store[cmd_name] = cmd_argv
     cmd_data_db.safe_write(cPickle.dumps(cmd_data_store), "wb")
