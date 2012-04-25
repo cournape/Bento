@@ -13,6 +13,9 @@ else:
 from bento.compat.api \
     import \
         defaultdict
+from bento.core.utils \
+    import \
+        safe_write
 
 def _invert_dependencies(deps):
     """Given a dictionary of edge -> dependencies representing a DAG, "invert"
@@ -73,41 +76,32 @@ class CommandScheduler(object):
         _visit(target, {})
         return [self.command_names[o] for o in out[:-1]]
 
-# Instance of this class record, persist and retrieve data on a per command
-# basis, to reuse them between runs. Anything refered in Command.external_deps
-# need to be registered here
-# It is slightly over-designed for the current use-case of storing per-command
-# arguments
 class CommandDataProvider(object):
     @classmethod
     def from_file(cls, filename):
+        """Create a new instance from a pickled file.
+
+        If the file does not exist, creates an instance with no data.
+        """
         if os.path.exists(filename):
             fid = open(filename, "rb")
             try:
-                cmd_argv = load(fid)
+                return cls(load(fid))
             finally:
                 fid.close()
         else:
-            cmd_argv = {}
-        return cls(cmd_argv)
-
-    def __init__(self, cmd_argv=None):
-        if cmd_argv is None:
-            cmd_argv = {}
-        self._cmd_argv = cmd_argv
-
-    def set(self, cmd_name, cmd_argv):
-        self._cmd_argv[cmd_name] = cmd_argv[:]
-
-    def get_argv(self, cmd_name):
-        try:
-            return self._cmd_argv[cmd_name]
-        except KeyError:
-            return []
+            return cls()
 
     def store(self, filename):
-        fid = open(filename, "wb")
-        try:
-            dump(self._cmd_argv, fid)
-        finally:
-            fid.close()
+        safe_write(filename, lambda fid: dump(self._data, fid))
+
+    def __init__(self, data=None):
+        self._data = defaultdict(list)
+        if data:
+            self._data.update(data)
+
+    def __getitem__(self, command_name):
+        return self._data[command_name]
+
+    def __setitem__(self, command_name, command_argv):
+        self._data[command_name] = command_argv

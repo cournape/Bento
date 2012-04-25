@@ -201,13 +201,16 @@ Name: foo
         def check_cmd_data(q):
             from bentomakerlib.bentomaker \
                 import \
-                    CommandDataProvider, CMD_DATA_DUMP
+                    CMD_DATA_DUMP
+            from bento.core.utils \
+                import \
+                    read_or_create_dict
 
             cmd_data_db = self.build_node.find_node(CMD_DATA_DUMP)
             if cmd_data_db is None:
                 raise IOError()
-            cmd_data_store = CommandDataProvider.from_file(cmd_data_db.abspath())
-            q.put(cmd_data_store.get_argv("configure"))
+            cmd_data_store = read_or_create_dict(cmd_data_db.abspath())
+            q.put(cmd_data_store.get("configure", []))
 
         q = multiprocessing.Queue()
         p = multiprocessing.Process(target=check_cmd_data, args=(q,))

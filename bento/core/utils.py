@@ -8,6 +8,9 @@ import errno
 import subprocess
 import shlex
 
+from six.moves \
+    import \
+        cPickle
 try:
     from hashlib import md5
 except ImportError:
@@ -408,3 +411,13 @@ class memoized(object):
     def __get__(self, obj, objtype):
        """Support instance methods."""
        return partial(self.__call__, obj)
+
+def read_or_create_dict(filename):
+    if op.exists(filename):
+        fid = open(filename, "rb")
+        try:
+            return cPickle.load(fid)
+        finally:
+            fid.close()
+    else:
+        return {}

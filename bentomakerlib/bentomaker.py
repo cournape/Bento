@@ -6,11 +6,15 @@ import os
 import traceback
 import warnings
 
+from six.moves \
+    import \
+        cPickle
+
 import bento
 
 from bento.core.utils \
     import \
-        pprint, extract_exception
+        pprint, extract_exception, read_or_create_dict
 from bento._config \
     import \
         BENTO_SCRIPT, DB_FILE, _SUB_BUILD_DIR
@@ -35,7 +39,7 @@ from bento.commands.registries \
         CommandRegistry, ContextRegistry, OptionsRegistry
 from bento.commands.dependency \
     import \
-        CommandScheduler, CommandDataProvider
+        CommandScheduler
 from bento.commands.options \
     import \
         OptionsContext, Option
@@ -374,7 +378,7 @@ def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
     deps = global_context.retrieve_dependencies(cmd_name)
     for cmd_name in deps:
         cmd = global_context.retrieve_command(cmd_name)
-        cmd_argv = cmd_data_store.get_argv(cmd_name)
+        cmd_argv = cmd_data_store.get(cmd_name, [])
         context_klass = global_context.retrieve_command_context(cmd_name)
         resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
                 run_node, top_node, pkg, package_options)
@@ -407,8 +411,8 @@ def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_no
     package_options = cached_package.get_options(bento_info)
 
     cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
-    cmd_data_store = CommandDataProvider.from_file(cmd_data_db.abspath())
-    configure_argv = cmd_data_store.get_argv("configure")
+    cmd_data_store = read_or_create_dict(cmd_data_db.abspath())
+    configure_argv = cmd_data_store.get("configure", [])
 
     pkg = _get_package_with_user_flags(global_context, package_options,
             cached_package, configure_argv, top_node, build_node)
@@ -419,8 +423,8 @@ def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_no
     resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
             run_node, top_node, pkg, package_options)
 
-    cmd_data_store.set(cmd_name, cmd_argv)
-    cmd_data_store.store(cmd_data_db.abspath())
+    cmd_data_store[cmd_name] = cmd_argv
+    cmd_data_db.safe_write(cPickle.dumps(cmd_data_store), "wb")
 
 def noexc_main(argv=None):
     def _print_debug():
