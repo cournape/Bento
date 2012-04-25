@@ -213,7 +213,8 @@ def main(argv=None):
     if run_node != build_node and run_node.is_bld():
         raise bento.errors.UsageException("You cannot execute bentomaker in a subdirectory of the build tree !")
 
-    global_context = GlobalContext(CommandRegistry(), ContextRegistry(),
+    global_context = GlobalContext(build_node.make_node(CMD_DATA_DUMP),
+                                   CommandRegistry(), ContextRegistry(),
                                    OptionsRegistry(), CommandScheduler())
     global_context.register_options_context("", options_context)
 
@@ -377,11 +378,11 @@ def _get_package_user_flags(global_context, package_options, configure_argv):
     return flag_values
 
 def run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
-        pkg, package_options, cmd_data_store):
+        pkg, package_options):
     deps = global_context.retrieve_dependencies(cmd_name)
     for cmd_name in deps:
         cmd = global_context.retrieve_command(cmd_name)
-        cmd_argv = cmd_data_store.get(cmd_name, [])
+        cmd_argv = global_context.retrieve_command_argv(cmd_name)
         context_klass = global_context.retrieve_command_context(cmd_name)
         resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
                 run_node, top_node, pkg, package_options)
@@ -413,22 +414,20 @@ def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_no
 
     package_options = cached_package.get_options(bento_info)
 
-    cmd_data_db = build_node.make_node(CMD_DATA_DUMP)
-    cmd_data_store = read_or_create_dict(cmd_data_db.abspath())
-    configure_argv = cmd_data_store.get("configure", [])
+    configure_argv = global_context.retrieve_command_argv("configure")
 
     flag_values = _get_package_user_flags(global_context, package_options, configure_argv)
     package = cached_package.get_package(bento_info, flag_values)
 
     run_dependencies(global_context, cmd_name, run_node, top_node, build_node,
-            package, package_options, cmd_data_store)
+            package, package_options)
 
     context_klass = global_context.retrieve_command_context(cmd_name)
     resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
             run_node, top_node, package, package_options)
 
-    cmd_data_store[cmd_name] = cmd_argv
-    cmd_data_db.safe_write(cPickle.dumps(cmd_data_store), "wb")
+    global_context.save_command_argv(cmd_name, cmd_argv)
+    global_context.store()
 
 def noexc_main(argv=None):
     def _print_debug():

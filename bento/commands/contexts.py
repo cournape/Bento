@@ -7,9 +7,16 @@ from bento.commands.dependency \
 from bento.commands.hooks \
     import \
         HookRegistry
+from bento.core.utils \
+    import \
+        read_or_create_dict
+
+from six.moves \
+    import \
+        cPickle
 
 class GlobalContext(object):
-    def __init__(self, commands_registry=None, contexts_registry=None,
+    def __init__(self, command_data_db, commands_registry=None, contexts_registry=None,
             options_registry=None, commands_scheduler=None):
         self._commands_registry = commands_registry or CommandRegistry()
         self._contexts_registry = contexts_registry or ContextRegistry()
@@ -18,6 +25,16 @@ class GlobalContext(object):
         self._hooks_registry = HookRegistry()
 
         self.backend = None
+
+        self._command_data_db = command_data_db
+        if command_data_db is None:
+            self._command_data_store = {}
+        else:
+            self._command_data_store = read_or_create_dict(command_data_db.abspath())
+
+    def store(self):
+        if self._command_data_db:
+            self._command_data_db.safe_write(cPickle.dumps(self._command_data_store), "wb")
 
     #------------
     # Command API
@@ -139,3 +156,9 @@ class GlobalContext(object):
     #------------
     def register_backend(self, backend):
         self.backend = backend
+
+    def retrieve_command_argv(self, command_name):
+        return self._command_data_store.get(command_name, [])
+
+    def save_command_argv(self, command_name, command_argv):
+        self._command_data_store[command_name] = command_argv

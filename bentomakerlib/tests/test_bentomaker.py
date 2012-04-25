@@ -311,7 +311,7 @@ def startup(context):
 """
         self.top_node.make_node("bscript").write(bscript)
 
-        global_context = GlobalContext()
+        global_context = GlobalContext(None)
         options_context = create_global_options_context()
         popts = parse_global_options(options_context, ["configure"])
 
@@ -330,7 +330,7 @@ def startup(context):
 """
         self.top_node.make_node("bscript").write(bscript)
 
-        global_context = GlobalContext()
+        global_context = GlobalContext(None)
         options_context = create_global_options_context()
         popts = parse_global_options(options_context, ["configure"])
 
@@ -359,7 +359,7 @@ def startup(context):
 """
         self.top_node.make_node("bscript").write(bscript)
 
-        global_context = GlobalContext()
+        global_context = GlobalContext(None)
         options_context = create_global_options_context()
         popts = parse_global_options(options_context, ["doc"])
 
@@ -381,7 +381,7 @@ def startup(context):
 """
         self.top_node.make_node("bscript").write(bscript)
 
-        global_context = GlobalContext()
+        global_context = GlobalContext(None)
         options_context = create_global_options_context()
         popts = parse_global_options(options_context, ["configure"])
 

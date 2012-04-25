@@ -50,7 +50,7 @@ def _prepare_command(run_node, bento_info, cmd_klass, context_klass, cmd_argv):
     return context, cmd
 
 def create_global_context(package, package_options, backend=None):
-    global_context = GlobalContext()
+    global_context = GlobalContext(None)
     if backend:
         global_context.backend = backend
 

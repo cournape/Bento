@@ -107,7 +107,7 @@ def global_context_factory(package_options):
 
     configure_options_context = options_registry.retrieve("configure")
     _setup_options_parser(configure_options_context, package_options)
-    global_context = GlobalContext(commands_registry, context_registry,
+    global_context = GlobalContext(None, commands_registry, context_registry,
                                    options_registry, cmd_scheduler)
     return global_context
 

@@ -49,7 +49,8 @@ class TestHelpCommand(unittest.TestCase):
         options = OptionsContext()
         for option in HelpCommand.common_options:
             options.add_option(option)
-        global_context = GlobalContext(commands_registry=self.registry,
+        global_context = GlobalContext(None,
+                commands_registry=self.registry,
                 options_registry=self.options_registry)
         pkg = PackageDescription()
         context = HelpContext(global_context, [], options, pkg, self.run_node)
@@ -63,7 +64,8 @@ class TestHelpCommand(unittest.TestCase):
             options.add_option(option)
         pkg = PackageDescription()
 
-        global_context = GlobalContext(commands_registry=self.registry,
+        global_context = GlobalContext(None,
+                commands_registry=self.registry,
                 options_registry=self.options_registry)
         context = HelpContext(global_context, ["configure"], options, pkg, self.run_node)
 
