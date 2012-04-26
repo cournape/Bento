@@ -258,7 +258,7 @@ class BuildWafContext(BuildContext):
         super(BuildWafContext, self).post_recurse()
 
     def __init__(self, global_context, cmd_argv, options_context, pkg, run_node):
-        super(BuildWafContext, self).__init__(None, cmd_argv, options_context, pkg, run_node)
+        super(BuildWafContext, self).__init__(global_context, cmd_argv, options_context, pkg, run_node)
 
         o, a = options_context.parser.parse_args(cmd_argv)
         if o.jobs:
