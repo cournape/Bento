@@ -55,7 +55,7 @@ from bento.commands.command_contexts \
         HelpContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.wrapper_utils \
     import \
-        resolve_and_run_command, set_main
+        resolve_and_run_command, set_main, run_with_dependencies
 from bento.commands.contexts \
     import \
         GlobalContext
@@ -371,19 +371,45 @@ def _get_package_user_flags(global_context, package_options, configure_argv):
 
     return flag_values
 
-def run_dependencies(global_context, cmd_name, run_node, top_node, build_node, package):
-    deps = global_context.retrieve_dependencies(cmd_name)
-    for cmd_name in deps:
-        cmd = global_context.retrieve_command(cmd_name)
-        cmd_argv = global_context.retrieve_command_argv(cmd_name)
-        context_klass = global_context.retrieve_command_context(cmd_name)
-        resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
-                run_node, top_node, package)
-
 def is_help_only(global_context, cmd_name, cmd_argv):
     p = global_context.retrieve_options_context(cmd_name)
     o, a = p.parser.parse_args(cmd_argv)
     return o.help is True
+
+def get_running_package(global_context, cached_package, bento_info):
+    """Return a PackageDescription instance after evaluation of the flags set
+    up at configure time.
+
+    Example
+    -------
+    For this bento.info::
+
+        Name: foo
+
+        Flag: bundle
+            Description: foo
+            Default: true
+
+        Library:
+            if flag(bundle):
+                Packages: yeah
+
+    if bentomaker was run as follows::
+
+        bentomaker configure
+
+    get_running_package will return a PackageDescription instance with
+    package.packages set to ["yeah"], and if bentomaker was run as follows::
+
+        bentomaker configure --bundle=false
+
+    get_running_package will return a PackageDescription instance with
+    package.packages set to [].
+    """
+    package_options = cached_package.get_options(bento_info)
+    configure_argv = global_context.retrieve_command_argv("configure")
+    flag_values = _get_package_user_flags(global_context, package_options, configure_argv)
+    return cached_package.get_package(bento_info, flag_values)
 
 def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_node, build_node):
     cmd = global_context.retrieve_command(cmd_name)
@@ -405,18 +431,8 @@ def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_no
     if bento_info is None:
         raise bento.errors.UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))
 
-    package_options = cached_package.get_options(bento_info)
-
-    configure_argv = global_context.retrieve_command_argv("configure")
-
-    flag_values = _get_package_user_flags(global_context, package_options, configure_argv)
-    package = cached_package.get_package(bento_info, flag_values)
-
-    run_dependencies(global_context, cmd_name, run_node, top_node, build_node, package)
-
-    context_klass = global_context.retrieve_command_context(cmd_name)
-    resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_klass,
-            run_node, top_node, package)
+    running_package = get_running_package(global_context, cached_package, bento_info)
+    run_with_dependencies(global_context, cmd_name, run_node, top_node, running_package)
 
     global_context.save_command_argv(cmd_name, cmd_argv)
     global_context.store()
