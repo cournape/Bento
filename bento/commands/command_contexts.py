@@ -81,7 +81,7 @@ class CmdContext(object):
         self.local_node = None
         self.local_pkg = None
 
-    def package_scheme(self):
+    def retrieve_package_scheme(self):
         return self._global_context.retrieve_package_scheme()
 
     def recurse_manager(self, local_node):
@@ -462,7 +462,7 @@ class BuildContext(ContextWithBuildDirectory):
 
         # FIXME: this is quite stupid.
         if self.inplace:
-            scheme = _compute_scheme(self.package_options)
+            scheme = self.retrieve_package_scheme()
             scheme["prefix"] = scheme["eprefix"] = self.run_node.abspath()
             scheme["sitedir"] = self.run_node.abspath()
 

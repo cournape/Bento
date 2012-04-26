@@ -15,9 +15,6 @@ def resolve_and_run_command(global_context, cmd, cmd_name, cmd_argv, context_kla
     options_context = global_context.retrieve_options_context(cmd_name)
 
     context = context_klass(global_context, cmd_argv, options_context, package, run_node)
-    # FIXME: hack to pass package_options to configure command - most likely
-    # this needs to be known in option context ?
-    context.package_options = global_context._package_options
 
     pre_hooks = global_context.retrieve_pre_hooks(cmd_name)
     post_hooks = global_context.retrieve_post_hooks(cmd_name)

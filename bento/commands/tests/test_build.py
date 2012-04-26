@@ -342,10 +342,10 @@ class TestBuildWaf(_TestBuildSimpleExtension):
 
         global_context = create_global_context(package, package_options, WafBackend())
         conf, configure = prepare_command(global_context, "configure",
-                configure_argv, package, package_options, top_node)
+                configure_argv, package, top_node)
         run_command_in_context(conf, configure)
 
-        bld, build = prepare_command(global_context, "build", build_argv, package, package_options, top_node)
+        bld, build = prepare_command(global_context, "build", build_argv, package, top_node)
         bld.waf_context.logger = make_stream_logger("build", cStringIO())
         return conf, configure, bld, build
 
@@ -548,9 +548,9 @@ class TestBuildDirectoryWaf(TestBuildDirectoryBase):
         top_node.make_node("bento.info").safe_write(BENTO_INFO_WITH_EXT)
 
         global_context = create_global_context(package, package_options, WafBackend())
-        conf, configure = prepare_command(global_context, "configure", [], package, package_options, top_node)
+        conf, configure = prepare_command(global_context, "configure", [], package, top_node)
         run_command_in_context(conf, configure)
 
-        bld, build = prepare_command(global_context, "build", [], package, package_options, top_node)
+        bld, build = prepare_command(global_context, "build", [], package, top_node)
         bld.waf_context.logger = make_stream_logger("build", cStringIO())
         run_command_in_context(bld, build)

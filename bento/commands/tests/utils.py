@@ -45,12 +45,15 @@ def _prepare_command(run_node, bento_info, cmd_klass, context_klass, cmd_argv):
 
     cmd.register_options(options_context, package_options)
 
-    context = context_klass(None, cmd_argv, options_context, package, run_node)
-    context.package_options = package_options
+    global_context = GlobalContext(None)
+    global_context.register_package_options(package_options)
+
+    context = context_klass(global_context, cmd_argv, options_context, package, run_node)
     return context, cmd
 
 def create_global_context(package, package_options, backend=None):
     global_context = GlobalContext(None)
+    global_context.register_package_options(package_options)
     if backend:
         global_context.backend = backend
 
@@ -67,13 +70,9 @@ def create_global_context(package, package_options, backend=None):
     global_context.backend.register_command_contexts(global_context)
     global_context.backend.register_options_contexts(global_context)
 
-    for cmd_name, cmd in commands:
-        options_context = global_context.retrieve_options_context(cmd_name)
-        cmd.register_options(options_context, package_options)
-
     return global_context
 
-def prepare_command(global_context, cmd_name, cmd_argv, package, package_options, run_node):
+def prepare_command(global_context, cmd_name, cmd_argv, package, run_node):
     if cmd_argv is None:
         cmd_argv = []
 
@@ -81,7 +80,6 @@ def prepare_command(global_context, cmd_name, cmd_argv, package, package_options
         context_klass = global_context.retrieve_command_context(cmd_name)
         options_context = global_context.retrieve_options_context(cmd_name)
         context = context_klass(global_context, cmd_argv, options_context, package, run_node)
-        context.package_options = package_options
         return context
 
     return _create_context(cmd_name), global_context.retrieve_command(cmd_name)
