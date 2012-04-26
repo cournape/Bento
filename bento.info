@@ -52,20 +52,11 @@ ExtraSourceFiles:
     setup.py,
     setup_common.py,
     bootstrap.py,
-    bento/backends/tests/*.py,
-    bento/backends/waf_tools/*py,
-    bento/commands/tests/*.py,
-    bento/compat/tests/*.py,
-    bento/convert/tests/*.py,
-    bento/core/tests/*.py,
-    bento/distutils/tests/*.py,
-    bento/parser/tests/*.py,
-    bento/parser/tests/functionals/*.py,
-    bento/parser/tests/functionals/*.info,
-    bento/parser/tests/pkgdescr/*.py,
-    bento/tests/*.py,
+    bento/**/tests/*.py,
     bento/testing/bentos/*.py,
-    bento/testing/bentos/*.info
+    bento/testing/bentos/*.info,
+    bentomakerlib/**/tests/*.py,
+    bento/backends/waf_tools/*.py
 
 Library:
     Packages:
