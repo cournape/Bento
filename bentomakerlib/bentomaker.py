@@ -8,13 +8,9 @@ import warnings
 
 import bento
 
-from six.moves \
-    import \
-        cPickle
-
 from bento.core.utils \
     import \
-        pprint, extract_exception, read_or_create_dict
+        pprint, extract_exception
 from bento._config \
     import \
         BENTO_SCRIPT, DB_FILE, _SUB_BUILD_DIR
