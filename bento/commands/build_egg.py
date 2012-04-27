@@ -32,7 +32,9 @@ Usage:   bentomaker build_egg [OPTIONS]"""
     short_descr = "build egg."
     common_options = Command.common_options \
                         + [Option("--output-dir",
-                                  help="Output directory", default="dist")]
+                                  help="Output directory", default="dist"),
+                           Option("--output-file",
+                                  help="Output filename")]
 
     def run(self, ctx):
         argv = ctx.command_argv
@@ -41,24 +43,28 @@ Usage:   bentomaker build_egg [OPTIONS]"""
         if o.help:
             p.print_help()
             return
-        if o.output_dir is None:
-            output_dir = None
-        else:
-            output_dir = o.output_dir
+        output_dir = o.output_dir
+        output_file = o.output_file
 
         n = ctx.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
-        build_egg(ipkg, ctx, ctx.build_node, output_dir)
+        build_egg(ipkg, ctx, ctx.build_node, output_dir, output_file)
 
-def build_egg(ipkg, ctx, source_root, path=None):
+def build_egg(ipkg, ctx, source_root, output_dir=None, output_file=None):
     meta = PackageMetadata.from_ipkg(ipkg)
     egg_info = EggInfo.from_ipkg(ipkg, ctx.build_node)
 
     # FIXME: fix egg name
-    if path is None:
-        egg = egg_filename(os.path.join("dist", meta.fullname))
+    if output_dir is None:
+        if output_file is None:
+            egg = egg_filename(os.path.join("dist", meta.fullname))
+        else:
+            egg = os.path.join("dist", output_file)
     else:
-        egg = egg_filename(os.path.join(path, meta.fullname))
+        if output_file is None:
+            egg = egg_filename(os.path.join(output_dir, meta.fullname))
+        else:
+            egg = os.path.join(output_dir, output_file)
     ensure_dir(egg)
 
     zid = compat.ZipFile(egg, "w", compat.ZIP_DEFLATED)
