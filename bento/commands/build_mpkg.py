@@ -17,7 +17,7 @@ from bento._config \
         IPKG_PATH
 from bento.commands.core \
     import \
-        Command
+        Command, Option
 from bento.commands.mpkg_utils \
     import \
         build_pkg, PackageInfo, MetaPackageInfo, make_mpkg_plist, make_mpkg_description
@@ -44,6 +44,11 @@ class BuildMpkgCommand(Command):
 Purpose: build Mac OS X mpkg
 Usage:   bentomaker build_mpkg [OPTIONS]"""
     short_descr = "build mpkg."
+    common_options = Command.common_options \
+                        + [Option("--output-dir",
+                                  help="Output directory", default="dist"),
+                           Option("--output-file",
+                                  help="Output filename")]
 
     def run(self, ctx):
         argv = ctx.command_argv
@@ -66,7 +71,10 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
         name = ipkg.meta["name"]
         version = ipkg.meta["version"]
         py_short = ".".join([str(i) for i in sys.version_info[:2]])
-        mpkg_name = "%s-%s-py%s.mpkg" % (name, version, py_short)
+        if o.output_file is None:
+            mpkg_name = "%s-%s-py%s.mpkg" % (name, version, py_short)
+        else:
+            mpkg_name = o.output_file
 
         categories = set()
         file_sections = ipkg.resolve_paths(ctx.build_node)
@@ -74,7 +82,7 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
             categories.add(kind)
 
         # Mpkg metadata
-        mpkg_root = os.path.join(os.getcwd(), "dist", mpkg_name)
+        mpkg_root = os.path.join(os.getcwd(), o.output_dir, mpkg_name)
         mpkg_cdir = os.path.join(mpkg_root, "Contents")
         if os.path.exists(mpkg_root):
             shutil.rmtree(mpkg_root)
