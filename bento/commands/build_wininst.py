@@ -1,37 +1,27 @@
 import os
-import sys
-import zipfile
 import tempfile
 
-if sys.version_info[0] < 3:
-    from StringIO \
-        import \
-            StringIO
-else:
-    from io \
-        import \
-            StringIO
-
-from bento.private.bytecode import \
-        bcompile
-from bento.core.utils import \
-        pprint, ensure_dir
 from bento._config \
     import \
         IPKG_PATH
-from bento.core import \
-        PackageMetadata
-from bento.conv import \
-        to_distutils_meta
-from bento.installed_package_description import \
-        InstalledPkgDescription, iter_files
-
-from bento.commands.core import \
-        Command
-from bento.commands.egg_utils import \
+from bento.commands.core \
+    import \
+        Command, Option
+from bento.commands.egg_utils \
+    import \
         EggInfo, egg_info_dirname
-from bento.commands.wininst_utils import \
+from bento.commands.wininst_utils \
+    import \
         wininst_filename, create_exe
+from bento.core \
+    import \
+        PackageMetadata
+from bento.core.utils \
+    import \
+        ensure_dir
+from bento.installed_package_description \
+    import \
+        InstalledPkgDescription, iter_files
 
 import bento.compat.api as compat
 
