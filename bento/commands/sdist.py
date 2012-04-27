@@ -1,20 +1,13 @@
-import os
 import tarfile
 
 import os.path as op
 
-from bento.core.node_package \
-    import \
-        NodeRepresentation
+import bento.compat.api as compat
+import bento.errors
 
-from bento.errors \
-    import \
-        UsageException
 from bento.commands.core \
     import \
         Command, Option
-
-import bento.compat.api as compat
 
 def archive_basename(pkg):
     if pkg.version:
@@ -74,7 +67,6 @@ Usage:   bentomaker sdist [OPTIONS]."""
 
         pkg = ctx.pkg
         format = o.format
-        output_directory = o.output_dir
 
         archive_root = "%s-%s" % (pkg.name, pkg.version)
         if not o.output_file:
