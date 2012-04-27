@@ -1,25 +1,27 @@
 import os
 import warnings
 
-from bento.private.bytecode import \
-        bcompile, PyCompileError
-from bento.core.utils import \
-        pprint, ensure_dir, extract_exception
-from bento.core import \
-        PackageMetadata
-from bento.installed_package_description import \
-        InstalledPkgDescription, iter_files
 from bento._config \
     import \
         IPKG_PATH
 from bento.commands.core \
     import \
         Command, Option
-
-from bento.commands.core import \
-        Command
-from bento.commands.egg_utils import \
+from bento.commands.egg_utils \
+    import \
         EggInfo, egg_filename
+from bento.core.utils \
+    import \
+        pprint, ensure_dir, extract_exception
+from bento.core \
+    import \
+        PackageMetadata
+from bento.private.bytecode \
+    import \
+        bcompile, PyCompileError
+from bento.installed_package_description \
+    import \
+        InstalledPkgDescription, iter_files
 
 import bento.compat.api as compat
 
