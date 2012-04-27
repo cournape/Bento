@@ -74,7 +74,7 @@ Usage:   bentomaker sdist [OPTIONS]."""
         else:
             output = op.basename(o.output_file)
             if output != o.output_file:
-                raise BentoError("Invalid output file: should not contain any directory")
+                raise bento.errors.BentoError("Invalid output file: should not contain any directory")
             archive_name = output
 
         # XXX: find a better way to pass archive name from other commands (used
