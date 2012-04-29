@@ -181,7 +181,7 @@ class BentoDistribution(Distribution):
 
     def run_command_in_context(self, cmd_name, cmd_argv):
         return bento.commands.wrapper_utils.resolve_and_run_command(self.global_context,
-            cmd_name, self.run_node, self.top_node, self.pkg)
+            cmd_name, cmd_argv, self.run_node, self.top_node, self.pkg)
 
     def has_data_files(self):
         return len(self.pkg.data_files) > 0        

@@ -8,18 +8,19 @@ from bento.commands.hooks \
     import \
         create_hook_module
 
-def run_with_dependencies(global_context, cmd_name, run_node, top_node, package):
+def run_with_dependencies(global_context, cmd_name, cmd_argv, run_node, top_node, package):
     """Run the given command, including its dependencies as defined in the
     global_context."""
     deps = global_context.retrieve_dependencies(cmd_name)
-    for _cmd_name in deps + [cmd_name]:
-        resolve_and_run_command(global_context, _cmd_name, run_node, top_node, package)
+    for dep_cmd_name in deps:
+        cmd_argv = global_context.retrieve_command_argv(cmd_name)
+        resolve_and_run_command(global_context, dep_cmd_name, cmd_argv, run_node, top_node, package)
+    resolve_and_run_command(global_context, cmd_name, cmd_argv, run_node, top_node, package)
 
-def resolve_and_run_command(global_context, cmd_name, run_node, top_node, package):
+def resolve_and_run_command(global_context, cmd_name, cmd_argv, run_node, top_node, package):
     """Run the given Command instance inside its context, including any hook
     and/or override."""
     cmd = global_context.retrieve_command(cmd_name)
-    cmd_argv = global_context.retrieve_command_argv(cmd_name)
     context_klass = global_context.retrieve_command_context(cmd_name)
     options_context = global_context.retrieve_options_context(cmd_name)
 
