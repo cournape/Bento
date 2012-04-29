@@ -155,6 +155,7 @@ class TestUnixScheme(unittest.TestCase):
 
     @mock.patch("sys.platform", "linux2")
     @mock.patch("sys.version_info", (2, 4, 4, 'final', 0))
+    @mock.patch("distutils.command.install.INSTALL_SCHEMES", {"unix_prefix": UNIX_REFERENCE})
     def test_scheme_default(self):
         bento_info = """\
 Name: foo
