@@ -45,7 +45,10 @@ Usage:   bentomaker sphinx [OPTIONS]."""
         doc_doctrees_build = doctrees_build.path_from(doc_node)
 
         env = copy.deepcopy(os.environ)
-        env['PYTHONPATH'] = os.getcwd() + ":%s" % env['PYTHONPATH']
+        if "PYTHONPATH" in env:
+            env['PYTHONPATH'] = os.pathsep.join(os.getcwd(), env['PYTHONPATH'])
+        else:
+            env['PYTHONPATH'] = os.getcwd()
         p = subprocess.Popen(["sphinx-build", "-b", "html", "-d", doc_doctrees_build, "source", doc_html_build],
                          cwd=doc_root)
         p.wait()
