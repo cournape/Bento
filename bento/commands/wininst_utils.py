@@ -17,10 +17,10 @@ from bento.core \
         PackageMetadata
 import bento
 
-def wininst_filename(fullname, pyver=None):
+def wininst_filename(meta, pyver=None):
     if not pyver:
         pyver = ".".join([str(i) for i in sys.version_info[:2]])
-    return "%s-py%s.win32.exe" % (fullname, pyver)
+    return "%s-py%s.win32.exe" % (meta.fullname, pyver)
 
 # Stolen from distutils.commands.bdist_wininst
 # FIXME: improve this code, in particular integration with

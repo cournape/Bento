@@ -57,7 +57,7 @@ def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None,
 
     # XXX: do this correctly, maybe use same as distutils ?
     if wininst is None:
-        wininst = wininst_filename(os.path.join(output_dir, meta.fullname))
+        wininst = wininst_filename(meta, output_dir)
     else:
         wininst = os.path.join(output_dir, wininst)
     ensure_dir(wininst)
