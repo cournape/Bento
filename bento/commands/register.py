@@ -8,7 +8,7 @@ import bento.errors
 from bento.commands.core \
     import \
         Command, Option
-from bento.commands.register_utils \
+from bento.pypi.register_utils \
     import \
         build_post_data, post_to_server, DEFAULT_REPOSITORY, read_pypirc, PyPIConfig
 

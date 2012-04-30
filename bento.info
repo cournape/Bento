@@ -71,6 +71,7 @@ Library:
         bento.distutils.commands,
         bento.parser,
         bento.private,
+        bento.pypi,
         bento.testing,
         bentomakerlib
     if flag(bundle):
