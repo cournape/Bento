@@ -109,6 +109,23 @@ class TestNodeInsideTemp(unittest.TestCase):
         foo.make_node("../bar")
         self.assertTrue(self.d_node.find_node("bar") is not None)
 
+    def test_ant(self):
+        for filename in ["bar.txt", "foo.bar", "fubar.txt"]:
+            n = self.d_node.make_node(filename)
+            n.write("")
+        nodes = self.d_node.ant_glob("*.txt")
+        bar = self.d_node.find_node("bar.txt")
+        fubar = self.d_node.find_node("fubar.txt")
+        self.assertEqual(set([fubar.abspath(), bar.abspath()]), set([node.abspath() for node in nodes]))
+
+    def test_ant_excl(self):
+        for filename in ["bar.txt", "foo.bar", "fubar.txt"]:
+            n = self.d_node.make_node(filename)
+            n.write("")
+        nodes = self.d_node.ant_glob("*", excl=["*.txt"])
+        foobar = self.d_node.find_node("foo.bar")
+        self.assertEqual(set(node.abspath() for node in nodes), set([foobar.abspath()]))
+
 class TestNodeWithBuild(unittest.TestCase):
     def setUp(self):
         top = os.getcwd()

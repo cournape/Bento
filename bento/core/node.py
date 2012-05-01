@@ -445,11 +445,7 @@ class Node(object):
                     else:
                         k = k.replace('.', '[.]').replace('*','.*').replace('?', '.').replace('+', '\\+')
                         k = '^%s$' % k
-                        try:
-                            accu.append(re.compile(k))
-                        except Exception:
-                            e = extract_exception()
-                            raise ValueError("Invalid pattern: %s" % k, e)
+                        accu.append(re.compile(k))
                 ret.append(accu)
             return ret
 
