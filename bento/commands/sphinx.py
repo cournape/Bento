@@ -46,7 +46,7 @@ Usage:   bentomaker sphinx [OPTIONS]."""
 
         env = copy.deepcopy(os.environ)
         if "PYTHONPATH" in env:
-            env['PYTHONPATH'] = os.pathsep.join(os.getcwd(), env['PYTHONPATH'])
+            env['PYTHONPATH'] = os.pathsep.join([os.getcwd(), env['PYTHONPATH']])
         else:
             env['PYTHONPATH'] = os.getcwd()
         p = subprocess.Popen(["sphinx-build", "-b", "html", "-d", doc_doctrees_build, "source", doc_html_build],
