@@ -31,3 +31,6 @@ from bento.commands.sphinx \
 from bento.commands.register \
     import \
         RegisterPyPI
+from bento.commands.upload \
+    import \
+        UploadPyPI

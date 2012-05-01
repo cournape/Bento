@@ -70,3 +70,9 @@ class UnsupportedFeature(ConvertionError):
 
 class InvalidPyPIConfig(BentoError):
     pass
+
+class PyPIError(BentoError):
+    pass
+
+class InvalidRepository(PyPIError):
+    pass

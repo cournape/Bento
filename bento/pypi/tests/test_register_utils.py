@@ -12,7 +12,7 @@ from six.moves \
 
 import mock
 
-from bento.commands.register_utils \
+from bento.pypi.register_utils \
     import \
         build_post_data, encode_multipart, post_to_server, DEFAULT_REALM, \
         PyPIConfig, parse_pypirc
