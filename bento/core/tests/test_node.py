@@ -5,6 +5,8 @@ import tempfile
 import shutil
 import copy
 
+import os.path as op
+
 from bento.compat.api.moves \
     import \
         unittest
@@ -64,23 +66,30 @@ class TestNode(unittest.TestCase):
     def test_invalid_copy(self):
         self.assertRaises(NotImplementedError, lambda: copy.copy(self.root))
 
+class TestNodeInsideTemp(unittest.TestCase):
+    def setUp(self):
+        root = Node("", None)
+        self.d_node = root.find_node(tempfile.mkdtemp())
+        assert self.d_node is not None
+
+    def tearDown(self):
+        shutil.rmtree(self.d_node.abspath())
+
     def test_delete(self):
-        d = tempfile.mkdtemp()
-        try:
-            old = os.getcwd()
-            try:
-                os.chdir(d)
-                cwd_node = self.root.find_node(d)
-                assert cwd_node is not None
-                n = cwd_node.make_node("foo.txt")
-                n.write("foo")
-                self.assertEqual(n.read(), "foo")
-                n.delete()
-                self.assertEqual(cwd_node.listdir(), [])
-            finally:
-                os.chdir(old)
-        finally:
-            shutil.rmtree(d)
+        n = self.d_node.make_node("foo.txt")
+        n.write("foo")
+        self.assertEqual(n.read(), "foo")
+        n.delete()
+        self.assertEqual(self.d_node.listdir(), [])
+
+    def test_delete_dir(self):
+        foo_node = self.d_node.make_node("foo")
+        n = foo_node.make_node("bar.txt")
+        n.parent.mkdir()
+        n.write("foo")
+        self.assertEqual(n.read(), "foo")
+        foo_node.delete()
+        self.assertEqual(self.d_node.listdir(), [])
 
 class TestNodeWithBuild(unittest.TestCase):
     def setUp(self):

@@ -151,18 +151,11 @@ class Node(object):
 
     def delete(self):
         """Delete the file/folder physically (but not the node)"""
-        try:
-            if getattr(self, 'children', None):
-                shutil.rmtree(self.abspath())
-            else:
-                os.unlink(self.abspath())
-        except OSError:
-            pass
-
-        try:
+        if getattr(self, 'children', None):
+            shutil.rmtree(self.abspath())
             delattr(self, 'children')
-        except AttributeError:
-            pass
+        else:
+            os.unlink(self.abspath())
 
     def suffix(self):
         "scons-like - hot zone so do not touch"
