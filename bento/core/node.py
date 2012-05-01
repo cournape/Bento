@@ -8,7 +8,7 @@ efficient.
 Ripped off from waf (v 1.6), by Thomas Nagy. The cool design is his, bugs most
 certainly mine :) We removed a few things which are not useful for bento.
 """
-import os, shutil, re, sys
+import os, shutil, re, sys, errno
 
 import os.path as op
 
@@ -180,16 +180,15 @@ class Node(object):
         if getattr(self, 'cache_isdir', None):
             return
 
-        try:
-            self.parent.mkdir()
-        except:
-            pass
+        self.parent.mkdir()
 
         if self.name:
             try:
                 os.mkdir(self.abspath())
             except OSError:
-                pass
+                e = extract_exception()
+                if e.errno != errno.EEXIST:
+                    raise
 
             if not os.path.isdir(self.abspath()):
                 raise IOError('%s is not a directory' % self)
@@ -447,7 +446,6 @@ class Node(object):
                         k = k.replace('.', '[.]').replace('*','.*').replace('?', '.').replace('+', '\\+')
                         k = '^%s$' % k
                         try:
-                            #print "pattern", k
                             accu.append(re.compile(k))
                         except Exception:
                             e = extract_exception()

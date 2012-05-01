@@ -91,6 +91,24 @@ class TestNodeInsideTemp(unittest.TestCase):
         foo_node.delete()
         self.assertEqual(self.d_node.listdir(), [])
 
+    def test_mkdir(self):
+        bar_node = self.d_node.make_node(op.join("foo", "bar"))
+        os.makedirs(bar_node.parent.abspath())
+        os.makedirs(bar_node.abspath())
+        bar_node.mkdir()
+
+    def test_suffix(self):
+        foo = self.d_node.make_node("foo.txt")
+        self.assertEqual(foo.suffix(), ".txt")
+
+        foo = self.d_node.make_node("foo.txt.swp")
+        self.assertEqual(foo.suffix(), ".swp")
+
+    def test_make_node(self):
+        foo = self.d_node.make_node("foo")
+        foo.make_node("../bar")
+        self.assertTrue(self.d_node.find_node("bar") is not None)
+
 class TestNodeWithBuild(unittest.TestCase):
     def setUp(self):
         top = os.getcwd()
