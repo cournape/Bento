@@ -159,7 +159,7 @@ class ConfigureWafContext(ConfigureContext):
         pkg = self.pkg
         # FIXME: this is wrong (not taking into account sub packages)
         needs_compiler = has_compiled_code(pkg)
-        needs_cython = has_compiled_code(pkg)
+        needs_cython = has_cython_code(pkg)
 
         conf = self.waf_context
         if needs_compiler:
