@@ -5,6 +5,8 @@ Released on .
 
 Main features:
 
+        - new commands register_pypi and upload_pypi to register a package to
+          pypi and upload tarballs to it.
         - waf backend: cython tool automatically loaded if cython files are
           detected in sources
         - UseBackends feature: allows to declare which build backend to use
@@ -13,7 +15,6 @@ Main features:
           sphinx.
         - add tweak_builder function to build contexts to simplify simple
           builder customization (e.g. include_dirs, defines, etc...)
-        - register_pypi command to register the package on PyPI
 
 Fixed issues
 ------------
