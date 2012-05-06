@@ -1,10 +1,4 @@
-import urllib2
-
 import os.path as op
-
-from six.moves \
-    import \
-        configparser, StringIO
 
 from bento.conv \
     import \
@@ -16,13 +10,31 @@ from bento.errors \
     import \
         InvalidPyPIConfig
 
+from six.moves \
+    import \
+        configparser, StringIO
+from six \
+    import \
+        PY3
+
+import six
+
+if PY3:
+    from urllib.request \
+        import \
+            Request, HTTPBasicAuthHandler, HTTPError, URLError, build_opener
+else:
+    from urllib2 \
+        import \
+            Request, HTTPBasicAuthHandler, HTTPError, URLError, build_opener
+
 DEFAULT_REPOSITORY = 'http://pypi.python.org/pypi'
 DEFAULT_REALM = 'pypi'
 
 REALM = DEFAULT_REALM
 REPOSITORY = 'http://testpypi.python.org/pypi'
 
-_BOUNDARY = '--------------GHSKFJDLGDS7543FJKLFHRE75642756743254'
+_BOUNDARY = six.b('--------------GHSKFJDLGDS7543FJKLFHRE75642756743254')
 
 def _read_new_format(config, repository):
     sections = config.sections()
@@ -172,25 +184,25 @@ def encode_multipart(fields, files, boundary=None):
 
         for value in values:
             l.extend((
-                '--' + boundary,
+                six.b('--') + boundary,
                 # XXX should encode to match packaging but it causes bugs
-                ('Content-Disposition: form-data; name="%s"' % key),
-                '',
-                value))
+                ('Content-Disposition: form-data; name="%s"' % key).encode("utf-8"),
+                six.b(''),
+                value.encode("utf-8")))
 
     for key, filename, value in files:
         l.extend((
-            '--' + boundary,
+            six.b('--') + boundary,
             ('Content-Disposition: form-data; name="%s"; filename="%s"' %
-             (key, filename)),
-            '',
+             (key, filename)).encode("utf-8"),
+            six.b(''),
             value))
 
-    l.append('--' + boundary + '--')
-    l.append('')
+    l.append(six.b('--') + boundary + six.b('--'))
+    l.append(six.b(''))
 
-    body = '\r\n'.join(l)
-    content_type = 'multipart/form-data; boundary=' + boundary
+    body = six.b('\r\n').join(l)
+    content_type = six.b('multipart/form-data; boundary=') + boundary
     return content_type, body
 
 def build_post_data(pkg, action):
@@ -224,18 +236,16 @@ def post_to_server(post_data, config, auth=None):
         'Content-type': content_type,
         'Content-length': str(len(body))
     }
-    req = urllib2.Request(config.repository, body, headers)
+    req = Request(config.repository, body, headers)
 
     # handle HTTP and include the Basic Auth handler
-    opener = urllib2.build_opener(
-        urllib2.HTTPBasicAuthHandler(password_mgr=auth)
-    )
+    opener = build_opener(HTTPBasicAuthHandler(password_mgr=auth))
     try:
         opener.open(req)
-    except urllib2.HTTPError:
+    except HTTPError:
         e = extract_exception()
         code, msg = e.code, e.msg
-    except urllib2.URLError:
+    except URLError:
         e = extract_exception()
         code, msg = 500, str(e)
     else:

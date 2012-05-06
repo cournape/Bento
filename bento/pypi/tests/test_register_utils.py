@@ -1,8 +1,6 @@
 import os
 import shutil
 import tempfile
-import urllib2
-import urlparse
 
 import os.path as op
 
@@ -23,9 +21,29 @@ from bento.core \
     import \
         PackageDescription
 
+from six \
+    import \
+        PY3
+
+import six
+
+if PY3:
+    from urllib.request \
+        import \
+            HTTPPasswordMgr, urlparse, HTTPError, URLError
+    _OPENER_DIRECTOR = "urllib.request.OpenerDirector"
+else:
+    from urllib2 \
+        import \
+            Request, HTTPPasswordMgr, HTTPError, URLError
+    from urlparse \
+        import \
+            urlparse
+    _OPENER_DIRECTOR = "urllib2.OpenerDirector"
+
 class TestRegisterUtils(unittest.TestCase):
     def test_build_post_data(self):
-        r_content = """----------------GHSKFJDLGDS7543FJKLFHRE75642756743254\r\n""" \
+        r_content = six.b("""----------------GHSKFJDLGDS7543FJKLFHRE75642756743254\r\n""" \
 """Content-Disposition: form-data; name="maintainer"\r\n\r\n\r\n""" \
 """----------------GHSKFJDLGDS7543FJKLFHRE75642756743254\r\n""" \
 """Content-Disposition: form-data; name="name"\r\n\r\n""" \
@@ -54,7 +72,7 @@ class TestRegisterUtils(unittest.TestCase):
 """----------------GHSKFJDLGDS7543FJKLFHRE75642756743254\r\n""" \
 """Content-Disposition: form-data; name="description"\r\n\r\n\r\n""" \
 """----------------GHSKFJDLGDS7543FJKLFHRE75642756743254--\r\n""" \
-""""""
+"""""")
         bento_info = """\
 Name: foo
 Version: 1.0
@@ -65,15 +83,15 @@ Author: John Doe
         content_type, body = encode_multipart(post_data.items(), [])
         self.assertEqual(r_content, body)
 
-    @mock.patch("urllib2.OpenerDirector", mock.MagicMock())
+    @mock.patch(_OPENER_DIRECTOR, mock.MagicMock())
     def test_register_server(self):
         package = PackageDescription(name="foo")
         repository = 'http://testpypi.python.org/pypi'
         realm = DEFAULT_REALM
         config = PyPIConfig(username="cdavid", password="yoyo", repository=repository, realm=realm)
 
-        auth = urllib2.HTTPPasswordMgr()
-        host = urlparse.urlparse(config.repository)[0]
+        auth = HTTPPasswordMgr()
+        host = urlparse(config.repository)[0]
         auth.add_password(config.realm, host, config.username, config.password)
 
         post_data = build_post_data(package, "submit")
@@ -81,15 +99,15 @@ Author: John Doe
         self.assertEqual(code, 200)
         self.assertEqual(msg, "OK")
 
-    @mock.patch("urllib2.OpenerDirector.open",
-                mock.MagicMock(side_effect=urllib2.HTTPError("", 404, "", {}, None)))
+    @mock.patch("%s.open" % _OPENER_DIRECTOR,
+                mock.MagicMock(side_effect=HTTPError("", 404, "", {}, None)))
     def test_register_server_http_errors(self):
         code, msg = self._test_register_server_errors()
         self.assertEqual(code, 404)
         self.assertEqual(msg, "")
 
-    @mock.patch("urllib2.OpenerDirector.open",
-                mock.MagicMock(side_effect=urllib2.URLError("")))
+    @mock.patch("%s.open" % _OPENER_DIRECTOR,
+                mock.MagicMock(side_effect=URLError("")))
     def test_register_server_url_errors(self):
         code, msg = self._test_register_server_errors()
         self.assertEqual(code, 500)

@@ -1,6 +1,3 @@
-import urllib2
-import urlparse
-
 import os.path as op
 
 import bento.errors
@@ -11,6 +8,22 @@ from bento.commands.core \
 from bento.pypi.register_utils \
     import \
         build_post_data, post_to_server, DEFAULT_REPOSITORY, read_pypirc, PyPIConfig
+
+from six \
+    import \
+        PY3
+
+if PY3:
+    from urllib.request \
+        import \
+            HTTPPasswordMgr, urlparse
+else:
+    from urllib2 \
+        import \
+            HTTPPasswordMgr
+    from urlparse \
+        import \
+            urlparse
 
 def _read_pypirc(repository):
     filename = op.join(op.expanduser("~"), ".pypirc")

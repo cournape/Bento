@@ -1,7 +1,6 @@
 import os
 import shutil
 import tempfile
-import urllib2
 
 import os.path as op
 
@@ -21,6 +20,19 @@ from bento.pypi.upload_utils \
         build_upload_post_data, build_request, upload
 
 from bento.compat.api import moves
+
+from six \
+    import \
+        PY3
+
+if PY3:
+    from urllib.request \
+        import \
+            HTTPPasswordMgr, urlparse, HTTPError, URLError
+else:
+    from urllib2 \
+        import \
+            Request, urlparse, HTTPError, URLError
 
 # FIXME: there has to be a simpler way to do this
 class MockedResult(object):
@@ -56,12 +68,13 @@ Name: foo
             filename = op.join(self.cwd, "foo.bin")
             fp = open(filename, "wb")
             try:
-                fp.write("garbage")
+                fp.write(six.b("garbage"))
             finally:
                 fp.close()
 
         except:
             shutil.rmtree(self.cwd)
+            raise
 
     def tearDown(self):
         os.chdir(self.old_cwd)
@@ -70,7 +83,7 @@ Name: foo
     def test_upload_post_data(self):
         post_data = build_upload_post_data("foo.bin", "bdist_dumb", self.package)
         self.assertEqual(post_data[":action"], "file_upload")
-        self.assertEqual(post_data["content"], ("foo.bin", "garbage"))
+        self.assertEqual(post_data["content"], ("foo.bin", six.b("garbage")))
 
     def test_signing(self):
         self.assertRaises(NotImplementedError, build_upload_post_data, "foo.bin", "bdist_dumb", self.package, True)
@@ -80,28 +93,28 @@ Name: foo
         post_data = build_upload_post_data("foo.bin", "bdist_dumb", self.package)
         request = build_request(repository, post_data, "dummy_auth")
         r_headers = {
-                "Content-type": "multipart/form-data; boundary=--------------GHSKFJDLGDS7543FJKLFHRE75642756743254",
+                "Content-type": six.b("multipart/form-data; boundary=--------------GHSKFJDLGDS7543FJKLFHRE75642756743254"),
                 "Content-length": "2238",
                 "Authorization": "dummy_auth"}
         self.assertEqual(request.headers, r_headers)
 
-    @mock.patch("urllib2.urlopen", lambda request: MockedResult(200, ""))
+    @mock.patch("bento.pypi.upload_utils.urlopen", lambda request: MockedResult(200, ""))
     def test_upload(self):
         config = PyPIConfig("john", "password", repository="http://localhost")
         upload("foo.bin", "bdist_dumb", self.package, config)
 
-    @mock.patch("urllib2.urlopen", my_urlopen_factory(
-        urllib2.HTTPError("", 404, "url not found", {}, six.moves.StringIO())))
+    @mock.patch("bento.pypi.upload_utils.urlopen", my_urlopen_factory(
+        HTTPError("", 404, "url not found", {}, six.moves.StringIO())))
     def test_upload_error_404(self):
         config = PyPIConfig("john", "password", repository="http://localhost")
         self.assertRaises(bento.errors.PyPIError, upload, "foo.bin", "bdist_dumb", self.package, config)
 
-    @mock.patch("urllib2.urlopen", my_urlopen_factory(urllib2.URLError("dummy")))
+    @mock.patch("bento.pypi.upload_utils.urlopen", my_urlopen_factory(URLError("dummy")))
     def test_upload_error_no_host(self):
         config = PyPIConfig("john", "password", repository="http://llocalhost")
-        self.assertRaises(urllib2.URLError, upload, "foo.bin", "bdist_dumb", self.package, config)
+        self.assertRaises(URLError, upload, "foo.bin", "bdist_dumb", self.package, config)
 
-    @mock.patch("urllib2.urlopen", lambda request: MockedResult(200, ""))
+    @mock.patch("bento.pypi.upload_utils.urlopen", lambda request: MockedResult(200, ""))
     def test_upload_auth(self):
         config = PyPIConfig("john", "password", repository="http://localhost")
         self.assertRaises(NotImplementedError, upload, "foo.bin", "bdist_dumb", self.package, config, True)

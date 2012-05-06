@@ -1,7 +1,5 @@
 import base64
 import sys
-import urllib2
-import urlparse
 
 import os.path as op
 
@@ -16,9 +14,30 @@ from bento.pypi.register_utils \
 from bento.conv \
     import \
         pkg_to_distutils_meta
+from bento.core.utils \
+    import \
+        extract_exception
 from bento.errors \
     import \
         PyPIError, InvalidRepository
+
+from six \
+    import \
+        PY3
+
+import six
+
+if PY3:
+    from urllib.request \
+        import \
+            Request, HTTPBasicAuthHandler, HTTPError, URLError, urlparse, urlopen
+else:
+    from urllib2 \
+        import \
+            Request, HTTPBasicAuthHandler, HTTPError, URLError, urlopen
+    from urlparse \
+        import \
+            urlparse
 
 def build_upload_post_data(filename, dist_type, package, sign=False, comment=""):
     pyversion = ".".join(str(i) for i in sys.version_info[:2])
@@ -64,10 +83,10 @@ def build_request(repository, post_data, auth):
                'Content-length': str(len(body)),
                'Authorization': auth}
 
-    return urllib2.Request(repository, data=body, headers=headers)
+    return Request(repository, data=body, headers=headers)
 
 def upload(dist_filename, dist_type, package, config, sign=False):
-    schema, netloc, url, params, query, fragments = urlparse.urlparse(config.repository)
+    schema, netloc, url, params, query, fragments = urlparse(config.repository)
     if params or query or fragments:
         raise InvalidRepository("Incompatible url %s" % config.repository)
 
@@ -78,16 +97,17 @@ def upload(dist_filename, dist_type, package, config, sign=False):
         raise NotImplementedError()
 
     data = build_upload_post_data(dist_filename, dist_type, package)
-    auth = "Basic " + base64.standard_b64encode(config.username + ":" + config.password)
+    userpass = (config.username + ":" + config.password).encode("ascii")
+    auth = six.b("Basic ") + base64.standard_b64encode(userpass)
     request = build_request(config.repository, data, auth)
 
     try:
-        result = urllib2.urlopen(request)
+        result = urlopen(request)
         status = result.getcode()
         reason = result.msg
-    except urllib2.HTTPError, e:
+    except HTTPError as e:
+        e = extract_exception()
         status = e.code
-
         reason = e.msg
 
     if status != 200:
