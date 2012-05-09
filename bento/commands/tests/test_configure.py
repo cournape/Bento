@@ -45,6 +45,9 @@ MaintainerEmail: georg@python.org
 License: BSD
 """
 
+PY_VERSION_SHORT = ".".join(str(_) for _ in sys.version_info[:2])
+PY_VERSION_SHORT_NO_DOT = "".join(str(_) for _ in sys.version_info[:2])
+
 class TestConfigureCommand(unittest.TestCase):
     def setUp(self):
         self.d = tempfile.mkdtemp()
@@ -154,7 +157,6 @@ class TestUnixScheme(unittest.TestCase):
 
 
     @mock.patch("sys.platform", "linux2")
-    @mock.patch("sys.version_info", (2, 4, 4, 'final', 0))
     @mock.patch("distutils.command.install.INSTALL_SCHEMES", {"unix_prefix": UNIX_REFERENCE})
     def test_scheme_default(self):
         bento_info = """\
@@ -171,7 +173,7 @@ Name: foo
         self.assertEqual(prefix, "/usr/local")
         self.assertEqual(eprefix, "/usr/local")
         self.assertEqual(pkgname, "foo")
-        self.assertEqual(py_version_short, "2.4")
+        self.assertEqual(py_version_short, PY_VERSION_SHORT)
 
         # Check that other values in scheme have not been modified
         for k, v in scheme.items():
@@ -180,7 +182,6 @@ Name: foo
     @mock.patch("sys.platform", "darwin")
     @mock.patch("sys.prefix", "/Library/Frameworks/Python.framework/Versions/2.8")
     @mock.patch("sys.exec_prefix", "/Exec/Library/Frameworks/Python.framework/Versions/2.8")
-    @mock.patch("sys.version_info", (2, 4, 4, 'final', 0))
     def test_scheme_default_darwin(self):
         bento_info = """\
 Name: foo
@@ -196,14 +197,13 @@ Name: foo
         self.assertEqual(prefix, sys.prefix)
         self.assertEqual(eprefix, sys.exec_prefix)
         self.assertEqual(pkgname, "foo")
-        self.assertEqual(py_version_short, "2.4")
+        self.assertEqual(py_version_short, PY_VERSION_SHORT)
 
         # Check that other values in scheme have not been modified
         for k, v in scheme.items():
             self.assertEqual(UNIX_REFERENCE[k], v)
 
     @mock.patch("sys.platform", "linux2")
-    @mock.patch("sys.version_info", (2, 7, 2, 'final', 0))
     def test_scheme_with_prefix(self):
         bento_info = """\
 Name: foo
@@ -219,7 +219,7 @@ Name: foo
         self.assertEqual(prefix, "/home/guido")
         self.assertEqual(eprefix, "/home/guido")
         self.assertEqual(pkgname, "foo")
-        self.assertEqual(py_version_short, "2.7")
+        self.assertEqual(py_version_short, PY_VERSION_SHORT)
 
         # Check that other values in scheme have not been modified
         for k, v in scheme.items():
@@ -236,7 +236,7 @@ Name: foo
         self.assertEqual(prefix, "/home/guido")
         self.assertEqual(eprefix, "/home/exec/guido")
         self.assertEqual(pkgname, "foo")
-        self.assertEqual(py_version_short, "2.7")
+        self.assertEqual(py_version_short, PY_VERSION_SHORT)
 
         # Check that other values in scheme have not been modified
         for k, v in scheme.items():
@@ -252,7 +252,6 @@ Name: foo
         self.assertRaises(NotImplementedError, lambda: self._compute_scheme(bento_info, self.options))
 
     @mock.patch("sys.platform", "linux2")
-    @mock.patch("sys.version_info", (2, 7, 2, 'final', 0))
     @mock.patch("distutils.command.install.INSTALL_SCHEMES", {"unix_local": MOCK_DEBIAN_SCHEME}, create=True)
     def test_scheme_debian(self):
         bento_info = """\
@@ -267,8 +266,8 @@ Name: foo
 
         self.assertEqual(prefix, "/usr/local")
         self.assertEqual(eprefix, "/usr/local")
-        self.assertEqual(sitedir, "/usr/local/lib/python2.7/dist-packages")
-        self.assertEqual(includedir, "/usr/local/include/python2.7/foo")
+        self.assertEqual(sitedir, "/usr/local/lib/python%s/dist-packages" % PY_VERSION_SHORT)
+        self.assertEqual(includedir, "/usr/local/include/python%s/foo" % PY_VERSION_SHORT)
 
         scheme.pop("py_version_short")
         scheme.pop("pkgname")
@@ -314,9 +313,8 @@ class TestWin32Scheme(unittest.TestCase):
         return scheme
 
     @mock.patch("sys.platform", "win32")
-    @mock.patch("sys.version_info", (2, 4, 4, 'final', 0))
-    @mock.patch("sys.prefix", r"C:\Python24")
-    @mock.patch("sys.exec_prefix", r"C:\Python24")
+    @mock.patch("sys.prefix", r"C:\Python%s" % PY_VERSION_SHORT_NO_DOT)
+    @mock.patch("sys.exec_prefix", r"C:\Python%s" % PY_VERSION_SHORT_NO_DOT)
     def test_scheme_default(self):
         bento_info = """\
 Name: foo
@@ -332,7 +330,7 @@ Name: foo
         self.assertEqual(prefix, sys.prefix)
         self.assertEqual(eprefix, sys.exec_prefix)
         self.assertEqual(pkgname, "foo")
-        self.assertEqual(py_version_short, "2.4")
+        self.assertEqual(py_version_short, PY_VERSION_SHORT)
 
         # Check that other values in scheme have not been modified
         scheme.pop("destdir")
