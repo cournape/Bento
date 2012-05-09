@@ -1,3 +1,4 @@
+import encodings
 import os
 import shutil
 import tempfile
@@ -48,6 +49,7 @@ class TestWininstUtils(moves.unittest.TestCase):
         get_inidata(ipkg)
 
     @mock.patch('distutils.msvccompiler.get_build_version', lambda: 9.0)
+    @mock.patch('encodings._cache', {"mbcs": encodings.search_function("ascii")})
     def test_create_exe(self):
         # FIXME: do a real test here
         meta, sections, nodes = create_simple_ipkg_args(self.top_node)

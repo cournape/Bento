@@ -17,6 +17,8 @@ from bento.core \
         PackageMetadata
 import bento
 
+import six
+
 def wininst_filename(meta, pyver=None):
     if not pyver:
         pyver = ".".join([str(i) for i in sys.version_info[:2]])
@@ -96,23 +98,7 @@ def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="bento"):
         fid.write(bitmapdata)
 
     # Convert cfgdata from unicode to ascii, mbcs encoded
-    try:
-        unicode
-    except NameError:
-        pass
-    else:
-        if isinstance(cfgdata, unicode):
-            cfgdata = cfgdata.encode("mbcs")
-
-    # Append the pre-install script
-    cfgdata = cfgdata + "\0"
-    #if self.pre_install_script:
-    #    script_data = open(self.pre_install_script, "r").read()
-    #    cfgdata = cfgdata + script_data + "\n\0"
-    #else:
-    #    # empty pre-install script
-    #    cfgdata = cfgdata + "\0"
-    cfgdata = cfgdata + "\0"
+    cfgdata = cfgdata.encode("mbcs") + six.b("\0")
     fid.write(cfgdata)
 
     # The 'magic number' 0x1234567B is used to make sure that the
