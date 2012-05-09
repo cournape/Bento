@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import tempfile
 import ntpath
@@ -6,7 +7,9 @@ import posixpath
 
 import os.path as op
 
-from six.moves import cStringIO
+from six \
+    import \
+        BytesIO
 
 from subprocess \
     import \
@@ -39,7 +42,12 @@ globals["__file__"] = filename
 sys.argv = [filename, "config"]
 distutils.core.setup = new_setup
 sys.path.insert(0, '%(odir)s')
-execfile(filename, globals)
+
+fp = open(filename, "rt")
+try:
+    exec(fp.read(), globals)
+finally:
+    fp.close()
 
 if DIST is None:
     sys.exit(-2)
@@ -75,7 +83,12 @@ sys.argv = [filename, "-q", "--help"]
 setuptools.setup = new_setup
 distutils.core.setup = new_setup
 sys.path.insert(0, '%(odir)s')
-execfile(filename, globals)
+fp = open(filename, "rt")
+try:
+    exec(fp.read(), globals)
+finally:
+    fp.close()
+
 
 if DIST is None:
     sys.exit(-2)
@@ -109,9 +122,13 @@ try:
     sys.argv = [filename, "-q", "--name"]
     numpy.distutils.core.setup = new_setup
     sys.path.insert(0, '%(odir)s')
-    execfile(filename, globals)
 
-    print DIST
+    fp = open(filename, "rt")
+    try:
+        exec(fp.read(), globals)
+    finally:
+        fp.close()
+
     if DIST is None:
         sys.exit(-2)
 
@@ -119,8 +136,7 @@ try:
         sys.exit(0)
     else:
         sys.exit(-1)
-except ImportError, e:
-    print e
+except ImportError:
     sys.exit(-1)
 """
 
@@ -148,7 +164,12 @@ try:
     sys.argv = [filename, "-q", "--name"]
     numpy.distutils.core.setup = new_setup
     sys.path.insert(0, '%(odir)s')
-    execfile(filename, globals)
+    fp = open(filename, "rt")
+    try:
+        exec(fp, globals)
+    finally:
+        fp.close()
+
 
     if DIST is None:
         sys.exit(-2)
@@ -173,7 +194,12 @@ globals["__file__"] = filename
 
 sys.argv = [filename, "-q", "--name"]
 sys.path.insert(0, '%(odir)s')
-execfile(filename, globals)
+
+fp = open(filename, "rt")
+try:
+    exec(fp.read(), globals)
+finally:
+    fp.close()
 """
 
 def logged_run(cmd, buffer):
@@ -185,15 +211,21 @@ def logged_run(cmd, buffer):
     return pid.returncode
     
 def _test(code, setup_py, show_output, log):
-    fid, filename = tempfile.mkstemp(suffix=".py", text=True)
+    d = tempfile.mkdtemp()
     try:
+        filename = op.join(d, "setup.py")
+
         cmd = [sys.executable, filename]
         log.write(" | Running %s, content below\n" % " ".join(cmd))
         log.writelines([" | | %s\n" % line for line in code.splitlines()])
 
-        os.write(fid, code)
+        fp = open(filename, "wt")
+        try:
+            fp.write(code)
+        finally:
+            fp.close()
 
-        buf = cStringIO()
+        buf = BytesIO()
         st = logged_run(cmd, buf)
 
         # FIXME: handle this correctly
@@ -207,8 +239,7 @@ def _test(code, setup_py, show_output, log):
         log.write("\n")
         return st == 0
     finally:
-        os.close(fid)
-        os.remove(filename)
+        shutil.rmtree(d)
 
 def test_distutils(setup_py, show_output, log):
     odir = os.path.dirname(os.path.abspath(setup_py))

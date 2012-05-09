@@ -25,6 +25,8 @@ from bento.convert.utils \
     import \
         canonalize_path
 
+import bento.errors
+
 # ====================================================
 # Code to convert existing setup.py to bento.info
 # ====================================================
@@ -332,7 +334,7 @@ def detect_monkeys(setup_py, show_output, log):
         test_can_run
 
     if not test_can_run(setup_py, show_output, log):
-        raise SetupCannotRun()
+        raise bento.errors.SetupCannotRun()
 
     def print_delim(string):
         if show_output:
