@@ -6,6 +6,8 @@ from bento._config \
     import \
         _CLI
 
+import six
+
 SYS_EXECUTABLE = os.path.normpath(sys.executable)
 
 SCRIPT_TEXT = """\
@@ -73,7 +75,7 @@ def nt_quote_arg(arg):
 def get_script_header(executable=SYS_EXECUTABLE, wininst=False):
     from distutils.command.build_scripts import first_line_re
 
-    match = first_line_re.match("")
+    match = first_line_re.match(six.b(""))
 
     options = ''
     if match:
@@ -86,7 +88,7 @@ def get_script_header(executable=SYS_EXECUTABLE, wininst=False):
         executable = nt_quote_arg(executable)
 
     hdr = "#!%(executable)s%(options)s\n" % locals()
-    if unicode(hdr,'ascii','ignore').encode('ascii') != hdr:
+    if six.u(hdr).encode('ascii') != hdr:
         # Non-ascii path to sys.executable, use -x to prevent warnings
         if options:
             if options.strip().startswith('-'):
