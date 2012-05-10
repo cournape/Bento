@@ -5,6 +5,8 @@ python:
    - 2.7
    - 3.2
 # mock/multiprocessing are only necessary for testing
-install: pip install mock  multiprocessing
+install:
+   - pip install mock
+   - "if [[ $TRAVIS_PYTHON_VERSION == '2.5' ]]; then pip install multiprocessing; fi"
 # command to run tests, e.g. python setup.py test
 script:  python -m bentomakerlib.bentomaker distcheck
