@@ -105,7 +105,7 @@ def upload(dist_filename, dist_type, package, config, sign=False):
         result = urlopen(request)
         status = result.getcode()
         reason = result.msg
-    except HTTPError as e:
+    except HTTPError:
         e = extract_exception()
         status = e.code
         reason = e.msg
