@@ -311,6 +311,8 @@ def _not_has_waf():
         import bento.backends.waf_backend
         bento.backends.waf_backend.disable_output()
         return False
+    except SyntaxError:
+        return True
     except UsageException:
         return True
 
