@@ -4,7 +4,7 @@ python:
    - 2.6
    - 2.7
    - 3.2
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: pip install mock 
+# mock/multiprocessing are only necessary for testing
+install: pip install mock  multiprocessing
 # command to run tests, e.g. python setup.py test
 script:  python -m bentomakerlib.bentomaker distcheck
