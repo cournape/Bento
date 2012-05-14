@@ -87,7 +87,7 @@ from bento.commands.wrapper_utils \
 from bento.commands.contexts \
     import \
         GlobalContext
-from bento.convert.api \
+from bento.convert \
     import \
         ConvertCommand, DetectTypeCommand
 import bento.errors
