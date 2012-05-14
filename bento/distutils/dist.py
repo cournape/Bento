@@ -50,9 +50,18 @@ import bento.commands.wrapper_utils
 from bento.commands.dependency \
     import \
         CommandScheduler
-from bento.commands.api \
+from bento.commands.build \
     import \
-        ConfigureCommand, BuildCommand, InstallCommand, SdistCommand
+        BuildCommand
+from bento.commands.configure \
+    import \
+        ConfigureCommand
+from bento.commands.install \
+    import \
+        InstallCommand
+from bento.commands.sdist \
+    import \
+        SdistCommand
 from bento.commands.options \
     import \
         OptionsContext

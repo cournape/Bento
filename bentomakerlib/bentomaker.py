@@ -22,28 +22,56 @@ from bento.compat.api \
         defaultdict
 import bento.core.node
 
-from bento.commands.api \
+from bento.commands.build \
     import \
-        HelpCommand, ConfigureCommand, BuildCommand, InstallCommand, \
-        ParseCommand, SdistCommand, BuildPkgInfoCommand, BuildEggCommand, \
-        BuildWininstCommand, SphinxCommand, RegisterPyPI, UploadPyPI
+        BuildCommand
+from bento.commands.build_egg \
+    import \
+        BuildEggCommand
+from bento.commands.build_pkg_info \
+    import \
+        BuildPkgInfoCommand
+from bento.commands.build_wininst \
+    import \
+        BuildWininstCommand
+from bento.commands.configure \
+    import \
+        ConfigureCommand
 from bento.commands.core \
     import \
-        find_hook_commands
-from bento.commands.registries \
-    import \
-        CommandRegistry, ContextRegistry, OptionsRegistry
+        HelpCommand, find_hook_commands
 from bento.commands.dependency \
     import \
         CommandScheduler
-from bento.commands.options \
-    import \
-        OptionsContext, Option
-
 from bento.commands.hooks \
     import \
         find_pre_hooks, find_post_hooks, find_startup_hooks, \
         find_shutdown_hooks, find_options_hooks
+from bento.commands.install \
+    import \
+        InstallCommand
+from bento.commands.parse \
+    import \
+        ParseCommand
+from bento.commands.register \
+    import \
+        RegisterPyPI
+from bento.commands.registries \
+    import \
+        CommandRegistry, ContextRegistry, OptionsRegistry
+from bento.commands.sdist \
+    import \
+        SdistCommand
+from bento.commands.sphinx \
+    import \
+        SphinxCommand
+from bento.commands.upload \
+    import \
+        UploadPyPI
+from bento.commands.options \
+    import \
+        OptionsContext, Option
+
 from bento.backends.utils \
     import \
         load_backend
