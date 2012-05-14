@@ -1,4 +1,4 @@
-from bento.parser.api \
+from bento.parser.misc \
     import \
         raw_parse, build_ast_from_raw_dict
 from bento.core.pkg_objects \

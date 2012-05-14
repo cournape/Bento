@@ -13,7 +13,7 @@ from bento.core.meta \
 from bento.core.utils \
     import \
         unnormalize_path
-from bento.parser.api \
+from bento.parser.misc \
     import \
         build_ast_from_raw_dict, raw_parse
 from bento.compat.api \
