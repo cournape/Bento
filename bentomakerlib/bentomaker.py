@@ -55,7 +55,7 @@ from bento.commands.command_contexts \
         HelpContext, SdistContext, ContextWithBuildDirectory
 from bento.commands.wrapper_utils \
     import \
-        resolve_and_run_command, set_main, run_with_dependencies
+        set_main, run_with_dependencies
 from bento.commands.contexts \
     import \
         GlobalContext
