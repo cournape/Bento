@@ -450,8 +450,6 @@ def noexc_main(argv=None):
             pprint('RED', "(You can see the traceback by setting the " \
                           "BENTOMAKER_DEBUG=1 environment variable)")
 
-    # FIXME: I must have been high that day. Fix this with proper exception
-    # hierarchy
     try:
         main(argv)
     except bento.errors.BentoError:
