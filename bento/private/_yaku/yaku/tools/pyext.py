@@ -412,6 +412,7 @@ def _detect_cc_type(ctx, cc_cmd):
 
 def get_distutils_cc_exec(ctx, compiler_type="default"):
     from distutils import ccompiler
+    from distutils.sysconfig import customize_compiler
 
     _OUTPUT.write("Detecting distutils CC exec ... ")
     if compiler_type == "default":
@@ -419,11 +420,12 @@ def get_distutils_cc_exec(ctx, compiler_type="default"):
                 distutils.ccompiler.get_default_compiler()
 
     compiler = ccompiler.new_compiler(compiler=compiler_type)
+    customize_compiler(compiler)
     if compiler_type == "msvc":
         compiler.initialize()
         cc = [compiler.cc]
     else:
-        cc = compiler.compiler_so
+        cc = compiler.compiler_so[:1]
     _OUTPUT.write("%s\n" % " ".join(cc))
     return cc
 
