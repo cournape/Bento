@@ -13,7 +13,7 @@ def run_with_dependencies(global_context, cmd_name, cmd_argv, run_node, top_node
     global_context."""
     deps = global_context.retrieve_dependencies(cmd_name)
     for dep_cmd_name in deps:
-        dep_cmd_argv = global_context.retrieve_command_argv(cmd_name)
+        dep_cmd_argv = global_context.retrieve_command_argv(dep_cmd_name)
         resolve_and_run_command(global_context, dep_cmd_name, dep_cmd_argv, run_node, top_node, package)
     resolve_and_run_command(global_context, cmd_name, cmd_argv, run_node, top_node, package)
 
