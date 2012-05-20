@@ -32,7 +32,7 @@ if not os.path.exists(WAFDIR):
     $WAFDIR contains the 'waflib' directory""" % WAFDIR)
 sys.path.insert(0, os.path.dirname(WAFDIR))
 
-WAF_TOOLDIR = op.join(PKGDATADIR, "waf_tools")
+WAF_TOOLDIR = op.join(PKGDATADIR, "backends", "waf_tools")
 
 from waflib.Context \
     import \
