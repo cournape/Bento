@@ -206,7 +206,7 @@ class BentoBuildContext(Build.BuildContext):
         # XXX: set into BuildWafContext
         self.bento_context = None
 
-    def register_outputs(self, category, name, outputs):
+    def register_outputs(self, category, name, outputs, target_dir=None):
         outputs_registry = self.bento_context.outputs_registry
 
         # waf -> bento nodes translations
@@ -214,7 +214,8 @@ class BentoBuildContext(Build.BuildContext):
         from_node = self.bento_context.build_node.find_node(outputs[0].parent.bldpath())
 
         pkg_dir = os.path.dirname(name.replace('.', os.path.sep))
-        target_dir = os.path.join('$sitedir', pkg_dir)
+        if target_dir is None:
+            target_dir = os.path.join('$sitedir', pkg_dir)
         outputs_registry.register_outputs(category, name, nodes, from_node, target_dir)
 
 @waflib.TaskGen.feature("bento")
