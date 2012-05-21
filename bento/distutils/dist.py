@@ -18,6 +18,9 @@ from bento.commands.configure \
 from bento.commands.wrapper_utils \
     import \
         set_main
+from bento.compat.api \
+    import \
+        defaultdict
 from bento.conv \
     import \
         pkg_to_distutils_meta
@@ -99,45 +102,39 @@ def _setup_cmd_classes(attrs):
     return attrs
 
 def global_context_factory(package_options):
-    context_registry = ContextRegistry()
-
     # FIXME: factor this out with the similar code in bentomakerlib
-    options_registry = OptionsRegistry()
-    # This is a dummy for now, to fulfill global_context API
-    cmd_scheduler = CommandScheduler()
-    commands_registry = CommandRegistry()
-    register_commands(commands_registry)
-    register_command_contexts(context_registry)
-    for cmd_name in commands_registry.command_names():
-        if not options_registry.is_registered(cmd_name):
-            cmd = commands_registry.retrieve(cmd_name)
-            options_context = OptionsContext.from_command(cmd)
-            options_registry.register(cmd_name, options_context)
-
-    configure_options_context = options_registry.retrieve("configure")
-    _setup_options_parser(configure_options_context, package_options)
-    global_context = GlobalContext(None, commands_registry, context_registry,
-                                   options_registry, cmd_scheduler)
+    global_context = GlobalContext(None)
     global_context.register_package_options(package_options)
+
+    register_commands(global_context)
+    register_command_contexts(global_context)
+    for cmd_name in global_context.command_names():
+        cmd = global_context.retrieve_command(cmd_name)
+        options_context = OptionsContext.from_command(cmd)
+
+        if not global_context.is_options_context_registered(cmd_name):
+            global_context.register_options_context(cmd_name, options_context)
+
     return global_context
 
-def register_command_contexts(context_registry):
-    context_registry.set_default(CmdContext)
-    if not context_registry.is_registered("configure"):
-        context_registry.register("configure", ConfigureYakuContext)
-    if not context_registry.is_registered("build"):
-        context_registry.register("build", BuildYakuContext)
-    if not context_registry.is_registered("sdist"):
-        context_registry.register("sdist", SdistContext)
-    if not context_registry.is_registered("install"):
-        context_registry.register("install", ContextWithBuildDirectory)
+def register_command_contexts(global_context):
+    default_mapping = defaultdict(lambda: ContextWithBuildDirectory)
+    default_mapping.update(dict([
+            ("configure", ConfigureYakuContext),
+            ("build", BuildYakuContext),
+            ("install", ContextWithBuildDirectory),
+            ("sdist", SdistContext)]))
 
-def register_commands(commands_registry):
-    commands_registry.register("configure", ConfigureCommand())
-    commands_registry.register("build", BuildCommand())
-    commands_registry.register("install", InstallCommand())
-    commands_registry.register("sdist", SdistCommand())
-    commands_registry.register("build_egg", BuildEggCommand())
+    for cmd_name in global_context.command_names(public_only=False):
+        if not global_context.is_command_context_registered(cmd_name):
+            global_context.register_command_context(cmd_name, default_mapping[cmd_name])
+
+def register_commands(global_context):
+    global_context.register_command("configure", ConfigureCommand())
+    global_context.register_command("build", BuildCommand())
+    global_context.register_command("install", InstallCommand())
+    global_context.register_command("sdist", SdistCommand())
+    global_context.register_command("build_egg", BuildEggCommand())
 
 class BentoDistribution(Distribution):
     def get_command_class(self, command):
