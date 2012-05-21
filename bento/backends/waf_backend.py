@@ -17,7 +17,7 @@ from bento.errors \
         UsageException
 from bento._config \
      import \
-        PKGDATADIR
+        SITEDIR
 
 if "WAFDIR" in os.environ:
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
@@ -32,7 +32,7 @@ if not os.path.exists(WAFDIR):
     $WAFDIR contains the 'waflib' directory""" % WAFDIR)
 sys.path.insert(0, os.path.dirname(WAFDIR))
 
-WAF_TOOLDIR = op.join(PKGDATADIR, "backends", "waf_tools")
+WAF_TOOLDIR = op.join(SITEDIR, "bento", "backends", "waf_tools")
 
 from waflib.Context \
     import \

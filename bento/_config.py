@@ -10,10 +10,11 @@ import bento
 try:
     from bento.__config_py \
         import \
-           PKGDATADIR
+           PKGDATADIR, SITEDIR
 except ImportError:
     # Arch-independent path
     PKGDATADIR = os.path.abspath(os.path.dirname(__file__))
+    SITEDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 # Windows binaries
 _CLI = os.path.join(PKGDATADIR, "commands", "cli.exe")

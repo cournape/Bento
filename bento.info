@@ -44,11 +44,6 @@ DataFiles: ply_data
     TargetDir: $pkgdatadir
     Files: parsetab
 
-DataFiles: waf_tools
-    SourceDir: bento/backends/waf_tools
-    TargetDir: $pkgdatadir/waf_tools
-    Files: *.py
-
 ExtraSourceFiles:
     LICENSE.txt,
     PACKAGERS.txt,
@@ -66,6 +61,7 @@ Library:
     Packages:
         bento,
         bento.backends,
+        bento.backends.waf_tools,
         bento.compat,
         bento.commands,
         bento.convert,
