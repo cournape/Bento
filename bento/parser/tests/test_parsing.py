@@ -13,13 +13,12 @@ from bento.core.pkg_objects \
 from bento.core.options \
     import \
         PackageOptions
-
+from bento.core.package \
+    import \
+        PackageDescription
 from bento.core.utils \
     import \
         extract_exception
-from bento \
-    import \
-        PackageDescription
 from bento.compat.api \
     import \
         NamedTemporaryFile

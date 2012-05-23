@@ -4,7 +4,9 @@ import tempfile
 from bento.compat.api.moves \
     import \
         unittest
-from bento import PackageDescription
+from bento.core.package \
+    import \
+        PackageDescription
 from bento.core.package import static_representation
 from bento.core.meta import PackageMetadata
 from bento.core.pkg_objects import DataFiles

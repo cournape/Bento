@@ -8,12 +8,11 @@ the command line interfance to bento. Sane API are provided so that people can
 build their own deployment facilities on top of it.
 
 The code is currently organized as follows:
-    - bento.core.parser: ply-based lexer/parser for the format
-    - bento.core: core facilities to build package representation
+    - bento.core: core facilities to handle package representation
     - bento.commands: commands as provided by bentomaker
-    - bento.private: bundled packages
     - bento.compat: compatibility code to provide consistent API to all
-      supported python versions (2.4 -> 2.7 ATM)
+    - bento.parser: ply-based lexer/parser for the bento.info format
+    - bento.private: bundled packages
 """
 import sys
 import os
@@ -32,11 +31,6 @@ for bundled_pkg in ["_ply", "_simplejson", "_yaku", "_six"]:
         # XXX: we always add bundled packages for now because checking for file
         # existence is too naive (does not work for zip-import)
         sys.path.insert(0, m_path)
-
-from bento.core.package import \
-        PackageDescription, static_representation
-from bento.conv import \
-        distutils_to_package_description
 
 try:
     from bento.__dev_version import version as __version__
