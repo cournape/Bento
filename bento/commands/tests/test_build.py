@@ -54,7 +54,7 @@ from bento.core.testing \
 from bento.commands.tests.utils \
     import \
         prepare_configure, prepare_build, EncodedStringIO, \
-        prepare_command, create_global_context
+        prepare_command, create_global_context, prepare_package
 from bento.errors \
     import \
         UsageException
@@ -560,3 +560,48 @@ class TestBuildDirectoryWaf(TestBuildDirectoryBase):
         bld, build = prepare_command(global_context, "build", [], package, top_node)
         bld.waf_context.logger = make_stream_logger("build", cStringIO())
         run_command_in_context(bld, build)
+
+class _SandboxMixin(unittest.TestCase):
+    def setUp(self):
+        self.new_cwd = tempfile.mkdtemp()
+        try:
+            self.old_cwd = os.getcwd()
+            os.chdir(self.new_cwd)
+        except:
+            shutil.rmtree(self.new_cwd)
+            raise
+
+    def tearDown(self):
+        os.chdir(self.old_cwd)
+        shutil.rmtree(self.new_cwd)
+
+class TestOutputRegistration(_SandboxMixin):
+    def setUp(self):
+        super(TestOutputRegistration, self).setUp()
+        self.top_node, self.build_node, self.run_node = create_base_nodes()
+
+    def _run_build_with_pre_hook(self, hook_func):
+        package = PackageDescription.from_string(BENTO_INFO)
+        global_context = prepare_package(self.top_node, BENTO_INFO)
+
+        conf, configure = prepare_command(global_context, "configure", [], package, self.top_node)
+        run_command_in_context(conf, configure)
+
+        pre_hook = PreHookWrapper(hook_func, self.build_node.path_from(self.top_node), self.top_node.abspath())
+        bld, build = prepare_command(global_context, "build", [], package, self.top_node)
+        run_command_in_context(bld, build, pre_hooks=[pre_hook])
+
+        return bld
+
+    def test_simple(self):
+        def hook(context):
+            context.register_category("dummy")
+            n = context.make_build_node("foo.txt")
+            context.register_outputs("dummy", "dummy1", [n])
+        bld = self._run_build_with_pre_hook(hook)
+
+        self.assertTrue("dummy" in bld.outputs_registry.categories)
+        nodes = []
+        for name, _nodes, source_dir, target_dir, in bld.outputs_registry.iter_category("dummy"):
+            nodes.extend(_nodes)
+        self.assertTrue(_nodes, [self.build_node.find_node("foo.txt")])

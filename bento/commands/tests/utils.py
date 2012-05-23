@@ -22,6 +22,9 @@ from bento.commands.options \
 from bento.core \
     import \
         PackageDescription, PackageOptions
+from bento.core.testing \
+    import \
+        create_fake_package_from_bento_info
 
 def prepare_configure(run_node, bento_info, context_klass=ConfigureYakuContext, cmd_argv=None):
     if cmd_argv is None:
@@ -74,6 +77,15 @@ def create_global_context(package, package_options, backend=None):
     global_context.backend.register_options_contexts(global_context)
 
     return global_context
+
+def prepare_package(top_node, bento_info):
+    package = PackageDescription.from_string(bento_info)
+    package_options = PackageOptions.from_string(bento_info)
+
+    create_fake_package_from_bento_info(top_node, bento_info)
+    top_node.make_node("bento.info").safe_write(bento_info)
+
+    return create_global_context(package, package_options)
 
 def prepare_command(global_context, cmd_name, cmd_argv, package, run_node):
     if cmd_argv is None:
