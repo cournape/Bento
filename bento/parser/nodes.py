@@ -1,13 +1,10 @@
 import sys
 
-if sys.version_info[0] < 3:
-    import cPickle as pickle
-else:
-    import pickle
+from six.moves import cPickle
 
 def __copy(d):
     # Faster than deepcopy - ideally remove the need for deepcopy altogether
-    return pickle.loads(pickle.dumps(d, protocol=2))
+    return cPickle.loads(cPickle.dumps(d, protocol=2))
 
 class Node(object):
     def __init__(self, tp, children=None, value=None):

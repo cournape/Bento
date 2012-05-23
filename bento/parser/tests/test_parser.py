@@ -1,9 +1,6 @@
 import sys
 
-if sys.version_info[0] < 3:
-    from cStringIO import StringIO
-else:
-    from io import StringIO
+from six.moves import cStringIO
 
 from unittest \
     import \
@@ -18,7 +15,7 @@ from bento.parser.parser \
 
 class _TestGrammar(TestCase):
     def _test(self, data, expected):
-        s = StringIO()
+        s = cStringIO()
 
         p = parse(data)
         ast_pprint(p, string=s)

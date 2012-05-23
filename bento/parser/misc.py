@@ -1,18 +1,18 @@
 from bento.core.utils \
     import \
         extract_exception
-from bento.parser.parser \
-    import \
-        parse as _parse
-from bento.parser.nodes \
-    import \
-        ast_walk
-from bento.parser.visitor \
-    import \
-        Dispatcher
 from bento.errors \
     import \
         ParseError
+from bento.parser.nodes \
+    import \
+        ast_walk
+from bento.parser.parser \
+    import \
+        parse as _parse
+from bento.parser.visitor \
+    import \
+        Dispatcher
 
 def raw_parse(data, filename=None):
     try:

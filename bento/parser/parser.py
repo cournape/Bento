@@ -3,25 +3,23 @@ import errno
 
 import os.path as op
 
-from ply \
-    import yacc
-
-from bento.parser.lexer \
-    import \
-        MyLexer, tokens as _tokens
+import ply.yacc
 
 from bento._config \
     import \
         _PICKLED_PARSETAB, _OPTIMIZE_LEX, _DEBUG_YACC
-from bento.parser.nodes \
-    import \
-        Node
-from bento.errors \
-    import \
-        InternalBentoError, BentoError, ParseError
 from bento.core.utils \
     import \
         extract_exception
+from bento.errors \
+    import \
+        InternalBentoError, BentoError, ParseError
+from bento.parser.lexer \
+    import \
+        MyLexer, tokens as _tokens
+from bento.parser.nodes \
+    import \
+        Node
 
 # Do not remove: this is used by PLY
 tokens = _tokens
@@ -80,7 +78,7 @@ class Parser(object):
                         raise BentoError("Cannot write new updated grammar to file %r" % _PICKLED_PARSETAB)
                 else:
                     raise
-        self.parser = yacc.yacc(start="stmt_list",
+        self.parser = ply.yacc.yacc(start="stmt_list",
                                 picklefile=picklefile,
                                 debug=_DEBUG_YACC)
 
