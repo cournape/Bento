@@ -483,11 +483,15 @@ class TestBuildDirectoryBase(unittest.TestCase):
     def setUp(self):
         self.d = tempfile.mkdtemp()
 
-        self.top_node, self.build_node, self.run_node = create_base_nodes(self.d,
-                os.path.join(self.d, "yoyobuild"))
+        try:
+            self.top_node, self.build_node, self.run_node = create_base_nodes(self.d,
+                    os.path.join(self.d, "yoyobuild"))
 
-        self.old_dir = os.getcwd()
-        os.chdir(self.d)
+            self.old_dir = os.getcwd()
+            os.chdir(self.d)
+        except:
+            shutil.rmtree(self.d)
+            raise
 
     def tearDown(self):
         os.chdir(self.old_dir)
