@@ -1,14 +1,7 @@
 import os
 import sys
 
-if sys.version_info[0] < 3:
-    from cPickle \
-        import \
-            dump, load
-else:
-    from pickle \
-        import \
-            dump, load
+from six.moves import cPickle
 
 from bento.compat.api \
     import \
@@ -86,14 +79,14 @@ class CommandDataProvider(object):
         if os.path.exists(filename):
             fid = open(filename, "rb")
             try:
-                return cls(load(fid))
+                return cls(cPickle.load(fid))
             finally:
                 fid.close()
         else:
             return cls()
 
     def store(self, filename):
-        safe_write(filename, lambda fid: dump(self._data, fid))
+        safe_write(filename, lambda fid: cPickle.dump(self._data, fid))
 
     def __init__(self, data=None):
         self._data = defaultdict(list)

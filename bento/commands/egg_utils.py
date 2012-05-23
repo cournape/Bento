@@ -1,26 +1,21 @@
-import sys
 import os
+import sys
 import zipfile
 
-if sys.version_info[0] < 3:
-    from StringIO \
-        import \
-            StringIO
-else:
-    from io \
-        import \
-            StringIO
+from six.moves import cStringIO
 
-from bento.installed_package_description import \
-        iter_source_files, InstalledPkgDescription
-from bento.conv import \
-        to_distutils_meta
-
-from bento.core import \
-        PackageMetadata
 from bento._config \
     import \
         IPKG_PATH
+from bento.conv \
+    import \
+        to_distutils_meta
+from bento.core \
+    import \
+        PackageMetadata
+from bento.installed_package_description \
+    import \
+        iter_source_files, InstalledPkgDescription
 
 def egg_filename(fullname, pyver=None):
     if not pyver:
@@ -54,7 +49,7 @@ class EggInfo(object):
         self.ipkg = None
 
     def get_pkg_info(self):
-        tmp = StringIO()
+        tmp = cStringIO()
         self._dist_meta.write_pkg_file(tmp)
         ret = tmp.getvalue()
         tmp.close()
@@ -90,7 +85,7 @@ class EggInfo(object):
         if self.ipkg is None:
             return ipkg_node.read()
         else:
-            tmp = StringIO()
+            tmp = cStringIO()
             self.ipkg._write(tmp)
             ret = tmp.getvalue()
             tmp.close()
