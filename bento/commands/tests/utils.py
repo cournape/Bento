@@ -6,7 +6,7 @@ from six.moves \
 
 from bento.backends.yaku_backend \
     import \
-        ConfigureYakuContext, BuildYakuContext
+        ConfigureYakuContext, BuildYakuContext, YakuBackend
 from bento.commands.build \
     import \
         BuildCommand
@@ -52,6 +52,9 @@ def _prepare_command(run_node, bento_info, cmd_klass, context_klass, cmd_argv):
     return context, cmd
 
 def create_global_context(package, package_options, backend=None):
+    if backend is None:
+        backend = YakuBackend()
+
     global_context = GlobalContext(None)
     global_context.register_package_options(package_options)
     if backend:
