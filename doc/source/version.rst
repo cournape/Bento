@@ -25,7 +25,7 @@ Internals
 
         - Test coverage has been significantly improved
         - Lots of code style fixes to make the codebase more consistent
-        - build backend-specific code has been moved to bento/backends
+        - build backend-specific code has been moved to bento.backends
         - parser code has been moved to bento.parser
         - last hook-related global variables have been removed
         - bentomaker itself does not use global variables anymore for either
