@@ -15,6 +15,7 @@ Main features:
           sphinx.
         - add tweak_builder function to build contexts to simplify simple
           builder customization (e.g. include_dirs, defines, etc...)
+        - add simpler API to register output nodes
 
 Fixed issues
 ------------
