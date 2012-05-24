@@ -604,4 +604,18 @@ class TestOutputRegistration(_SandboxMixin):
         nodes = []
         for name, _nodes, source_dir, target_dir, in bld.outputs_registry.iter_category("dummy"):
             nodes.extend(_nodes)
-        self.assertTrue(_nodes, [self.build_node.find_node("foo.txt")])
+        self.assertTrue(nodes, [self.build_node.find_node("foo.txt")])
+
+    def test_simple_registration(self):
+        def hook(context):
+            n = context.make_build_node("foo.txt")
+            context.register_outputs_simple([n])
+            n = context.make_build_node("bar.txt")
+            context.register_outputs_simple([n])
+        bld = self._run_build_with_pre_hook(hook)
+
+        self.assertTrue("hook_registered" in bld.outputs_registry.categories)
+        nodes = []
+        for name, _nodes, source_dir, target_dir, in bld.outputs_registry.iter_category("hook_registered"):
+            nodes.extend(_nodes)
+        self.assertTrue(nodes, [self.build_node.find_node("foo.txt")])

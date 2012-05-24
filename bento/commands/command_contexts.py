@@ -372,9 +372,21 @@ class BuildContext(ContextWithBuildDirectory):
         self.isection_registry.register_category("datafiles", _generic_iregistrer)
         self.isection_registry.register_category("scripts", _generic_iregistrer)
 
+        self._current_default_section = 0
+
     def register_category(self, category_name, category_type="pythonfiles"):
         self.outputs_registry.register_category(category_name, category_type)
         self.isection_registry.register_category(category_name, _generic_iregistrer)
+
+    def register_outputs_simple(self, nodes, from_node=None, target_dir='$sitedir'):
+        category_name = "hook_registered"
+        section_name = "hook_registered%d" % self._current_default_section
+
+        if not category_name in self.outputs_registry.categories:
+            self.register_category(category_name)
+        self.register_outputs(category_name, section_name, nodes, from_node, target_dir)
+
+        self._current_default_section += 1
 
     def register_outputs(self, category_name, section_name, nodes, from_node=None, target_dir="$sitedir"):
         if from_node is None:
