@@ -81,9 +81,6 @@ class CmdContext(object):
         self.local_node = None
         self.local_pkg = None
 
-    def retrieve_package_scheme(self):
-        return self._global_context.retrieve_package_scheme()
-
     def recurse_manager(self, local_node):
         """
         Return a dummy object to use for recurse if one wants to use context
@@ -132,6 +129,13 @@ class CmdContext(object):
     def get_parsed_arguments(self):
         return self.options_context.parser.parse_args(self.command_argv)
 
+    def retrieve_scheme(self):
+        return self._global_context.retrieve_scheme()
+
+    def retrieve_configured_scheme(self):
+        configure_argv = self._global_context.retrieve_command_argv("configure")
+        return self._global_context.retrieve_configured_scheme(configure_argv)
+
     # This is run before the associated command pre-hooks
     def init(self):
         pass
@@ -172,10 +176,6 @@ class ContextWithBuildDirectory(CmdContext):
         n = self.build_node.make_node(path)
         n.parent.mkdir()
         return n
-
-    def configured_scheme(self):
-        configure_argv = self._global_context.retrieve_command_argv("configure")
-        return self._global_context.retrieve_configured_paths(configure_argv)
 
 class ConfigureContext(ContextWithBuildDirectory):
     pass
@@ -441,7 +441,7 @@ class BuildContext(ContextWithBuildDirectory):
             self.outputs_registry.register_outputs(category, name, nodes, from_node, target_dir)
 
         if self.pkg.config_py:
-            content = _config_content(self.configured_scheme())
+            content = _config_content(self.retrieve_configured_scheme())
             target_node = self.build_node.make_node(self.pkg.config_py)
             target_node.parent.mkdir()
             target_node.safe_write(content)
@@ -468,7 +468,7 @@ class BuildContext(ContextWithBuildDirectory):
 
         # FIXME: this is quite stupid.
         if self.inplace:
-            scheme = self.retrieve_package_scheme()
+            scheme = self.retrieve_scheme()
             scheme["prefix"] = scheme["eprefix"] = self.run_node.abspath()
             scheme["sitedir"] = self.run_node.abspath()
 

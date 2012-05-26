@@ -20,7 +20,7 @@ class TestGlobalContextCustomizedOptions(unittest.TestCase):
 
     def _test(self, package_options, r_scheme):
         self.context.register_package_options(package_options)
-        scheme = self.context.retrieve_package_scheme()
+        scheme = self.context.retrieve_scheme()
 
         default_scheme, _ = get_scheme(sys.platform)
         r_scheme.update(default_scheme)

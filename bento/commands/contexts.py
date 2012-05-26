@@ -140,12 +140,12 @@ class GlobalContext(object):
         self._package_options = package_options
 
     # FIXME: rename
-    def retrieve_package_scheme(self):
+    def retrieve_scheme(self):
         """Return the path scheme, including any custom path defined in the
         bento.info script (Path sections)."""
         return _compute_scheme(self._package_options)
 
-    def retrieve_configured_paths(self, command_argv=None):
+    def retrieve_configured_scheme(self, command_argv=None):
         """Return the configured path scheme with the given command argv.
 
         Note

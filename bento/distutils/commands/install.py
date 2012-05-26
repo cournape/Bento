@@ -150,7 +150,7 @@ class install(Command):
 
         n = context.build_node.make_node(IPKG_PATH)
         ipkg = InstalledPkgDescription.from_file(n.abspath())
-        scheme = context.configured_scheme()
+        scheme = context.retrieve_configured_scheme()
         ipkg.update_paths(scheme)
         file_sections = ipkg.resolve_paths_with_destdir(src_root_node=context.build_node)
 
