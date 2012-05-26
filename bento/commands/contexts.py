@@ -1,6 +1,6 @@
 from bento.commands.configure \
     import \
-        _compute_scheme
+        _compute_scheme, set_scheme_options
 from bento.commands.registries \
     import \
         CommandRegistry, ContextRegistry, OptionsRegistry
@@ -139,10 +139,29 @@ class GlobalContext(object):
     def register_package_options(self, package_options):
         self._package_options = package_options
 
+    # FIXME: rename
     def retrieve_package_scheme(self):
         """Return the path scheme, including any custom path defined in the
         bento.info script (Path sections)."""
         return _compute_scheme(self._package_options)
+
+    def retrieve_configured_paths(self, command_argv=None):
+        """Return the configured path scheme with the given command argv.
+
+        Note
+        ----
+        This can only be safely called once regiser_options_context has been
+        called for the configure command"""
+        assert self._package_options is not None
+        assert self.is_options_context_registered("configure")
+
+        if command_argv is None:
+            command_argv = []
+        scheme = _compute_scheme(self._package_options)
+        options_context = self.retrieve_options_context("configure")
+        o, a = options_context.parser.parse_args(command_argv)
+        set_scheme_options(scheme, o, self._package_options)
+        return scheme
 
     #-----------------------
     # Command dependency API
@@ -182,6 +201,7 @@ class GlobalContext(object):
         self.backend = backend
 
     def retrieve_command_argv(self, command_name):
+        # FIXME: returning empty list if nothing is available hides bugs.
         return self._command_data_store.get(command_name, [])
 
     def save_command_argv(self, command_name, command_argv):

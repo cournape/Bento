@@ -30,7 +30,7 @@ from bento._config \
         CONFIGURED_STATE_DUMP
 from bento.commands.configure \
     import \
-        _ConfigureState, _compute_scheme
+        _compute_scheme
 from bento.commands.build \
     import \
         SectionWriter
@@ -154,17 +154,12 @@ class ContextWithBuildDirectory(CmdContext):
         self.top_node = self.run_node._ctx.srcnode
         self.build_node = self.run_node._ctx.bldnode
 
-        self._configured_state = None
-
         if self.pkg.sub_directory:
             self.top_or_sub_directory_node = self.top_node.make_node(self.pkg.sub_directory)
             self.build_or_sub_directory_node = self.build_node.make_node(self.pkg.sub_directory)
         else:
             self.top_or_sub_directory_node = self.top_node
             self.build_or_sub_directory_node = self.build_node
-
-        # FIXME: removed this
-        self._configured_state = None
 
     def make_source_node(self, path):
         n = self.top_node.find_node(path)
@@ -178,18 +173,9 @@ class ContextWithBuildDirectory(CmdContext):
         n.parent.mkdir()
         return n
 
-    def _get_configured_state(self):
-        if self._configured_state is None:
-            dump_node = self.build_node.find_node(CONFIGURED_STATE_DUMP)
-            if dump_node is None:
-                raise IOError("%s not found" % CONFIGURED_STATE_DUMP)
-            else:
-                self._configured_state = _ConfigureState.from_dump(dump_node)
-        return self._configured_state
-
-    def get_paths_scheme(self):
-        state = self._get_configured_state()
-        return state.paths
+    def configured_scheme(self):
+        configure_argv = self._global_context.retrieve_command_argv("configure")
+        return self._global_context.retrieve_configured_paths(configure_argv)
 
 class ConfigureContext(ContextWithBuildDirectory):
     pass
@@ -455,7 +441,7 @@ class BuildContext(ContextWithBuildDirectory):
             self.outputs_registry.register_outputs(category, name, nodes, from_node, target_dir)
 
         if self.pkg.config_py:
-            content = _config_content(self.get_paths_scheme())
+            content = _config_content(self.configured_scheme())
             target_node = self.build_node.make_node(self.pkg.config_py)
             target_node.parent.mkdir()
             target_node.safe_write(content)
@@ -466,6 +452,7 @@ class BuildContext(ContextWithBuildDirectory):
             target_node = write_template(self.top_node, self.pkg)
             self.outputs_registry.register_outputs("modules", "meta_from_template", [target_node],
                                                    self.build_node, "$sitedir")
+
     def post_compile(self):
         # Do the output_registry -> installed sections registry convertion
         section_writer = self.section_writer

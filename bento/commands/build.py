@@ -1,3 +1,7 @@
+import os
+
+import os.path as op
+
 from bento.core.utils \
     import \
         subst_vars
@@ -22,6 +26,8 @@ class SectionWriter(object):
     def store(self, filename, pkg):
         meta = ipkg_meta_from_pkg(pkg)
         p = InstalledPkgDescription(self.sections, meta, pkg.executables)
+        if not op.exists(op.dirname(filename)):
+            os.makedirs(op.dirname(filename))
         p.write(filename)
 
 class BuildCommand(Command):

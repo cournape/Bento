@@ -39,3 +39,4 @@ class config(old_config):
             argv.append("--%s=%s" % (k, v))
 
         dist.run_command_in_context(self.cmd_name, argv)
+        dist.global_context.save_command_argv("configure", argv)

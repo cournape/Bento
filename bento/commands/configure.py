@@ -20,34 +20,6 @@ from bento.errors \
     import \
         UsageException
 
-class _ConfigureState(object):
-    def __init__(self, bento_script, pkg, paths=None, flags=None, user_data=None):
-        self.filename = bento_script.name
-        self.pkg = pkg
-
-        if flags is None:
-            self.flags = {}
-        else:
-            self.flags = flags
-
-        if paths is None:
-            self.paths = {}
-        else:
-            self.paths = paths
-
-        if user_data is None:
-            self.user_data = {}
-        else:
-            self.user_data = user_data
-
-    def dump(self, node):
-        node.parent.mkdir()
-        node.safe_write(moves.cPickle.dumps(self), 'wb')
-
-    @classmethod
-    def from_dump(cls, node):
-        return moves.cPickle.loads(node.read('rb'))
-
 def set_scheme_unix(scheme, options, package):
     # This mess is the simplest solution I can think of to support:
     #   - /usr/local as default for prefix while using debian/ubuntu changes
@@ -225,12 +197,6 @@ Usage: bentomaker configure [OPTIONS]"""
             return
 
         set_scheme_options(self.scheme, o, ctx.pkg)
-        flag_vals = _get_flag_values(self.flags, o)
-
-        s = _ConfigureState(bento_script, ctx.pkg, self.scheme, flag_vals, {})
-
-        dump_node = ctx.build_node.make_node(CONFIGURED_STATE_DUMP)
-        s.dump(dump_node)
 
 def _compute_scheme(package_options):
     """Compute path and flags-related options as defined in the script file(s)

@@ -460,7 +460,6 @@ def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_no
     if bento_info is None:
         raise bento.errors.UsageException("Error: no %s found !" % os.path.join(top_node.abspath(), BENTO_SCRIPT))
 
-
     running_package = get_running_package(global_context, cached_package, bento_info)
     run_with_dependencies(global_context, cmd_name, cmd_argv, run_node, top_node, running_package)
 
