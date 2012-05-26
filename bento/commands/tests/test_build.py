@@ -34,7 +34,7 @@ from bento.backends.distutils_backend \
         DistutilsBuildContext, DistutilsConfigureContext
 from bento.backends.yaku_backend \
     import \
-        BuildYakuContext, ConfigureYakuContext
+        BuildYakuContext, ConfigureYakuContext, YakuBackend
 from bento.commands.hooks \
     import \
         PreHookWrapper
@@ -419,13 +419,17 @@ class TestBuildCommand(unittest.TestCase):
 
     def _execute_build(self, bento_info):
         create_fake_package_from_bento_info(self.top_node, bento_info)
-        conf, configure = prepare_configure(self.top_node, bento_info, ConfigureYakuContext)
+        # FIXME: this should be done automatically in create_fake_package_from_bento_info
+        self.top_node.make_node("bento.info").safe_write(bento_info)
+
+        package = PackageDescription.from_string(bento_info)
+        package_options = PackageOptions.from_string(bento_info)
+
+        global_context = create_global_context(package, package_options, YakuBackend())
+        conf, configure = prepare_command(global_context, "configure", [], package, self.run_node)
         run_command_in_context(conf, configure)
 
-        build = BuildCommand()
-        opts = OptionsContext.from_command(build)
-
-        bld = BuildYakuContext(None, [], opts, conf.pkg, self.top_node)
+        bld, build = prepare_command(global_context, "build", [], package, self.run_node)
         run_command_in_context(bld, build)
 
         return bld

@@ -78,14 +78,14 @@ def create_global_context(package, package_options, backend=None):
 
     return global_context
 
-def prepare_package(top_node, bento_info):
+def prepare_package(top_node, bento_info, backend=None):
     package = PackageDescription.from_string(bento_info)
     package_options = PackageOptions.from_string(bento_info)
 
     create_fake_package_from_bento_info(top_node, bento_info)
     top_node.make_node("bento.info").safe_write(bento_info)
 
-    return create_global_context(package, package_options)
+    return create_global_context(package, package_options, backend)
 
 def prepare_command(global_context, cmd_name, cmd_argv, package, run_node):
     if cmd_argv is None:

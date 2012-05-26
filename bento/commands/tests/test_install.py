@@ -17,6 +17,9 @@ from bento.backends.yaku_backend \
 from bento.commands.command_contexts \
     import \
         ContextWithBuildDirectory
+from bento.commands.contexts \
+    import \
+        GlobalContext
 from bento.commands.wrapper_utils \
     import \
         run_command_in_context
@@ -30,6 +33,9 @@ from bento.commands.options \
     import \
         OptionsContext
 
+from bento.core.options \
+    import \
+        PackageOptions
 from bento.core.testing \
     import \
         create_fake_package_from_bento_info, require_c_compiler
@@ -52,25 +58,36 @@ class TestBuildCommand(unittest.TestCase):
 
         create_fake_package_from_bento_info(top_node, bento_info)
 
+        context = GlobalContext(None)
+        options = PackageOptions.from_string(bento_info)
+        context.register_package_options(options)
+
         cmd_argv = ["--prefix=%s" % install_prefix, "--exec-prefix=%s" % install_prefix]
 
         conf, configure = prepare_configure(top_node, bento_info, ConfigureYakuContext, cmd_argv)
+
+        context.register_command("configure", configure)
+        options_context = OptionsContext.from_command(configure)
+        if not context.is_options_context_registered("configure"):
+            context.register_options_context("configure", options_context)
+        context.save_command_argv("configure", cmd_argv)
+
         run_command_in_context(conf, configure)
 
         bld, build = prepare_build(top_node, bento_info)
         run_command_in_context(bld, build)
 
-        return conf, configure, bld, build
+        return context, conf, configure, bld, build
 
     def _test_dry_run(self, bento_info):
         install_prefix = tempfile.mkdtemp()
         try:
-            conf, configure, bld, build = self._run_configure_and_build(bento_info, install_prefix)
+            context, conf, configure, bld, build = self._run_configure_and_build(bento_info, install_prefix)
 
             install = InstallCommand()
             opts = OptionsContext.from_command(install)
 
-            inst = ContextWithBuildDirectory(None, ["--list-files"], opts, conf.pkg, self.top_node)
+            inst = ContextWithBuildDirectory(context, ["--list-files"], opts, conf.pkg, self.top_node)
             run_command_in_context(inst, install)
         finally:
             shutil.rmtree(install_prefix)
@@ -78,12 +95,12 @@ class TestBuildCommand(unittest.TestCase):
     def _test_run(self, bento_info):
         install_prefix = tempfile.mkdtemp()
         try:
-            conf, configure, bld, build = self._run_configure_and_build(bento_info, install_prefix)
+            context, conf, configure, bld, build = self._run_configure_and_build(bento_info, install_prefix)
 
             install = InstallCommand()
             opts = OptionsContext.from_command(install)
 
-            inst = ContextWithBuildDirectory(None, [], opts, conf.pkg, self.top_node)
+            inst = ContextWithBuildDirectory(context, [], opts, conf.pkg, self.top_node)
             run_command_in_context(inst, install)
         finally:
             shutil.rmtree(install_prefix)
