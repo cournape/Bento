@@ -26,7 +26,7 @@ from bento.core.testing\
 from bento.core.node \
     import \
         create_base_nodes
-from bento.core.utils \
+from bento.utils.utils \
     import \
         subst_vars
 from bento.backends.distutils_backend \

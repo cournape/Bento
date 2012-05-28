@@ -11,16 +11,19 @@ import shlex
 from six.moves \
     import \
         cPickle
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
 
 import os.path as op
 
 from bento.compat.api \
     import \
-        relpath, rename as _rename, partial
+        partial
+
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
+
+
 
 # Color handling for terminals (taken from waf)
 COLORS_LST = {
@@ -158,52 +161,6 @@ def cpu_count():
         return 1
         #raise NotImplementedError('cannot determine number of cpus')
 
-def ensure_dir(path):
-    d = op.dirname(path)
-    if d and not op.exists(d):
-        os.makedirs(d)
-
-def normalize_path(path):
-    return path.replace("\\", "/")
-
-def unnormalize_path(path):
-    return path.replace("/", "\\")
-
-def rename(source, target):
-    try:
-        _rename(source, target)
-    except OSError:
-        e = extract_exception()
-        if e.errno == errno.EXDEV:
-            shutil.move(source, target)
-        else:
-            raise
-
-def safe_write(target, writer, mode="wb"):
-    """a 'safe' way to write to files.
-
-    Instead of writing directly into a file, this function writes to a
-    temporary file, and then rename the file to the target. On sane
-    platforms, rename is atomic, so this avoids leaving stale
-    files in inconsistent states.
-
-    Parameters
-    ----------
-    target: str
-        destination to write to
-    writer: callable
-        function which takes one argument, a file descriptor, and
-        writes content to it
-    mode: str
-        opening mode
-    """
-    f = open(target + ".tmp", mode)
-    try:
-        writer(f)
-    finally:
-        f.close()
-        rename(target + ".tmp", target)
-
 def same_content(f1, f2):
     """Return true if files in f1 and f2 has the same content."""
     fid1 = open(f1, "rb")
@@ -291,18 +248,6 @@ def cmd_is_runnable(cmd, **kw):
             return False
         else:
             raise
-
-def find_root(p):
-    """Return the 'root' of the given path.
-
-    Example
-    -------
-    >>> find_root("/Users/joe")
-    '/'
-    """
-    while p != op.dirname(p):
-        p = op.dirname(p)
-    return p
 
 def explode_path(path):
     """Split a path into its components.

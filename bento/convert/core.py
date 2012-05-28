@@ -11,7 +11,7 @@ from bento.compat.api \
 from bento.conv \
     import \
         find_package, distutils_to_package_description
-from bento.core.utils \
+from bento.utils.utils \
     import \
         pprint, extract_exception
 from bento.core.pkg_objects \

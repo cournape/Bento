@@ -4,7 +4,7 @@ import os
 from bento.core \
     import \
         PackageDescription
-from bento.core.utils \
+from bento.utils.utils \
     import \
         pprint, MODE_755
 

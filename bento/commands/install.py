@@ -11,7 +11,7 @@ from bento.installed_package_description import \
 
 from bento.commands.core import \
     Command, Option
-from bento.core.utils import \
+from bento.utils.utils import \
     pprint, extract_exception, MODE_755, MODE_777
 
 def _rollback_operation(line):

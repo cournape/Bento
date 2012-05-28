@@ -3,18 +3,13 @@ import sys
 
 import os.path as op
 
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
-
 from bento.pypi.register_utils \
     import \
         encode_multipart, _BOUNDARY
 from bento.conv \
     import \
         pkg_to_distutils_meta
-from bento.core.utils \
+from bento.utils.utils \
     import \
         extract_exception
 from bento.errors \
@@ -26,6 +21,14 @@ from six \
         PY3
 
 import six
+
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
+
+
+
 
 if PY3:
     from urllib.request \

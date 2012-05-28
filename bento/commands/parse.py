@@ -11,7 +11,7 @@ from bento.commands.core import \
 from bento.parser.misc \
     import \
         build_ast_from_data
-from bento.core.utils \
+from bento.utils.utils \
     import \
         extract_exception
 

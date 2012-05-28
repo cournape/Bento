@@ -2,7 +2,7 @@ import os
 
 import os.path as op
 
-from bento.core.utils \
+from bento.utils.utils \
     import \
         subst_vars
 from bento.installed_package_description \

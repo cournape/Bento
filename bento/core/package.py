@@ -10,9 +10,6 @@ from bento.core.pkg_objects \
 from bento.core.meta \
     import \
         _set_metadata, _METADATA_FIELDS
-from bento.core.utils \
-    import \
-        unnormalize_path
 from bento.parser.misc \
     import \
         build_ast_from_raw_dict, raw_parse
@@ -28,6 +25,7 @@ from bento.core.parse_helpers \
 from bento.errors \
     import \
         InvalidPackage, InternalBentoError
+import bento.utils.path
 
 def _parse_libraries(libraries):
     ret = {}
@@ -284,12 +282,12 @@ class PackageDescription:
             self.hook_files = []
 
         if config_py is not None and os.sep != "/":
-            self.config_py = unnormalize_path(config_py)
+            self.config_py = bento.utils.path.unnormalize_path(config_py)
         else:
             self.config_py = config_py
 
         if meta_template_file is not None and os.sep != "/":
-            self.meta_template_file = unnormalize_path(meta_template_file)
+            self.meta_template_file = bento.utils.path.unnormalize_path(meta_template_file)
         else:
             self.meta_template_file = meta_template_file
 

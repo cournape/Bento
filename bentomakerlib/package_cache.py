@@ -12,15 +12,6 @@ db["parsed_dict"]: pickled raw parsed dictionary (as returned by
 """
 import os
 import sys
-if sys.version_info[0] < 3:
-    import cPickle as pickle
-else:
-    import pickle
-
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
 import warnings
 
 from bento.parser.misc \
@@ -32,9 +23,20 @@ from bento.core.package \
 from bento.core.options \
     import \
         raw_to_options_kw, PackageOptions
-from bento.core.utils \
-    import \
-        ensure_dir, safe_write, extract_exception
+from bento.utils.utils import extract_exception
+import bento.utils.path
+import bento.utils.io2
+
+if sys.version_info[0] < 3:
+    import cPickle as pickle
+else:
+    import pickle
+
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
+
 
 class CachedPackage(object):
     def __init__(self, db_node):
@@ -95,7 +97,7 @@ class _CachedPackageImpl(object):
         self._location = db_location
         self._first_time = False
         if not os.path.exists(db_location):
-            ensure_dir(db_location)
+            bento.utils.path.ensure_dir(db_location)
             self._reset()
         else:
             try:
@@ -165,7 +167,7 @@ class _CachedPackageImpl(object):
                 return _raw_to_options(raw)
 
     def close(self):
-        safe_write(self._location, lambda fd: pickle.dump(self.db, fd))
+        bento.utils.io2.safe_write(self._location, lambda fd: pickle.dump(self.db, fd))
 
 def _create_package_nocached(bento_info, user_flags, db):
     pkg, options = _create_objects_no_cached(bento_info, user_flags, db)

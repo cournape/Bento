@@ -19,7 +19,7 @@ from bento.commands.core \
 from bento.compat.api \
     import \
         rename, TarFile
-from bento.core.utils \
+from bento.utils.utils \
     import \
         pprint, cmd_is_runnable
 

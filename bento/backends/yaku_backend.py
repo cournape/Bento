@@ -1,6 +1,6 @@
 import os.path as op
 
-from bento.core.utils \
+from bento.utils.utils \
     import \
         extract_exception
 from bento.core.node_package \

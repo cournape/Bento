@@ -8,7 +8,7 @@ import warnings
 
 import bento
 
-from bento.core.utils \
+from bento.utils.utils \
     import \
         pprint, extract_exception
 from bento._config \

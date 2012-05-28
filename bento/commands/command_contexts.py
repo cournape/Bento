@@ -7,7 +7,7 @@ import os.path as op
 from bento.errors \
     import \
         InvalidPackage
-from bento.core.utils \
+from bento.utils.utils \
     import \
         is_string, subst_vars
 from bento.compat.api \

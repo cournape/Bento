@@ -174,7 +174,7 @@ def create_script(config):
     f.close()
 
     if sys.platform != 'win32':
-        from bento.core.utils import MODE_755
+        from bento.utils.utils import MODE_755
         os.chmod(script_name, MODE_755)
     os.unlink('%s.tar.%s' % (mw, zip_type))
 

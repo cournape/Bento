@@ -6,7 +6,7 @@ import shutil
 from bento.core.platforms.sysconfig \
     import \
         get_scheme
-from bento.core.utils \
+from bento.utils.utils \
     import \
         subst_vars
 from bento.installed_package_description \
@@ -21,7 +21,7 @@ from bento.commands.core \
 from bento.commands.mpkg_utils \
     import \
         build_pkg, PackageInfo, MetaPackageInfo, make_mpkg_plist, make_mpkg_description
-from bento.core.utils \
+from bento.utils.utils \
     import \
         MODE_755
 

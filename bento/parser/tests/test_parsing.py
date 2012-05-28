@@ -16,7 +16,7 @@ from bento.core.options \
 from bento.core.package \
     import \
         PackageDescription
-from bento.core.utils \
+from bento.utils.utils \
     import \
         extract_exception
 from bento.compat.api \

@@ -8,7 +8,7 @@ import ply.yacc
 from bento._config \
     import \
         _PICKLED_PARSETAB, _OPTIMIZE_LEX, _DEBUG_YACC
-from bento.core.utils \
+from bento.utils.utils \
     import \
         extract_exception
 from bento.errors \

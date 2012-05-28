@@ -1,6 +1,4 @@
-from bento.core.utils import \
-    normalize_path
-
+import bento.utils.path
 class FlagOption(object):
     def __init__(self, name, default_value, description=None):
         self.name = name
@@ -98,7 +96,7 @@ class Compiled(object):
 
     def __init__(self, name, sources, include_dirs=None):
         self.name = name
-        self.sources = [normalize_path(p) for p in sources]
+        self.sources = [bento.utils.path.normalize_path(p) for p in sources]
         if include_dirs is None:
             self.include_dirs = []
         else:

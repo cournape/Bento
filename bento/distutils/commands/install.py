@@ -16,9 +16,8 @@ from bento._config \
 from bento.installed_package_description \
     import \
         InstalledPkgDescription, iter_files
-from bento.core.utils \
-    import \
-        safe_write, subst_vars
+from bento.utils.utils import subst_vars
+import bento.utils.io2
 
 class install(Command):
     cmd_name = "install"
@@ -157,4 +156,4 @@ class install(Command):
         def writer(fid):
             for kind, source, target in iter_files(file_sections):
                 fid.write("%s\n" % target.abspath())
-        safe_write(self.record, writer, "w")
+        bento.utils.io2.safe_write(self.record, writer, "w")

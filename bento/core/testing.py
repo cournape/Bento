@@ -11,7 +11,7 @@ from bento.core.package \
 from bento.core.pkg_objects \
     import \
         Extension, CompiledLibrary
-from bento.core.utils \
+from bento.utils.utils \
     import \
         memoized
 

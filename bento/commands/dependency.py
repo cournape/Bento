@@ -6,9 +6,7 @@ from six.moves import cPickle
 from bento.compat.api \
     import \
         defaultdict
-from bento.core.utils \
-    import \
-        safe_write
+import bento.utils.io2
 
 def _invert_dependencies(deps):
     """Given a dictionary of edge -> dependencies representing a DAG, "invert"
@@ -86,7 +84,7 @@ class CommandDataProvider(object):
             return cls()
 
     def store(self, filename):
-        safe_write(filename, lambda fid: cPickle.dump(self._data, fid))
+        bento.utils.io2.safe_write(filename, lambda fid: cPickle.dump(self._data, fid))
 
     def __init__(self, data=None):
         self._data = defaultdict(list)

@@ -8,7 +8,7 @@ from bento.core import \
         PackageDescription
 from bento.core.pkg_objects import \
         Executable
-from bento.core.utils import \
+from bento.utils.utils import \
         is_string
 
 _PKG_TO_DIST = {

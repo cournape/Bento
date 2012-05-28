@@ -17,11 +17,17 @@ from bento.compat.api.moves \
     import \
         unittest
 
-from bento.core.utils \
+from bento.utils.utils \
+    import subst_vars, to_camel_case, explode_path, same_content, \
+        cmd_is_runnable, memoized, comma_list_split, cpu_count, pprint, \
+        virtualenv_prefix
+from bento.utils.io2 \
     import \
-        subst_vars, to_camel_case, ensure_dir, rename, \
-        explode_path, same_content, cmd_is_runnable, memoized, comma_list_split, \
-        cpu_count, normalize_path, unnormalize_path, pprint, virtualenv_prefix
+        safe_write
+from bento.utils.os2 \
+    import \
+        rename
+import bento.utils.path
 
 def raise_oserror(err):
     ex = OSError()
@@ -116,7 +122,7 @@ class TestMisc(unittest.TestCase):
         try:
             new_dir = op.join(d, "foo", "bar")
             new_file = op.join(new_dir, "fubar.txt")
-            ensure_dir(new_file)
+            bento.utils.path.ensure_dir(new_file)
             self.assertTrue(op.exists(new_dir))
         finally:
             shutil.rmtree(d)
@@ -139,11 +145,11 @@ class TestMisc(unittest.TestCase):
     def test_rename(self):
         self._test_rename()
 
-    @mock.patch("bento.core.utils._rename", lambda x, y: raise_oserror(errno.EXDEV))
+    @mock.patch("bento.utils.os2._rename", lambda x, y: raise_oserror(errno.EXDEV))
     def test_rename_exdev_failure(self):
         self._test_rename()
 
-    @mock.patch("bento.core.utils._rename", lambda x, y: raise_oserror(errno.EBUSY))
+    @mock.patch("bento.utils.os2._rename", lambda x, y: raise_oserror(errno.EBUSY))
     def test_rename_failure(self):
         self.assertRaises(OSError, self._test_rename)
 
@@ -207,8 +213,8 @@ class TestCommaListSplit(unittest.TestCase):
 
 class TestPathNormalization(unittest.TestCase):
     def test_simple(self):
-        self.assertEqual(normalize_path(r"foo\bar"), "foo/bar")
-        self.assertEqual(unnormalize_path("foo/bar"), r"foo\bar")
+        self.assertEqual(bento.utils.path.normalize_path(r"foo\bar"), "foo/bar")
+        self.assertEqual(bento.utils.path.unnormalize_path("foo/bar"), r"foo\bar")
 
 class TestPPrint(unittest.TestCase):
     def test_simple(self):

@@ -13,7 +13,7 @@ from bento.compat.api.moves \
 from bento.core.node \
     import \
         create_base_nodes
-from bento.core.utils \
+from bento.utils.utils \
     import \
         extract_exception
 from bento.commands.contexts \
@@ -25,13 +25,7 @@ from bento.errors \
 
 
 import bentomakerlib.bentomaker
-
-# FIXME: nose is broken - needed to make it happy
-if sys.platform == "darwin":
-    import bento.commands.build_mpkg
-# FIXME: nose is broken - needed to make it happy
 import bento.commands.build_yaku
-# FIXME: nose is broken - needed to make it happy
 from bento.compat.dist \
     import \
         DistributionMetadata
@@ -39,6 +33,13 @@ from bento.compat.dist \
 from bentomakerlib.bentomaker \
     import \
         main, noexc_main, _wrapped_main, parse_global_options, create_global_options_context
+
+# FIXME: nose is broken - needed to make it happy
+if sys.platform == "darwin":
+    import bento.commands.build_mpkg
+# FIXME: nose is broken - needed to make it happy
+# FIXME: nose is broken - needed to make it happy
+
 
 class Common(unittest.TestCase):
     def setUp(self):
@@ -202,7 +203,7 @@ Name: foo
             from bentomakerlib.bentomaker \
                 import \
                     CMD_DATA_DUMP
-            from bento.core.utils \
+            from bento.utils.utils \
                 import \
                     read_or_create_dict
 

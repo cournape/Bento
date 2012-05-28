@@ -15,7 +15,7 @@ from subprocess \
     import \
         PIPE, STDOUT, Popen
 
-from bento.core.utils \
+from bento.utils.utils \
     import \
         pprint
 

@@ -15,7 +15,7 @@ import os.path as op
 from bento.compat.api \
     import \
         rename
-from bento.core.utils \
+from bento.utils.utils \
     import \
         is_string, extract_exception
 

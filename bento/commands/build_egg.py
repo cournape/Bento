@@ -10,9 +10,7 @@ from bento.commands.core \
 from bento.commands.egg_utils \
     import \
         EggInfo, egg_filename
-from bento.core.utils \
-    import \
-        pprint, ensure_dir, extract_exception
+from bento.utils.utils import pprint, extract_exception
 from bento.core \
     import \
         PackageMetadata
@@ -24,6 +22,7 @@ from bento.installed_package_description \
         InstalledPkgDescription, iter_files
 
 import bento.compat.api as compat
+import bento.utils.path
 
 class BuildEggCommand(Command):
     long_descr = """\
@@ -65,7 +64,7 @@ def build_egg(ipkg, ctx, source_root, output_dir=None, output_file=None):
             egg = egg_filename(os.path.join(output_dir, meta.fullname))
         else:
             egg = os.path.join(output_dir, output_file)
-    ensure_dir(egg)
+    bento.utils.path.ensure_dir(egg)
 
     zid = compat.ZipFile(egg, "w", compat.ZIP_DEFLATED)
     try:

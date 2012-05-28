@@ -1,7 +1,7 @@
 import os
 import errno
 
-from bento.core.utils \
+from bento.utils.utils \
     import \
         extract_exception
 from bento.compat.api \

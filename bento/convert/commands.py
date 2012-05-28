@@ -8,7 +8,7 @@ from six.moves \
     import \
         cStringIO
 
-from bento.core.utils \
+from bento.utils.utils \
     import \
         pprint, extract_exception, comma_list_split
 from bento.core.package \

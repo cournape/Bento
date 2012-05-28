@@ -10,7 +10,7 @@ from bento.commands.dependency \
 from bento.commands.hooks \
     import \
         HookRegistry
-from bento.core.utils \
+from bento.utils.utils \
     import \
         read_or_create_dict
 

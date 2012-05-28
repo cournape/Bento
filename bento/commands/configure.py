@@ -4,7 +4,7 @@ import os.path as op
 
 from six import moves
 
-from bento.core.utils \
+from bento.utils.utils \
     import \
         subst_vars, virtualenv_prefix
 from bento.core.platforms import \

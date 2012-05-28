@@ -3,7 +3,7 @@ import os.path as op
 from bento.conv \
     import \
         pkg_to_distutils_meta
-from bento.core.utils \
+from bento.utils.utils \
     import \
         extract_exception
 from bento.errors \

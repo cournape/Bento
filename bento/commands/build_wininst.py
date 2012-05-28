@@ -16,14 +16,12 @@ from bento.commands.wininst_utils \
 from bento.core \
     import \
         PackageMetadata
-from bento.core.utils \
-    import \
-        ensure_dir
 from bento.installed_package_description \
     import \
         InstalledPkgDescription, iter_files
 
 import bento.compat.api as compat
+import bento.utils.path
 
 class BuildWininstCommand(Command):
     long_descr = """\
@@ -60,7 +58,7 @@ def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None,
         wininst = wininst_filename(meta, output_dir)
     else:
         wininst = os.path.join(output_dir, wininst)
-    ensure_dir(wininst)
+    bento.utils.path.ensure_dir(wininst)
 
     egg_info_dir = os.path.join("PURELIB", egg_info_dirname(meta.fullname))
 

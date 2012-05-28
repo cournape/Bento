@@ -12,13 +12,11 @@ from bento.core.node \
 from bento.core.platforms \
     import \
         get_scheme
-from bento.core.utils \
-    import \
-        subst_vars, normalize_path, unnormalize_path, same_content, fix_kw, \
-        explode_path
+from bento.utils.utils import subst_vars, same_content, fix_kw, explode_path
 from bento.core.pkg_objects \
     import \
         Executable
+import bento.utils.path
 
 def ipkg_meta_from_pkg(pkg):
     """Return meta dict for Installed pkg from a PackageDescription
@@ -41,9 +39,9 @@ class InstalledSection(object):
         self.category = category
         self.name = name
         if os.sep != "/":
-            self.source_dir = normalize_path(srcdir)
-            self.target_dir = normalize_path(target)
-            self.files = [(normalize_path(f), normalize_path(g)) for f, g in files]
+            self.source_dir = bento.utils.path.normalize_path(srcdir)
+            self.target_dir = bento.utils.path.normalize_path(target)
+            self.files = [(bento.utils.path.normalize_path(f), bento.utils.path.normalize_path(g)) for f, g in files]
         else:
             self.source_dir = srcdir
             self.target_dir = target

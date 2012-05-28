@@ -8,7 +8,7 @@ from bento.installed_package_description \
 from bento.errors \
     import \
         CommandExecutionFailure
-from bento.core.utils \
+from bento.utils.utils \
     import \
         cpu_count, extract_exception
 import bento.errors

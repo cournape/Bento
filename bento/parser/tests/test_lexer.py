@@ -2,7 +2,7 @@ from unittest \
     import \
         TestCase
 
-from bento.core.utils \
+from bento.utils.utils \
     import \
         extract_exception, is_string
 from bento.parser.lexer \
