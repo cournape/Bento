@@ -27,6 +27,17 @@ from bento.commands import hooks
 
 _BENTOMAKER_SCRIPT = [op.join(op.dirname(bento.__file__), os.pardir, "bentomaker")]
 
+def compute_git_revision():
+    if op.exists(".git") and cmd_is_runnable(["git", "--version"]):
+        s = subprocess.Popen(["git", "rev-parse", "HEAD"],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        out = s.communicate()[0]
+        return out.decode().strip()
+    else:
+        return ""
+
+GIT_REVISION = compute_git_revision()
+
 def try_decode(s):
     try:
         return s.decode()
@@ -147,6 +158,14 @@ Usage:   bentomaker distcheck [OPTIONS]."""
                 raise CommandExecutionFailure("test command failed")
         finally:
             os.chdir(saved)
+
+@hooks.pre_build
+def pre_build(context):
+    context.register_metadata("git_revision", GIT_REVISION)
+
+@hooks.pre_sdist
+def pre_sdist(context):
+    context.register_metadata("git_revision", GIT_REVISION)
 
 @hooks.startup
 def startup(context):

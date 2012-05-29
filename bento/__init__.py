@@ -38,6 +38,4 @@ except ImportError:
     __version__ = 'nobuilt'
     __git_revision__ = 'nobuilt'
 else:
-    from __package_info import VERSION as __version__
-    # FIXME: set real revision once we have customized metadata
-    __git_revision__ = 'nobuilt'
+    from __package_info import VERSION as __version__, GIT_REVISION as __git_revision__
