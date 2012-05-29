@@ -50,7 +50,6 @@ ExtraSourceFiles:
     README.rst,
     THANKS,
     setup.py,
-    setup_common.py,
     bootstrap.py,
     bento/**/tests/*.py,
     bento/testing/bentos/*.py,
