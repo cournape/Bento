@@ -33,8 +33,11 @@ for bundled_pkg in ["_ply", "_simplejson", "_yaku", "_six"]:
         sys.path.insert(0, m_path)
 
 try:
-    from bento.__dev_version import version as __version__
-    from bento.__dev_version import git_revision as __git_revision__
+    import __package_info
 except ImportError:
-    from bento.__version import version as __version__
-    from bento.__version import git_revision as __git_revision__
+    __version__ = 'nobuilt'
+    __git_revision__ = 'nobuilt'
+else:
+    from __package_info import VERSION as __version__
+    # FIXME: set real revision once we have customized metadata
+    __git_revision__ = 'nobuilt'
