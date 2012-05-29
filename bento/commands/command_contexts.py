@@ -266,9 +266,8 @@ def _generic_iregistrer(category, name, nodes, from_node, target_dir):
     return InstalledSection.from_source_target_directories(
         category, name, source_dir, target_dir, files)
 
-def fill_metadata_template(content, pkg):
+def fill_metadata_template(content, metadata):
     tpl = string.Template(content)
-    meta = PackageMetadata.from_package(pkg)
 
     def _safe_repr(val):
         # FIXME: actually not safe at all. Needs to escape and all.
@@ -280,21 +279,30 @@ def fill_metadata_template(content, pkg):
         else:
             return repr(val)
 
-    meta_dict = dict([(k.upper(), _safe_repr(getattr(meta, k))) for k in meta.metadata_attributes])
+    meta_dict = dict((k.upper(), _safe_repr(v)) for k, v in metadata.iteritems())
 
     return tpl.substitute(meta_dict)
 
-def write_template(top_node, pkg):
-    source = top_node.find_node(pkg.meta_template_file)
-    if source is None:
-        raise InvalidPackage("File %r not found (defined in 'MetaTemplateFile' field)" \
-                             % (pkg.meta_template_file,))
-    source_content = source.read()
-    output_content = fill_metadata_template(source_content, pkg)
+def _write_template(template_node, metadata):
+    source_content = template_node.read()
+    output_content = fill_metadata_template(source_content, metadata)
 
-    output = source.change_ext("")
+    output = template_node.change_ext("")
     output.safe_write(output_content)
     return output
+
+def write_template(top_node, package, additional_metadata=None):
+    if additional_metadata is None:
+        additional_metadata = {}
+
+    source = top_node.find_node(package.meta_template_file)
+    if source is None:
+        raise InvalidPackage("File %r not found (defined in 'MetaTemplateFile' field)" \
+                             % (package.meta_template_file,))
+    package_metadata = PackageMetadata.from_package(package)
+    meta = dict((k, getattr(package_metadata, k)) for k in package_metadata.metadata_attributes)
+    meta.update(additional_metadata)
+    return _write_template(source, meta)
 
 class BuildContext(ContextWithBuildDirectory):
     def __init__(self, global_context, command_argv, options_context, pkg, run_node):
@@ -359,6 +367,11 @@ class BuildContext(ContextWithBuildDirectory):
         self.isection_registry.register_category("scripts", _generic_iregistrer)
 
         self._current_default_section = 0
+
+        self._meta = {}
+
+    def register_metadata(self, name, value):
+        self._meta[name] = value
 
     def register_category(self, category_name, category_type="pythonfiles"):
         self.outputs_registry.register_category(category_name, category_type)
@@ -449,10 +462,9 @@ class BuildContext(ContextWithBuildDirectory):
                                                    self.build_node, "$sitedir")
 
         if self.pkg.meta_template_file:
-            target_node = write_template(self.top_node, self.pkg)
+            target_node = write_template(self.top_node, self.pkg, self._meta)
             self.outputs_registry.register_outputs("modules", "meta_from_template", [target_node],
                                                    self.build_node, "$sitedir")
-
     def post_compile(self):
         # Do the output_registry -> installed sections registry convertion
         section_writer = self.section_writer
@@ -497,13 +509,13 @@ class BuildContext(ContextWithBuildDirectory):
 class SdistContext(CmdContext):
     def __init__(self, global_context, cmd_args, option_context, pkg, run_node):
         super(SdistContext, self).__init__(global_context, cmd_args, option_context, pkg, run_node)
+        self._meta = {}
 
         self._node_pkg = NodeRepresentation(run_node, self.top_node)
         self._node_pkg.update_package(pkg)
 
-        if self.pkg.meta_template_file:
-            output = write_template(self.top_node, pkg)
-            self.register_source_node(output, output.bldpath())
+    def register_metadata(self, name, value):
+        self._meta[name] = value
 
     def register_source_node(self, node, archive_name=None):
         """Register a node into the source distribution.
@@ -513,6 +525,11 @@ class SdistContext(CmdContext):
         self._node_pkg._extra_source_nodes.append(node)
         if archive_name:
             self._node_pkg._aliased_source_nodes[node] = archive_name
+
+    def configure(self):
+        if self.pkg.meta_template_file:
+            output = write_template(self.top_node, self.pkg, self._meta)
+            self.register_source_node(output, output.bldpath())
 
 class HelpContext(CmdContext):
     def __init__(self, *a, **kw):
