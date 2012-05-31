@@ -111,7 +111,7 @@ CMD_DATA_DUMP = os.path.join(_SUB_BUILD_DIR, "cmd_data.db")
 
 class GlobalOptions(object):
     def __init__(self, cmd_name, cmd_argv, show_usage, build_directory,
-            bento_info, show_version, show_full_version):
+            bento_info, show_version, show_full_version, disable_autoconfigure):
         self.cmd_name = cmd_name
         self.cmd_argv = cmd_argv
         self.show_usage = show_usage
@@ -119,6 +119,7 @@ class GlobalOptions(object):
         self.bento_info = bento_info
         self.show_version = show_version
         self.show_full_version = show_full_version
+        self.disable_autoconfigure = disable_autoconfigure
 
 #================================
 #   Create the command line UI
@@ -240,7 +241,8 @@ def main(argv=None):
                                    OptionsRegistry(), CommandScheduler())
     global_context.register_options_context_without_command("", options_context)
 
-    global_context.set_before("build", "configure")
+    if not popts.disable_autoconfigure:
+        global_context.set_before("build", "configure")
     global_context.set_before("build_egg", "build")
     global_context.set_before("build_wininst", "build")
     global_context.set_before("install", "build")
@@ -336,6 +338,13 @@ def create_global_options_context():
     context.add_option(Option("--bento-info", dest="bento_info",
                               help="Bento location as a relative path from cwd (default: '%default'). " \
                                    "The base name (without its component) must be 'bento.info("))
+    context.add_option(Option("--disable-autoconfigure", dest="disable_autoconfigure",
+                              action="store_true",
+                              default=False,
+                              help="""\
+Do not automatically run configure before build. In this mode, the user is
+expected to know what he is doing. This is mainly useful for developers, to
+avoid running configure everytime (default: '%default')."""))
     context.add_option(Option("-h", "--help", dest="show_help", action="store_true",
                               help="Display help and exit"))
     context.parser.set_defaults(show_version=False, show_full_version=False, show_help=False,
@@ -369,7 +378,8 @@ def parse_global_options(context, argv):
     show_full_version = o.show_full_version
 
     global_options = GlobalOptions(cmd_name, cmd_argv, show_usage,
-            build_directory, bento_info, show_version, show_full_version)
+            build_directory, bento_info, show_version, show_full_version,
+            o.disable_autoconfigure)
     return global_options
 
 def _main(global_context, cached_package, popts, run_node, top_node, build_node):

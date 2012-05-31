@@ -18,6 +18,10 @@ Main features:
         - add simpler API to register output nodes
         - add --use-distutils-flags configure option to force using flags from
           distutils (disabled by default).
+        - add --disable-autoconfigure build option to bypass configure for fast
+          partial rebuilds. This is not reliable depending on how the
+          environment is changed, so one should only use this during
+          development.
 
 Fixed issues
 ------------

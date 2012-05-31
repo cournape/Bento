@@ -306,6 +306,9 @@ class BuildWafContext(BuildContext):
         source_path = self.top_node.abspath()
         build_path = self.build_node.abspath()
         _init(run_path=run_path, source_path=source_path, build_path=build_path)
+
+        create_context("options").parse_args([])
+
         waf_context = create_context("build")
         waf_context.restore()
         if not waf_context.all_envs:
