@@ -9,6 +9,10 @@ from optparse \
     import \
         Option
 
+class IndentedHelpFormatter(optparse.IndentedHelpFormatter):
+    def format_usage(self, usage):
+        return optparse._("%s\n" % usage)
+
 # Goal of separate options context:
 #   - separate options handling from commands themselves (simplify commands)
 #   - easier to add options from hook files
@@ -16,14 +20,15 @@ from optparse \
 #   level tools such as bentomaker (close coupling at the moment)
 class OptionsContext(object):
     @classmethod
-    def from_command(cls, cmd, usage=None):
-        ret = cls()
+    def from_command(cls, cmd):
+        usage = cmd.long_descr
+        ret = cls(usage=usage)
         for o in cmd.common_options:
             ret.add_option(o)
         return ret
 
     def __init__(self, usage=None):
-        kw = {"add_help_option": False}
+        kw = {"add_help_option": False, "formatter": IndentedHelpFormatter()}
         if usage is not None:
             kw["usage"] = usage
         self.parser = optparse.OptionParser(**kw)

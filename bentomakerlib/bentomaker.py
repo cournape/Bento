@@ -150,8 +150,7 @@ def register_commands(global_context):
 def register_options(global_context, cmd_name):
     """Register options for the given command."""
     cmd = global_context.retrieve_command(cmd_name)
-    usage = cmd.long_descr.splitlines()[1]
-    context = OptionsContext.from_command(cmd, usage=usage)
+    context = OptionsContext.from_command(cmd)
 
     if not global_context.is_options_context_registered(cmd_name):
         global_context.register_options_context(cmd_name, context)
