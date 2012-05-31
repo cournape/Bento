@@ -129,6 +129,10 @@ def _init(run_path, source_path, build_path):
     Context.launch_dir = run_path
 
 def register_options(global_context):
+    opt = Option("--use-distutils-flags", help="Use distutils compilation flags",
+                 action="store_true", default=False)
+    global_context.add_option("configure", opt)
+
     opt = Option("-p", "--progress", help="Use progress bar", action="store_true", dest="progress_bar")
     global_context.add_option("build", opt)
 
@@ -143,6 +147,7 @@ class ConfigureWafContext(ConfigureContext):
 
         opts = OptionsContext()
         opts.load("compiler_c")
+        opts.load("custom_python", tooldir=[WAF_TOOLDIR])
         opts.parse_args([])
         self.waf_options_context = opts
 
@@ -159,6 +164,12 @@ class ConfigureWafContext(ConfigureContext):
         self._old_path = None
 
     def configure(self):
+        o, a = self.get_parsed_arguments()
+        if o.use_distutils_flags:
+            Options.options.use_distutils_flags = True
+        else:
+            Options.options.use_distutils_flags = False
+
         pkg = self.pkg
         # FIXME: this is wrong (not taking into account sub packages)
         needs_compiler = has_compiled_code(pkg)

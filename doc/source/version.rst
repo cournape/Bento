@@ -16,6 +16,8 @@ Main features:
         - add tweak_builder function to build contexts to simplify simple
           builder customization (e.g. include_dirs, defines, etc...)
         - add simpler API to register output nodes
+        - add --use-distutils-flags configure option to force using flags from
+          distutils (disabled by default).
 
 Fixed issues
 ------------

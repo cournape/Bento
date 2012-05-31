@@ -145,9 +145,9 @@ def check_python_headers(conf):
 
 	env['pyext_PATTERN'] = '%s' + dct['SO'] # not a mistake
 
-	#all_flags = dct['LDFLAGS'] + ' ' + dct['LDSHARED'] + ' ' + dct['CFLAGS']
-	#print all_flags
-	#conf.parse_flags(all_flags, 'PYEXT')
+	if Options.options.use_distutils_flags:
+		all_flags = dct['LDFLAGS'] + ' ' + dct['LDSHARED'] + ' ' + dct['CFLAGS']
+		conf.parse_flags(all_flags, 'PYEXT')
 
 	env['INCLUDES_PYEXT'] = [dct['INCLUDEPY']]
 
@@ -175,21 +175,25 @@ def configure(conf):
 	"""
 	Detect the python interpreter
 	"""
+	default = [sys.executable]
 	try:
 		conf.find_program('python', var='PYTHON')
 	except conf.errors.ConfigurationError:
 		warn("could not find a python executable, setting to sys.executable '%s'" % sys.executable)
-		conf.env.PYTHON = sys.executable
+		conf.env.PYTHON = default
 
-	if conf.env.PYTHON != sys.executable:
-		warn("python executable '%s' different from sys.executable '%s'" % (conf.env.PYTHON, sys.executable))
-	conf.env.PYTHON = conf.cmd_to_list(conf.env.PYTHON)
+	if conf.env.PYTHON != default:
+		warn("python executable '%s' different from sys.executable '%s'" % (conf.env.PYTHON, default))
+	conf.env.PYTHON = conf.cmd_to_list(default)
 
 	v = conf.env
 	v['PYCMD'] = '"import sys, py_compile;py_compile.compile(sys.argv[1], sys.argv[2])"'
 	v['PYFLAGS'] = ''
 	v['PYFLAGS_OPT'] = '-O'
 
-	v['PYC'] = getattr(Options.options, 'pyc', 1)
-	v['PYO'] = getattr(Options.options, 'pyo', 1)
-
+def options(opt):
+	opt.add_option('--use-distutils-flags',
+			action='store_true',
+			default=False,
+			help='Use flags as defined by distutils [Default:no]',
+			dest='pyc')
