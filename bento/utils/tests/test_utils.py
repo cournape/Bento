@@ -217,10 +217,17 @@ class TestPathNormalization(unittest.TestCase):
         self.assertEqual(bento.utils.path.unnormalize_path("foo/bar"), r"foo\bar")
 
 class TestPPrint(unittest.TestCase):
+    @mock.patch("bento.utils.utils.COLORS_LST", {"USE": True, "RED": "\x1b[01;31m", "NORMAL": "\x1b[0m"})
     def test_simple(self):
         s = StringIO()
         pprint("RED", "foo", s)
         self.assertEqual(s.getvalue(), "\x1b[01;31mfoo\x1b[0m\n")
+
+    @mock.patch("bento.utils.utils.COLORS_LST", {"USE": False})
+    def test_simple_no_color(self):
+        s = StringIO()
+        pprint("RED", "foo", s)
+        self.assertEqual(s.getvalue(), "foo\n")
 
 class TestVirtualEnvPrefix(unittest.TestCase):
     @mock.patch("sys.real_prefix", sys.prefix, create=True)
