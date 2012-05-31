@@ -411,13 +411,13 @@ class BuildContext(ContextWithBuildDirectory):
                                         extension,
                                         **kw)
 
-    def tweak_builder(self, extension_name, **kw):
+    def tweak_extension(self, extension_name, **kw):
         def _builder(extension):
             return self.default_builder(extension, **kw)
         full_name = self._compute_extension_name(extension_name)
         return self.builder_registry.register_callback("extensions", full_name, _builder)
 
-    def tweak_library_builder(self, lib_name, **kw):
+    def tweak_library(self, lib_name, **kw):
         def _builder(lib_name):
             return self.default_library_builder(lib_name, **kw)
         relpos = self.local_node.path_from(self.top_node)

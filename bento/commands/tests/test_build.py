@@ -218,7 +218,7 @@ Library:
         # over-engineered callchain, we wrap the default build with a function
         # that check the include_dirs is step up correctly.
         def pre_build(context):
-            context.tweak_builder("_bar", include_dirs=["fubar"])
+            context.tweak_extension("_bar", include_dirs=["fubar"])
         pre_hook = PreHookWrapper(pre_build, "build", self.d)
         old_default_builder = bld.default_builder
         try:
