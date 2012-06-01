@@ -279,7 +279,7 @@ def fill_metadata_template(content, metadata):
         else:
             return repr(val)
 
-    meta_dict = dict((k.upper(), _safe_repr(v)) for k, v in metadata.iteritems())
+    meta_dict = dict((k.upper(), _safe_repr(v)) for k, v in metadata.items())
 
     return tpl.substitute(meta_dict)
 
