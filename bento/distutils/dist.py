@@ -15,6 +15,13 @@ else:
 from bento.commands.configure \
     import \
         _setup_options_parser
+from bento.commands.core \
+    import \
+        HelpCommand, find_hook_commands
+from bento.commands.hooks \
+    import \
+        find_pre_hooks, find_post_hooks, find_startup_hooks, \
+        find_shutdown_hooks, find_options_hooks
 from bento.commands.wrapper_utils \
     import \
         set_main
@@ -183,7 +190,56 @@ class BentoDistribution(Distribution):
         self.run_node = root._ctx.srcnode
 
         self.global_context = global_context_factory(package_options)
-        set_main(self.pkg, self.top_node, self.build_node)
+        mods = set_main(self.pkg, self.top_node, self.build_node)
+        self._setup_hooks(self.pkg, self.global_context, mods)
+
+    def _setup_hooks(self, package, global_context, mods):
+        if package.use_backends:
+            if len(package.use_backends) > 1:
+                raise ValueError("Only up to one backend supported for now")
+            else:
+                assert global_context.backend is None
+                global_context.backend = load_backend(package.use_backends[0])()
+
+        startup_hooks = find_startup_hooks(mods)
+        option_hooks = find_options_hooks(mods)
+        shutdown_hooks = find_shutdown_hooks(mods)
+
+        if startup_hooks:
+            # FIXME: there should be an error or a warning if startup defined in
+            # mods beyond the first one
+            startup_hooks[0](global_context)
+
+        if global_context.backend:
+            global_context.backend.register_command_contexts(global_context)
+        for command in find_hook_commands(mods):
+            global_context.register_command(command.name, command)
+
+        if global_context.backend:
+            global_context.backend.register_options_contexts(global_context)
+
+        if option_hooks:
+            # FIXME: there should be an error or a warning if shutdown defined in
+            # mods beyond the first one
+            option_hooks[0](global_context)
+
+        # FIXME: this registered options for new commands registered in hook. It
+        # should be made all in one place (hook and non-hook)
+        for cmd_name in global_context.command_names(public_only=False):
+            if not global_context.is_options_context_registered(cmd_name):
+                # FIXME: this should be supported in global context directly
+                # (redundant with bentomakerlib)
+                cmd = global_context.retrieve_command(cmd_name)
+                context = OptionsContext.from_command(cmd)
+
+                if not global_context.is_options_context_registered(cmd_name):
+                    global_context.register_options_context(cmd_name, context)
+
+        for cmd_name in global_context.command_names():
+            for hook in find_pre_hooks(mods, cmd_name):
+                global_context.add_pre_hook(hook, cmd_name)
+            for hook in find_post_hooks(mods, cmd_name):
+                global_context.add_post_hook(hook, cmd_name)
 
     def run_command_in_context(self, cmd_name, cmd_argv):
         return bento.commands.wrapper_utils.resolve_and_run_command(self.global_context,
