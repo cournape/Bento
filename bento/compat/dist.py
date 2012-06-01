@@ -55,7 +55,8 @@ class _DistributionMetadata:
         """Write the PKG-INFO format data to a file object.
         """
         version = '1.0'
-        if self.provides or self.requires or self.obsoletes:
+        if (self.provides or self.requires or self.obsoletes or
+            self.classifiers or self.download_url):
             version = '1.1'
 
         self._write_field(file, 'Metadata-Version', version)

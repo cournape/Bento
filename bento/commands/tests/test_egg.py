@@ -143,7 +143,7 @@ class TestEggInfo(unittest.TestCase):
         egg_info = self._prepare_egg_info()
         res = egg_info.get_pkg_info()
         ref = """\
-Metadata-Version: 1.0
+Metadata-Version: 1.1
 Name: Sphinx
 Version: 0.6.3
 Summary: Python documentation generator
