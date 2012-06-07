@@ -55,7 +55,7 @@ def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None,
 
     # XXX: do this correctly, maybe use same as distutils ?
     if wininst is None:
-        wininst = wininst_filename(meta, output_dir)
+        wininst = os.path.join(output_dir, wininst_filename(meta))
     else:
         wininst = os.path.join(output_dir, wininst)
     bento.utils.path.ensure_dir(wininst)
