@@ -27,16 +27,15 @@ from bento.commands import hooks
 
 _BENTOMAKER_SCRIPT = [op.join(op.dirname(bento.__file__), os.pardir, "bentomaker")]
 
-def compute_git_revision():
-    if op.exists(".git") and cmd_is_runnable(["git", "--version"]):
+def compute_git_revision(top_node):
+    git_repo_node = top_node.find_node(".git")
+    if git_repo_node and cmd_is_runnable(["git", "--version"]):
         s = subprocess.Popen(["git", "rev-parse", "HEAD"],
-                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=top_node.abspath())
         out = s.communicate()[0]
         return out.decode().strip()
     else:
         return ""
-
-GIT_REVISION = compute_git_revision()
 
 def try_decode(s):
     try:
@@ -161,11 +160,11 @@ Usage:   bentomaker distcheck [OPTIONS]."""
 
 @hooks.pre_build
 def pre_build(context):
-    context.register_metadata("git_revision", GIT_REVISION)
+    context.register_metadata("git_revision", compute_git_revision(context.top_node))
 
 @hooks.pre_sdist
 def pre_sdist(context):
-    context.register_metadata("git_revision", GIT_REVISION)
+    context.register_metadata("git_revision", compute_git_revision(context.top_node))
 
 @hooks.startup
 def startup(context):
