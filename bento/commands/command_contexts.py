@@ -492,7 +492,7 @@ class BuildContext(ContextWithBuildDirectory):
             def _install_node(category, node, from_node, target_dir):
                 installed_path = subst_vars(target_dir, scheme)
                 target = os.path.join(installed_path, node.path_from(from_node))
-                copy_installer(node.srcpath(), target, category)
+                copy_installer(node.path_from(self.run_node), target, category)
 
             intree = (self.top_node == self.run_node)
             if intree:
