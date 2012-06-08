@@ -1,4 +1,6 @@
+import sys
 import distutils.dist 
+
 from distutils.util \
     import \
         check_environ, strtobool, rfc822_escape
@@ -187,7 +189,7 @@ class _DistributionMetadata:
             distutils.versionpredicate.VersionPredicate(v)
         self.obsoletes = value
 
-if not hasattr(distutils.dist.DistributionMetadata, "write_pkg_file"):
+if sys.version_info[0] < 3:
     DistributionMetadata = _DistributionMetadata
 else:
     DistributionMetadata = distutils.dist.DistributionMetadata
