@@ -3,6 +3,8 @@ import sys
 import shutil
 import tempfile
 
+import posixpath
+
 import mock
 
 from bento.compat.api.moves \
@@ -107,7 +109,7 @@ UNIX_REFERENCE = {
 }
 
 WIN32_REFERENCE = {
-        'destdir': None,
+        'destdir': "C:\\",
         'prefix': None,
         'eprefix': r'$prefix',
         'bindir': r'$eprefix\Scripts',
@@ -157,6 +159,7 @@ class TestUnixScheme(unittest.TestCase):
 
 
     @mock.patch("sys.platform", "linux2")
+    @mock.patch("bento.core.platforms.sysconfig.bento.utils.path.find_root", lambda ignored: r"/")
     @mock.patch("distutils.command.install.INSTALL_SCHEMES", {"unix_prefix": UNIX_REFERENCE})
     def test_scheme_default(self):
         bento_info = """\
@@ -177,9 +180,11 @@ Name: foo
 
         # Check that other values in scheme have not been modified
         for k, v in scheme.items():
-            self.assertEqual(UNIX_REFERENCE[k], v)
+            self.assertEqual(UNIX_REFERENCE[k], v, "discrepency for path %s: %s vs %s" % (k, UNIX_REFERENCE[k], v))
 
     @mock.patch("sys.platform", "darwin")
+    @mock.patch("bento.core.platforms.sysconfig.bento.utils.path.find_root", lambda ignored: r"/")
+    @mock.patch("bento.commands.configure.op.normpath", posixpath.normpath)
     @mock.patch("sys.prefix", "/Library/Frameworks/Python.framework/Versions/2.8")
     @mock.patch("sys.exec_prefix", "/Exec/Library/Frameworks/Python.framework/Versions/2.8")
     def test_scheme_default_darwin(self):
@@ -204,6 +209,7 @@ Name: foo
             self.assertEqual(UNIX_REFERENCE[k], v)
 
     @mock.patch("sys.platform", "linux2")
+    @mock.patch("bento.core.platforms.sysconfig.bento.utils.path.find_root", lambda ignored: r"/")
     def test_scheme_with_prefix(self):
         bento_info = """\
 Name: foo
@@ -252,6 +258,7 @@ Name: foo
         self.assertRaises(NotImplementedError, lambda: self._compute_scheme(bento_info, self.options))
 
     @mock.patch("sys.platform", "linux2")
+    @mock.patch("bento.core.platforms.sysconfig.bento.utils.path.find_root", lambda ignored: r"/")
     @mock.patch("distutils.command.install.INSTALL_SCHEMES", {"unix_local": MOCK_DEBIAN_SCHEME}, create=True)
     def test_scheme_debian(self):
         bento_info = """\
@@ -276,6 +283,7 @@ Name: foo
             self.assertEqual(UNIX_REFERENCE[k], v)
 
     @mock.patch("sys.platform", "linux2")
+    @mock.patch("bento.core.platforms.sysconfig.bento.utils.path.find_root", lambda ignored: r"/")
     @mock.patch("bento.commands.configure.virtualenv_prefix", lambda: "/home/guido/.env")
     def test_scheme_venv(self):
         bento_info = """\
@@ -313,6 +321,7 @@ class TestWin32Scheme(unittest.TestCase):
         return scheme
 
     @mock.patch("sys.platform", "win32")
+    @mock.patch("bento.core.platforms.sysconfig.bento.utils.path.find_root", lambda ignored: "C:\\")
     @mock.patch("sys.prefix", r"C:\Python%s" % PY_VERSION_SHORT_NO_DOT)
     @mock.patch("sys.exec_prefix", r"C:\Python%s" % PY_VERSION_SHORT_NO_DOT)
     def test_scheme_default(self):
@@ -333,11 +342,11 @@ Name: foo
         self.assertEqual(py_version_short, PY_VERSION_SHORT)
 
         # Check that other values in scheme have not been modified
-        scheme.pop("destdir")
         for k, v in scheme.items():
-            self.assertEqual(WIN32_REFERENCE[k], v, "discrepency for path %s" % k)
+            self.assertEqual(WIN32_REFERENCE[k], v, "discrepency for path %s: %s vs %s" % (k, WIN32_REFERENCE[k], v))
 
     @mock.patch("sys.platform", "win32")
+    @mock.patch("bento.core.platforms.sysconfig.bento.utils.path.find_root", lambda ignored: "C:\\")
     def test_scheme_prefix(self):
         bento_info = """\
 Name: foo
@@ -355,6 +364,5 @@ Name: foo
         self.assertEqual(eprefix, r"C:\foo")
 
         # Check that other values in scheme have not been modified
-        scheme.pop("destdir")
         for k, v in scheme.items():
-            self.assertEqual(WIN32_REFERENCE[k], v, "discrepency for path %s" % k)
+            self.assertEqual(WIN32_REFERENCE[k], v, "discrepency for path %s: %s vs %s" % (k, WIN32_REFERENCE[k], v))
