@@ -17,11 +17,11 @@ from bento.commands.configure \
         _setup_options_parser
 from bento.commands.core \
     import \
-        HelpCommand, find_hook_commands
+        HelpCommand
 from bento.commands.hooks \
     import \
         find_pre_hooks, find_post_hooks, find_startup_hooks, \
-        find_shutdown_hooks, find_options_hooks
+        find_shutdown_hooks, find_options_hooks, find_command_hooks
 from bento.commands.wrapper_utils \
     import \
         set_main
@@ -212,7 +212,7 @@ class BentoDistribution(Distribution):
 
         if global_context.backend:
             global_context.backend.register_command_contexts(global_context)
-        for command in find_hook_commands(mods):
+        for command in find_command_hooks(mods):
             global_context.register_command(command.name, command)
 
         if global_context.backend:
