@@ -27,7 +27,7 @@ tokens = ('COLON', 'DOUBLE_COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
           'BUILD_REQUIRES_ID', 'INSTALL_REQUIRES_ID',
           'DOWNLOAD_URL_ID', 'HOOK_FILE_ID', 'CONFIG_PY_ID', 'NOT_OP',
           'SUBENTO_ID', 'DESCRIPTION_FROM_FILE_ID', 'META_TEMPLATE_FILE_ID',
-          'SUB_DIRECTORY_ID', 'USE_BACKENDS_ID')
+          'META_TEMPLATE_FILES_ID', 'SUB_DIRECTORY_ID', 'USE_BACKENDS_ID')
 
 ESCAPING_CHAR = dict([(t, False) for t in tokens])
 ESCAPING_CHAR["BACKSLASH"] = True
@@ -73,6 +73,7 @@ META_FIELDS_ID = {
     "Recurse": "SUBENTO_ID",
     "DescriptionFromFile": "DESCRIPTION_FROM_FILE_ID",
     "MetaTemplateFile": "META_TEMPLATE_FILE_ID",
+    "MetaTemplateFiles": "META_TEMPLATE_FILES_ID",
     "SubDirectory": "SUB_DIRECTORY_ID",
     "UseBackends": "USE_BACKENDS_ID",
 }
@@ -128,6 +129,7 @@ FIELD_TYPE = {
     "CONFIG_PY_ID": "WORD",
     "SUBENTO_ID": "WORDS",
     "META_TEMPLATE_FILE_ID": "WORD",
+    "META_TEMPLATE_FILES_ID": "WORDS",
     "KEYWORDS_ID": "WORDS",
     "SUB_DIRECTORY_ID": "WORDS",
     "USE_BACKENDS_ID": "WORDS",

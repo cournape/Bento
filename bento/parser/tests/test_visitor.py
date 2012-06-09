@@ -1,4 +1,5 @@
 import sys
+import warnings
 
 from bento.compat.api.moves \
     import \
@@ -167,6 +168,25 @@ DescriptionFromFile: foo.rst
 """
         ret = parse_and_analyse(data)
         self.assertEqual(ret["description_from_file"], "foo.rst")
+
+    def test_meta_template_file(self):
+        s = warnings.filters[:]
+        warnings.filterwarnings("ignore")
+        try:
+            data = """\
+MetaTemplateFile: foo.py.in
+"""
+            ret = parse_and_analyse(data)
+            self.assertEqual(ret["meta_template_files"], ["foo.py.in"])
+        finally:
+            warnings.filters = s
+
+    def test_meta_template_files(self):
+        data = """\
+MetaTemplateFile: foo.py.in
+"""
+        ret = parse_and_analyse(data)
+        self.assertEqual(ret["meta_template_files"], ["foo.py.in"])
 
 class TestLibrary(unittest.TestCase):
     def setUp(self):

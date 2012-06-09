@@ -22,7 +22,7 @@ Classifiers:
 Keywords: packaging
 
 ConfigPy: bento/__config_py.py
-MetaTemplateFile: bento/__package_info.py.in
+MetaTemplateFiles: bento/__package_info.py.in
 
 HookFile: bscript
 

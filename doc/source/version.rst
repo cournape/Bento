@@ -23,6 +23,10 @@ Main features:
           partial rebuilds. This is not reliable depending on how the
           environment is changed, so one should only use this during
           development.
+        - add register_metadata API to register new metadata to be filled in
+          MetaTemplateFile
+        - Deprecate MetaTemplateFile, and use MetaTemplateFiles instead to
+          allow for multiple template files
 
 Fixed issues
 ------------

@@ -214,7 +214,7 @@ class PackageDescription:
             download_url=None, extra_source_files=None, data_files=None,
             classifiers=None, provides=None, obsoletes=None, executables=None,
             hook_files=None, config_py=None, compiled_libraries=None,
-            subpackages=None, description_from_file=None, meta_template_file=None,
+            subpackages=None, description_from_file=None, meta_template_files=None,
             keywords=None, sub_directory=None, use_backends=None):
         # XXX: should we check that we have sequences when required
         # (py_modules, etc...) ?
@@ -286,14 +286,11 @@ class PackageDescription:
         else:
             self.config_py = config_py
 
-        if meta_template_file is not None and os.sep != "/":
-            self.meta_template_file = bento.utils.path.unnormalize_path(meta_template_file)
-        else:
-            self.meta_template_file = meta_template_file
+        if meta_template_files is None:
+            meta_template_files = []
+        self.meta_template_files = [bento.utils.path.unnormalize_path(f) for f in meta_template_files]
 
-        for f in [self.meta_template_file]:
-            if f is not None:
-                self.extra_source_files.append(f)
+        self.extra_source_files.extend(self.meta_template_files)
 
         self.sub_directory = sub_directory
 

@@ -465,7 +465,7 @@ Library:
         bento_info = """\
 Name: foo
 
-MetaTemplateFile: foo/__package_info.py.in
+MetaTemplateFiles: foo/__package_info.py.in
 
 Library:
     Packages: foo

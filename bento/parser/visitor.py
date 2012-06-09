@@ -106,7 +106,7 @@ class Dispatcher(object):
                           "maintainer", "maintainer_email", "license",
                           "platforms", "classifiers", "hook_files",
                           "config_py", "description_from_file",
-                          "meta_template_file", "keywords", "use_backends"]:
+                          "meta_template_files", "keywords", "use_backends"]:
                 self._d[c.type] = c.value
             elif c.type == "path":
                 self._d["path_options"].update({c.value["name"]: c.value})

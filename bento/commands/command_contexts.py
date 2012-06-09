@@ -291,11 +291,11 @@ def _write_template(template_node, metadata):
     output.safe_write(output_content)
     return output
 
-def write_template(top_node, package, additional_metadata=None):
+def write_template(top_node, template_file, package, additional_metadata=None):
     if additional_metadata is None:
         additional_metadata = {}
 
-    source = top_node.find_node(package.meta_template_file)
+    source = top_node.find_node(template_file)
     if source is None:
         raise InvalidPackage("File %r not found (defined in 'MetaTemplateFile' field)" \
                              % (package.meta_template_file,))
@@ -461,10 +461,13 @@ class BuildContext(ContextWithBuildDirectory):
             self.outputs_registry.register_outputs("modules", "bento_config", [target_node],
                                                    self.build_node, "$sitedir")
 
-        if self.pkg.meta_template_file:
-            target_node = write_template(self.top_node, self.pkg, self._meta)
-            self.outputs_registry.register_outputs("modules", "meta_from_template", [target_node],
-                                                   self.build_node, "$sitedir")
+        if self.pkg.meta_template_files:
+            target_nodes = []
+            for template in self.pkg.meta_template_files:
+                target_node = write_template(self.top_node, template, self.pkg, self._meta)
+                target_nodes.append(target_node)
+            self.outputs_registry.register_outputs("modules", "meta_from_template", target_nodes,
+                                               self.build_node, "$sitedir")
     def post_compile(self):
         # Do the output_registry -> installed sections registry convertion
         section_writer = self.section_writer
@@ -527,9 +530,10 @@ class SdistContext(CmdContext):
             self._node_pkg._aliased_source_nodes[node] = archive_name
 
     def configure(self):
-        if self.pkg.meta_template_file:
-            output = write_template(self.top_node, self.pkg, self._meta)
-            self.register_source_node(output, output.bldpath())
+        if self.pkg.meta_template_files:
+            for template in self.pkg.meta_template_files:
+                output = write_template(self.top_node, template, self.pkg, self._meta)
+                self.register_source_node(output, output.bldpath())
 
 class HelpContext(CmdContext):
     def __init__(self, *a, **kw):

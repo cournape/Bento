@@ -14,7 +14,7 @@ def extract_top_dicts(d):
             "data_files": {},
             "hook_files": [],
             "config_py": None,
-            "meta_template_file": None,
+            "meta_template_files": [],
             "flag_options": [],
             "path_options": [],
             "subento": [],

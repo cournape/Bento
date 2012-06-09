@@ -1,5 +1,6 @@
 import sys
 import errno
+import warnings
 
 import os.path as op
 
@@ -166,7 +167,7 @@ def p_meta_stmt(p):
                  | meta_classifiers_stmt
                  | meta_hook_file_stmt
                  | meta_config_py_stmt
-                 | meta_meta_template_file_stmt
+                 | meta_meta_template_files_stmt
                  | meta_subento_stmt
                  | meta_use_backends_stmt
     """
@@ -242,9 +243,15 @@ def p_meta_config_py_stmt(p):
     p[0] = Node("config_py", value=p[3].value)
 
 def p_meta_meta_template_file_stmt(p):
-    """meta_meta_template_file_stmt : META_TEMPLATE_FILE_ID COLON word
+    """meta_meta_template_files_stmt : META_TEMPLATE_FILE_ID COLON word
     """
-    p[0] = Node("meta_template_file", value=p[3].value)
+    warnings.warn("MetaTemplateFile field is obsolete - use MetaTemplateFiles itself")
+    p[0] = Node("meta_template_files", value=[p[3].value])
+
+def p_meta_meta_template_files_stmt(p):
+    """meta_meta_template_files_stmt : META_TEMPLATE_FILES_ID COLON comma_list
+    """
+    p[0] = Node("meta_template_files", value=p[3].value)
 
 def p_meta_classifiers_stmt(p):
     """meta_classifiers_stmt : CLASSIFIERS_ID COLON classifiers_list"""
