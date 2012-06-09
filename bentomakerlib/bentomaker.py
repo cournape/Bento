@@ -62,7 +62,7 @@ from bento.commands.registries \
 from bento.commands.sdist \
     import \
         SdistCommand
-from bento.commands.sphinx \
+from bento.commands.sphinx_command \
     import \
         SphinxCommand
 from bento.commands.upload \
