@@ -39,14 +39,14 @@ from bento.commands.configure \
         ConfigureCommand
 from bento.commands.core \
     import \
-        HelpCommand, find_hook_commands
+        HelpCommand
 from bento.commands.dependency \
     import \
         CommandScheduler
 from bento.commands.hooks \
     import \
         find_pre_hooks, find_post_hooks, find_startup_hooks, \
-        find_shutdown_hooks, find_options_hooks
+        find_shutdown_hooks, find_options_hooks, find_command_hooks
 from bento.commands.install \
     import \
         InstallCommand
@@ -295,7 +295,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
 
     if global_context.backend:
         global_context.backend.register_command_contexts(global_context)
-    for command in find_hook_commands(mods):
+    for command in find_command_hooks(mods):
         global_context.register_command(command.name, command)
     register_stuff(global_context)
     for cmd_name in global_context.command_names():

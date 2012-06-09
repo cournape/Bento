@@ -8,6 +8,9 @@ from six.moves \
     import \
         StringIO
 
+from bento.commands.core \
+    import \
+        Command
 from bento.compat \
     import \
         inspect as compat_inspect
@@ -219,3 +222,51 @@ Original traceback (most recent call last)
 
     module.root_path = main_file
     return module
+
+class WrappedCommand(Command):
+    def __init__(self, func):
+        super(WrappedCommand, self).__init__()
+        self._func = func
+        self.name = func.__name__
+
+    def __call__(self, ctx):
+        return self.run(ctx)
+
+    def run(self, ctx):
+        return self._func(ctx)
+
+    def __getattr__(self, k):
+        return getattr(self._func, k)
+
+def command(f):
+    """Decorator to create a new command from a simple function
+
+    The function should take one CommandContext instance
+
+    Example
+    -------
+ 
+    A simple command may be defined as follows::
+
+        @command
+        def hello(context):
+            print "hello"
+    """
+    return WrappedCommand(f)
+
+def find_command_hooks(modules):
+    """Retrieve all command instances defined in given modules list.
+
+    This should be used to find commands defined through the hook.command. This
+    works by looking for all WrappedCommand instances in the modules.
+
+    Parameters
+    ----------
+    modules: seq
+        list of modules to look into
+    """
+    commands = []
+    for module in modules:
+        commands.extend([f for f in vars(module).values() if isinstance(f,
+            WrappedCommand)])
+    return commands
