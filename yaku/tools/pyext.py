@@ -468,9 +468,9 @@ def _setup_compiler(ctx, cc_type):
         sys.path.pop(0)
         ctx.env = old_env
 
-    copied_values = ["CPPPATH_FMT", "LIBDIR_FMT", "LIB_FMT",
+    copied_values = ["CC", "CPPPATH_FMT", "LIBDIR_FMT", "LIB_FMT",
             "CC_OBJECT_FMT", "CC_TGT_F", "CC_SRC_F", "LINK_TGT_F",
-            "LINK_SRC_F"]
+            "LINK_SRC_F", "SHLINK"]
     for k in copied_values:
         ctx.env["PYEXT_%s" % k] = cc_env[k]
     ctx.env.prextend("PYEXT_CPPPATH", cc_env["CPPPATH"])
