@@ -360,6 +360,7 @@ def get_builder(ctx):
     return PythonBuilder(ctx)
 
 CC_SIGNATURE = {
+        "clang": re.compile("clang version"),
         "gcc": re.compile("gcc version"),
         "msvc": re.compile("Microsoft \(R\) (32-bit |)C/C\+\+ Optimizing Compiler")
 }
