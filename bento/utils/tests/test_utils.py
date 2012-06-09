@@ -7,6 +7,8 @@ import errno
 
 import os.path as op
 
+import mock
+
 from six.moves \
     import \
         StringIO
@@ -212,9 +214,15 @@ class TestCommaListSplit(unittest.TestCase):
         self.assertEqual(comma_list_split("-a,-b"), ["-a", "-b"])
 
 class TestPathNormalization(unittest.TestCase):
-    def test_simple(self):
+    @mock.patch("os.sep", "\\")
+    def test_simple_win32(self):
         self.assertEqual(bento.utils.path.normalize_path(r"foo\bar"), "foo/bar")
         self.assertEqual(bento.utils.path.unnormalize_path("foo/bar"), r"foo\bar")
+
+    @mock.patch("os.sep", "/")
+    def test_simple_unix(self):
+        self.assertEqual(bento.utils.path.normalize_path(r"foo\bar"), "foo\\bar")
+        self.assertEqual(bento.utils.path.unnormalize_path("foo/bar"), "foo/bar")
 
 class TestPPrint(unittest.TestCase):
     @mock.patch("bento.utils.utils.COLORS_LST", {"USE": True, "RED": "\x1b[01;31m", "NORMAL": "\x1b[0m"})

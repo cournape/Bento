@@ -21,7 +21,13 @@ def ensure_dir(path):
         os.makedirs(d)
 
 def unnormalize_path(path):
-    return path.replace("/", "\\")
+    if os.sep != "/":
+        return path.replace("/", "\\")
+    else:
+        return path
 
 def normalize_path(path):
-    return path.replace("\\", "/")
+    if os.sep != "/":
+        return path.replace("\\", "/")
+    else:
+        return path
