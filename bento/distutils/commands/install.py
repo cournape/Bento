@@ -33,6 +33,7 @@ class install(Command):
         ('dry-run', 'n', "(Unix-only) Alternative root (equivalent to destdir option in bento)"),
         ('single-version-externally-managed', None, "Do nothing. For compatibility with pip only."),
         ('install-headers=', None, "Do nothing. For compatibility with pip only."),
+        ('force', None, "Do nothing. For compatibility with distutils."),
     ]
 
     def initialize_options(self):
