@@ -4,13 +4,15 @@ import tempfile
 
 import mock
 
+import bento.core.testing
+
 from bento.commands.command_contexts \
     import \
         ContextWithBuildDirectory
 from bento.commands.options \
     import \
         OptionsContext
-from bento.commands.sphinx \
+from bento.commands.sphinx_command \
     import \
         SphinxCommand
 from bento.commands.wrapper_utils \
@@ -26,11 +28,12 @@ from bento.core.node \
     import \
         create_base_nodes
 
-class FakePopen(object):
-    def __init__(self, *a, **kw):
-        self.returncode = -1
-    def wait(self):
-        self.returncode = 0
+def has_sphinx():
+    try:
+        import sphinx
+        return True
+    except ImportError:
+        return False
 
 class TestSphinx(unittest.TestCase):
     def setUp(self):
@@ -48,9 +51,14 @@ class TestSphinx(unittest.TestCase):
         os.chdir(self.save)
         shutil.rmtree(self.d)
 
-    @mock.patch("bento.commands.sphinx.subprocess.Popen", FakePopen)
+    @bento.core.testing.skip_if(not has_sphinx(), "sphinx not available, skipping sphinx command test(s)")
     def test_simple(self):
-        self.top_node.make_node("doc").mkdir()
+        n = self.top_node.make_node("doc/conf.py")
+        n.parent.mkdir()
+        n.write("")
+
+        n = self.top_node.make_node("doc/contents.rst")
+        n.write("")
 
         bento_info = "Name: foo"
         package = PackageDescription.from_string(bento_info)
