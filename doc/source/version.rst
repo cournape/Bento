@@ -1,7 +1,7 @@
 Version 0.1
 ===========
 
-Released on .
+Released on 12th June 2012.
 
 Main features:
 
