@@ -159,6 +159,7 @@ class TestUnixScheme(unittest.TestCase):
 
 
     @mock.patch("sys.platform", "linux2")
+    @mock.patch("bento.commands.configure.virtualenv_prefix", lambda: None)
     @mock.patch("bento.core.platforms.sysconfig.bento.utils.path.find_root", lambda ignored: r"/")
     @mock.patch("distutils.command.install.INSTALL_SCHEMES", {"unix_prefix": UNIX_REFERENCE})
     def test_scheme_default(self):
@@ -185,6 +186,7 @@ Name: foo
     @mock.patch("sys.platform", "darwin")
     @mock.patch("bento.core.platforms.sysconfig.bento.utils.path.find_root", lambda ignored: r"/")
     @mock.patch("bento.commands.configure.op.normpath", posixpath.normpath)
+    @mock.patch("bento.commands.configure.virtualenv_prefix", lambda: None)
     @mock.patch("sys.prefix", "/Library/Frameworks/Python.framework/Versions/2.8")
     @mock.patch("sys.exec_prefix", "/Exec/Library/Frameworks/Python.framework/Versions/2.8")
     def test_scheme_default_darwin(self):
@@ -258,6 +260,7 @@ Name: foo
         self.assertRaises(NotImplementedError, lambda: self._compute_scheme(bento_info, self.options))
 
     @mock.patch("sys.platform", "linux2")
+    @mock.patch("bento.commands.configure.virtualenv_prefix", lambda: None)
     @mock.patch("bento.core.platforms.sysconfig.bento.utils.path.find_root", lambda ignored: r"/")
     @mock.patch("distutils.command.install.INSTALL_SCHEMES", {"unix_local": MOCK_DEBIAN_SCHEME}, create=True)
     def test_scheme_debian(self):
