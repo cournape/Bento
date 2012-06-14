@@ -45,6 +45,13 @@ def pkg_to_distutils_meta(pkg):
         d[k] = v(pkg)
     return d
 
+def pkg_to_distutils_meta_pkg_info(pkg):
+    meta = pkg_to_distutils_meta(pkg)
+    meta["summary"] = meta.pop("description")
+    meta["description"] = meta.pop("long_description")
+
+    return meta
+
 def pkg_to_distutils(pkg):
     """Convert PackageDescription instance to a dict which may be used
     as argument to distutils/setuptools setup function."""

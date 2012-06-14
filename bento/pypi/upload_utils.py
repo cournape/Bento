@@ -8,7 +8,7 @@ from bento.pypi.register_utils \
         encode_multipart, _BOUNDARY
 from bento.conv \
     import \
-        pkg_to_distutils_meta
+        pkg_to_distutils_meta_pkg_info
 from bento.utils.utils \
     import \
         extract_exception
@@ -51,7 +51,7 @@ def build_upload_post_data(filename, dist_type, package, sign=False, comment="")
     finally:
         f.close()
 
-    data = pkg_to_distutils_meta(package)
+    data = pkg_to_distutils_meta_pkg_info(package)
     data[":action"] = "file_upload"
     data["protocol_version"] = "1"
     data.update({
