@@ -7,6 +7,23 @@ python:
 # mock/multiprocessing are only necessary for testing
 install:
    - pip install mock
-   - "if [[ $TRAVIS_PYTHON_VERSION == '2.5' ]]; then pip install multiprocessing; fi"
+   - "if [[ $TRAVIS_PYTHON_VERSION == '2.4' ]]; then pip install nose unittest2 multiprocessing; fi"
+   - "if [[ $TRAVIS_PYTHON_VERSION == '2.5' ]]; then pip install nose unittest2 multiprocessing; fi"
+
+env:
+   - OVERRIDE_PYTHON_VERSION=2.4
+   - OVERRIDE_PYTHON_VERSION=
+
+matrix:
+  exclude:
+      - python: 2.5
+        env: OVERRIDE_PYTHON_VERSION=2.4
+      - python: 2.6
+        env: OVERRIDE_PYTHON_VERSION=2.4
+      - python: 2.7
+        env: OVERRIDE_PYTHON_VERSION=2.4
+      - python: 3.2
+        env: OVERRIDE_PYTHON_VERSION=2.4
+
 # command to run tests, e.g. python setup.py test
 script:  python -m bentomakerlib.bentomaker distcheck
