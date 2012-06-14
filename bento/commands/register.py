@@ -64,8 +64,8 @@ Usage: bentomaker register [OPTIONS]"""
         else:
             config = PyPIConfig(o.username, o.password, o.repository_url)
 
-        auth = urllib2.HTTPPasswordMgr()
-        host = urlparse.urlparse(config.repository)[0]
+        auth = HTTPPasswordMgr()
+        host = urlparse(config.repository)[0]
         auth.add_password(config.realm, host, config.username, config.password)
 
         post_data = build_post_data(context.pkg, "submit")
