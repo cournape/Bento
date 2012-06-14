@@ -41,7 +41,7 @@ before_install:
 # command to run tests, e.g. python setup.py test
 script:
   - if [ "${TRAVIS_PYTHON_VERSION}" == "2.4" ]; then
-      nosetests-2.4 bento bentomakerlib
+      nosetests-2.4 bento bentomakerlib;
       else
       python -m bentomakerlib.bentomaker distcheck;
       fi
