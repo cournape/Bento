@@ -19,6 +19,9 @@ from bento.utils.utils \
 from bento.commands.contexts \
     import \
         GlobalContext
+from bento.testing.sub_test_case \
+    import \
+         SubprocessTestCase
 from bento.errors \
     import \
         UsageException, CommandExecutionFailure, ConvertionError, ParseError
@@ -142,7 +145,9 @@ Name: foo
     def test_mpkg(self):
         main(["build_mpkg"])
 
-class TestConvertCommand(Common):
+# Add SubprocessTestCase mixin as convert depends on distutils which uses
+# globals
+class TestConvertCommand(Common, SubprocessTestCase):
     def test_convert(self):
         self.top_node.make_node("setup.py").write("""\
 from distutils.core import setup
