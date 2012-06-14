@@ -22,7 +22,8 @@ class ParseError(BentoError):
         else:
             self.lineno = self.tp = self.value = None
         self.filename = None
-        super(ParseError, self).__init__(msg)
+        # Don't use super here because Exception are not new-class object on 2.4
+        BentoError.__init__(self, msg)
 
     def __str__(self):
         if self.filename is None or self.token is None:
