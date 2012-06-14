@@ -61,4 +61,4 @@ Usage: bentomaker register [OPTIONS] distribution_file"""
             raise NotImplementedError()
 
         upload_type = _SUPPORTED_DISTRIBUTIONS[o.distribution_type]
-        upload(filename, upload_type, context.pkg, config=config, show_response=False)
+        upload(filename, upload_type, context.pkg, config=config)
