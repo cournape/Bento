@@ -17,6 +17,8 @@ env:
 
 matrix:
   exclude:
+      - python: 2.4
+        env: OVERRIDE_PYTHON_VERSION=
       - python: 2.5
         env: OVERRIDE_PYTHON_VERSION=2.4
       - python: 2.6
