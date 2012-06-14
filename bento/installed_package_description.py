@@ -155,8 +155,8 @@ class InstalledPkgDescription(object):
                 file_sections[category] = {name: files}
         return cls(file_sections, meta_vars, executables, install_paths)
 
-    def __init__(self, files, meta, executables, path_variables=None):
-        self.files = files
+    def __init__(self, file_sections, meta, executables, path_variables=None):
+        self.file_sections = file_sections
         self.meta = meta
         if path_variables is None:
             self._path_variables = get_scheme(sys.platform)[0]
@@ -196,7 +196,7 @@ class InstalledPkgDescription(object):
         data["install_paths"] = self._path_variables
 
         file_sections = []
-        for category, value in self.files.items():
+        for category, value in self.file_sections.items():
             if category in ["pythonfiles", "bentofiles"]:
                 for i in value.values():
                     i.srcdir = "$_srcrootdir"
@@ -251,9 +251,9 @@ class InstalledPkgDescription(object):
                                  "%r: %r" % (name, path))
 
         node_sections = {}
-        for category in self.files:
+        for category in self.file_sections:
             node_sections[category] = {}
-            for name, section in self.files[category].items():
+            for name, section in self.file_sections[category].items():
                 srcdir = subst_vars(section.source_dir, variables)
                 target = subst_vars(section.target_dir, variables)
 
