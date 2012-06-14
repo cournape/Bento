@@ -102,7 +102,7 @@ github as well.
 WHILE BENTO IS ALREADY USABLE, IT MAY STILL SIGNIFICANTLY CHANGE IN BACKWARD
 INCOMPATIBLE WAYS UNTIL THE FIRST ALPHA.
 
-.. _github: http://github.com/cournape/bento.git
+.. _github: http://github.com/cournape/Bento.git
 .. _issue-tracker: http://github.com/cournape/bento/issues
-.. _documentation: http://cournape.github.com/bento
+.. _documentation: http://cournape.github.com/Bento
 .. _bento-ml: http://librelist.com/browser/bento
