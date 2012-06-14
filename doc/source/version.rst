@@ -1,3 +1,8 @@
+Version 0.2
+===========
+
+Released on .
+
 Version 0.1
 ===========
 
