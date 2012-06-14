@@ -26,5 +26,20 @@ matrix:
       - python: 3.2
         env: OVERRIDE_PYTHON_VERSION=2.4
 
+before_install:
+  - mkdir builds
+  - pushd builds
+  - if [ "${TRAVIS_PYTHON_VERSION}" == "2.4" ]; then
+      deactivate;
+      ../.travis-make-py24-virtualenv.sh $PWD/py24-ve;
+      source $PWD/py24-ve/bin/activate;
+      fi
+  - popd
+
 # command to run tests, e.g. python setup.py test
-script:  python -m bentomakerlib.bentomaker distcheck
+script:
+  - if [ "${TRAVIS_PYTHON_VERSION}" == "2.4" ]; then
+      nosetests-2.4 bento bentomakerlib
+      else
+      python -m bentomakerlib.bentomaker distcheck;
+      fi
