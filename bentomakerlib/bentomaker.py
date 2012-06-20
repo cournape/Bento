@@ -226,17 +226,10 @@ def main(argv=None):
         print(bento.__version__ + "git" + bento.__git_revision__)
         return
 
-    # FIXME: top_node vs srcnode
     source_root = os.path.join(os.getcwd(), os.path.dirname(popts.bento_info))
     build_root = os.path.join(os.getcwd(), popts.build_directory)
 
-    # FIXME: create_root_with_source_tree should return source node and build
-    # node so that we don't have to find them and take the risk of
-    # inconsistency
-    root = bento.core.node.create_root_with_source_tree(source_root, build_root)
-    run_node = root.find_node(os.getcwd())
-    top_node = root.find_node(source_root)
-    build_node = root.find_node(build_root)
+    top_node, build_node, run_node = bento.core.node.create_base_nodes(source_root, build_root)
     if run_node != top_node and run_node.is_src():
         raise bento.errors.UsageException("You cannot execute bentomaker in a subdirectory of the source tree !")
     if run_node != build_node and run_node.is_bld():
