@@ -48,8 +48,7 @@ def run_command_in_context(context, cmd, pre_hooks=None, post_hooks=None):
             local_node = top_node.find_dir(relpath(hook.local_dir, top_node.abspath()))
             context.pre_recurse(local_node)
             try:
-                if not context.help:
-                    hook(context)
+                hook(context)
             finally:
                 context.post_recurse()
 

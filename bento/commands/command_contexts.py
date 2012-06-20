@@ -58,12 +58,6 @@ class CmdContext(object):
         self.pkg = pkg
 
         self.options_context = options_context
-        o, a = options_context.parser.parse_args(command_argv)
-        if o.help:
-            self.help = True
-        else:
-            self.help = False
-
         self.command_argv = command_argv
 
         # All of run/top/cur nodes are set to the same value for the base
