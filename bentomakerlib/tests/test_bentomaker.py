@@ -53,7 +53,8 @@ class Common(unittest.TestCase):
 
         try:
             os.chdir(self.d)
-            self.top_node, self.build_node, self.run_node = create_base_nodes(self.d, op.join(self.d, "build"))
+            self.top_node, self.build_node, self.run_node = \
+                create_base_nodes(self.d, op.join(self.d, "build"), self.d)
         except:
             os.chdir(self.old)
             shutil.rmtree(self.d)

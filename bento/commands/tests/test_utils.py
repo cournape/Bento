@@ -26,9 +26,9 @@ class TestIsUingCython(unittest.TestCase):
         self.old_dir = os.getcwd()
 
         self.d = tempfile.mkdtemp()
-        self.top_node, self.build_node, self.run_node = create_base_nodes(self.d, op.join(self.d, "build"))
-
         os.chdir(self.d)
+
+        self.top_node, self.build_node, self.run_node = create_base_nodes()
 
     def tearDown(self):
         os.chdir(self.old_dir)

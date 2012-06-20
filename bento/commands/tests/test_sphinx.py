@@ -41,8 +41,7 @@ class TestSphinx(unittest.TestCase):
         self.d = tempfile.mkdtemp()
         os.chdir(self.d)
         try:
-            self.top_node, self.build_node, self.run_node = \
-                    create_base_nodes(self.d, os.path.join(self.d, "build"))
+            self.top_node, self.build_node, self.run_node = create_base_nodes()
         except Exception:
             os.chdir(self.save)
             raise

@@ -628,7 +628,7 @@ def create_base_nodes(source_path=None, build_path=None, run_path=None):
     if build_path is None:
         build_path = op.join(source_path, "build")
     if run_path is None:
-        run_path = source_path
+        run_path = os.getcwd()
     root = create_root_with_source_tree(source_path, build_path)
     top_node  = root.find_node(source_path)
     build_node  = root.find_node(build_path)
