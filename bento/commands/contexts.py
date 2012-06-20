@@ -10,6 +10,9 @@ from bento.commands.dependency \
 from bento.commands.hooks \
     import \
         HookRegistry
+from bento.commands.wrapper_utils \
+    import \
+        resolve_and_run_command
 from bento.utils.utils \
     import \
         read_or_create_dict
@@ -39,6 +42,9 @@ class GlobalContext(object):
     def store(self):
         if self._command_data_db:
             self._command_data_db.safe_write(cPickle.dumps(self._command_data_store), "wb")
+
+    def run_command(self, command_name, command_argv, package, run_node):
+        resolve_and_run_command(self, command_name, command_argv, run_node, package)
 
     #------------
     # Command API

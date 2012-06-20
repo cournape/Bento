@@ -454,10 +454,7 @@ def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_no
 
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:
-        options_context = global_context.retrieve_options_context(cmd_name)
-        context_klass = global_context.retrieve_command_context(cmd_name)
-        context = context_klass(global_context, cmd_argv, options_context, PackageDescription(), run_node)
-        cmd.run(context)
+        global_context.run_command(cmd_name, cmd_argv, PackageDescription(), run_node)
         return
 
     if is_help_only(global_context, cmd_name, cmd_argv):
