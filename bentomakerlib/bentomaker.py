@@ -147,6 +147,13 @@ def register_commands(global_context):
             bento.commands.build_mpkg.BuildMpkgCommand(), public=False)
         global_context.set_before("build_mpkg", "build")
 
+    if sys.platform == "win32":
+        from bento.commands.build_msi \
+            import \
+                BuildMsiCommand
+        global_context.register_command("build_msi", BuildMsiCommand())
+        global_context.set_before("build_msi", "build")
+
 def register_options(global_context, cmd_name):
     """Register options for the given command."""
     cmd = global_context.retrieve_command(cmd_name)

@@ -3,6 +3,16 @@ Version 0.2
 
 Released on .
 
+Main features:
+
+        - new build_msi command to build a MSI installer.
+
+Fixed issues
+------------
+
+Internals
+---------
+
 Version 0.1
 ===========
 
