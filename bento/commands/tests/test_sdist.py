@@ -145,7 +145,7 @@ Library:
 Name: foo
 Version: 1.0
 
-MetaTemplateFile: release.py.in
+MetaTemplateFiles: release.py.in
 
 Library:
     Modules: fubar

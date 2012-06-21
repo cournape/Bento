@@ -183,7 +183,7 @@ MetaTemplateFile: foo.py.in
 
     def test_meta_template_files(self):
         data = """\
-MetaTemplateFile: foo.py.in
+MetaTemplateFiles: foo.py.in
 """
         ret = parse_and_analyse(data)
         self.assertEqual(ret["meta_template_files"], ["foo.py.in"])
