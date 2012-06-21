@@ -94,7 +94,7 @@ Name: foo
         request = build_request(repository, post_data, "dummy_auth")
         r_headers = {
                 "Content-type": six.b("multipart/form-data; boundary=--------------GHSKFJDLGDS7543FJKLFHRE75642756743254"),
-                "Content-length": "2238",
+                "Content-length": "2229",
                 "Authorization": "dummy_auth"}
         self.assertEqual(request.headers, r_headers)
 
