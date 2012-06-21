@@ -1,7 +1,120 @@
+Version 0.2
+===========
+
+Released on .
+
+Main features:
+
+        - new build_msi command to build a MSI installer.
+
+Fixed issues
+------------
+
+Internals
+---------
+
+Version 0.1
+===========
+
+Released on 12th June 2012.
+
+Main features:
+
+        - new commands register_pypi and upload_pypi to register a package to
+          pypi and upload tarballs to it.
+        - waf backend: cython tool automatically loaded if cython files are
+          detected in sources
+        - UseBackends feature: allows to declare which build backend to use
+          when building C extensions in the bento.info file directly
+        - add sphinx command to build a package documentation if it uses
+          sphinx.
+        - add tweak_library/tweak_extension functions to build contexts to
+          simplify simple builder customization (e.g. include_dirs, defines,
+          etc...)
+        - add simpler API to register output nodes
+        - add --use-distutils-flags configure option to force using flags from
+          distutils (disabled by default).
+        - add --disable-autoconfigure build option to bypass configure for fast
+          partial rebuilds. This is not reliable depending on how the
+          environment is changed, so one should only use this during
+          development.
+        - add register_metadata API to register new metadata to be filled in
+          MetaTemplateFile
+        - Deprecate MetaTemplateFile, and use MetaTemplateFiles instead to
+          allow for multiple template files
+
+Fixed issues
+------------
+
+Internals
+---------
+
+        - Test coverage has been significantly improved
+        - Lots of code style fixes to make the codebase more consistent
+        - build backend-specific code has been moved to bento.backends
+        - parser code has been moved to bento.parser
+        - last hook-related global variables have been removed
+        - bentomaker itself does not use global variables anymore for either
+          caching or command/context/option registration
+        - add backend concept: a backend knows how to register itself, to avoid
+          having to register command, context and options contexts separately
+
+Version 0.0.8.1
+===============
+
+Released on .
+
+Bugfix release
+
+Fixed issues
+------------
+
+    - python 2.4-ism
+    - fix in-place build/bootstrap issues for bento itself
+
+Version 0.0.8
+=============
+
+Released on 26th March 2012.
+
+While this release does not have big user-visible features, it brings lots of
+internal improvements and bug fixes, especially for the convert command.
+
+Main features:
+
+    - Path sections can now use conditionals
+    - More reliable convert command to migrate
+      distutils/setuptools/distribute/distutils2 packages to bento
+    - Single-file distribution can now include waf itself
+    - Nose is not necessary to run the test suite anymore
+    - Significant improvements to the distutils compatibility layer
+    - LibraryDir support for backward compatibility with distutils packages
+      relying on package_dir feature
+
+Fixed issues
+------------
+
+    - Running bento for python 2.x after having run it for 3.x does not crash
+      bento anymore
+    - Using bento installed as root should now work (#46). This is still not
+      recommended, though
+
+Internals
+---------
+
+    - move most global state from bento into bentomakerlib
+    - add basic end-to-end tests for bento.distutils
+    - bento.distutils simplified: it is going toward a "shell" around bento
+      with compatibility with pip/easy_install/virtualenv and away from a
+      distutils extension
+    - six is now used to handle most 2/3 compatibilities.
+    - convert-related code is now in its won package, and has some decent
+      functional tests for basic features.
+
 Version 0.0.7
 =============
 
-Released on .
+Released on 25th October 2011.
 
 Main features:
 

@@ -82,30 +82,13 @@ What about distutils2 ?
 
 We believe that most efforts in distutils2 are peripherical to our core issues
 as described above, and won't improve the situation for the scipy community.
-History-wise, it should also be noted that Bento precedes distutils2 by a
-couple of months (the first prototype was announced during my talk at scipy
-India in december 2009).
 
 Starting from the distutils codebase is not very appealing, as most of it would
 need to be scrapped (at least the whole command and compiler business needs to
-be completely rewritten). There are also irreconcilable differences on some
-key points. In particular, we think the following features are essential:
-
-    1. specified and versioned metadata formats, instead of implementation
-       specific data
-    2. enforced packaging policies (version, required metadata, etc...)
-    3. separate index of packages (so that you don't need to download a lot
-       of software to know the dependencies of a package)
-    4. easy mirroring (ideally file based)
-    5. simple implementations
-
-Although controversial in the python community, there is a large consensus
-within the scipy community on those points.  Some of them have been rejected by
-various distutils2 members (2, 3 and 4 in particular), and we are unwilling to
-compromise on them. Distutils-related PEPs pushed by the distutils2 team will
-be implemented on a case per case basis (some of them are obsolete as far as
-bento is concerned, in the sense that they are already implemented, if only in
-intent).
+be completely rewritten). Distutils2/packaging-related PEPs pushed by the
+distutils2 team will be implemented on a case per case basis (some of them are
+obsolete as far as bento is concerned, in the sense that they are already
+implemented, if only in intent).
 
 Moreover, as bento is designed from the ground up to be split into mostly
 independent parts, it is possible to reuse its code in other projects. No
@@ -131,12 +114,9 @@ What about existing projects using distutils ?
 Bentomaker, the command line interface to bento, contains an experimental
 command to convert existing setup.py to bento format.
 
-I also believe it is possible to support most distutils/setuptools features in
-bento file format, and convert a package description to a distutils/setuptools
-Distribution instance. It could be used as a transition, so that packages who
-have heavily invested in distutils can still use distutils extensions: the
-metadata would be described in a bento.file, but distutils would still drive
-the build and installation.
+It is also possible to write a setup.py which "fake distutils" while using
+bento for its implementation. This allows a bento-based package to be
+installable from easy_install or pip.
 
 Is bento based on existing tools ?
 ====================================
@@ -182,15 +162,14 @@ Bento has the following main features:
       out-of-date source files and dependencies automatically detected for C
       extensions
     - Optional recursive package description for complex packages
-    - Easy customization of compilation flags and toolchain
-
-The following features are being implemented as well:
+    - Pluggable build backend: waf, distutils and custom one are currently
+      implemented. One could think about adding support for gyp, make, scons,
+      etc...
     - Robust command dependencies from dependencies descriptor: no more
       monkey-patching nonsense to insert a new command between two existing
       subcommands 
-    - The build process may be replaced by make, waf or scons if desired, while
-      still keeping the installation and packaging features of bento (windows
-      installers, eggs, etc...)
+
+The following features are being implemented as well:
     - New packaging format which can be translated to any existing one if
       wanted (egg, wininst, msi, etc...). The format is optimized for
       installation
@@ -222,25 +201,18 @@ bento has some significant disadvantages as well that you need to be aware of:
     * Still mostly a one-man show. However, once bento reaches a satisfying
       level, it will likely be used as a replacement to distutils for numpy and
       scipy, and hopefully beyond
-    * Relatively weak testing: bento has a test suite with average coverage
-      (~50-60 %). Some parts like the bento.info parser reach near full
-      coverage, other parts such as bentomaker are lower than 50 %.
-      Bento is mainly developed on mac os x and linux on python 2.6, so those
-      should rarely break. Bento test suite also run on a continuous
-      integration system for every python version from 2.4 to 3.1 on a linux
-      vm, and I sometimes check that things work on windows as well.
     * Weak documentation: hopefully, this is getting better.
     * Mediocre code quality: I focused on the general architecture and
       low-coupling which are the main issues I had with distutils, but at a
       lower level, a lot of code leaves to be desired (style inconsistencies,
-      etc...). As for testing, some parts are pretty good, other are damn awful.
+      etc...).
 
 Is bento API stable ?
 =====================
 
-As the current version suggest, no. As long as you only use the bento.info file
-(no hook), you should be pretty safe - I don't expect the bento.info file to
-change in any significant backward-incompatible way.
+As suggested by the current version, no. As long as you only use the bento.info
+file (no hook), you should be pretty safe - I don't expect the bento.info file
+to change in any significant backward-incompatible way.
 
 However, the API to be used inside hook files leaves a lot to be desired, and
 will change in backward incompatible ways before the first alpha. The good side

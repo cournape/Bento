@@ -17,13 +17,13 @@ Main features currently implemented
 * Hooks for customizing arbitrary stages (configure, build, etc...)
 * Easy to implement new commands
 * Windows installer support and basic egg support.
+* Scons/waf libraries to interact with Scons_ and Waf_ build tools, so
+  that complex packages can have access to a real build system with
+  dependencies handling.
 
 Future features
 ---------------
 
-* Scons/waf libraries to interact with Scons_ and Waf_ build tools, so
-  that complex packages can have access to a real build system with
-  dependencies handling.
 * Conversion to native packages (.deb, .rpm, .msi, etc...)
 
 .. _RPM: http://rpm5.org/docs/api/specfile.html
