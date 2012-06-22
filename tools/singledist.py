@@ -16,6 +16,7 @@ import os.path as op
 sys.path.insert(0, op.abspath(op.join(op.dirname(__file__), os.pardir)))
 try:
     import bento.core.node
+    from bento.core import PackageDescription
 finally:
     sys.path.pop(0)
 
@@ -98,25 +99,34 @@ def create_script(config):
 
     # List of (source, arcname) pairs
     files = []
-
     nodes = []
 
-    def list_nodes(packages, base_node):
-        """Return a list of nodes for the given list of python packages."""
-        sys.path.insert(0, base_node.abspath())
+    cwd_node = ROOT.find_node(os.getcwd())
+
+    def list_nodes(packages, base_node=cwd_node):
         nodes = []
-        try:
-            for package in packages:
-                __import__(package)
-                p = sys.modules[package]
-                package_node = ROOT.find_node(p.__path__[0])
-                nodes.extend(package_node.ant_glob("*py"))
-        finally:
-            sys.path.pop(0)
+        for package_name in packages:
+            init = os.path.join(*(package_name.split(".") + ["__init__.py"]))
+            n = base_node.find_node(init)
+            if n is None:
+                raise IOError("init file for package %s not found (looked for %r)!" \
+                              % (package_name, init))
+            else:
+                p = n.parent
+                nodes.extend(p.find_node(f) for f in p.listdir() if f.endswith(".py"))
         return nodes
 
-    cwd_node = ROOT.find_node(os.getcwd())
-    nodes = list_nodes(config["packages"], cwd_node)
+    package = PackageDescription.from_file("bento.info", user_flags={"bundle": True, "bundle_yaku": True})
+    nodes.extend(list_nodes(package.packages))
+
+    for module in package.py_modules:
+        n = cwd_node.find_node(module + ".py")
+        if n is None:
+            raise IOError("init file for package %s not found (looked for %r)!" \
+                          % (package_name, init))
+        else:
+            nodes.append(n)
+
     files.extend([(n.abspath(), n.path_from(cwd_node)) for n in nodes])
 
     if config["waf"]:
@@ -125,12 +135,6 @@ def create_script(config):
         base_node = ROOT.find_node(op.expanduser(base_dir))
         nodes = list_nodes(packages, base_node)
         files.extend([(n.abspath(), n.path_from(base_node)) for n in nodes])
-
-    for package in config["private_packages"]:
-        for k in os.listdir(package):
-            if k.endswith('.py'):
-                f = os.path.join(package, k)
-                files.append((f, f))
 
     for pattern in extra_files:
         for f in glob.glob(pattern):
