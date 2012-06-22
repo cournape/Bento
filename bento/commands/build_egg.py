@@ -46,12 +46,12 @@ Usage:   bentomaker build_egg [OPTIONS]"""
         output_file = o.output_file
 
         n = ctx.build_node.make_node(IPKG_PATH)
-        ipkg = BuildManifest.from_file(n.abspath())
-        build_egg(ipkg, ctx, ctx.build_node, output_dir, output_file)
+        build_manifest = BuildManifest.from_file(n.abspath())
+        build_egg(build_manifest, ctx.build_node, ctx.build_node, output_dir, output_file)
 
-def build_egg(ipkg, ctx, source_root, output_dir=None, output_file=None):
-    meta = PackageMetadata.from_ipkg(ipkg)
-    egg_info = EggInfo.from_ipkg(ipkg, ctx.build_node)
+def build_egg(build_manifest, build_node, source_root, output_dir=None, output_file=None):
+    meta = PackageMetadata.from_ipkg(build_manifest)
+    egg_info = EggInfo.from_ipkg(build_manifest, build_node)
 
     # FIXME: fix egg name
     if output_dir is None:
@@ -66,22 +66,19 @@ def build_egg(ipkg, ctx, source_root, output_dir=None, output_file=None):
             egg = os.path.join(output_dir, output_file)
     bento.utils.path.ensure_dir(egg)
 
+    egg_scheme = {"prefix": source_root.abspath(),
+                  "eprefix": source_root.abspath(),
+                  "sitedir": source_root.abspath()}
+
     zid = compat.ZipFile(egg, "w", compat.ZIP_DEFLATED)
     try:
-        ipkg.update_paths({"prefix": source_root.abspath(),
-                           "eprefix": source_root.abspath(),
-                           "sitedir": source_root.abspath()})
-        for filename, cnt in egg_info.iter_meta(ctx.build_node):
+        for filename, cnt in egg_info.iter_meta(build_node):
             zid.writestr(os.path.join("EGG-INFO", filename), cnt)
 
-        file_sections = ipkg.resolve_paths(source_root)
-        for kind, source, target in iter_files(file_sections):
+        for kind, source, target in build_manifest.iter_built_files(source_root, egg_scheme):
             if not kind in ["executables"]:
                 zid.write(source.abspath(), target.path_from(source_root))
-
-        pprint("PINK", "Byte-compiling ...")
-        for kind, source, target in iter_files(file_sections):
-            if kind in ["pythonfiles"]:
+            if kind == "pythonfiles":
                 try:
                     bytecode = bcompile(source.abspath())
                 except PyCompileError:
