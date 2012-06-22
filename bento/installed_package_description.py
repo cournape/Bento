@@ -219,6 +219,12 @@ class BuildManifest(object):
         for k, v in paths.items():
             self._path_variables[k] = v
 
+    def iter_built_files(self, src_root_node, scheme=None):
+        if scheme is None:
+            scheme = {}
+        self.update_paths(scheme)
+        return iter_files(self.resolve_paths(src_root_node))
+
     def resolve_path(self, path):
         variables = copy.copy(self._path_variables)
         variables.update(self._variables)
