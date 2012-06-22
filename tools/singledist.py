@@ -55,10 +55,14 @@ def read_config():
     ret["script_pkg_root"] = s.get(section, "package_root")
     ret["script_version"] = s.get(section, "version")
     ret["script_entry_point"] = translate_entry_point(s.get(section, "entry_point"))
-    ret["packages"] = _parse_comma_list(s.get(section, "packages"))
-    ret["private_packages"] = _parse_comma_list(s.get(section, "private_packages"))
-    ret["include_exe"] = s.getboolean(section, "include_exe")
-    ret["include_waf"] = s.getboolean(section, "include_waf")
+    try:
+        ret["include_exe"] = s.getboolean(section, "include_exe")
+    except ConfigParser.NoOptionError:
+        ret["include_exe"] = False
+    try:
+        ret["include_waf"] = s.getboolean(section, "include_waf")
+    except ConfigParser.NoOptionError:
+        ret["include_waf"] = False
 
     ret["extra_files"] = []
     if ret["include_exe"]:
