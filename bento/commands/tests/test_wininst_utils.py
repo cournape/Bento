@@ -26,7 +26,7 @@ from bento.commands.wininst_utils \
         get_inidata, create_exe, get_exe_bytes
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription
+        BuildManifest
 
 from bento.compat.api import moves
 
@@ -45,7 +45,7 @@ class TestWininstUtils(moves.unittest.TestCase):
         """Simply execute get_inidata."""
         # FIXME: do a real test here
         meta, sections, nodes = create_simple_ipkg_args(self.top_node)
-        ipkg = InstalledPkgDescription(sections, meta, {})
+        ipkg = BuildManifest(sections, meta, {})
         get_inidata(ipkg)
 
     @mock.patch('distutils.msvccompiler.get_build_version', lambda: 9.0)
@@ -53,7 +53,7 @@ class TestWininstUtils(moves.unittest.TestCase):
     def test_create_exe(self):
         # FIXME: do a real test here
         meta, sections, nodes = create_simple_ipkg_args(self.top_node)
-        ipkg = InstalledPkgDescription(sections, meta, {})
+        ipkg = BuildManifest(sections, meta, {})
 
         fid, arcname = tempfile.mkstemp(prefix="zip")
         try:

@@ -16,7 +16,7 @@ from bento._config \
         IPKG_PATH
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription
+        BuildManifest
 from bento.commands.egg_utils \
     import \
         EggInfo
@@ -27,7 +27,7 @@ class egg_info(old_egg_info):
         dist = self.distribution
 
         n = dist.build_node.make_node(IPKG_PATH)
-        ipkg = InstalledPkgDescription.from_file(n.abspath())
+        ipkg = BuildManifest.from_file(n.abspath())
 
         egg_info = EggInfo.from_ipkg(ipkg, dist.build_node)
 

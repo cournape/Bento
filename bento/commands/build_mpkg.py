@@ -11,7 +11,7 @@ from bento.utils.utils \
         subst_vars
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription, iter_files
+        BuildManifest, iter_files
 from bento._config \
     import \
         IPKG_PATH
@@ -67,7 +67,7 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
         default_sitedir = default_scheme["sitedir"]
 
         n = ctx.build_node.make_node(IPKG_PATH)
-        ipkg = InstalledPkgDescription.from_file(n.abspath())
+        ipkg = BuildManifest.from_file(n.abspath())
         name = ipkg.meta["name"]
         version = ipkg.meta["version"]
         py_short = ".".join([str(i) for i in sys.version_info[:2]])

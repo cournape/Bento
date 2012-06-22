@@ -7,7 +7,7 @@ from bento.utils.utils \
         subst_vars
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription, ipkg_meta_from_pkg
+        BuildManifest, ipkg_meta_from_pkg
 from bento._config \
     import \
         IPKG_PATH
@@ -25,7 +25,7 @@ class SectionWriter(object):
 
     def store(self, filename, pkg):
         meta = ipkg_meta_from_pkg(pkg)
-        p = InstalledPkgDescription(self.sections, meta, pkg.executables)
+        p = BuildManifest(self.sections, meta, pkg.executables)
         if not op.exists(op.dirname(filename)):
             os.makedirs(op.dirname(filename))
         p.write(filename)

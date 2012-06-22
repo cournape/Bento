@@ -18,7 +18,7 @@ from bento.core \
         PackageMetadata
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription, iter_files
+        BuildManifest, iter_files
 
 import bento.compat.api as compat
 import bento.utils.path
@@ -43,7 +43,7 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
             return
 
         n = ctx.build_node.make_node(IPKG_PATH)
-        ipkg = InstalledPkgDescription.from_file(n.abspath())
+        ipkg = BuildManifest.from_file(n.abspath())
         create_wininst(ipkg, src_root_node=ctx.build_node, build_node=ctx.build_node,
                        wininst=o.output_file,
                        output_dir=o.output_dir)

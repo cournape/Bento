@@ -7,7 +7,7 @@ from bento._config \
     import \
         IPKG_PATH
 from bento.installed_package_description import \
-    InstalledPkgDescription, iter_files
+    BuildManifest, iter_files
 
 from bento.commands.core import \
     Command, Option
@@ -140,7 +140,7 @@ Usage:   bentomaker install [OPTIONS]."""
             return
 
         n = ctx.build_node.make_node(IPKG_PATH)
-        ipkg = InstalledPkgDescription.from_file(n.abspath())
+        ipkg = BuildManifest.from_file(n.abspath())
         scheme = ctx.retrieve_configured_scheme()
         ipkg.update_paths(scheme)
         node_sections = ipkg.resolve_paths_with_destdir(ctx.build_node)

@@ -15,7 +15,7 @@ from bento._config \
         IPKG_PATH
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription, iter_files
+        BuildManifest, iter_files
 from bento.utils.utils import subst_vars
 import bento.utils.io2
 
@@ -149,7 +149,7 @@ class install(Command):
         context = cmd_context_klass(dist.global_context, [], options_context, dist.pkg, dist.run_node)
 
         n = context.build_node.make_node(IPKG_PATH)
-        ipkg = InstalledPkgDescription.from_file(n.abspath())
+        ipkg = BuildManifest.from_file(n.abspath())
         scheme = context.retrieve_configured_scheme()
         ipkg.update_paths(scheme)
         file_sections = ipkg.resolve_paths_with_destdir(src_root_node=context.build_node)

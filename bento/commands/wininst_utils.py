@@ -26,7 +26,7 @@ def wininst_filename(meta, pyver=None):
 
 # Stolen from distutils.commands.bdist_wininst
 # FIXME: improve this code, in particular integration with
-# InstalledPkgDescription
+# BuildManifest
 
 # FIXME: deal with this correctly, in particular MSVC - most likely we will
 # need to hardcode things depending on python versions

@@ -19,7 +19,7 @@ from bento.private.bytecode \
         bcompile, PyCompileError
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription, iter_files
+        BuildManifest, iter_files
 
 import bento.compat.api as compat
 import bento.utils.path
@@ -46,7 +46,7 @@ Usage:   bentomaker build_egg [OPTIONS]"""
         output_file = o.output_file
 
         n = ctx.build_node.make_node(IPKG_PATH)
-        ipkg = InstalledPkgDescription.from_file(n.abspath())
+        ipkg = BuildManifest.from_file(n.abspath())
         build_egg(ipkg, ctx, ctx.build_node, output_dir, output_file)
 
 def build_egg(ipkg, ctx, source_root, output_dir=None, output_file=None):

@@ -15,7 +15,7 @@ from bento.core \
         PackageMetadata
 from bento.installed_package_description \
     import \
-        iter_source_files, InstalledPkgDescription
+        iter_source_files, BuildManifest
 
 def egg_filename(fullname, pyver=None):
     if not pyver:
@@ -120,7 +120,7 @@ class EggInfo(object):
 def extract_egg(egg, extract_dir):
     # Given a bento-produced egg, extract its content in the given directory,
     # and returned the corresponding ipkg info instance
-    ipkg = InstalledPkgDescription.from_egg(egg)
+    ipkg = BuildManifest.from_egg(egg)
     # egg scheme
     ipkg.update_paths({"prefix": ".", "eprefix": ".", "sitedir": "."})
 

@@ -100,7 +100,7 @@ def iter_files(file_sections):
                 if not _is_redundant(source, target):
                     yield kind, source, target
 
-class InstalledPkgDescription(object):
+class BuildManifest(object):
     @classmethod
     def from_egg(cls, egg_path):
         zid = compat.ZipFile(egg_path)

@@ -20,7 +20,7 @@ from bento.core.node \
         create_base_nodes
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription
+        BuildManifest
 
 class TestWininstInfo(unittest.TestCase):
     def setUp(self):
@@ -45,7 +45,7 @@ class TestWininstInfo(unittest.TestCase):
     @mock.patch("bento.commands.build_wininst.create_exe", mock.MagicMock())
     def test_simple(self):
         """This just tests whether create_wininst runs at all and produces a zip-file."""
-        ipackage = InstalledPkgDescription({}, {"name": "foo", "version": "1.0"}, {})
+        ipackage = BuildManifest({}, {"name": "foo", "version": "1.0"}, {})
         create_wininst(ipackage, self.build_node, self.build_node, wininst="foo.exe", output_dir="dist")
         arcname = bento.commands.build_wininst.create_exe.call_args[0][1]
         fp = zipfile.ZipFile(arcname)

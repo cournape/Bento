@@ -18,7 +18,7 @@ from bento.testing.misc \
         create_simple_ipkg_args
 from bento.installed_package_description \
     import \
-        InstalledPkgDescription, InstalledSection, iter_files
+        BuildManifest, InstalledSection, iter_files
 
 class TestInstalledSection(unittest.TestCase):
     def test_simple(self):
@@ -51,17 +51,17 @@ class TestIPKG(unittest.TestCase):
         shutil.rmtree(self.top_node.abspath())
 
     def test_simple_create(self):
-        InstalledPkgDescription(self.sections, self.meta, {})
+        BuildManifest(self.sections, self.meta, {})
 
     def test_simple_roundtrip(self):
         # FIXME: we compare the loaded json to avoid dealing with encoding
         # differences when comparing objects, but this is kinda stupid
-        r_ipkg = InstalledPkgDescription(self.sections, self.meta, {})
+        r_ipkg = BuildManifest(self.sections, self.meta, {})
         f = StringIO()
         r_ipkg._write(f)
         r_s = f.getvalue()
 
-        ipkg = InstalledPkgDescription.from_string(r_s)
+        ipkg = BuildManifest.from_string(r_s)
         f = StringIO()
         ipkg._write(f)
         s = f.getvalue()
@@ -84,7 +84,7 @@ class TestIterFiles(unittest.TestCase):
         shutil.rmtree(self.top_node.abspath())
 
     def test_simple(self):
-        ipkg = InstalledPkgDescription(self.sections, self.meta, {})
+        ipkg = BuildManifest(self.sections, self.meta, {})
         sections = ipkg.resolve_paths(self.top_node)
         res = sorted([(kind, source.abspath(), target.abspath()) \
                       for kind, source, target in iter_files(sections)])
