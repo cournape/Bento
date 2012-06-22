@@ -13,6 +13,8 @@ Fixed issues
 Internals
 ---------
 
+        - InstalledPkgDescription renamed to BuildManifest.
+
 Version 0.1
 ===========
 
