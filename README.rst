@@ -36,6 +36,14 @@ Python3 support
 Bento supports python 3 as is, so there is no need to run 2to3 on it (doing so
 will probably break it).
 
+Development
+============
+
+Bento discussions happen on the bento Mailing list (bento@librelist.com,
+archive on `bento-ml`_). To subscribe, you simply need to send an email to the
+list. Development is on `github`_. Bugs should be reported on bento
+`issue-tracker`_. Online `documentation`_ is available on github as well.
+
 Why you should use bento ?
 ==========================
 
@@ -93,11 +101,6 @@ Planned features:
       well-known packaging practices instead of the broken easy_install + pypi
       model (easy mirroring, enforced metadata, indexing to enable
       querying-before-installing, reliable install, etc...).
-
-Bento discussions happen on the bento Mailing list (bento@librelist.com,
-archive on `bento-ml`_), and development is on `github`_. Bugs should be
-reported on bento `issue-tracker`_. Online `documentation`_ is available on
-github as well.
 
 WHILE BENTO IS ALREADY USABLE, IT MAY STILL SIGNIFICANTLY CHANGE IN BACKWARD
 INCOMPATIBLE WAYS UNTIL THE FIRST ALPHA.
