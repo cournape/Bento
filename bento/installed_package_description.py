@@ -85,12 +85,21 @@ def iter_files(file_sections):
         target_path = target.abspath()
         # If this install already installs something @ target, we raise an
         # error unless the content is exactly the same
-        if not target_path in installed_files:
-            installed_files[target_path] = source_path
+        if not target in installed_files:
+            installed_files[target] = source
             return False
         else:
-            if not same_content(source_path, installed_files[target_path]):
-                raise IOError("Multiple source_path for same target_path %r !" % target_path)
+            if not same_content(source_path, installed_files[target].abspath()):
+                # See top comment: not sure there is any good solution to
+                # select which one should be selected when a target has
+                # multiple sources
+                if source.is_src() and installed_files[target].is_bld():
+                    return False
+                if source.is_bld() and installed_files[target].is_src():
+                    return True
+                else:
+                    raise IOError("Multiple source_path for same target_path %r ! %s and %s" % \
+                                  (target_path, source_path, installed_files[target].abspath()))
             else:
                 return True
 
