@@ -1,6 +1,6 @@
 Name: bento
 Version: 0.2
-Summary: A tool to nicely packages your python sotftware
+Summary: A tool to nicely packages your python software
 Url: http://github.com/cournape/Bento
 DescriptionFromFile: README.rst
 Author: David Cournapeau
