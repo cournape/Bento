@@ -24,7 +24,7 @@ class NodeDataFiles(object):
         self.target_dir = target_dir
 
 class NodeExtension(object):
-    def __init__(self, name, nodes, top_node, ref_node, sub_directory_node=None):
+    def __init__(self, name, nodes, top_node, ref_node, sub_directory_node=None, include_dirs=None):
         self.name = name
         self.top_node = top_node
         self.ref_node = ref_node
@@ -39,6 +39,11 @@ class NodeExtension(object):
             self.full_name = name
         else:
             self.full_name = translate_name(name, ref_node, self.top_or_lib_node)
+
+        if include_dirs is None:
+            self.include_dirs = []
+        else:
+            self.include_dirs = include_dirs
 
     def extension_from(self, from_node=None):
         if len(self.nodes) < 1:
@@ -117,7 +122,16 @@ class NodeRepresentation(object):
             else:
                 nodes.extend(_nodes)
         if extension.include_dirs:
-            raise NotImplementedError("include dirs translation not implemented yet")
+            if self.sub_directory_node:
+                raise NotImplementedError("include dirs translation not implemented yet")
+            else:
+                include_dirs = []
+                for include_dir in extension.include_dirs:
+                    n = source_node.find_dir(include_dir)
+                    if n is None:
+                        raise IOError("include dir %s is invalid" % include_dir)
+                    else:
+                        include_dirs.append(n)
         return NodeExtension(extension.name, nodes, self.top_node, ref_node, self.sub_directory_node)
 
     def _run_in_subpackage(self, pkg, func):
