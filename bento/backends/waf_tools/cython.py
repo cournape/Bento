@@ -6,7 +6,7 @@ import re
 
 import waflib.Logs as _msg
 from waflib import Task
-from waflib.TaskGen import extension
+from waflib.TaskGen import extension, feature, after_method
 
 cy_api_pat = re.compile(r'\s*?cdef\s*?(public|api)\w*')
 re_cyt = re.compile('import\\s(\\w+)\\s*$', re.M)
@@ -27,8 +27,15 @@ def add_cython_file(self, node):
 	tsk = self.create_task('cython', node, node.change_ext(ext))
 	self.source += tsk.outputs
 
+@feature('c', 'cxx')
+@after_method('propagate_uselib_vars', 'process_source')
+def apply_cython_incpaths(self):
+	lst = self.to_incnodes(self.env['CYTHON_INCLUDES'])
+	self.cyhon_includes_nodes = lst
+	self.env['CYTHON_INCPATHS'] = ["-I%s" % x.abspath() for x in lst]
+
 class cython(Task.Task):
-	run_str = '${CYTHON} ${CYTHONFLAGS} -o ${TGT[0].abspath()} ${SRC}'
+	run_str = '${CYTHON} ${CYTHON_INCPATHS} ${CYTHONFLAGS} -o ${TGT[0].abspath()} ${SRC}'
 	color   = 'GREEN'
 
 	vars    = ['INCLUDES']
@@ -116,4 +123,4 @@ def configure(ctx):
 	ctx.find_program('cython', var='CYTHON')
 	if getattr(ctx.options, "cython_flags", None):
 		ctx.env.CYTHONFLAGS = ctx.options.cython_flags
-
+	ctx.env.CYTHON_INCLUDES = []
