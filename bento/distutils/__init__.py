@@ -1,3 +1,5 @@
+import sys
+
 def monkey_patch():
     # XXX: keep the import here to avoid any side-effects from mere import of
     # bento.distutils
@@ -15,3 +17,23 @@ def monkey_patch():
     _MODULES.extend([distutils.dist, distutils.core, distutils.cmd])
     for module in _MODULES:
         module.Distribution = bento.distutils.dist.BentoDistribution
+
+def setup(mode=None):
+    """Call setup after monkey-patching with the given mode.
+
+    Parameters
+    ----------
+    mode: None/str
+        'distutils' or 'setuptools' for now
+    """
+    if mode is None:
+        if "setuptools" in sys.modules:
+            mode = "setuptools"
+        else:
+            mode = "distutils"
+    if not mode in ("distutils", "setuptools"):
+        raise ValueError("Only 'setuptools' and 'distutils' are supported modes")
+    __import__(mode)
+    monkey_patch()
+    from distutils.core import setup as _setup
+    return _setup()
