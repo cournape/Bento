@@ -1,7 +1,0 @@
-from bento.commands.context \
-    import \
-        DistutilsConfigureContext, DistutilsBuildContext
-
-def startup(context):
-    context.register_context("configure", DistutilsConfigureContext)
-    context.register_context("build", DistutilsBuildContext)
