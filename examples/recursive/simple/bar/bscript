@@ -1,7 +1,7 @@
-from bento.commands.hooks import pre_configure, override
+from bento.commands import hooks
 
-@pre_configure
-def configure(ctx):
+@hooks.pre_configure
+def pre_configure(ctx):
     # Example on accessing local extensions
     local_extensions = [name for name in ctx.local_pkg.extensions]
     print "Local extensions for %s: %s" % \

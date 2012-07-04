@@ -1,11 +1,10 @@
-from bento.commands.hooks import pre_configure, override
+from bento.commands import hooks
 
-@pre_configure
-def pconfigure(ctx):
+@hooks.pre_configure
+def pre_configure(ctx):
     # Top extensions only
     top_extensions = [name for name in ctx.pkg.extensions]
     print "Top extensions: %s" % ", ".join(top_extensions)
-
 
     # All extensions, including the ones from subpackages
     from bento.core.subpackage import get_extensions
