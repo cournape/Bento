@@ -3,18 +3,11 @@ This example shows experimental support for build extensions through waf.
 
 You need to define the WAFDIR environment variable, pointing to the root of waf sources. This requires waf 1.6.x
 """
-from bento.commands.extras.waf \
-    import \
-        ConfigureWafContext, BuildWafContext
 from bento.commands import hooks
 
-hooks.pre_build()
+@hooks.pre_build
 def pre_build(context):
-    def foo(bld, extension):
-        bld(features='c cshlib pyext', source=extension.sources,
-            target="yoyoy")
-    context.register_builder("_bar", foo)
-
-def startup(context):
-    context.register_context("configure", ConfigureWafContext)
-    context.register_context("build", BuildWafContext)
+    # tweak_extension signature is (extension_name, **kw) where kw is passed to
+    # the underlying Waf task generator, i.e. tweak_extension(name, **kw) in
+    # bento is the same as bld(**kw) in waf
+    context.tweak_extension("_bar", target="yoyo")

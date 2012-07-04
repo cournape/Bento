@@ -1,6 +1,8 @@
 Name: hello
 Version: 1.0
 
+UseBackends: Waf
+
 Recurse:
     top_module
 
