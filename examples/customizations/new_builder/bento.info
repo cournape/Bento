@@ -2,6 +2,7 @@ Name: hello
 Version: 1.0
 
 HookFile: bscript
+UseBackends: Waf
 
 DataFiles: foo
     TargetDir: $mandir
