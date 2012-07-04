@@ -1,6 +1,0 @@
-Experiment to build extensions with waf. The example assumes that you have a
-copy of the wafadmin directory, i.e.:
-
-	bento.info
-	bscript
-	wafadmin/
