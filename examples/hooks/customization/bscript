@@ -1,6 +1,6 @@
 from bento.commands import hooks
 
 @hooks.post_configure
-def post_configure(ctx):
-    cfg = ctx.yaku_context
+def post_configure(context):
+    cfg = context.yaku_context
     cfg.use_tools(["cython"])
