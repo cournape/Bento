@@ -3,6 +3,9 @@ import subprocess
 import shutil
 
 from bento.core import PackageDescription
+from bootstrap import main
+
+main()
 
 tests = []
 for root, d, files in os.walk("examples"):

@@ -36,7 +36,10 @@ def install_inplace(pkg):
             installed = ",".join([n.path_from(scripts_node) for n in nodes])
             pprint("GREEN", "installing %s in current directory" % installed)
 
-if __name__ == "__main__":
+def main():
     pkg = PackageDescription.from_file("bento.info")
     if pkg.executables:
         install_inplace(pkg)
+
+if __name__ == "__main__":
+    main()
