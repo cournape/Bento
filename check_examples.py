@@ -26,11 +26,11 @@ def test_package(d):
             p = subprocess.Popen(cmd, cwd=test, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             p.wait()
             if p.returncode:
-                print p.stdout.read()
+                print(p.stdout.read().decode())
                 return False
         return True
     if use_waf(d) and not "WAFDIR" in os.environ:
-        print "waf test and WAFDIR not set, skipped"
+        print("waf test and WAFDIR not set, skipped")
         return True
     if os.path.exists(os.path.join(d, "build")):
         shutil.rmtree(os.path.join(d, "build"))
@@ -44,10 +44,10 @@ def test_package(d):
 nerrors = 0
 bentomaker = os.path.join(os.getcwd(), "bentomaker")
 for test in tests:
-    print "=============== testing %s ==============" % test
+    print("=============== testing %s ==============" % test)
     if not test_package(test):
-        print "Failed"
+        print("Failed")
         nerrors += 1
     else:
-        print "Succeeded"
-print "%d / %d example failed" % (nerrors, len(tests))
+        print("Succeeded")
+print("%d / %d example failed" % (nerrors, len(tests)))
