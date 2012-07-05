@@ -2,11 +2,22 @@ import os
 import subprocess
 import shutil
 
+from bento.core import PackageDescription
+
 tests = []
 for root, d, files in os.walk("examples"):
     if os.path.exists(os.path.join(root, "bento.info")):
         if not os.path.exists(os.path.join(root, os.pardir, "bento.info")):
             tests.append(root)
+
+def use_waf(d):
+    old_cwd = os.getcwd()
+    try:
+        os.chdir(d)
+        package = PackageDescription.from_file("bento.info")
+        return "Waf" in package.use_backends
+    finally:
+        os.chdir(old_cwd)
 
 def test_package(d):
     def _run():
@@ -17,6 +28,9 @@ def test_package(d):
             if p.returncode:
                 print p.stdout.read()
                 return False
+        return True
+    if use_waf(d) and not "WAFDIR" in os.environ:
+        print "waf test and WAFDIR not set, skipped"
         return True
     if os.path.exists(os.path.join(d, "build")):
         shutil.rmtree(os.path.join(d, "build"))
