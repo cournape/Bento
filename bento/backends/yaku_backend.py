@@ -74,8 +74,8 @@ class BuildYakuContext(BuildContext):
         self.jobs = jobs
 
         def _builder_factory(category, builder):
-            def _build(extension, include_dirs=None):
-                env = {}
+            def _build(extension, include_dirs=None, **kw):
+                env = kw.get("env", {})
                 if include_dirs:
                     env["include_dirs"] = include_dirs
 
