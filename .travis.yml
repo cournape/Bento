@@ -45,4 +45,4 @@ script:
       else
       python -m bentomakerlib.bentomaker distcheck;
       fi
-   - python check_examples.py
+  - python check_examples.py
