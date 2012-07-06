@@ -1,7 +1,7 @@
 Name: hello
 Version: 1.0
 
-HookFile: bscript
+UseBackends: Distutils
 
 Library:
     Extension: hello._bar

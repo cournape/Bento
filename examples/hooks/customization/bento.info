@@ -5,10 +5,11 @@ Url: http://github.com/cournape/Bento
 Author: David Cournapeau
 AuthorEmail: cournape@gmail.com
 License: BSD
-HookFile: bscript
 
 ExtraSourceFiles:
     src/heap.pxd
+
+HookFile: bscript
 
 Library:
     Extension: hello._bar

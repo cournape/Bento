@@ -104,9 +104,10 @@ def raw_to_subpkg_kw(raw_dict):
     libraries = build_libs_from_dict(libraries_d)
     kw.update(libraries)
     kw["hook_files"] = misc_d["hook_files"]
-    sub_directory = kw.pop("sub_directory")
-    if sub_directory is not None:
-        raise InternalBentoError("Unexpected sub_directory while parsing recursed bendo")
+    if libraries_d:
+        sub_directory = kw.pop("sub_directory")
+        if sub_directory is not None:
+            raise InternalBentoError("Unexpected sub_directory while parsing recursed bendo")
 
     return kw, misc_d["subento"]
 

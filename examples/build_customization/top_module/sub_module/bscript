@@ -1,8 +1,5 @@
 from bento.commands import hooks
 
-@hooks.pre_build()
+@hooks.pre_build
 def pre_build(context):
-    def builder(bld, extension):
-        bld(features='c cshlib pyext', source=extension.sources, target=extension.name,
-            includes='../../include')
-    context.register_builder("_fubar2", builder)
+    context.tweak_extension("_fubar2", includes='../../include')

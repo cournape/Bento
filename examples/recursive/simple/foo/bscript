@@ -1,11 +1,6 @@
-from bento.commands.hooks import pre_configure, pre_build
+from bento.commands import hooks
 
-@pre_build
-def build(ctx):
-    # Overriding the builder for one extension
-    # XXX: builder API still in flux
-    def foo(bld, ext, verbose):
-        builder = bld.builders["pyext"].extension
-        return builder(ext.name, ext.sources,
-                       env={"PYEXT_CFLAGS": ["-Wextra"]})
-    ctx.register_builder("_bottom", foo)
+@hooks.pre_build
+def pre_build(context):
+    # Customizing the builder for one extension
+    context.tweak_extension("_bottom", env={"PYEXT_CFLAGS": ["-Wextra"]})

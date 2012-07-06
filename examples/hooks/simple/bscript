@@ -1,23 +1,6 @@
-from bento.commands.sdist import create_tarball
-from bento.commands.core import Command
-from bento.core.utils import pprint
-from bento.commands.hooks import override
+from bento.utils.utils import pprint
+from bento.commands import hooks
 
-class TestCommand(Command):
-    def run(self, opts):
-        pprint('BLUE', "Running test command....")
-
-# Example to register new commands: startup function is called everytime
-# bentomaker is run, and very early on. This is the place where to e.g. register
-# new commands
-def startup(context):
-    context.register_command("test", TestCommand)
-
-# Example to override existing bento command: we add an extra source file
-# here instead of adding it in bento.info. This may be used to e.g. support
-# the setuptools feature of automatically adding files in VCS.
-@override
-def sdist(ctx):
-    pkg = ctx.pkg
-    pkg.extra_source_files.append("toysetup.py.bak")
-    create_tarball(pkg, ctx.top_node)
+@hooks.command
+def test(context):
+    pprint('BLUE', "Running test command....")
