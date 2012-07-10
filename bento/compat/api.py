@@ -69,6 +69,11 @@ else:
         import \
             TarFile
 
+if sys.version_info < (3, 0, 0):
+    input = raw_input
+else:
+    input = input
+
 try:
     from functools import partial
 except ImportError:

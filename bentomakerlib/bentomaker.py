@@ -19,7 +19,7 @@ from bento.core \
         PackageDescription
 from bento.compat.api \
     import \
-        defaultdict
+        defaultdict, input
 import bento.core.node
 
 from bento.commands.build \
@@ -206,7 +206,7 @@ def main(argv=None):
     if hasattr(os, "getuid"):
         if os.getuid() == 0:
             pprint("RED", "Using bentomaker under root/sudo is *strongly* discouraged - do you want to continue ? y/N")
-            ans = raw_input()
+            ans = input()
             if not ans.lower() in ["y", "yes"]:
                 raise bento.errors.UsageException("bentomaker execution canceld (not using bentomaker with admin privileges)")
 
