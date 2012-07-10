@@ -2,20 +2,14 @@
 TODO
 ====
 
-Here is a non exhaustive list of things to do for a 1.0 release.
+Note: this is quite obsolete.
 
 TODO:
-
-    - make bento+waf bundable (make it possible to bentofy a package with a
-      single file)
-
-        - needs bento.info versioning
 
     - add 2to3 command
     - think about integration with sphinx for doc
     - test command support
     - specify hook mechanism
-    - add msi support
     - add proper egg support
     - namespace packages: how to deal with them (file description and runtime
       support) ?
