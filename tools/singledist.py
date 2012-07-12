@@ -137,6 +137,8 @@ def create_script(config):
         base_dir = config["waf"]["base_dir"]
         packages = config["waf"]["packages"]
         base_node = ROOT.find_node(op.expanduser(base_dir))
+        if base_node is None:
+            raise ValueError("Waf base dir not found (misconfigured ?): %s" % base_dir)
         nodes = list_nodes(packages, base_node)
         files.extend([(n.abspath(), n.path_from(base_node)) for n in nodes])
 
