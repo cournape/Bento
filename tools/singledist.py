@@ -77,15 +77,25 @@ def read_config():
     return ret
 
 def create_script_light(tpl, variables):
+    # This is moronic...
     f = open(tpl, "r")
     try:
         cnt = f.read()
         r = {}
         for k, v in variables.items():
             r[k] = re.compile("@%s@" % k)
-        for k, v in variables.items():
-            cnt = r[k].sub(v, cnt)
-        return cnt
+        lines = []
+        for line in cnt.splitlines():
+            for k, v in variables.items():
+                v_lines = v.splitlines()
+                if len(v_lines) > 1:
+                    m = r[k].search(line)
+                    if m:
+                        indent = m.start()
+                        v = "\n".join([v_lines[0]] + ["%s%s" % (" " * indent, v_line) for v_line in v_lines[1:]])
+                line = r[k].sub(v, line)
+            lines.append(line)
+        return "\n".join(lines)
     finally:
         f.close()
 

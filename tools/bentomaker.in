@@ -29,8 +29,8 @@ def test(d):
     except OSError:
         pass
 
-def unpack_dir(dir):
-    f = open(sys.argv[0],'rb')
+def unpack_dir(dir, name):
+    f = open(name, 'rb')
     c = "corrupted %s (%%d)" % SCRIPT_NAME
     while 1:
         line = f.readline()
@@ -82,8 +82,8 @@ def unpack_dir(dir):
 
     os.chdir(cwd)
 
-def find_lib():
-    name = sys.argv[0]
+def find_lib(name=None):
+    name = name or sys.argv[0]
     base = os.path.dirname(os.path.abspath(name))
 
     # local
@@ -95,9 +95,19 @@ def find_lib():
     if w:
         return w
 
-    unpack_dir(d)
+    unpack_dir(d, name)
     return d
 
-d = find_lib()
-sys.path.insert(0, d)
-@script_entry_point@
+def insert_sys_modules():
+    d = find_lib(__file__)
+    sys.path.insert(0, d)
+
+def main():
+    insert_sys_modules()
+    @script_entry_point@
+
+if __name__ == "__main__":
+    main()
+else:
+    insert_sys_modules()
+
