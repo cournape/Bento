@@ -196,11 +196,17 @@ def main(argv=None):
     parser.add_option("--noinclude-exe", action="store_true",
             dest="include_exe", default=False,
             help="Include windows binaries to build bdist installers")
+    parser.add_option("--waf-dir", dest="waf_dir",
+            help="Waf sources (if included)")
     config = read_config()
 
     opts, args = parser.parse_args(argv)
     if opts.include_exe is not None:
         config["include_exe"] = opts.include_exe
+    if opts.waf_dir is not None:
+        base_dir = opts.waf_dir
+        packages = config.get("waf", {}).get("packages", [])
+        config["waf"] = {"base_dir": base_dir, "packages": packages}
 
     create_script(config)
 
