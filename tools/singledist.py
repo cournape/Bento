@@ -68,12 +68,9 @@ def read_config():
     if ret["include_exe"]:
         ret["extra_files"].extend(_parse_comma_list(s.get("include_exe", "extra_files")))
 
-    if ret["include_waf"]:
-        base_dir = s.get("waf", "base_dir")
-        packages = _parse_comma_list(s.get("waf", "packages"))
-        ret["waf"] = {"base_dir": base_dir, "packages": packages}
-    else:
-        ret["waf"] = None
+    base_dir = s.get("waf", "base_dir")
+    packages = _parse_comma_list(s.get("waf", "packages"))
+    ret["waf"] = {"base_dir": base_dir, "packages": packages}
     return ret
 
 def create_script_light(tpl, variables):
@@ -143,7 +140,7 @@ def create_script(config):
 
     files.extend([(n.abspath(), n.path_from(cwd_node)) for n in nodes])
 
-    if config["waf"]:
+    if config["include_waf"]:
         base_dir = config["waf"]["base_dir"]
         packages = config["waf"]["packages"]
         base_node = ROOT.find_node(op.expanduser(base_dir))
@@ -206,6 +203,9 @@ def main(argv=None):
     parser.add_option("--noinclude-exe", action="store_true",
             dest="include_exe", default=False,
             help="Include windows binaries to build bdist installers")
+    parser.add_option("--include-waf", action="store_true",
+            dest="include_waf", default=False,
+            help="Include waf")
     parser.add_option("--waf-dir", dest="waf_dir",
             help="Waf sources (if included)")
     config = read_config()
@@ -213,6 +213,8 @@ def main(argv=None):
     opts, args = parser.parse_args(argv)
     if opts.include_exe is not None:
         config["include_exe"] = opts.include_exe
+    if opts.include_waf:
+        config["include_waf"] = True
     if opts.waf_dir is not None:
         base_dir = opts.waf_dir
         packages = config.get("waf", {}).get("packages", [])
