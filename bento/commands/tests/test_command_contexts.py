@@ -1,4 +1,4 @@
-from bento.commands.command_contexts \
+from bento.commands.registries \
     import \
         _RegistryBase
 from bento.compat.api import moves
