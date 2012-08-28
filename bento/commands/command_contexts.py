@@ -414,8 +414,7 @@ class BuildContext(ContextWithBuildDirectory):
     def tweak_library(self, lib_name, **kw):
         def _builder(lib_name):
             return self.default_library_builder(lib_name, **kw)
-        relpos = self.local_node.path_from(self.top_node)
-        full_name = os.path.join(relpos, lib_name).replace(os.sep, ".")
+        full_name = self._compute_extension_name(lib_name)
         return self.builder_registry.register_callback("compiled_libraries", full_name, _builder)
 
     def default_library_builder(self, library, **kw):
@@ -430,8 +429,7 @@ class BuildContext(ContextWithBuildDirectory):
         self.register_builder(extension_name, nobuild)
 
     def register_compiled_library_builder(self, clib_name, builder):
-        relpos = self.local_node.path_from(self.top_node)
-        full_name = os.path.join(relpos, clib_name).replace(os.sep, ".")
+        full_name = self._compute_extension_name(clib_name)
         self.builder_registry.register_callback("compiled_libraries", full_name, builder)
 
     def compile(self):

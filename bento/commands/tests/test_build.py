@@ -13,7 +13,6 @@ from bento.compat.api.moves \
     import \
         unittest
 
-
 from bento.core.options \
     import \
         PackageOptions
@@ -623,3 +622,38 @@ class TestOutputRegistration(_SandboxMixin):
         for name, _nodes, source_dir, target_dir, in bld.outputs_registry.iter_category("hook_registered"):
             nodes.extend(_nodes)
         self.assertTrue(nodes, [self.build_node.find_node("foo.txt")])
+
+class TestNameTranslation(_SandboxMixin):
+    def setUp(self):
+        super(TestNameTranslation, self).setUp()
+        self.top_node, self.build_node, self.run_node = create_base_nodes()
+
+    def test_compiled_library(self):
+        from bento.backends.distutils_backend import DistutilsBuildContext
+
+        r_full_name = "lib/_foo"
+
+        bento_info = """\
+Name: foo
+
+Library:
+    CompiledLibrary: lib/_foo
+        Sources: foo.c
+"""
+        package = PackageDescription.from_string(bento_info)
+        create_fake_package_from_bento_info(self.top_node, bento_info)
+
+        options = OptionsContext.from_command(BuildCommand())
+        context = DistutilsBuildContext(None, [], options, package, self.run_node)
+        context.pre_recurse(self.top_node)
+        try:
+            def builder(a):
+                self.assertEqual(a.name, r_full_name)
+                builder.is_called = True
+            builder.is_called = False
+            context.register_compiled_library_builder("lib/_foo", builder)
+        finally:
+            context.post_recurse()
+        context.compile()
+
+        self.assertTrue(builder.is_called, "registered builder not called")
