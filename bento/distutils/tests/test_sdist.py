@@ -9,7 +9,7 @@ from bento.distutils.dist \
 from bento.distutils.commands.sdist \
     import \
         sdist
-        
+
 class TestSdistCommand(DistutilsCommandTestBase):
     def test_simple(self):
         fid = open(op.join(self.new_cwd, "bento.info"), "wt")

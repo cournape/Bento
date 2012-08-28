@@ -76,8 +76,8 @@ Library:
 					</div>
 					<div class="col-2">
 <pre><code>import setuptools
-import bento.distutils
-bento.distutils.monkey_patch()
+from bento.distutils.monkey_patch import monkey_patch
+monkey_patch()
 setuptools.setup()
 </code></pre>
 <pre><code><span style="color: #e3d796;">$</span> easy_install your-bento-package

@@ -1,2 +1,2 @@
-from bento.distutils import setup
+from bento.distutils.monkey_patch import setup
 setup()

@@ -100,8 +100,8 @@ pip, pip currently does not know anything about bento. To help transition,
 bento has a distutils compatibility layer. A setup.py as simple as::
 
     import setuptools
-    import bento.distutils
-    bento.distutils.monkey_patch()
+    from bento.distutils.monkey_patch import monkey_patch
+    monkey_patch()
 
     from setuptools import setup
 
@@ -115,7 +115,14 @@ will enable commands such as::
 
 to work as expected, taking all the package information from bento.info file.
 Note that the monkey-patching done by bento.distutils on top of setuptools is
-explicit - solely importing bento.distutils will not monkey patch anything.
+explicit - solely importing bento.distutils will not monkey patch anything. A
+simpler, setuptools-style monkey patch is also possible::
+
+    import setuptools
+    from bento.distutils.monkey_patch import setup
+
+    if __name__ == '__main__':
+        setup()
 
 Note:: obviously, this mode will not enable all the features offered by bento.
 If it were possible, bento would not have been written in the first place.
