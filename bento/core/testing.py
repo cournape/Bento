@@ -212,9 +212,10 @@ def create_fake_package(top_node, packages=None, modules=None, extensions=None, 
             n.write("")
 
     for section in data_files.itervalues():
-        assert section.source_dir == "."
+        source_dir_node = top_or_lib_node.make_node(section.source_dir)
+        source_dir_node.mkdir()
         for f in section.files:
-            n = top_or_lib_node.make_node(f)
+            n = source_dir_node.make_node(f)
             n.write("")
 
 # FIXME: Those flatten extensions are almost redundant with the ones in
