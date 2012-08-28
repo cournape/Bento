@@ -2,6 +2,8 @@ import os
 import tempfile
 import shutil
 
+import os.path as op
+
 from bento.compat.api.moves \
     import \
         unittest
@@ -81,3 +83,35 @@ Library:
         extensions = dict(node_pkg.iter_category("extensions"))
         self.assertEqual(len(extensions), 1)
         self.assertEqual(len(extensions["_foo"].nodes), 2)
+
+    def test_iter_source_nodes(self):
+        r_files = set([op.join("src", "foo.c"),
+            op.join("src", "bar.c"),
+            op.join("src", "fubar.c"),
+            op.join("foo", "__init__.py"),
+            op.join("foo", "bar", "__init__.py"),
+            "fu.py", "foo.1"])
+
+        bento_info = """\
+Name: foo
+
+DataFiles: foo
+    TargetDir: $sharedir
+    Files: foo.1
+
+Library:
+    Extension: _foo
+        Sources: src/foo.c, src/bar.c
+    CompiledLibrary: fubar
+        Sources: src/fubar.c
+    Packages: foo, foo.bar
+    Modules: fu
+"""
+        create_fake_package_from_bento_info(self.top_node, bento_info)
+
+        package = PackageDescription.from_string(bento_info)
+        node_package = NodeRepresentation(self.top_node, self.top_node)
+        node_package.update_package(package)
+
+        files = set(n.path_from(self.top_node) for n in node_package.iter_source_nodes())
+        self.assertEqual(files, r_files)
