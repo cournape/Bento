@@ -103,6 +103,8 @@ def create_fake_package_from_bento_info(top_node, bento_info):
         kw["extra_source_files"] = _kw["extra_source_files"]
     if "sub_directory" in _kw:
         kw["sub_directory"] = _kw["sub_directory"]
+    if "data_files" in _kw:
+        kw["data_files"] = _kw["data_files"]
     return create_fake_package(top_node, **kw)
 
 def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
@@ -152,7 +154,7 @@ def create_fake_package_from_bento_infos(top_node, bento_infos, bscripts=None):
                                extra_source_files)
 
 def create_fake_package(top_node, packages=None, modules=None, extensions=None, compiled_libraries=None,
-                        extra_source_files=None, sub_directory=None):
+                        extra_source_files=None, sub_directory=None, data_files=None):
     if sub_directory is not None:
         top_or_lib_node = top_node.make_node(sub_directory)
         top_or_lib_node.mkdir()
@@ -169,6 +171,8 @@ def create_fake_package(top_node, packages=None, modules=None, extensions=None, 
         compiled_libraries = []
     if extra_source_files is None:
         extra_source_files = []
+    if data_files is None:
+        data_files= {}
 
     for p in packages:
         d = p.replace(".", os.sep)
@@ -204,6 +208,12 @@ def create_fake_package(top_node, packages=None, modules=None, extensions=None, 
         # extra files (including the bento files themselves). We need to create
         # fake files in the former case, but not in the latter.
         if n is None:
+            n = top_or_lib_node.make_node(f)
+            n.write("")
+
+    for section in data_files.itervalues():
+        assert section.source_dir == "."
+        for f in section.files:
             n = top_or_lib_node.make_node(f)
             n.write("")
 
