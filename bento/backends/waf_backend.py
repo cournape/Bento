@@ -258,7 +258,7 @@ def apply_register_outputs(self):
         category = "compiled_libraries"
     bento_context = self.bld.bento_context
     ref_node = bento_context.top_node.make_node(self.path.path_from(self.path.ctx.srcnode))
-    name = translate_name(self.name, ref_node, bento_context.top_node)
+    name = translate_name(self.target, ref_node, bento_context.top_node)
     self.bld.register_outputs(category, name, self.link_task.outputs)
 
 class BuildWafContext(BuildContext):
@@ -336,6 +336,8 @@ class BuildWafContext(BuildContext):
                 kw["source"] = library.sources[:]
             if not "name" in kw:
                 kw["name"] = library.base_name
+            if not "target" in kw:
+                kw["target"] = library.name
             return self.waf_context(**kw)
 
         self.builder_registry.register_category("extensions", _default_extension_builder)
