@@ -335,7 +335,7 @@ class BuildWafContext(BuildContext):
             if not "source" in kw:
                 kw["source"] = library.sources[:]
             if not "name" in kw:
-                kw["name"] = library.name
+                kw["name"] = library.base_name
             return self.waf_context(**kw)
 
         self.builder_registry.register_category("extensions", _default_extension_builder)
