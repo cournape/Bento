@@ -5,7 +5,9 @@ from unittest \
 from bento.utils.utils \
     import \
         extract_exception, is_string
-from lexer import BentoLexer as MyLexer
+from bento.parser.lexer \
+    import \
+        BentoLexer
 
 def split(s):
     ret = []
@@ -15,7 +17,7 @@ def split(s):
 
 class TestLexer(TestCase):
     def setUp(self):
-        self.lexer = MyLexer()
+        self.lexer = BentoLexer()
 
     def _test(self, data, ref):
         self.lexer.input(data)
@@ -50,7 +52,7 @@ class TestLexer(TestCase):
 # Test tokenizer stage before indentation generation
 class TestLexerStageOne(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer()
+        self.lexer = BentoLexer()
 
     def test_single_line(self):
         data = """\
@@ -77,7 +79,7 @@ Library:
 
 class TestLexerStageTwo(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer()
+        self.lexer = BentoLexer()
 
     def test_simple(self):
         data = "yoyo"
@@ -113,7 +115,7 @@ class TestLexerStageTwo(TestLexer):
 
 class TestLexerStageThree(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer()
+        self.lexer = BentoLexer()
 
     def test_simple(self):
         data = "yoyo"
@@ -159,7 +161,7 @@ class TestLexerStageThree(TestLexer):
 
 class TestLexerStageFour(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer()
+        self.lexer = BentoLexer()
 
     def test_single_line(self):
         data = """\
@@ -326,9 +328,36 @@ NAME_ID COLON WORD
 """
         self._test(data, ref)
 
+class TestMultilineString(TestLexer):
+    def test_description_in_flag(self):
+        data = """\
+Flag: foo
+    Default: true
+    Description: yo mama
+
+Library:
+    if not flag(foo):
+        Modules: foo.py
+"""
+        ref = """\
+FLAG_ID COLON WORD
+INDENT
+DEFAULT_ID COLON WORD
+DESCRIPTION_ID COLON STRING
+DEDENT
+LIBRARY_ID COLON
+INDENT
+IF NOT_OP FLAG_OP LPAR WORD RPAR COLON
+INDENT
+MODULES_ID COLON WORD
+DEDENT
+DEDENT
+"""
+        self._test(data, ref)
+
 class TestLexerStageFive(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer()
+        self.lexer = BentoLexer()
 
     def test_single_line(self):
         data = """\
@@ -702,7 +731,7 @@ DEDENT
 
 class TestNewLines(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer()
+        self.lexer = BentoLexer()
 
     # Test we throw away NEWLINES except in literals
     def test_lastnewline(self):
@@ -754,7 +783,7 @@ DESCRIPTION_ID COLON MULTILINES_STRING
 
 class TestComment(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer()
+        self.lexer = BentoLexer()
 
     def test_simple(self):
         data = """\

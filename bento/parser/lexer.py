@@ -244,6 +244,8 @@ def t_insideword_WORD(t):
     return t
 t_insideword_WORD.__doc__ = t_WORD.__doc__
 
+t_insideword_COMMENT = t_COMMENT
+
 #-------------------------------
 # Inside single line string rule
 #-------------------------------
@@ -511,13 +513,13 @@ def post_process_string(it):
             if item.type == "INDENT":
                 state = "INSIDE_INDENT"
                 indent = item.value
-            if item.type == "MULTILINES_STRING":
+            if item.type in ("MULTILINES_STRING", "STRING"):
                 state = "INIT"
                 indent = None
                 item.value = remove_lines_indent(item.value)
             yield item
         elif state == "INSIDE_INDENT":
-            assert item.type in ("STRING", "MULTILINES_STRING")
+            assert item.type in ("STRING", "MULTILINES_STRING"), item
             item.value = remove_lines_indent(item.value, indent)
             yield item
             state = "INIT"
