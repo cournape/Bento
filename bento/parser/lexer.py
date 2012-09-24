@@ -69,8 +69,8 @@ keyword_tokens = [k[0] for k in keyword_fields]
 keyword_misc = dict([
         ('if', 'IF'),
         ('else', 'ELSE'),
-        ('True', 'TRUE'),
-        ('False', 'FALSE'),
+        ('true', 'TRUE'),
+        ('false', 'FALSE'),
         ('not', 'NOT_OP'),
         ('flag', 'FLAG_OP'),
         ('os', 'OS_OP'),
