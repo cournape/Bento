@@ -15,6 +15,7 @@ import six
 
 word_fields = [
     ("AUTHOR_EMAIL_ID", r"AuthorEmail"),
+    ("COMPILED_LIBRARY_ID", r"CompiledLibrary"),
     ("CONFIG_PY_ID", r"ConfigPy"),
     ("DATAFILES_ID", r"DataFiles"),
     ("DEFAULT_ID", r"Default"),
@@ -24,14 +25,13 @@ word_fields = [
     ("FLAG_ID", r"Flag"),
     ("PATH_ID", r"Path"),
     ("FUNCTION_ID", r"Function"),
-    ("HOOK_FILE", r"HookFile"),
     ("LIBRARY_ID", r"Library"),
     ("LICENSE_ID", r"License"),
     ("MAINTAINER_EMAIL_ID", r"MaintainerEmail"),
     ("MODULE_ID", r"Module"),
-    ("MODULES_ID", r"Modules"),
     ("NAME_ID", r"Name"),
     ("SRCDIR_ID", r"SourceDir"),
+    ("SUB_DIRECTORY_ID", r"SubDirectory"),
     ("TARGET_ID", r"TargetDir"),
     ("URL_ID", r"Url"),
     ("VERSION_ID", r"Version"),
@@ -44,6 +44,7 @@ line_fields = [
 ]
 
 comma_line_fields = [
+    ("BUILD_REQUIRES_ID", r"BuildRequires"),
     ("CLASSIFIERS_ID", r"Classifiers"),
     ("PLATFORMS_ID", r"Platforms"),
 ]
@@ -53,10 +54,13 @@ comma_word_fields = [
     ("EXTRA_SOURCE_FILES_ID", r"ExtraSourceFiles"),
     ("FILES_ID", r"Files"),
     ("HOOK_FILE_ID", r"HookFile"),
+    ("INCLUDE_DIRS_ID", r"IncludeDirs"),
     ("KEYWORDS_ID", r"Keywords"),
     ("META_TEMPLATE_FILE_ID", r"MetaTemplateFile"),
     ("META_TEMPLATE_FILES_ID", r"MetaTemplateFiles"),
+    ("MODULES_ID", r"Modules"),
     ("PACKAGES_ID", r"Packages"),
+    ("SOURCES_ID", r"Sources"),
 ]
 
 multilines_fields = [
