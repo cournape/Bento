@@ -83,7 +83,7 @@ tokens = ["COLON", "WS", "WORD", "NEWLINE", "STRING", "MULTILINES_STRING",
 
 states = [
         ("insidestring", "exclusive"),
-        ("insideword", "inclusive"),
+        ("insideword", "exclusive"),
         # To be used for keywords that accept multiline values (description,
         # etc...)
         ("insidemstring", "exclusive"),
@@ -231,6 +231,18 @@ def t_insideword_NEWLINE(t):
     t.lexer.lineno += len(t.value)
     t_end_inside_word(t)
     return t
+
+def t_insideword_COLON(t):
+    return t
+t_insideword_COLON.__doc__ = t_COLON.__doc__
+
+def t_insideword_WS(t):
+    return t
+t_insideword_WS.__doc__ = t_WS
+
+def t_insideword_WORD(t):
+    return t
+t_insideword_WORD.__doc__ = t_WORD.__doc__
 
 #-------------------------------
 # Inside single line string rule

@@ -611,6 +611,13 @@ DEDENT
 
         self._test(data, split(ref_str))
 
+    def test_colon_in_word(self):
+        data = "Url: http://foo.com"
+
+        ref_str = "URL_ID COLON WORD"
+
+        self._test(data, ref_str)
+
 ##    def test_rest_literal2(self):
 ##        data = '''\
 ##Description:
