@@ -17,7 +17,7 @@ from bento.errors \
         InternalBentoError, BentoError, ParseError
 from bento.parser.lexer \
     import \
-        MyLexer, tokens as _tokens
+        BentoLexer, tokens as _tokens
 from bento.parser.nodes \
     import \
         Node
@@ -54,7 +54,7 @@ def _has_parser_changed(picklefile):
 class Parser(object):
     def __init__(self, lexer=None):
         if lexer is None:
-            self.lexer = MyLexer(stage="post_processed", optimize=_OPTIMIZE_LEX)
+            self.lexer = BentoLexer(optimize=_OPTIMIZE_LEX)
         else:
             self.lexer = lexer
 
@@ -92,7 +92,7 @@ class Parser(object):
 
     def reset(self):
         # XXX: implements reset for lexer
-        self.lexer = MyLexer(stage="post_processed", optimize=_OPTIMIZE_LEX)
+        self.lexer = BentoLexer(optimize=_OPTIMIZE_LEX)
         # XXX: ply parser.reset method expects those attributes to
         # exist
         self.parser.statestack = []

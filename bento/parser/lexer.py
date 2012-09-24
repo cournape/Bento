@@ -1,235 +1,423 @@
+import re
+
 from ply.lex \
     import \
-        LexToken, lex
+        lex, LexToken
+
+from bento.errors \
+    import \
+        ParseError
+from bento.parser.utils \
+    import \
+        Peeker
 
 import six
 
-from bento.parser.utils \
-    import \
-        Peeker, BackwardGenerator
-__all__ = ["MyLexer"]
+word_fields = [
+    ("AUTHOR_EMAIL_ID", r"AuthorEmail"),
+    ("CONFIG_PY_ID", r"ConfigPy"),
+    ("DATAFILES_ID", r"DataFiles"),
+    ("DEFAULT_ID", r"Default"),
+    ("DESCRIPTION_FROM_FILE_ID", r"DescriptionFromFile"),
+    ("DOWNLOAD_URL_ID", r"DownloadUrl"),
+    ("EXECUTABLE_ID", r"Executable"),
+    ("FLAG_ID", r"Flag"),
+    ("PATH_ID", r"Path"),
+    ("FUNCTION_ID", r"Function"),
+    ("HOOK_FILE", r"HookFile"),
+    ("LIBRARY_ID", r"Library"),
+    ("LICENSE_ID", r"License"),
+    ("MAINTAINER_EMAIL_ID", r"MaintainerEmail"),
+    ("MODULE_ID", r"Module"),
+    ("MODULES_ID", r"Modules"),
+    ("NAME_ID", r"Name"),
+    ("SRCDIR_ID", r"SourceDir"),
+    ("TARGET_ID", r"TargetDir"),
+    ("URL_ID", r"Url"),
+    ("VERSION_ID", r"Version"),
+]
 
-#==============
-#   Lexer
-#==============
-tokens = ('COLON', 'DOUBLE_COLON', 'WS', 'NEWLINE', 'WORD', 'COMMA', 'SLASH',
-          'BACKSLASH', 'LPAR', 'RPAR', 'LESS',
-          'GREATER', 'EQUAL', 'SHARP', 'NAME_ID', 'KEYWORDS_ID',
-          'SUMMARY_ID', 'DESCRIPTION_ID', 'INDENT', 'DEDENT', 'LIBRARY_ID',
-          'PACKAGES_ID', 'VERSION_ID', 'MODULES_ID', 'EXTENSION_ID',
-          'COMPILED_LIBRARY_ID',
-          'SOURCES_ID', 'DATAFILES_ID', 'TARGET_ID', 'FILES_ID', 'SRCDIR_ID',
-          'URL_ID', 'AUTHOR_ID', 'AUTHOR_EMAIL_ID', 'MAINTAINER_ID',
-          'MAINTAINER_EMAIL_ID', 'LICENSE_ID', 'PLATFORMS_ID', 'CLASSIFIERS_ID',
-          'PATH_ID', 'DEFAULT_ID', 'EXTRA_SOURCE_FILES_ID', 'EXECUTABLE_ID',
-          'FUNCTION_ID', 'MODULE_ID', 'FLAG_ID', 'INCLUDE_DIRS_ID',
-          'IF', 'TRUE', 'FALSE', 'AND', 'OS_OP', 'ELSE', 'FLAG_OP',
-          'BUILD_REQUIRES_ID', 'INSTALL_REQUIRES_ID',
-          'DOWNLOAD_URL_ID', 'HOOK_FILE_ID', 'CONFIG_PY_ID', 'NOT_OP',
-          'SUBENTO_ID', 'DESCRIPTION_FROM_FILE_ID', 'META_TEMPLATE_FILE_ID',
-          'META_TEMPLATE_FILES_ID', 'SUB_DIRECTORY_ID', 'USE_BACKENDS_ID')
+line_fields = [
+    ("AUTHOR_ID", r"Author"),
+    ("MAINTAINER_ID", r"Maintainer"),
+    ("SUMMARY_ID", r"Summary"),
+]
 
-ESCAPING_CHAR = dict([(t, False) for t in tokens])
-ESCAPING_CHAR["BACKSLASH"] = True
+comma_line_fields = [
+    ("CLASSIFIERS_ID", r"Classifiers"),
+    ("PLATFORMS_ID", r"Platforms"),
+]
 
-# List of FIELD keywords -> Token TYPE inside PLY lexer
-META_FIELDS_ID = {
-    "Version": "VERSION_ID",
-    "Summary": "SUMMARY_ID",
-    "Description": "DESCRIPTION_ID",
-    "Name": "NAME_ID",
-    "DataFiles": "DATAFILES_ID",
-    "Library": "LIBRARY_ID",
-    "Packages": "PACKAGES_ID",
-    "Modules": "MODULES_ID",
-    "Extension": "EXTENSION_ID",
-    "CompiledLibrary": "COMPILED_LIBRARY_ID",
-    "Sources": "SOURCES_ID",
-    "IncludeDirs": "INCLUDE_DIRS_ID",
-    "TargetDir": "TARGET_ID",
-    "Files": "FILES_ID",
-    "SourceDir": "SRCDIR_ID",
-    "Url": "URL_ID",
-    "DownloadUrl": "DOWNLOAD_URL_ID",
-    "Author": "AUTHOR_ID",
-    "AuthorEmail": "AUTHOR_EMAIL_ID",
-    "Maintainer": "MAINTAINER_ID",
-    "MaintainerEmail": "MAINTAINER_EMAIL_ID",
-    "License": "LICENSE_ID",
-    "Platforms": "PLATFORMS_ID",
-    "Classifiers": "CLASSIFIERS_ID",
-    "Keywords": "KEYWORDS_ID",
-    "Path": "PATH_ID",
-    "Flag": "FLAG_ID",
-    "Default": "DEFAULT_ID",
-    "ExtraSourceFiles": "EXTRA_SOURCE_FILES_ID",
-    "Executable": "EXECUTABLE_ID",
-    "Function": "FUNCTION_ID",
-    "Module": "MODULE_ID",
-    "BuildRequires": "BUILD_REQUIRES_ID",
-    "InstallRequires": "INSTALL_REQUIRES_ID",
-    "HookFile": "HOOK_FILE_ID",
-    "ConfigPy": "CONFIG_PY_ID",
-    "Recurse": "SUBENTO_ID",
-    "DescriptionFromFile": "DESCRIPTION_FROM_FILE_ID",
-    "MetaTemplateFile": "META_TEMPLATE_FILE_ID",
-    "MetaTemplateFiles": "META_TEMPLATE_FILES_ID",
-    "SubDirectory": "SUB_DIRECTORY_ID",
-    "UseBackends": "USE_BACKENDS_ID",
-}
+comma_word_fields = [
+    ("EXTENSION_ID", r"Extension"),
+    ("EXTRA_SOURCE_FILES_ID", r"ExtraSourceFiles"),
+    ("FILES_ID", r"Files"),
+    ("HOOK_FILE_ID", r"HookFile"),
+    ("KEYWORDS_ID", r"Keywords"),
+    ("META_TEMPLATE_FILE_ID", r"MetaTemplateFile"),
+    ("META_TEMPLATE_FILES_ID", r"MetaTemplateFiles"),
+    ("PACKAGES_ID", r"Packages"),
+]
 
-CONDITIONAL_ID = {
-    "if": "IF",
-    "else": "ELSE",
-    "true": "TRUE",
-    "false": "FALSE",
-    "and": "AND",
-    "os": "OS_OP",
-    "flag": "FLAG_OP",
-    "not": "NOT_OP",
-}
+multilines_fields = [
+    ("DESCRIPTION_ID", r"Description"),
+]
 
-# ID -> field type dict
-FIELD_TYPE = {
-    "NAME_ID": "WORD",
-    "VERSION_ID": "WORDS",
-    "SUMMARY_ID": "LINE",
-    "DESCRIPTION_ID": "MULTILINE",
-    "DESCRIPTION_FROM_FILE_ID": "WORD",
-    "LIBRARY_ID": "WORD",
-    "PACKAGES_ID": "WORDS",
-    "MODULES_ID": "WORDS",
-    "SOURCES_ID": "WORDS",
-    "EXTENSION_ID": "WORD",
-    "COMPILED_LIBRARY_ID": "WORD",
-    "INCLUDE_DIRS_ID": "WORD",
-    "DATAFILES_ID": "WORD",
-    "TARGET_ID": "WORDS",
-    "SRCDIR_ID": "WORDS",
-    "FILES_ID": "WORDS",
-    "URL_ID": "WORDS",
-    "DOWNLOAD_URL_ID": "WORDS",
-    "AUTHOR_ID": "LINE",
-    "AUTHOR_EMAIL_ID": "WORDS",
-    "MAINTAINER_ID": "LINE",
-    "MAINTAINER_EMAIL_ID": "WORDS",
-    "LICENSE_ID": "WORDS",
-    "PLATFORMS_ID": "WORDS",
-    "CLASSIFIERS_ID": "COMMA_LIST",
-    "PATH_ID": "WORD",
-    "FLAG_ID": "WORD",
-    "DEFAULT_ID": "WORDS",
-    "EXTRA_SOURCE_FILES_ID": "WORDS",
-    "EXECUTABLE_ID": "WORD",
-    "FUNCTION_ID": "WORDS",
-    "MODULE_ID": "WORD",
-    "BUILD_REQUIRES_ID": "WORDS",
-    "INSTALL_REQUIRES_ID": "WORDS",
-    "HOOK_FILE_ID": "WORDS",
-    "CONFIG_PY_ID": "WORD",
-    "SUBENTO_ID": "WORDS",
-    "META_TEMPLATE_FILE_ID": "WORD",
-    "META_TEMPLATE_FILES_ID": "WORDS",
-    "KEYWORDS_ID": "WORDS",
-    "SUB_DIRECTORY_ID": "WORDS",
-    "USE_BACKENDS_ID": "WORDS",
-}
+keyword_fields = word_fields + line_fields + comma_line_fields + comma_word_fields + multilines_fields
+keyword_tokens = [k[0] for k in keyword_fields]
 
-# Special characters: everytime one is added/changed, update t_WORD
-# regex if necessary
-t_DOUBLE_COLON = r'::'
-t_COLON = r':'
-t_COMMA = r','
-t_SLASH = r"\/"
-t_BACKSLASH = r"\\"
-t_LPAR = r"\("
-t_RPAR = r"\)"
-t_LESS = r"\<"
-t_GREATER = r"\>"
-t_EQUAL = r"="
-t_SHARP = r"\#"
+keyword_misc = dict([
+        ('if', 'IF'),
+        ('else', 'ELSE'),
+        ('True', 'TRUE'),
+        ('False', 'FALSE'),
+        ('not', 'NOT_OP'),
+        ('flag', 'FLAG_OP'),
+        ('os', 'OS_OP'),
+])
+keyword_misc_tokens = keyword_misc.values()
+
+tokens = ["COLON", "WS", "WORD", "NEWLINE", "STRING", "MULTILINES_STRING",
+          "COMMA", "INDENT", "DEDENT", "LPAR", "RPAR", "BACKSLASH"] \
+        + keyword_tokens + keyword_misc_tokens
+
+states = [
+        ("insidestring", "exclusive"),
+        ("insideword", "inclusive"),
+        # To be used for keywords that accept multiline values (description,
+        # etc...)
+        ("insidemstring", "exclusive"),
+
+        ("insidewcommalistfirstline", "inclusive"),
+        ("insidewcommalist", "inclusive"),
+
+        ("insidescommalistfirstline", "exclusive"),
+        ("insidescommalist", "exclusive"),
+]
+
+ESCAPING_CHAR = {"BACKSLASH": True}
+
+def t_NEWLINE(t):
+    r"(\n|\r\n)"
+    t.lexer.lineno += len(t.value)
+    return t
+
+def t_BACKSLASH(t):
+    r"\\"
+    return t
+
+def t_TAB(t):
+    r"\t"
+    raise SyntaxError("Tab not supported")
+
+R_NEWLINE = re.compile(t_NEWLINE.__doc__)
+
+t_WS = r" [ ]+"
+
+def t_COLON(t):
+    r":"
+    return t
+
+_LOOKAHEAD_COLON = "(?=\s*:)"
+
+keywords_dict = dict((v, k) for k, v in keyword_fields)
+word_keywords = dict((k, v) for k, v in word_fields)
+line_keywords = dict((k, v) for k, v in line_fields)
+multilines_keywords = dict((k, v) for k, v in multilines_fields)
+comma_line_keywords = dict((k, v) for k, v in comma_line_fields)
+comma_word_keywords = dict((k, v) for k, v in comma_word_fields)
+
+def t_FIELD(t):
+    r"\w+(?=\s*:)"
+    type = keywords_dict[t.value]
+    t.type = type
+    if type in line_keywords:
+        t_begin_insidestring(t)
+    elif type in multilines_keywords:
+        # FIXME: we differentiate between top Description (accepting multiline)
+        # and description within flag block (where we cannot currently accept
+        # multilines).
+        if t.lexpos >= 1:
+            if R_NEWLINE.match(t.lexer.lexdata[t.lexpos-1]):
+                t_begin_insidemstring(t)
+            else:
+                t_begin_insidestring(t)
+        else:
+            t_begin_insidemstring(t)
+    elif type in comma_line_keywords:
+        t_begin_inside_scommalistfirstline(t)
+    elif type in comma_word_keywords:
+        t_begin_inside_wcommalistfirstline(t)
+    else:
+        t_begin_inside_word(t)
+    return t
+
+def t_COMMENT(t):
+    r'[ ]*\#[^\r\n]*'
+    pass
 
 def t_WORD(t):
-    # Match everything but whitespace and special characters
-    r'([^#^:^,^\s^\\^(^).]|[.])+'
+    r'[^\#^\s\\\(\)]+'
+    if t.value in keyword_misc:
+        t.type = keyword_misc[t.value]
     return t
 
-# Whitespace
-def t_WS(t):
-    r' [ ]+ '
+t_LPAR = r"\("
+t_RPAR = r"\)"
+
+def t_begin_inside_word(t):
+    r'start_insideword'
+    t.lexer.begin('insideword')
+
+def t_end_inside_word(t):
+    r'start_insideword'
+    t.lexer.begin('INITIAL')
+
+def t_begin_insidestring(t):
+    r'start_insidestring'
+    t.lexer.begin('insidestring')
+
+def t_end_insidestring(t):
+    r'end_insidestring'
+    t.lexer.begin('INITIAL')
+
+def t_begin_insidemstring(t):
+    r'start_insidemstring'
+    t.lexer.begin('insidemstring')
+
+def t_end_insidemstring(t):
+    r'end_insidemstring'
+    t.lexer.begin('INITIAL')
+
+# Word comma list
+def t_begin_inside_wcommalist(t):
+    r'start_inside_wcommalist'
+    t.lexer.begin('insidewcommalist')
+
+def t_end_inside_wcommalist(t):
+    r'end_inside_wcommalist'
+    t.lexer.begin('INITIAL')
+
+def t_begin_inside_wcommalistfirstline(t):
+    r'start_inside_wcommalistfirstline'
+    t.lexer.begin('insidewcommalistfirstline')
+
+def t_end_inside_wcommalistfirstline(t):
+    r'end_inside_wcommalistfirstline'
+    t.lexer.begin('INITIAL')
+
+# string comma list
+def t_begin_inside_scommalist(t):
+    r'start_inside_commalistw'
+    t.lexer.begin('insidescommalist')
+
+def t_end_inside_scommalist(t):
+    r'end_inside_commalistw'
+    t.lexer.begin('INITIAL')
+
+def t_begin_inside_scommalistfirstline(t):
+    r'start_inside_scommalistfirstline'
+    t.lexer.begin('insidescommalistfirstline')
+
+def t_end_inside_scommalistfirstline(t):
+    r'end_inside_scommalistfirstline'
+    t.lexer.begin('INITIAL')
+
+#------------
+# Inside word
+#------------
+def t_insideword_NEWLINE(t):
+    r'\n+|(\r\n)+'
+    t.lexer.lineno += len(t.value)
+    t_end_inside_word(t)
     return t
 
-def t_newline(t):
+#-------------------------------
+# Inside single line string rule
+#-------------------------------
+def t_insidestring_newline(t):
     r'\n+|(\r\n)+'
     t.lexer.lineno += len(t.value)
     t.type = "NEWLINE"
+    t_end_insidestring(t)
     return t
 
+def t_insidestring_COLON(t):
+    r':'
+    return t
+
+def t_insidestring_WS(t):
+    r' [ ]+'
+    return t
+
+def t_insidestring_STRING(t):
+    r'[^\\\r\n]+'
+    t_end_insidestring(t)
+    return t
+
+#-----------------------
+# multiline string rules
+#-----------------------
+def t_insidemstring_COLON(t):
+    r':'
+    return t
+
+def t_insidemstring_NEWLINE(t):
+    r'\n+|(\r\n)+'
+    t.lexer.lineno += len(t.value)
+    return t
+
+def t_insidemstring_WS(t):
+    r' [ ]+'
+    return t
+
+def t_insidemstring_MULTILINES_STRING(t):
+    r'.+((\n[ ]+.+)|\n)*'
+    t_end_insidemstring(t)
+    return t
+
+#------------------------
+# inside comma word list rules
+#------------------------
+def t_insidewcommalistfirstline_COLON(t):
+    r":"
+    return t
+
+def t_insidewcommalistfirstline_WS(t):
+    r' [ ]+'
+    return t
+
+def t_insidewcommalistfirstline_WORD(t):
+    r'[^,^\#^\s\\\(\)]+(?=,)'
+    t_begin_inside_wcommalist(t)
+    return t
+
+def t_insidewcommalistfirstline_WORD_STOP(t):
+    r'[^\#^,\s\\\(\)]+(?!,)'
+    t.type = "WORD"
+    t_end_inside_wcommalistfirstline(t)
+    return t
+
+def t_insidewcommalistfirstline_NEWLINE(t):
+    r'(\n|\r\n)'
+    t.lexer.lineno += len(t.value)
+    return t
+
+def t_insidewcommalistfirstline_COMMA(t):
+    r','
+    return t
+
+def t_insidewcommalist_WORD(t):
+    r'[^,\s]+(?=,)'
+    return t
+
+def t_insidewcommalist_WORD_STOP(t):
+    r'[^,\s]+(?!,)'
+    t.type = "WORD"
+    t_end_inside_wcommalist(t)
+    return t
+
+def t_insidewcommalist_NEWLINE(t):
+    r'(\n|\r\n)'
+    t.lexer.lineno += len(t.value)
+    return t
+
+def t_insidewcommalist_WS(t):
+    r' [ ]+'
+    return t
+
+def t_insidewcommalist_COMMA(t):
+    r','
+    return t
+
+#------------------
+# comma list string
+#------------------
+def t_insidescommalistfirstline_COLON(t):
+    r":"
+    return t
+
+def t_insidescommalistfirstline_WS(t):
+    r' [ ]+'
+    return t
+
+def t_insidescommalistfirstline_STRING(t):
+    r'[^,^\n^(\r\n).]+(?=,)'
+    t_begin_inside_scommalist(t)
+    return t
+
+def t_insidescommalistfirstline_STRING_STOP(t):
+    r'[^,^\n^(\r\n).]+(?!,)'
+    t.type = "STRING"
+    t_end_inside_scommalistfirstline(t)
+    return t
+
+def t_insidescommalistfirstline_NEWLINE(t):
+    r'(\n|\r\n)'
+    t.lexer.lineno += len(t.value)
+    return t
+
+def t_insidescommalistfirstline_COMMA(t):
+    r','
+    return t
+
+def t_insidescommalist_WS(t):
+    r' [ ]+'
+    return t
+
+def t_insidescommalist_STRING(t):
+    r'[^,^\n^(\r\n).]+(?=,)'
+    return t
+
+def t_insidescommalist_STRING_STOP(t):
+    r'[^,^\n^(\r\n).]+(?!,)'
+    t.type = "STRING"
+    t_end_inside_scommalist(t)
+    return t
+
+def t_insidescommalist_NEWLINE(t):
+    r'(\n|\r\n)'
+    t.lexer.lineno += len(t.value)
+    return t
+
+def t_insidescommalist_COMMA(t):
+    r','
+    return t
+
+# Error handling rule
 def t_error(t):
-    msg = "Illegal character '%s' at line %d" % (t.value[0], t.lineno)
-    raise SyntaxError(msg)
+    raise ParseError("Illegal character '%s'" % t.value[0], t)
 
-def t_tab(t):
-    r'\t'
-    msg = "Illegal tab character at line %d" % t.lineno
-    raise SyntaxError(msg)
+def t_insideword_error(t):
+    raise ParseError("Illegal character (inside word state) '%s'" % t.value[0], t)
 
-class _Dummy(object):
-    def __init__(self):
-        self.type = "EOF"
-        self.escaped = False
-        self.value = None
+def t_insidestring_error(t):
+    raise ParseError("Illegal character (insidestring state) '%s'" % t.value[0], t)
 
-    def __repr__(self):
-        return "DummyToken(EOF)"
+def t_insidemstring_error(t):
+    raise ParseError("Illegal character (insidemstring state) '%s'" % t.value[0], t)
 
-EOF = _Dummy()
+def t_insidewcommalist_error(t):
+    raise ParseError("Illegal character (inside wcommalist state) '%s'" % t.value[0], t)
 
-class MyLexer(object):
-    _stages = dict(zip(
-        ('raw', 'escape_detected', 'escape_merged', 'indent_generated',
-         'comment_removed', 'post_processed'),
-        range(1, 7)))
-    def __init__(self, stage="raw", module=None, object=None, debug=0, optimize=0,
-                 lextab='lextab', reflags=0, nowarn=0, outputdir='',
-                 debuglog=None, errorlog=None):
-        self.lexer = lex(module, object, debug, optimize, lextab,
-                         reflags, nowarn, outputdir, debuglog,
-                         errorlog)
-        if not stage in self._stages:
-            raise ValueError("Unrecognized stage %r" % (stage,))
-        self.stage = stage
-        self._stage_level = self._stages[stage]
+def t_insidewcommalistfirstline_error(t):
+    raise ParseError("Illegal character (inside wcommalistfirstline state) '%s'" % t.value[0], t)
 
-    def input(self, *a, **kw):
-        self.lexer.input(*a, **kw)
-        token_stream = iter(self.lexer.token, None)
-        if self._stage_level >= 2:
-            token_stream = detect_escaped(token_stream)
-        if self._stage_level >= 3:
-            token_stream = merge_escaped(token_stream)
-        if self._stage_level >= 4:
-            token_stream = indent_generator(token_stream)
-        if self._stage_level >= 5:
-            token_stream = remove_comments(token_stream)
-        if self._stage_level >= 6:
-            token_stream = post_process(token_stream, self.lexer.lexdata)
-        self.token_stream = token_stream
+def t_insidescommalist_error(t):
+    raise ParseError("Illegal character (inside scommalist state) '%s'" % t.value[0], t)
 
-    def token(self, *a, **kw):
-        try:
-            return six.advance_iterator(self.token_stream)
-        except StopIteration:
-            return None
+def t_insidescommalistfirstline_error(t):
+    raise ParseError("Illegal character (inside scommalistfirstline state) '%s'" % t.value[0], t)
 
-    def __iter__(self):
-        return iter(self.token, None)
-
+#--------
+# Filters
+#--------
 def detect_escaped(stream):
     """Post process the given stream to generate escaped character for
     characters preceded by the escaping token."""
     for t in stream:
-        if ESCAPING_CHAR[t.type]:
+        is_escaping_char = ESCAPING_CHAR.get(t.type, False)
+        if is_escaping_char:
             try:
                 t = six.advance_iterator(stream)
             except StopIteration:
@@ -279,27 +467,52 @@ def merge_escaped(stream):
                 yield t
             return
 
-def skip_until_eol(stream, t):
-    try:
-        prev = stream.previous()
-    except ValueError:
-        prev = None
-    while t.type != "NEWLINE":
-        t = six.advance_iterator(stream)
-    # FIXME: ideally, we would like to remove EOL for comments which span the
-    # full line, but we need access to the token before the comment delimiter
-    # to do so, as we don't want to remove EOL for inline commeng (e.g. 'foo #
-    # comment')
-    if prev and t.type == "NEWLINE" and prev.type in ('NEWLINE', 'INDENT'):
-        t = six.advance_iterator(stream)
-    return t
+def filter_ws_and_newline(it):
+    for item in it:
+        if item.type not in ["NEWLINE", "WS"]:
+            yield item
 
-def remove_comments(stream):
-    stream = BackwardGenerator(stream)
-    for t in stream:
-        if t.type == "SHARP":
-            t = skip_until_eol(stream, t)
-        yield t
+def remove_lines_indent(s, indent=None):
+    lines = s.splitlines()
+    if len(lines) > 1:
+        line1 = lines[1].lstrip()
+        if indent is None:
+            indent = len(lines[1]) - len(line1)
+        new_lines = [lines[0]]
+        for line in lines[1:]:
+            if len(line) > indent:
+                line = line[indent:]
+            else:
+                line = ""
+            new_lines.append(line)
+        return "\n".join(new_lines)
+    else:
+        return s
+
+def post_process_string(it):
+    state = "INIT"
+    indent = None
+    for item in it:
+        if state == "INIT":
+            yield item
+        elif state == "INSIDE_DESCRIPTION_ID":
+            if item.type == "INDENT":
+                state = "INSIDE_INDENT"
+                indent = item.value
+            if item.type == "MULTILINES_STRING":
+                state = "INIT"
+                indent = None
+                item.value = remove_lines_indent(item.value)
+            yield item
+        elif state == "INSIDE_INDENT":
+            assert item.type in ("STRING", "MULTILINES_STRING")
+            item.value = remove_lines_indent(item.value, indent)
+            yield item
+            state = "INIT"
+            indent = None
+
+        if item.type == "DESCRIPTION_ID":
+            state = "INSIDE_DESCRIPTION_ID"
 
 def indent_generator(toks):
     """Post process the given stream of tokens to generate INDENT/DEDENT
@@ -383,288 +596,35 @@ def new_dedent(amount, token):
     tok.lexpos = token.lexpos
     return tok
 
-def _new_token(type, token):
-    tok = LexToken()
-    tok.type = type
-    tok.value = token.value
-    tok.lineno = token.lineno
-    tok.lexpos = token.lexpos
-    return tok
+class _Dummy(object):
+    def __init__(self):
+        self.type = "EOF"
+        self.escaped = False
+        self.value = None
 
-_FIELD_TYPE_TO_STATE = {
-    "WORD": "SCANNING_WORD_FIELD",
-    "WORDS": "SCANNING_WORDS_FIELD",
-    "LINE": "SCANNING_SINGLELINE_FIELD",
-    "MULTILINE": "SCANNING_MULTILINE_FIELD",
-    "COMMA_LIST": "SCANNING_COMMA_LIST_FIELD"
-}
+    def __repr__(self):
+        return "DummyToken(EOF)"
 
-def singleline_tokenizer(token, state, stream):
-    if token.type == "NEWLINE":
-        state = "SCANNING_FIELD_ID"
-        queue = []
-    else:
-        queue = [token]
+EOF = _Dummy()
+class BentoLexer(object):
+    def __init__(self, optimize=False):
+        self.lexer = lex(reflags=re.UNICODE|re.MULTILINE, debug=0, optimize=optimize, nowarn=0, lextab='lextab')
 
-    try:
-        tok = six.advance_iterator(stream)
-    except StopIteration:
-        tok = None
+    def input(self, data):
+        self.lexer.input(data)
+        stream = iter(self.lexer.token, None)
+        stream = detect_escaped(stream)
+        stream = merge_escaped(stream)
+        stream = indent_generator(stream)
+        stream = filter_ws_and_newline(stream)
+        stream = post_process_string(stream)
+        self.stream = stream
 
-    return queue, tok, state
+    def __iter__(self):
+        return iter(self.token, None)
 
-def multiline_tokenizer(token, state, stream, internal):
-    stack = internal.stack
-    queue = []
-
-    if internal.stack_level is None:
-        internal.stack_level = [len(internal.stack)]
-    stack_level = internal.stack_level
-
-    if token.type == "INDENT":
-        stack.append(token)
-        queue.insert(0, token)
-    elif token.type == "DEDENT":
-        stack.pop(0)
-        if len(stack) < 1:
-            state = "SCANNING_FIELD_ID"
-        queue.insert(0, token)
-    elif token.type == "NEWLINE":
-        saved_newline = token
-        # Case where there is a single, non indented line for the field, i.e.:
-        # Description: a description
-        if (len(stack) == stack_level[0] and stream.peek().type != "INDENT"):
-            state = "SCANNING_FIELD_ID"
-            internal.stack_level = None
-        elif stream.peek().type == "DEDENT":
-            try:
-                while stream.peek().type == "DEDENT":
-                    token = six.advance_iterator(stream)
-                    queue.insert(0, token)
-                    stack.pop()
-            except StopIteration:
-                pass
-            if len(stack) == stack_level[0]:
-                state = "SCANNING_FIELD_ID"
-                internal.stack_level = None
-            else:
-                queue.append(saved_newline)
-        else:
-            queue.insert(0, token)
-    else:
-        queue.insert(0, token)
-
-    try:
-        token = six.advance_iterator(stream)
-    except StopIteration:
-        token = None
-    return queue, token, state
-
-def word_tokenizer(token, state, stream):
-    queue = []
-    state = "SCANNING_FIELD_ID"
-
-    try:
-        while token.type != "NEWLINE":
-            if token.type == "WORD":
-                queue.append(token)
-            token = six.advance_iterator(stream)
-    except StopIteration:
-        token = None
-
-    return queue, token, state
-
-def words_tokenizer(token, state, stream, internal):
-    token, state = _skip_ws(token, stream, state, internal)
-
-    if state == "SCANNING_WORDS_FIELD":
-        words_stack = internal.words_stack
-        if token.type == "INDENT":
-            words_stack.append(token)
-        elif token.type == "DEDENT":
-            words_stack.pop(0)
-            if len(words_stack) < 1:
-                state = "SCANNING_FIELD_ID"
-                internal.words_stack = []
-        queue = [token]
-    else:
-        queue = []
-    try:
-        tok = six.advance_iterator(stream)
-    except StopIteration:
-        tok = None
-    return queue, tok, state
-
-def scan_field_id(token, state, stream, lexdata):
-    # When a candidate is found, do as follows:
-    # - save the candidate
-    # - eat any whitespace
-    # - if next is colon, candidate is an identifier, emit both
-    # identifier and colon
-    candidate = token
-    token = stream.peek()
-    if token.type == "WS":
-        token = stream.peek()
-    if token.type == "COLON":
-        # We do have a identifier, so replace WORD token by the
-        # right keyword token
-        candidate = _new_token(META_FIELDS_ID[candidate.value], candidate)
-
-    try:
-        field_type = FIELD_TYPE[candidate.type]
-    except KeyError:
-        data = lexdata.splitlines()
-        msg = ["Error while tokenizing %r (missing colon ?)" %  candidate.value]
-        msg += ["    Line %d -> %r" % (candidate.lineno, data[candidate.lineno-1])]
-        raise SyntaxError("\n".join(msg))
-    try:
-        state = _FIELD_TYPE_TO_STATE[field_type]
-    except KeyError:
-        raise ValueError("Unknown state transition for type %s" % field_type)
-
-    queue = [candidate]
-    queue.append(six.advance_iterator(stream))
-    nxt = six.advance_iterator(stream)
-    return queue, nxt, state
-
-def tokenize_conditional(stream, token):
-    ret = []
-
-    token.type = CONDITIONAL_ID[token.value]
-    ret.append(token)
-
-    queue = []
-    nxt = stream.peek()
-    if not nxt.type in ["COLON", "NEWLINE"]:
-        while nxt.type not in ["COLON", "NEWLINE"]:
-            if nxt.type not in ["WS"]:
-                queue.append(nxt)
-            nxt = six.advance_iterator(stream)
-        queue.append(nxt)
-
-    for q in queue:
-        if q.value in CONDITIONAL_ID.keys():
-            q.type = CONDITIONAL_ID[q.value]
-        ret.append(q)
-
-    return ret, six.advance_iterator(stream)
-
-def comma_list_tokenizer(token, state, stream, internal):
-    queue = []
-    state = "SCANNING_FIELD_ID"
-
-    def _filter_ws_before_comma(lst):
-        ret = []
-        for i, item in enumerate(lst):
-            if item.type == "WS":
-                if i < len(lst) and lst[i+1].type == "COMMA":
-                    pass
-                elif i > 0 and lst[i-1].type == "COMMA":
-                    pass
-                else:
-                    ret.append(item)
-            else:
-                ret.append(item)
-        return ret
-
-    try:
-        if token.type != "NEWLINE":
-            token, state = _skip_ws(token, stream, state, internal)
-        while token.type not in ("NEWLINE",):
-            queue.append(token)
-            token = six.advance_iterator(stream)
-        # Eat newline
-        token = six.advance_iterator(stream)
-        if token.type == "INDENT":
-            internal.stack.append(token)
-            while token.type != "DEDENT":
-                if token.type != "NEWLINE":
-                    queue.append(token)
-                token = six.advance_iterator(stream)
-            if token.type == "DEDENT":
-                internal.stack.pop(0)
-            queue.append(token)
-        return _filter_ws_before_comma(queue), six.advance_iterator(stream), state
-    except StopIteration:
-        return _filter_ws_before_comma(queue), None, "EOF"
-
-    #return multiline_tokenizer(token, state, stream, internal)
-
-def find_next(token, stream, internal):
-    queue = []
-
-    if token.type != "NEWLINE":
-        if token.type == "INDENT":
-            internal.stack.append(token)
-        elif token.type == "DEDENT":
-            internal.stack.pop(0)
-        queue.append(token)
-
-    try:
-        tok = six.advance_iterator(stream)
-    except StopIteration:
-        tok = None
-
-    return queue, tok
-
-def post_process(stream, lexdata):
-    # XXX: this is awfully complicated...
-    class _Internal(object):
-        def __init__(self):
-            self.stack = []
-            self.words_stack = []
-            self.stack_level = None
-    internal = _Internal()
-
-    state = "SCANNING_FIELD_ID"
-
-    stream = Peeker(stream)
-    i = six.advance_iterator(stream)
-    while i:
-        if state == "SCANNING_FIELD_ID":
-            if i.value in CONDITIONAL_ID.keys():
-                queue, i = tokenize_conditional(stream, i)
-                for q in queue:
-                    yield q
-            elif i.value in META_FIELDS_ID.keys():
-                queue, i, state = scan_field_id(i, state, stream, lexdata)
-                for q in queue:
-                    yield q
-            else:
-                queue, i = find_next(i, stream, internal)
-                for q in queue:
-                    yield q
-        elif state == "SCANNING_SINGLELINE_FIELD":
-            queue, i, state = singleline_tokenizer(i, state, stream)
-            for q in queue:
-                yield q
-        elif state == "SCANNING_MULTILINE_FIELD":
-            queue, i, state = multiline_tokenizer(i, state, stream, internal)
-            while len(queue) > 0:
-                yield queue.pop()
-        elif state == "SCANNING_WORD_FIELD":
-            queue, i, state = word_tokenizer(i, state, stream)
-            for t in queue:
-                yield t
-        elif state == "SCANNING_WORDS_FIELD":
-            queue, i, state = words_tokenizer(i, state, stream, internal)
-            for q in queue:
-                yield q
-        elif state == "SCANNING_COMMA_LIST_FIELD":
-            queue, i, state = comma_list_tokenizer(i, state, stream, internal)
-            for q in queue:
-                yield q
-        else:
-            raise ValueError("Unknown state: %s" % state)
-
-def _skip_ws(tok, stream, state, internal):
-    while tok.type  in ["NEWLINE", "WS"]:
-        if tok.type == "NEWLINE" and len(internal.words_stack) == 0:
-            nxt = stream.peek()
-            if not nxt.type == "INDENT":
-                state = "SCANNING_FIELD_ID"
-            else:
-                tok = six.advance_iterator(stream)
-            return tok, state
-        tok = six.advance_iterator(stream)
-    return tok, state
+    def token(self):
+        try:
+            return self.stream.next()
+        except StopIteration:
+            pass
