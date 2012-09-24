@@ -121,6 +121,7 @@ def t_COLON(t):
 _LOOKAHEAD_COLON = "(?=\s*:)"
 
 keywords_dict = dict((v, k) for k, v in keyword_fields)
+keywords_dict.update(keyword_misc)
 word_keywords = dict((k, v) for k, v in word_fields)
 line_keywords = dict((k, v) for k, v in line_fields)
 multilines_keywords = dict((k, v) for k, v in multilines_fields)
