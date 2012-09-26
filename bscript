@@ -76,6 +76,7 @@ class TestCommand(Command):
         stdout, stderr = p.communicate()
         if p.returncode != 0:
             print(try_decode(stderr))
+            sys.exit(p.returncode)
         else:
             for stream in [stdout, stderr]:
                 print(try_decode(stream))
@@ -153,7 +154,7 @@ Usage:   bentomaker distcheck [OPTIONS]."""
             pprint('PINK', "\t-> Testing from sdist...")
             try:
                 _call(bentomaker_script + ["test"])
-            except CalledProcessError:
+            except subprocess.CalledProcessError:
                 raise CommandExecutionFailure("test command failed")
         finally:
             os.chdir(saved)
