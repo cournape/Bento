@@ -123,12 +123,9 @@ class Dispatcher(object):
         return self._d
 
     def summary(self, node):
-        ret = Node(node.type)
-        ret.value = "".join([i.value for i in node.value])
-        return ret
+        return node
 
     def author(self, node):
-        node.value = "".join([i.value for i in node.value])
         return node
 
     def maintainer(self, node):
@@ -147,42 +144,7 @@ class Dispatcher(object):
         return node
 
     def description(self, node):
-        tokens = []
-        for i in node.value:
-            if i.type in ["literal", "multi_literal", "newline",
-                          "indent", "dedent", "single_line"]:
-                tokens.append(i)
-
-        # FIXME: fix grammar to get ind_shift
-        ind_shift = 4
-        inds = [0]
-        line_str = []
-        for line in split_newlines(tokens):
-            # FIXME: this is horrible
-            if line[0].type == "dedent":
-                if set([node.type for node in line]) == set(["dedent"]): # if the line only contains dedent
-                    inds.pop(0)
-                    remain = [Node("literal", value="\n")]
-                else:
-                    while line[0].type == "dedent":
-                        inds.pop(0)
-                        line = line[1:]
-                    remain = line
-            elif line[0].type == "indent":
-                inds.insert(0, line[0].value - ind_shift)
-                remain = line[1:]
-            else:
-                remain = line
-
-            if len(remain) > 0:
-                if remain[-1].type == "dedent":
-                    remain = remain[:-1]
-
-            cur_line = [" " * inds[0]]
-            cur_line.extend([t.value for t in remain])
-            line_str.append("".join(cur_line))
-
-        return Node("description", value="".join(line_str))
+        return node
 
     #--------------------------
     # Library section handlers
@@ -343,11 +305,7 @@ class Dispatcher(object):
     def path_default(self, node):
         return Node("default", value=node.value)
 
-    def path_stmts(self, node):
-        return node.children
-
     def path_description(self, node):
-        node.value = "".join([i.value for i in node.value])
         return node
 
     #-----------------
@@ -382,7 +340,6 @@ class Dispatcher(object):
         return node.children
 
     def flag_description(self, node):
-        node.value = "".join([i.value for i in node.value])
         return node
 
     #-------------------
@@ -396,14 +353,14 @@ class Dispatcher(object):
             return node.children[1:]
 
     def osvar(self, node):
-        os_name = node.value.value
+        os_name = node.value
         return os_name == sys.platform
 
     def bool_var(self, node):
         return node.value
 
     def not_flagvar(self, node):
-        name = node.value.value
+        name = node.value
         try:
             value = self._vars[name]
         except KeyError:
@@ -412,7 +369,7 @@ class Dispatcher(object):
             return not _LIT_BOOL[value]
 
     def flagvar(self, node):
-        name = node.value.value
+        name = node.value
         try:
             value = self._vars[name]
         except KeyError:
