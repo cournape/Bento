@@ -49,8 +49,7 @@ class ConfigureYakuContext(ConfigureContext):
     def pre_recurse(self, local_node):
         super(ConfigureYakuContext, self).pre_recurse(local_node)
         self._old_path = self.yaku_context.path
-        # Gymnastic to make a *yaku* node from a *bento* node
-        self.yaku_context.path = self.yaku_context.path.make_node(self.local_node.path_from(self.run_node))
+        self.yaku_context.path = self.yaku_context.path.make_node(self.local_node.path_from(self.top_node))
 
     def post_recurse(self):
         self.yaku_context.path = self._old_path
@@ -134,8 +133,8 @@ class BuildYakuContext(BuildContext):
     def pre_recurse(self, local_node):
         super(BuildYakuContext, self).pre_recurse(local_node)
         self._old_path = self.yaku_context.path
-        # FIXME: we should not modify yaku context src_root, but add current
-        # node + recurse support to yaku instead
+        # FIXME: we should not modify yaku context, but add current node +
+        # recurse support to yaku instead
         # Gymnastic to make a *yaku* node from a *bento* node
         self.yaku_context.path = self.yaku_context.path.make_node(self.local_node.path_from(self.top_node))
 
