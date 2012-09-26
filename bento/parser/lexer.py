@@ -110,6 +110,7 @@ def t_NEWLINE(t):
     r"(\n|\r\n)"
     t.lexer.lineno += len(t.value)
     return t
+NEWLINE_PATTERN = t_NEWLINE.__doc__
 
 def t_BACKSLASH(t):
     r"\\"
@@ -249,10 +250,10 @@ def t_end_inside_scommalistfirstline(t):
 # Inside word
 #------------
 def t_insideword_NEWLINE(t):
-    r'\n+|(\r\n)+'
     t.lexer.lineno += len(t.value)
     t_end_inside_word(t)
     return t
+t_insideword_NEWLINE.__doc__ = NEWLINE_PATTERN
 
 def t_insideword_COLON(t):
     return t
@@ -272,11 +273,11 @@ t_insideword_COMMENT = t_COMMENT
 # Inside single line string rule
 #-------------------------------
 def t_insidestring_newline(t):
-    r'\n+|(\r\n)+'
     t.lexer.lineno += len(t.value)
     t.type = "NEWLINE"
     t_end_insidestring(t)
     return t
+t_insidestring_newline.__doc__ = NEWLINE_PATTERN
 
 def t_insidestring_COLON(t):
     r':'
@@ -355,9 +356,9 @@ def t_insidewcommalistfirstline_WORD_STOP(t):
     return t
 
 def t_insidewcommalistfirstline_NEWLINE(t):
-    r'(\n|\r\n)'
     t.lexer.lineno += len(t.value)
     return t
+t_insidewcommalistfirstline_NEWLINE.__doc__ = NEWLINE_PATTERN
 
 def t_insidewcommalistfirstline_COMMA(t):
     r','
@@ -374,9 +375,9 @@ def t_insidewcommalist_WORD_STOP(t):
     return t
 
 def t_insidewcommalist_NEWLINE(t):
-    r'(\n|\r\n)'
     t.lexer.lineno += len(t.value)
     return t
+t_insidewcommalist_NEWLINE.__doc__ = NEWLINE_PATTERN
 
 def t_insidewcommalist_WS(t):
     r' [ ]+'
@@ -409,9 +410,9 @@ def t_insidescommalistfirstline_STRING_STOP(t):
     return t
 
 def t_insidescommalistfirstline_NEWLINE(t):
-    r'(\n|\r\n)'
     t.lexer.lineno += len(t.value)
     return t
+t_insidescommalistfirstline_NEWLINE.__doc__ = NEWLINE_PATTERN
 
 def t_insidescommalistfirstline_COMMA(t):
     r','
@@ -422,19 +423,19 @@ def t_insidescommalist_WS(t):
     return t
 
 def t_insidescommalist_STRING(t):
-    r'[^,^\n^(\r\n)]+(?=,)'
+    r'[^,\n(\r\n)]+(?=,)'
     return t
 
 def t_insidescommalist_STRING_STOP(t):
-    r'[^,^\n^(\r\n)]+(?!,)'
+    r'[^,\n(\r\n)]+(?!,)'
     t.type = "STRING"
     t_end_inside_scommalist(t)
     return t
 
 def t_insidescommalist_NEWLINE(t):
-    r'(\n|\r\n)'
     t.lexer.lineno += len(t.value)
     return t
+t_insidescommalist_NEWLINE.__doc__ = NEWLINE_PATTERN
 
 def t_insidescommalist_COMMA(t):
     r','
