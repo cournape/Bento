@@ -7,9 +7,10 @@ python:
    - 3.2
 # mock/multiprocessing are only necessary for testing
 install:
-   - pip install mock
-   - "if [[ $TRAVIS_PYTHON_VERSION == '2.4' ]]; then pip install nose unittest2 multiprocessing; fi"
-   - "if [[ $TRAVIS_PYTHON_VERSION == '2.5' ]]; then pip install nose unittest2 multiprocessing; fi"
+   - pip install mock nose
+   - "if [[ $TRAVIS_PYTHON_VERSION == '2.4' ]]; then pip install unittest2 multiprocessing; fi"
+   - "if [[ $TRAVIS_PYTHON_VERSION == '2.5' ]]; then pip install unittest2 multiprocessing; fi"
+   - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
 
 env:
    - OVERRIDE_PYTHON_VERSION=2.4
