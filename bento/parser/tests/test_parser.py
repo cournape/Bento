@@ -1,5 +1,3 @@
-import sys
-
 from six.moves import cStringIO
 
 from bento.errors \
@@ -15,9 +13,9 @@ from bento.parser.parser \
     import \
         parse
 
-from unittest \
-    import \
-        TestCase
+from bento.compat.api.moves import unittest
+
+TestCase = unittest.TestCase
 
 class _TestGrammar(TestCase):
     def _test(self, data, expected):

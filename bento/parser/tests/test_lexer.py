@@ -8,9 +8,9 @@ from bento.parser.lexer \
     import \
         BentoLexer
 
-from unittest \
-    import \
-        TestCase
+from bento.compat.api.moves import unittest
+
+TestCase = unittest.TestCase
 
 def split(s):
     ret = []
