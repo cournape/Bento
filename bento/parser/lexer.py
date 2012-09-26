@@ -87,7 +87,7 @@ keyword_misc_tokens = keyword_misc.values()
 tokens = ["COLON", "WS", "WORD", "NEWLINE", "STRING", "MULTILINES_STRING",
           "BLOCK_MULTILINES_STRING", "COMMA", "INDENT", "DEDENT", "LPAR",
           "RPAR", "BACKSLASH"] \
-        + keyword_tokens + keyword_misc_tokens
+        + list(keyword_tokens) + list(keyword_misc_tokens)
 
 states = [
         ("insidestring", "exclusive"),
@@ -689,6 +689,6 @@ class BentoLexer(object):
 
     def token(self):
         try:
-            return self.stream.next()
+            return six.advance_iterator(self.stream)
         except StopIteration:
             pass
