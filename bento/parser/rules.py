@@ -394,11 +394,11 @@ def p_extension_decl(p):
     p[0] = Node("extension_declaration", value=p[3])
 
 def p_extension_sources(p):
-    """extension_field_stmt : SOURCES_ID COLON scomma_list"""
+    """extension_field_stmt : SOURCES_ID COLON wcomma_list"""
     p[0] = Node("sources", value=p[3].value)
 
 def p_extension_include_dirs(p):
-    """extension_field_stmt : INCLUDE_DIRS_ID COLON scomma_list"""
+    """extension_field_stmt : INCLUDE_DIRS_ID COLON wcomma_list"""
     p[0] = Node("include_dirs", value=p[3].value)
 
 def p_compiled_library_stmt_content(p):
@@ -418,19 +418,23 @@ def p_compiled_library_field_stmts_term(p):
 
 def p_compiled_library_decl(p):
     """compiled_library_decl : COMPILED_LIBRARY_ID COLON WORD"""
-    p[0] = Node("compiled_library_declaration", value=p[3].value)
+    p[0] = Node("compiled_library_declaration", value=p[3])
 
 def p_compiled_library_sources(p):
-    """compiled_library_field_stmt : SOURCES_ID COLON scomma_list"""
+    """compiled_library_field_stmt : SOURCES_ID COLON wcomma_list"""
     p[0] = Node("sources", value=p[3].value)
 
 def p_compiled_library_include_dirs(p):
-    """compiled_library_field_stmt : INCLUDE_DIRS_ID COLON scomma_list"""
+    """compiled_library_field_stmt : INCLUDE_DIRS_ID COLON wcomma_list"""
     p[0] = Node("include_dirs", value=p[3].value)
 
 def p_build_requires_stmt(p):
     """build_requires_stmt : BUILD_REQUIRES_ID COLON scomma_list"""
     p[0] = Node("build_requires", value=p[3].value)
+
+def p_install_requires_stmt(p):
+    """build_requires_stmt : INSTALL_REQUIRES_ID COLON scomma_list"""
+    p[0] = Node("install_requires", value=p[3].value)
 
 #---------------------
 # Conditional handling
