@@ -142,7 +142,7 @@ def p_meta_meta_template_file_stmt(p):
     """meta_meta_template_files_stmt : META_TEMPLATE_FILE_ID COLON WORD
     """
     warnings.warn("MetaTemplateFile field is obsolete - use MetaTemplateFiles itself")
-    p[0] = Node("meta_template_files", value=p[3])
+    p[0] = Node("meta_template_files", value=[p[3]])
 
 def p_meta_meta_template_files_stmt(p):
     """meta_meta_template_files_stmt : META_TEMPLATE_FILES_ID COLON wcomma_list
