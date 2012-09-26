@@ -6,10 +6,10 @@ from ply.lex \
 
 from bento.errors \
     import \
-        ParseError
+        ParseError, InternalBentoError
 from bento.parser.utils \
     import \
-        Peeker
+        Peeker, BackwardGenerator
 
 import six
 
@@ -46,6 +46,7 @@ line_fields = [
 comma_line_fields = [
     ("BUILD_REQUIRES_ID", r"BuildRequires"),
     ("CLASSIFIERS_ID", r"Classifiers"),
+    ("INSTALL_REQUIRES_ID", r"InstallRequires"),
     ("PLATFORMS_ID", r"Platforms"),
 ]
 
@@ -61,6 +62,7 @@ comma_word_fields = [
     ("MODULES_ID", r"Modules"),
     ("PACKAGES_ID", r"Packages"),
     ("SOURCES_ID", r"Sources"),
+    ("USE_BACKENDS_ID", r"UseBackends"),
 ]
 
 multilines_fields = [
@@ -82,7 +84,8 @@ keyword_misc = dict([
 keyword_misc_tokens = keyword_misc.values()
 
 tokens = ["COLON", "WS", "WORD", "NEWLINE", "STRING", "MULTILINES_STRING",
-          "COMMA", "INDENT", "DEDENT", "LPAR", "RPAR", "BACKSLASH"] \
+          "BLOCK_MULTILINES_STRING", "COMMA", "INDENT", "DEDENT", "LPAR",
+          "RPAR", "BACKSLASH"] \
         + keyword_tokens + keyword_misc_tokens
 
 states = [
@@ -91,6 +94,7 @@ states = [
         # To be used for keywords that accept multiline values (description,
         # etc...)
         ("insidemstring", "exclusive"),
+        ("insidemstringnotcontinued", "exclusive"),
 
         ("insidewcommalistfirstline", "inclusive"),
         ("insidewcommalist", "inclusive"),
@@ -134,28 +138,32 @@ comma_word_keywords = dict((k, v) for k, v in comma_word_fields)
 
 def t_FIELD(t):
     r"\w+(?=\s*:)"
-    type = keywords_dict[t.value]
-    t.type = type
-    if type in line_keywords:
-        t_begin_insidestring(t)
-    elif type in multilines_keywords:
-        # FIXME: we differentiate between top Description (accepting multiline)
-        # and description within flag block (where we cannot currently accept
-        # multilines).
-        if t.lexpos >= 1:
-            if R_NEWLINE.match(t.lexer.lexdata[t.lexpos-1]):
-                t_begin_insidemstring(t)
-            else:
-                t_begin_insidestring(t)
-        else:
-            t_begin_insidemstring(t)
-    elif type in comma_line_keywords:
-        t_begin_inside_scommalistfirstline(t)
-    elif type in comma_word_keywords:
-        t_begin_inside_wcommalistfirstline(t)
+    try:
+        type = keywords_dict[t.value]
+    except KeyError:
+        raise ParseError("Unrecognized keyword: %r" % (t.value,), t)
     else:
-        t_begin_inside_word(t)
-    return t
+        t.type = type
+        if type in line_keywords:
+            t_begin_insidestring(t)
+        elif type in multilines_keywords:
+            # FIXME: we differentiate between top Description (accepting multiline)
+            # and description within flag block (where we cannot currently accept
+            # multilines).
+            if t.lexpos >= 1:
+                if R_NEWLINE.match(t.lexer.lexdata[t.lexpos-1]):
+                    t_begin_insidemstring(t)
+                else:
+                     t_begin_insidestring(t)
+            else:
+                t_begin_insidemstring(t)
+        elif type in comma_line_keywords:
+            t_begin_inside_scommalistfirstline(t)
+        elif type in comma_word_keywords:
+            t_begin_inside_wcommalistfirstline(t)
+        else:
+            t_begin_inside_word(t)
+        return t
 
 def t_COMMENT(t):
     r'[ ]*\#[^\r\n]*'
@@ -193,6 +201,14 @@ def t_begin_insidemstring(t):
 def t_end_insidemstring(t):
     r'end_insidemstring'
     t.lexer.begin('INITIAL')
+
+def t_begin_inside_mstringnotcontinued(t):
+    r'start_inside_mstringnotcontinued'
+    t.lexer.begin("insidemstringnotcontinued")
+
+def t_end_inside_mstringnotcontinued(t):
+    r'end_inside_mstringnotcontinued'
+    t.lexer.begin("INITIAL")
 
 # Word comma list
 def t_begin_inside_wcommalist(t):
@@ -278,21 +294,41 @@ def t_insidestring_STRING(t):
 # multiline string rules
 #-----------------------
 def t_insidemstring_COLON(t):
-    r':'
+    r':(?=.*\S+.*)'
     return t
 
-def t_insidemstring_NEWLINE(t):
-    r'\n+|(\r\n)+'
-    t.lexer.lineno += len(t.value)
+def t_insidemstring_COLON_NO_CONTINUED(t):
+    r':(?!.*\S.*)'
+    t.type = "COLON"
+    t_begin_inside_mstringnotcontinued(t)
     return t
 
 def t_insidemstring_WS(t):
-    r' [ ]+'
+    r'[ ]+'
     return t
 
+def t_insidemstring_NEWLINE(t):
+    t.lexer.lineno += len(t.value)
+    return t
+t_insidemstring_NEWLINE.__doc__ = t_NEWLINE.__doc__
+
 def t_insidemstring_MULTILINES_STRING(t):
-    r'.+((\n[ ]+.+)|\n)*'
-    t_end_insidemstring(t)
+    r'.+((\n[ ]+.+$)|(\n^[ ]*$))*'
+    t_end_inside_mstringnotcontinued(t)
+    return t
+
+# Multiline string that starts on same line as Description
+def t_insidemstringnotcontinued_NEWLINE(t):
+    return t
+t_insidemstringnotcontinued_NEWLINE.__doc__ = t_NEWLINE.__doc__
+
+def t_insidemstringnotcontinued_WS(t):
+    return t
+t_insidemstringnotcontinued_WS.__doc__ = t_WS
+
+def t_insidemstringnotcontinued_BLOCK_MULTILINES_STRING(t):
+    r'.+((\n[ ]+.+$)|(\n^[ ]*$))*'
+    t_end_inside_mstringnotcontinued(t)
     return t
 
 #------------------------
@@ -361,12 +397,12 @@ def t_insidescommalistfirstline_WS(t):
     return t
 
 def t_insidescommalistfirstline_STRING(t):
-    r'[^,^\n^(\r\n).]+(?=,)'
+    r'[^,^\n^(\r\n)]+(?=,)'
     t_begin_inside_scommalist(t)
     return t
 
 def t_insidescommalistfirstline_STRING_STOP(t):
-    r'[^,^\n^(\r\n).]+(?!,)'
+    r'[^,^\n^(\r\n)]+(?!,)'
     t.type = "STRING"
     t_end_inside_scommalistfirstline(t)
     return t
@@ -385,11 +421,11 @@ def t_insidescommalist_WS(t):
     return t
 
 def t_insidescommalist_STRING(t):
-    r'[^,^\n^(\r\n).]+(?=,)'
+    r'[^,^\n^(\r\n)]+(?=,)'
     return t
 
 def t_insidescommalist_STRING_STOP(t):
-    r'[^,^\n^(\r\n).]+(?!,)'
+    r'[^,^\n^(\r\n)]+(?!,)'
     t.type = "STRING"
     t_end_inside_scommalist(t)
     return t
@@ -415,6 +451,9 @@ def t_insidestring_error(t):
 
 def t_insidemstring_error(t):
     raise ParseError("Illegal character (insidemstring state) '%s'" % t.value[0], t)
+
+def t_insidemstringnotcontinued_error(t):
+    raise ParseError("Illegal character (inside_mstringnotcontinued state) '%s'" % t.value[0], t)
 
 def t_insidewcommalist_error(t):
     raise ParseError("Illegal character (inside wcommalist state) '%s'" % t.value[0], t)
@@ -494,44 +533,33 @@ def filter_ws_and_newline(it):
 def remove_lines_indent(s, indent=None):
     lines = s.splitlines()
     if len(lines) > 1:
-        line1 = lines[1].lstrip()
         if indent is None:
-            indent = len(lines[1]) - len(line1)
-        new_lines = [lines[0]]
-        for line in lines[1:]:
-            if len(line) > indent:
-                line = line[indent:]
+            indent = len(lines[1]) - len(lines[1].lstrip())
+        for i in range(1, len(lines)):
+            if len(lines[i]) >= indent:
+                lines[i] = lines[i][indent:]
             else:
-                line = ""
-            new_lines.append(line)
-        return "\n".join(new_lines)
+                lines[i] = ""
+        return "\n".join(lines)
     else:
         return s
 
 def post_process_string(it):
-    state = "INIT"
-    indent = None
-    for item in it:
-        if state == "INIT":
-            yield item
-        elif state == "INSIDE_DESCRIPTION_ID":
-            if item.type == "INDENT":
-                state = "INSIDE_INDENT"
-                indent = item.value
-            if item.type in ("MULTILINES_STRING", "STRING"):
-                state = "INIT"
-                indent = None
-                item.value = remove_lines_indent(item.value)
-            yield item
-        elif state == "INSIDE_INDENT":
-            assert item.type in ("STRING", "MULTILINES_STRING"), item
-            item.value = remove_lines_indent(item.value, indent)
-            yield item
-            state = "INIT"
-            indent = None
-
-        if item.type == "DESCRIPTION_ID":
-            state = "INSIDE_DESCRIPTION_ID"
+    it = BackwardGenerator(it)
+    for token in it:
+        if token.type == "BLOCK_MULTILINES_STRING":
+            previous = it.previous()
+            if not previous.type == "INDENT":
+                raise InternalBentoError(
+                        "Error while post processing block line: %s -> %s" \
+                        % (previous, token))
+            else:
+                indent = previous.value
+                token.value = remove_lines_indent(token.value, indent)
+                token.type = "MULTILINES_STRING"
+        elif token.type == "MULTILINES_STRING":
+            token.value = remove_lines_indent(token.value)
+        yield token
 
 def indent_generator(toks):
     """Post process the given stream of tokens to generate INDENT/DEDENT
@@ -625,6 +653,7 @@ class _Dummy(object):
         return "DummyToken(EOF)"
 
 EOF = _Dummy()
+
 class BentoLexer(object):
     def __init__(self, optimize=False):
         self.lexer = lex(reflags=re.UNICODE|re.MULTILINE, debug=0, optimize=optimize, nowarn=0, lextab='lextab')

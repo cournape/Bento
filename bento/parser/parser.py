@@ -26,8 +26,10 @@ for k in dir(bento.parser.rules):
     if k.startswith("p_"):
         __GLOBALS[k] = getattr(bento.parser.rules, k)
 
-# Do not remove: this is used by PLY
-tokens = [t for t in _tokens if not t in ["WS", "NEWLINE", "BACKSLASH"]]
+# Do not remove: this is used by PLY. We filter out tokens which used only as
+# intermediataries inside the lexer to avoid ply.lex warns about unused tokens
+# in the grammar.
+tokens = [t for t in _tokens if not t in ["WS", "NEWLINE", "BACKSLASH", "BLOCK_MULTILINES_STRING"]]
 
 def _has_parser_changed(picklefile):
     # FIXME: private function to determine whether ply will need to write to

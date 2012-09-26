@@ -1,4 +1,4 @@
-from unittest \
+from unittest2 \
     import \
         TestCase
 
@@ -647,37 +647,98 @@ DEDENT
 
         self._test(data, ref_str)
 
-##    def test_rest_literal2(self):
-##        data = '''\
-##Description:
-##    Sphinx is a tool that makes it easy to create intelligent and beautiful
-##    documentation for Python projects (or other documents consisting of
-##    multiple reStructuredText sources), written by Georg Brandl.
-##    It was originally created to translate the new Python documentation,
-##    but has now been cleaned up in the hope that it will be useful to many
-##    other projects.
-##
-##    Sphinx uses reStructuredText as its markup language, and many of its strengths
-##    come from the power and straightforwardness of reStructuredText and its
-##    parsing and translating suite, the Docutils.
-##
-##    Although it is still under constant development, the following features
-##    are already present, work fine and can be seen "in action" in the Python docs:
-##
-##    * Output formats: HTML (including Windows HTML Help), plain text and LaTeX,
-##      for printable PDF versions
-##    * Extensive cross-references: semantic markup and automatic links
-##      for functions, classes, glossary terms and similar pieces of information
-##    * Hierarchical structure: easy definition of a document tree, with automatic
-##      links to siblings, parents and children
-##    * Automatic indices: general index as well as a module index
-##    * Code handling: automatic highlighting using the Pygments highlighter
-##    * Various extensions are available, e.g. for automatic testing of snippets
-##      and inclusion of appropriately formatted docstrings.
-##
-##    A development egg can be found `here
-##    <http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_.
-##'''
+    def test_rest_literal2(self):
+        self.maxDiff = None
+
+        data = '''\
+Description:
+    Sphinx is a tool that makes it easy to create intelligent and beautiful
+    documentation for Python projects (or other documents consisting of
+    multiple reStructuredText sources), written by Georg Brandl.
+    It was originally created to translate the new Python documentation,
+    but has now been cleaned up in the hope that it will be useful to many
+    other projects.
+
+    Sphinx uses reStructuredText as its markup language, and many of its strengths
+    come from the power and straightforwardness of reStructuredText and its
+    parsing and translating suite, the Docutils.
+
+    Although it is still under constant development, the following features
+    are already present, work fine and can be seen "in action" in the Python docs:
+
+    * Output formats: HTML (including Windows HTML Help), plain text and LaTeX,
+      for printable PDF versions
+    * Extensive cross-references: semantic markup and automatic links
+      for functions, classes, glossary terms and similar pieces of information
+    * Hierarchical structure: easy definition of a document tree, with automatic
+      links to siblings, parents and children
+    * Automatic indices: general index as well as a module index
+    * Code handling: automatic highlighting using the Pygments highlighter
+    * Various extensions are available, e.g. for automatic testing of snippets
+      and inclusion of appropriately formatted docstrings.
+
+    A development egg can be found `here
+    <http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_.
+'''
+        ref_str = """\
+DESCRIPTION_ID COLON INDENT
+MULTILINES_STRING
+DEDENT
+"""
+        self._test(data, split(ref_str))
+
+        tokens = self._get_tokens(data)
+        string = tokens[-2].value
+        self.assertMultiLineEqual(string, """\
+Sphinx is a tool that makes it easy to create intelligent and beautiful
+documentation for Python projects (or other documents consisting of
+multiple reStructuredText sources), written by Georg Brandl.
+It was originally created to translate the new Python documentation,
+but has now been cleaned up in the hope that it will be useful to many
+other projects.
+
+Sphinx uses reStructuredText as its markup language, and many of its strengths
+come from the power and straightforwardness of reStructuredText and its
+parsing and translating suite, the Docutils.
+
+Although it is still under constant development, the following features
+are already present, work fine and can be seen "in action" in the Python docs:
+
+* Output formats: HTML (including Windows HTML Help), plain text and LaTeX,
+  for printable PDF versions
+* Extensive cross-references: semantic markup and automatic links
+  for functions, classes, glossary terms and similar pieces of information
+* Hierarchical structure: easy definition of a document tree, with automatic
+  links to siblings, parents and children
+* Automatic indices: general index as well as a module index
+* Code handling: automatic highlighting using the Pygments highlighter
+* Various extensions are available, e.g. for automatic testing of snippets
+  and inclusion of appropriately formatted docstrings.
+
+A development egg can be found `here
+<http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_.""")
+
+    def test_space_no_space(self):
+        """Test whitespace-only lines are handled correctly."""
+        ws = " " * 4
+        data = """\
+Description:
+    a few words
+%s
+    and some more
+
+    and still more.
+
+""" % ws
+
+        ref_str = "DESCRIPTION_ID COLON INDENT MULTILINES_STRING DEDENT"
+        self._test(data, ref_str)
+
+        tokens = self._get_tokens(data)
+        string = tokens[-2].value
+
+        ref_str = "a few words\n\nand some more\n\nand still more.\n"
+        self.assertMultiLineEqual(string, ref_str)
 
     def test_ref_literal2(self):
         # Test transition from SCANING_MULTILINE_FIELD
@@ -774,6 +835,14 @@ Description: Sphinx
 DESCRIPTION_ID COLON MULTILINES_STRING
 """
         self._test(data, split(ref_str))
+
+        tokens = self._get_tokens(data)
+        string = tokens[-1].value
+        self.assertEqual(string, """\
+Sphinx
+is
+    a
+tool""")
 
     def test_single_line(self):
         data = "Name: word"
