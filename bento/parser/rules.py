@@ -54,6 +54,7 @@ def p_meta_stmt(p):
                  | meta_platforms_stmt
                  | meta_summary_stmt
                  | meta_meta_template_files_stmt
+                 | meta_use_backends_stmt
                  | meta_url_stmt
                  | meta_version_stmt
     """
@@ -191,6 +192,10 @@ def p_meta_hook_file_stmt(p):
     """meta_hook_file_stmt : HOOK_FILE_ID COLON wcomma_list
     """
     p[0] = Node("hook_files", value=p[3].value)
+
+def p_meta_use_backends_stmt(p):
+    """meta_use_backends_stmt : USE_BACKENDS_ID COLON wcomma_list"""
+    p[0] = Node("use_backends", value=p[3].value)
 
 #---------------------------------------
 # Data files and extra sources handling
