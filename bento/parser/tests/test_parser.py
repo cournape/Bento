@@ -2,16 +2,22 @@ import sys
 
 from six.moves import cStringIO
 
-from unittest \
+from bento.errors \
     import \
-        TestCase
-
+        ParseError
+from bento.utils.utils \
+    import \
+        extract_exception
 from bento.parser.nodes \
     import \
         ast_pprint
 from bento.parser.parser \
     import \
         parse
+
+from unittest \
+    import \
+        TestCase
 
 class _TestGrammar(TestCase):
     def _test(self, data, expected):
@@ -452,3 +458,39 @@ Node(type='stmt_list'):
             Node(type='path_description', value='foo_description')"""
 
         self._test(data, expected)
+
+class TestErrorHandling(TestCase):
+    def test_invalid_keyword(self):
+        data = """\
+Library:
+    Name: foo
+"""
+
+        try:
+            parse(data)
+            self.fail("parser did not raise expected ParseError")
+        except ParseError:
+            e = extract_exception()
+            self.assertMultiLineEqual(e.msg, """\
+yacc: Syntax error at line 2, Token(NAME_ID, 'Name')
+    Name: foo
+    ^""")
+
+    def test_invalid_keyword_comment(self):
+        """Check comments don't screw up line counting."""
+        data = """\
+# Some useless
+# comments
+Library:
+    Name: foo
+"""
+
+        try:
+            parse(data)
+            self.fail("parser did not raise expected ParseError")
+        except ParseError:
+            e = extract_exception()
+            self.assertMultiLineEqual(e.msg, """\
+yacc: Syntax error at line 4, Token(NAME_ID, 'Name')
+    Name: foo
+    ^""")

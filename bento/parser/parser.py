@@ -122,6 +122,10 @@ def p_error(p):
         msg = "yacc: Syntax error at line %d, Token(%s, %r)" % \
                 (p.lineno, p.type, p.value)
         if hasattr(p.lexer, "lexdata"):
-            data = p.lexer.lexdata.splitlines()
-            msg += "\n\t%r" % (data[p.lineno-1],)
+            raw_data = p.lexer.lexdata
+            data = raw_data.splitlines()
+            line_lexpos = sum(len(line) + 1 for line in data[:p.lineno-1])
+            inline_lexpos = p.lexpos - line_lexpos
+            msg += "\n%s" % (data[p.lineno-1],)
+            msg += "\n%s" % (" " * inline_lexpos + "^",)
         raise ParseError(msg, p)
