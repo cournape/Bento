@@ -128,8 +128,6 @@ def t_COLON(t):
     r":"
     return t
 
-_LOOKAHEAD_COLON = "(?=\s*:)"
-
 keywords_dict = dict((v, k) for k, v in keyword_fields)
 keywords_dict.update(keyword_misc)
 word_keywords = dict((k, v) for k, v in word_fields)
@@ -345,12 +343,12 @@ def t_insidewcommalistfirstline_WS(t):
     return t
 
 def t_insidewcommalistfirstline_WORD(t):
-    r'[^,^\#^\s\\\(\)]+(?=,)'
+    r'[^,\#^\s\\\(\)]+(?=,)'
     t_begin_inside_wcommalist(t)
     return t
 
 def t_insidewcommalistfirstline_WORD_STOP(t):
-    r'[^\#^,\s\\\(\)]+(?!,)'
+    r'[^\#,\s\\\(\)]+(?!,)'
     t.type = "WORD"
     t_end_inside_wcommalistfirstline(t)
     return t
@@ -399,12 +397,12 @@ def t_insidescommalistfirstline_WS(t):
     return t
 
 def t_insidescommalistfirstline_STRING(t):
-    r'[^,^\n^(\r\n)]+(?=,)'
+    r'[^,\n(\r\n)]+(?=,)'
     t_begin_inside_scommalist(t)
     return t
 
 def t_insidescommalistfirstline_STRING_STOP(t):
-    r'[^,^\n^(\r\n)]+(?!,)'
+    r'[^,\n(\r\n)]+(?!,)'
     t.type = "STRING"
     t_end_inside_scommalistfirstline(t)
     return t
@@ -473,8 +471,8 @@ def t_insidescommalistfirstline_error(t):
 # Filters
 #--------
 def detect_escaped(stream):
-    """Post process the given stream to generate escaped character for
-    characters preceded by the escaping token."""
+    """Post process the given stream (token iterator) to generate escaped
+    character for characters preceded by the escaping token."""
     for t in stream:
         is_escaping_char = ESCAPING_CHAR.get(t.type, False)
         if is_escaping_char:
@@ -489,6 +487,14 @@ def detect_escaped(stream):
         yield t
 
 def merge_escaped(stream):
+    """Merge tokens whose escaped attribute is True together.
+
+    Must be run after detect_escaped.
+
+    Parameters
+    ----------
+    stream: iterator
+    """
     stream = Peeker(stream, EOF)
     queue = []
 
@@ -527,8 +533,14 @@ def merge_escaped(stream):
                 yield t
             return
 
-def filter_ws_and_newline(it):
-    for item in it:
+def filter_ws_and_newline(stream):
+    """Remove NEWLINE and WS tokens from the stream.
+
+    Parameters
+    ----------
+    stream: iterator
+        iterator of tokens."""
+    for item in stream:
         if item.type not in ["NEWLINE", "WS"]:
             yield item
 
@@ -547,6 +559,7 @@ def remove_lines_indent(s, indent=None):
         return s
 
 def post_process_string(it):
+    """Remove spurious spacing from *MULTILINE_STRING tokens."""
     it = BackwardGenerator(it)
     for token in it:
         if token.type == "BLOCK_MULTILINES_STRING":
