@@ -26,7 +26,6 @@ word_fields = [
     ("PATH_ID", r"Path"),
     ("FUNCTION_ID", r"Function"),
     ("LIBRARY_ID", r"Library"),
-    ("LICENSE_ID", r"License"),
     ("MAINTAINER_EMAIL_ID", r"MaintainerEmail"),
     ("MODULE_ID", r"Module"),
     ("NAME_ID", r"Name"),
@@ -39,6 +38,7 @@ word_fields = [
 
 line_fields = [
     ("AUTHOR_ID", r"Author"),
+    ("LICENSE_ID", r"License"),
     ("MAINTAINER_ID", r"Maintainer"),
     ("SUMMARY_ID", r"Summary"),
 ]

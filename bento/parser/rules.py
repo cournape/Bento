@@ -112,7 +112,7 @@ def p_meta_maintainer_email_stmt(p):
     p[0] = Node("maintainer_email", value=p[3])
 
 def p_meta_license_stmt(p):
-    """meta_license_stmt : LICENSE_ID COLON WORD
+    """meta_license_stmt : LICENSE_ID COLON STRING
     """
     p[0] = Node("license", value=p[3])
 

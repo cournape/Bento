@@ -884,3 +884,12 @@ ExtraSourceFiles:
 
         ref_str = "EXTRA_SOURCE_FILES_ID COLON INDENT WORD DEDENT"
         self._test(data, split(ref_str))
+
+class TestMeta(TestLexer):
+    def test_license(self):
+        data = """\
+License: PSF or  ZPL
+"""
+
+        ref_str = "LICENSE_ID COLON STRING"
+        self._test(data, split(ref_str))
