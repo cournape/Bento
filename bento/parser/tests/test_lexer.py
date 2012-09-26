@@ -1,3 +1,6 @@
+from bento.errors \
+    import \
+        ParseError
 from bento.utils.utils \
     import \
         extract_exception, is_string
@@ -893,3 +896,21 @@ License: PSF or  ZPL
 
         ref_str = "LICENSE_ID COLON STRING"
         self._test(data, split(ref_str))
+
+class TestErrorHandling(TestLexer):
+    def test_multiline_string_count(self):
+        data = """\
+Description: hey
+    how are
+        you
+        doing ?
+NName: foo
+"""
+
+        self.lexer.input(data)
+        try:
+            list(self.lexer)
+            self.fail("lexer did not raise expected ParseError")
+        except ParseError:
+            e = extract_exception()
+            self.assertEqual(e.token.lexer.lineno, 5, "Invalid line number: %d" % e.token.lexer.lineno)

@@ -9,7 +9,7 @@ from bento.errors \
         ParseError, InternalBentoError
 from bento.parser.utils \
     import \
-        Peeker, BackwardGenerator
+        Peeker, BackwardGenerator, count_lines
 
 import six
 
@@ -314,6 +314,7 @@ t_insidemstring_NEWLINE.__doc__ = t_NEWLINE.__doc__
 
 def t_insidemstring_MULTILINES_STRING(t):
     r'.+((\n[ ]+.+$)|(\n^[ ]*$))*'
+    t.lexer.lineno += count_lines(t.value) - 1
     t_end_inside_mstringnotcontinued(t)
     return t
 
