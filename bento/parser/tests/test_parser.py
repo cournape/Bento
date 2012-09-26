@@ -46,6 +46,15 @@ Node(type='stmt_list'):
 
         self._test(data, expected)
 
+    def test_recurse(self):
+        data = "Recurse: foo, bar"
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='subento', value=['foo', 'bar'])\
+"""
+
+        self._test(data, expected)
+
     def test_meta_summary(self):
         data = "Summary: a few words of description."
         expected = """\

@@ -61,6 +61,7 @@ comma_word_fields = [
     ("META_TEMPLATE_FILES_ID", r"MetaTemplateFiles"),
     ("MODULES_ID", r"Modules"),
     ("PACKAGES_ID", r"Packages"),
+    ("RECURSE_ID", r"Recurse"),
     ("SOURCES_ID", r"Sources"),
     ("USE_BACKENDS_ID", r"UseBackends"),
 ]
