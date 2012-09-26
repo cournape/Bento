@@ -98,3 +98,6 @@ def print_tokens_simple(lexer):
         if not tok:
             break
         print(tok)
+
+def count_lines(s):
+    return len(s.splitlines())

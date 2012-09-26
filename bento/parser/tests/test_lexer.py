@@ -1,13 +1,16 @@
-from unittest \
+from bento.errors \
     import \
-        TestCase
-
+        ParseError
 from bento.utils.utils \
     import \
         extract_exception, is_string
 from bento.parser.lexer \
     import \
-        MyLexer, indent_generator, post_process
+        BentoLexer
+
+from unittest \
+    import \
+        TestCase
 
 def split(s):
     ret = []
@@ -17,7 +20,7 @@ def split(s):
 
 class TestLexer(TestCase):
     def setUp(self):
-        self.lexer = MyLexer()
+        self.lexer = BentoLexer()
 
     def _test(self, data, ref):
         self.lexer.input(data)
@@ -47,18 +50,18 @@ class TestLexer(TestCase):
 
     def _get_tokens(self, data):
         self.lexer.input(data)
-        return [t for t in self.lexer.token_stream]
+        return list(self.lexer)
 
 # Test tokenizer stage before indentation generation
 class TestLexerStageOne(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage="raw")
+        self.lexer = BentoLexer()
 
     def test_single_line(self):
         data = """\
 Name: yo
 """
-        ref = ["WORD", "COLON", "WS", "WORD", "NEWLINE"]
+        ref = ["NAME_ID", "COLON", "WORD"]
         self._test(data, ref)
 
     def test_two_lines(self):
@@ -66,8 +69,8 @@ Name: yo
 Name: yo
 Summary: a brief summary
 """
-        ref = ["WORD", "COLON", "WS", "WORD", "NEWLINE",
-               "WORD", "COLON", "WS", "WORD", "WS", "WORD", "WS", "WORD", "NEWLINE"]
+        ref = ["NAME_ID", "COLON", "WORD",
+               "SUMMARY_ID", "COLON", "STRING"]
         self._test(data, ref)
 
     def test_tab(self):
@@ -79,7 +82,7 @@ Library:
 
 class TestLexerStageTwo(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage="escape_detected")
+        self.lexer = BentoLexer()
 
     def test_simple(self):
         data = "yoyo"
@@ -93,22 +96,19 @@ class TestLexerStageTwo(TestLexer):
 
     def test_simple_escape(self):
         data = "yoyo\ "
-        ref = "WORD WS"
+        ref = "WORD"
         self._test(data, ref)
 
         tokens = self._get_tokens(data)
-        self.assertEqual(tokens[0].escaped, False)
-        self.assertEqual(tokens[1].escaped, True)
+        self.assertEqual(tokens[0].value, "yoyo ")
 
     def test_double_escape(self):
         data = "yoyo\\\\ "
-        ref = "WORD BACKSLASH WS"
+        ref = "WORD"
         self._test(data, ref)
 
         tokens = self._get_tokens(data)
-        self.assertEqual(tokens[0].escaped, False)
-        self.assertEqual(tokens[1].escaped, True)
-        self.assertEqual(tokens[2].escaped, False)
+        self.assertEqual(tokens[0].value, "yoyo\\")
 
     def test_wrong_escape(self):
         data = "yoyo\\"
@@ -118,7 +118,7 @@ class TestLexerStageTwo(TestLexer):
 
 class TestLexerStageThree(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage="escape_merged")
+        self.lexer = BentoLexer()
 
     def test_simple(self):
         data = "yoyo"
@@ -164,13 +164,13 @@ class TestLexerStageThree(TestLexer):
 
 class TestLexerStageFour(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage="indent_generated")
+        self.lexer = BentoLexer()
 
     def test_single_line(self):
         data = """\
 Name: yo
 """
-        ref = ["WORD", "COLON", "WS", "WORD", "NEWLINE"]
+        ref = ["NAME_ID", "COLON", "WORD"]
         self._test(data, ref)
 
     def test_two_lines(self):
@@ -178,8 +178,8 @@ Name: yo
 Name: yo
 Summary: a brief summary
 """
-        ref = ["WORD", "COLON", "WS", "WORD", "NEWLINE",
-               "WORD", "COLON", "WS", "WORD", "WS", "WORD", "WS", "WORD", "NEWLINE"]
+        ref = ["NAME_ID", "COLON", "WORD",
+               "SUMMARY_ID", "COLON", "STRING"]
         self._test(data, ref)
 
     def test_simple_indent(self):
@@ -188,9 +188,7 @@ Packages:
     yo
 """
         ref = """\
-WORD COLON NEWLINE
-INDENT WORD NEWLINE
-DEDENT
+PACKAGES_ID COLON INDENT WORD DEDENT
 """
         self._test(data, ref)
 
@@ -201,10 +199,10 @@ Packages:
     yeah
 """
         ref = """\
-WORD COLON NEWLINE
+PACKAGES_ID COLON
 INDENT
-WORD COMMA NEWLINE
-WORD NEWLINE
+WORD COMMA
+WORD
 DEDENT"""
         self._test(data, ref)
 
@@ -217,12 +215,7 @@ Description:
     and then more
 """
         ref = """\
-WORD COLON NEWLINE
-INDENT
-WORD NEWLINE
-WORD NEWLINE
-WORD WS WORD WS WORD NEWLINE
-DEDENT
+DESCRIPTION_ID COLON INDENT MULTILINES_STRING DEDENT
 """
         self._test(data, ref)
 
@@ -233,12 +226,7 @@ Description:
      words
 """
         ref = """\
-WORD COLON NEWLINE
-INDENT
-WORD NEWLINE
-INDENT
-WORD NEWLINE
-DEDENT DEDENT
+DESCRIPTION_ID COLON INDENT MULTILINES_STRING DEDENT
 """
         self._test(data, ref)
 
@@ -249,9 +237,8 @@ Packages:
 Name: words
 """
         ref = """\
-WORD COLON NEWLINE
-INDENT WORD NEWLINE DEDENT
-WORD COLON WS WORD NEWLINE
+PACKAGES_ID COLON INDENT WORD DEDENT
+NAME_ID COLON WORD
 """
         self._test(data, ref)
 
@@ -266,17 +253,18 @@ Library:
     Extension: _bar
 """
         ref = """\
-WORD COLON NEWLINE
+LIBRARY_ID COLON
 INDENT
-WORD COLON NEWLINE
+PACKAGES_ID COLON
 INDENT
-WORD NEWLINE
-WORD NEWLINE
+WORD
+WORD
 DEDENT
-WORD COLON NEWLINE
-INDENT WORD NEWLINE
+MODULES_ID COLON
+INDENT
+WORD
 DEDENT
-WORD COLON WS WORD NEWLINE
+EXTENSION_ID COLON WORD
 DEDENT
 """
         self._test(data, ref)
@@ -294,18 +282,19 @@ Extension: yeah
 Extension: yeah2
 """
         ref = """\
-WORD COLON NEWLINE
+LIBRARY_ID COLON
 INDENT
-WORD COLON NEWLINE
-INDENT WORD NEWLINE
-WORD NEWLINE
+PACKAGES_ID COLON
+INDENT
+WORD WORD
 DEDENT
-WORD COLON NEWLINE
-INDENT WORD NEWLINE
-WORD NEWLINE
+MODULES_ID COLON
+INDENT
+WORD
+WORD
 DEDENT DEDENT
-WORD COLON WS WORD NEWLINE
-WORD COLON WS WORD NEWLINE
+EXTENSION_ID COLON WORD
+EXTENSION_ID COLON WORD
 """
         self._test(data, ref)
 
@@ -316,19 +305,18 @@ Description: some
       .
 """
         ref = """\
-WORD COLON WS WORD NEWLINE
-INDENT WORD WS WORD WS WORD NEWLINE
-INDENT WORD NEWLINE
-DEDENT DEDENT
+DESCRIPTION_ID COLON
+MULTILINES_STRING
 """
         self._test(data, ref)
         tokens = self._get_tokens(data)
 
-        indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
-        self.assertEqual(indents[0].value, 4)
-        self.assertEqual(indents[1].value, 6)
-        self.assertEqual(indents[2].value, 6)
-        self.assertEqual(indents[3].value, 4)
+        string = tokens[-1].value
+        self.assertEqual(string, """\
+some
+words and whatnot
+  .\
+""")
 
     def test_indent_value2(self):
         data = """\
@@ -338,24 +326,41 @@ Description: some
 Name: yo
 """
         ref = """\
-WORD COLON WS WORD NEWLINE
-INDENT WORD WS WORD WS WORD NEWLINE
-INDENT WORD NEWLINE
-DEDENT DEDENT
-WORD COLON WS WORD NEWLINE
+DESCRIPTION_ID COLON MULTILINES_STRING
+NAME_ID COLON WORD
 """
         self._test(data, ref)
-        tokens = self._get_tokens(data)
 
-        indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
-        self.assertEqual(indents[0].value, 4)
-        self.assertEqual(indents[1].value, 6)
-        self.assertEqual(indents[2].value, 6)
-        self.assertEqual(indents[3].value, 4)
+class TestMultilineString(TestLexer):
+    def test_description_in_flag(self):
+        data = """\
+Flag: foo
+    Default: true
+    Description: yo mama
+
+Library:
+    if not flag(foo):
+        Modules: foo.py
+"""
+        ref = """\
+FLAG_ID COLON WORD
+INDENT
+DEFAULT_ID COLON WORD
+DESCRIPTION_ID COLON STRING
+DEDENT
+LIBRARY_ID COLON
+INDENT
+IF NOT_OP FLAG_OP LPAR WORD RPAR COLON
+INDENT
+MODULES_ID COLON WORD
+DEDENT
+DEDENT
+"""
+        self._test(data, ref)
 
 class TestLexerStageFive(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage='post_processed')
+        self.lexer = BentoLexer()
 
     def test_single_line(self):
         data = """\
@@ -370,8 +375,10 @@ Name: yo
 Summary: a brief summary
 """
         ref = ["NAME_ID", "COLON", "WORD",
-               "SUMMARY_ID", "COLON", "WS", "WORD", "WS", "WORD", "WS", "WORD"]
+               "SUMMARY_ID", "COLON", "STRING"]
         self._test(data, ref)
+        tokens = self._get_tokens(data)
+        self.assertEqual(tokens[-1].value, "a brief summary")
 
     def test_simple_indent(self):
         data = """\
@@ -403,11 +410,7 @@ Description:
 
     and then more
 """
-        ref = ["DESCRIPTION_ID", "COLON", "NEWLINE",
-               "INDENT", "WORD", "NEWLINE",
-               "WORD", "NEWLINE",
-               "WORD", "WS", "WORD", "WS", "WORD",
-               "DEDENT"]
+        ref = ["DESCRIPTION_ID", "COLON", "INDENT", "MULTILINES_STRING", "DEDENT"]
         self._test(data, ref)
 
     def test_double_indentation(self):
@@ -416,11 +419,16 @@ Description:
     some
      words
 """
-        ref = ["DESCRIPTION_ID", "COLON", "NEWLINE",
-               "INDENT", "WORD", "NEWLINE",
-               "INDENT", "WORD",
-               "DEDENT", "DEDENT"]
+        ref = ["DESCRIPTION_ID", "COLON",
+               "INDENT", "MULTILINES_STRING",
+               "DEDENT"]
         self._test(data, ref)
+
+        tokens = self._get_tokens(data)
+        string = tokens[-2].value
+        self.assertEqual(string, """\
+some
+ words""")
 
     def test_simple_dedent(self):
         data = """\
@@ -489,18 +497,15 @@ Description: some
     words and whatnot
       .
 """
-        ref = ["DESCRIPTION_ID", "COLON", "WS", "WORD", "NEWLINE",
-               "INDENT", "WORD", "WS", "WORD", "WS", "WORD", "NEWLINE",
-               "INDENT", "WORD",
-               "DEDENT", "DEDENT"]
+        ref = ["DESCRIPTION_ID", "COLON", "MULTILINES_STRING"]
         self._test(data, ref)
-        tokens = self._get_tokens(data,)
 
-        indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
-        self.assertEqual(indents[0].value, 4)
-        self.assertEqual(indents[1].value, 6)
-        self.assertEqual(indents[2].value, 6)
-        self.assertEqual(indents[3].value, 4)
+        tokens = self._get_tokens(data,)
+        string = tokens[-1].value
+        self.assertEqual(string, """\
+some
+words and whatnot
+  .""")
 
     def test_indent_value2(self):
         data = """\
@@ -509,19 +514,17 @@ Description: some
       .
 Name: yo
 """
-        ref = ["DESCRIPTION_ID", "COLON", "WS", "WORD", "NEWLINE",
-               "INDENT", "WORD", "WS", "WORD", "WS", "WORD", "NEWLINE",
-               "INDENT", "WORD",
-               "DEDENT", "DEDENT",
+        ref = ["DESCRIPTION_ID", "COLON", "MULTILINES_STRING",
                "NAME_ID", "COLON", "WORD"]
         self._test(data, ref)
-        tokens = self._get_tokens(data,)
 
-        indents = [t for t in tokens if t.type in ["INDENT", "DEDENT"]]
-        self.assertEqual(indents[0].value, 4)
-        self.assertEqual(indents[1].value, 6)
-        self.assertEqual(indents[2].value, 6)
-        self.assertEqual(indents[3].value, 4)
+        tokens = self._get_tokens(data,)
+        string = tokens[-4].value
+        self.assertEqual(string, """\
+some
+words and whatnot
+  .""")
+
 
     def test_comma(self):
         data = """\
@@ -578,24 +581,23 @@ Description:
     other projects.
 '''
         ref_str = """\
-DESCRIPTION_ID COLON NEWLINE
+DESCRIPTION_ID COLON
 INDENT
-    WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS
-    WORD WS WORD WS WORD WS WORD
-NEWLINE
-    WORD WS WORD WS WORD WS WORD WS LPAR WORD WS WORD WS WORD WS WORD WS WORD
-NEWLINE
-    WORD WS WORD WS WORD RPAR COMMA WS WORD WS WORD WS WORD WS WORD
-NEWLINE
-    WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS
-    WORD COMMA
-NEWLINE
-    WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS
-    WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD NEWLINE WORD WS WORD
+MULTILINES_STRING
 DEDENT
 """
 
         self._test(data, split(ref_str))
+
+        tokens = self._get_tokens(data,)
+        string = tokens[-2].value
+        self.assertEqual(string, """\
+Sphinx is a tool that makes it easy to create intelligent and beautiful
+documentation for Python projects (or other documents consisting of
+multiple reStructuredText sources), written by Georg Brandl.
+It was originally created to translate the new Python documentation,
+but has now been cleaned up in the hope that it will be useful to many
+other projects.""")
 
         data = """
 Description:
@@ -604,14 +606,9 @@ Description:
     parsing and translating suite, the Docutils.
 """
         ref_str = """\
-DESCRIPTION_ID COLON NEWLINE
+DESCRIPTION_ID COLON
 INDENT
-    WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD COMMA WS WORD WS WORD
-    WS WORD WS WORD WS WORD
-NEWLINE
-    WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD
-NEWLINE
-    WORD WS WORD WS WORD WS WORD COMMA WS WORD WS WORD
+MULTILINES_STRING
 DEDENT
 """
         self._test(data, split(ref_str))
@@ -623,13 +620,9 @@ Description:
 """
 
         ref_str = """\
-DESCRIPTION_ID COLON NEWLINE
+DESCRIPTION_ID COLON
 INDENT
-    WORD WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD COMMA WS WORD WS WORD
-    WS WORD
-NEWLINE
-    WORD WS WORD WS WORD COMMA WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD
-    WS WORD WS WORD WS WORD WS WORD WS WORD WS WORD COLON
+MULTILINES_STRING
 DEDENT
 """
 
@@ -642,49 +635,113 @@ Description:
 """
 
         ref_str = """\
-DESCRIPTION_ID COLON NEWLINE
+DESCRIPTION_ID COLON
 INDENT
-    WORD WS WORD WS WORD COLON WS WORD WS LPAR WORD WS WORD WS WORD WS WORD RPAR
-    COMMA WS WORD WS WORD WS WORD WS WORD COMMA
-NEWLINE
-    INDENT WORD WS WORD WS WORD WS WORD
-DEDENT
+MULTILINES_STRING
 DEDENT
 """
 
         self._test(data, split(ref_str))
 
-#    def test_rest_literal2(self):
-#        data = '''\
-#Description:
-#    Sphinx is a tool that makes it easy to create intelligent and beautiful
-#    documentation for Python projects (or other documents consisting of
-#    multiple reStructuredText sources), written by Georg Brandl.
-#    It was originally created to translate the new Python documentation,
-#    but has now been cleaned up in the hope that it will be useful to many
-#    other projects.
-#
-#    Sphinx uses reStructuredText as its markup language, and many of its strengths
-#    come from the power and straightforwardness of reStructuredText and its
-#    parsing and translating suite, the Docutils.
-#
-#    Although it is still under constant development, the following features
-#    are already present, work fine and can be seen "in action" in the Python docs:
-#
-#    * Output formats: HTML (including Windows HTML Help), plain text and LaTeX,
-#      for printable PDF versions
-#    * Extensive cross-references: semantic markup and automatic links
-#      for functions, classes, glossary terms and similar pieces of information
-#    * Hierarchical structure: easy definition of a document tree, with automatic
-#      links to siblings, parents and children
-#    * Automatic indices: general index as well as a module index
-#    * Code handling: automatic highlighting using the Pygments highlighter
-#    * Various extensions are available, e.g. for automatic testing of snippets
-#      and inclusion of appropriately formatted docstrings.
-#
-#    A development egg can be found `here
-#    <http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_.
-#'''
+    def test_colon_in_word(self):
+        data = "Url: http://foo.com"
+
+        ref_str = "URL_ID COLON WORD"
+
+        self._test(data, ref_str)
+
+    def test_rest_literal2(self):
+        self.maxDiff = None
+
+        data = '''\
+Description:
+    Sphinx is a tool that makes it easy to create intelligent and beautiful
+    documentation for Python projects (or other documents consisting of
+    multiple reStructuredText sources), written by Georg Brandl.
+    It was originally created to translate the new Python documentation,
+    but has now been cleaned up in the hope that it will be useful to many
+    other projects.
+
+    Sphinx uses reStructuredText as its markup language, and many of its strengths
+    come from the power and straightforwardness of reStructuredText and its
+    parsing and translating suite, the Docutils.
+
+    Although it is still under constant development, the following features
+    are already present, work fine and can be seen "in action" in the Python docs:
+
+    * Output formats: HTML (including Windows HTML Help), plain text and LaTeX,
+      for printable PDF versions
+    * Extensive cross-references: semantic markup and automatic links
+      for functions, classes, glossary terms and similar pieces of information
+    * Hierarchical structure: easy definition of a document tree, with automatic
+      links to siblings, parents and children
+    * Automatic indices: general index as well as a module index
+    * Code handling: automatic highlighting using the Pygments highlighter
+    * Various extensions are available, e.g. for automatic testing of snippets
+      and inclusion of appropriately formatted docstrings.
+
+    A development egg can be found `here
+    <http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_.
+'''
+        ref_str = """\
+DESCRIPTION_ID COLON INDENT
+MULTILINES_STRING
+DEDENT
+"""
+        self._test(data, split(ref_str))
+
+        tokens = self._get_tokens(data)
+        string = tokens[-2].value
+        self.assertMultiLineEqual(string, """\
+Sphinx is a tool that makes it easy to create intelligent and beautiful
+documentation for Python projects (or other documents consisting of
+multiple reStructuredText sources), written by Georg Brandl.
+It was originally created to translate the new Python documentation,
+but has now been cleaned up in the hope that it will be useful to many
+other projects.
+
+Sphinx uses reStructuredText as its markup language, and many of its strengths
+come from the power and straightforwardness of reStructuredText and its
+parsing and translating suite, the Docutils.
+
+Although it is still under constant development, the following features
+are already present, work fine and can be seen "in action" in the Python docs:
+
+* Output formats: HTML (including Windows HTML Help), plain text and LaTeX,
+  for printable PDF versions
+* Extensive cross-references: semantic markup and automatic links
+  for functions, classes, glossary terms and similar pieces of information
+* Hierarchical structure: easy definition of a document tree, with automatic
+  links to siblings, parents and children
+* Automatic indices: general index as well as a module index
+* Code handling: automatic highlighting using the Pygments highlighter
+* Various extensions are available, e.g. for automatic testing of snippets
+  and inclusion of appropriately formatted docstrings.
+
+A development egg can be found `here
+<http://bitbucket.org/birkenfeld/sphinx/get/tip.gz#egg=Sphinx-dev>`_.""")
+
+    def test_space_no_space(self):
+        """Test whitespace-only lines are handled correctly."""
+        ws = " " * 4
+        data = """\
+Description:
+    a few words
+%s
+    and some more
+
+    and still more.
+
+""" % ws
+
+        ref_str = "DESCRIPTION_ID COLON INDENT MULTILINES_STRING DEDENT"
+        self._test(data, ref_str)
+
+        tokens = self._get_tokens(data)
+        string = tokens[-2].value
+
+        ref_str = "a few words\n\nand some more\n\nand still more.\n"
+        self.assertMultiLineEqual(string, ref_str)
 
     def test_ref_literal2(self):
         # Test transition from SCANING_MULTILINE_FIELD
@@ -693,7 +750,7 @@ Description: a summary
 Name: yo
 """
         ref_str = """\
-DESCRIPTION_ID COLON WS WORD WS WORD
+DESCRIPTION_ID COLON MULTILINES_STRING
 NAME_ID COLON WORD
 """
         self._test(data, split(ref_str))
@@ -708,7 +765,7 @@ Path: path
         ref_str = """\
 PATH_ID COLON WORD
 INDENT
-DESCRIPTION_ID COLON WS WORD
+DESCRIPTION_ID COLON STRING
 NAME_ID COLON WORD
 DEDENT
 """
@@ -726,11 +783,11 @@ Path: path
         ref_str = """\
 CLASSIFIERS_ID COLON
 INDENT
-WORD
+STRING
 DEDENT
 PATH_ID COLON WORD
 INDENT
-DESCRIPTION_ID COLON WS WORD
+DESCRIPTION_ID COLON STRING
 NAME_ID COLON WORD
 DEDENT
 """
@@ -738,7 +795,7 @@ DEDENT
 
 class TestNewLines(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage="post_processed")
+        self.lexer = BentoLexer()
 
     # Test we throw away NEWLINES except in literals
     def test_lastnewline(self):
@@ -765,7 +822,7 @@ NAME_ID COLON WORD
 Summary: a summary
 """
         ref_str = """\
-SUMMARY_ID COLON WS WORD WS WORD
+SUMMARY_ID COLON STRING
 """
         self._test(data, split(ref_str))
 
@@ -778,13 +835,17 @@ Description: Sphinx
 """
 
         ref_str = """\
-DESCRIPTION_ID COLON WS WORD NEWLINE
-INDENT WORD NEWLINE
-INDENT WORD NEWLINE
-DEDENT WORD
-DEDENT
+DESCRIPTION_ID COLON MULTILINES_STRING
 """
         self._test(data, split(ref_str))
+
+        tokens = self._get_tokens(data)
+        string = tokens[-1].value
+        self.assertEqual(string, """\
+Sphinx
+is
+    a
+tool""")
 
     def test_single_line(self):
         data = "Name: word"
@@ -794,7 +855,7 @@ DEDENT
 
 class TestComment(TestLexer):
     def setUp(self):
-        self.lexer = MyLexer(stage="post_processed")
+        self.lexer = BentoLexer()
 
     def test_simple(self):
         data = """\
@@ -813,6 +874,10 @@ Name: foo # inline comment
         ref_str = "NAME_ID COLON WORD"
         self._test(data, split(ref_str))
 
+        tokens = self._get_tokens(data)
+        name = tokens[-1].value
+        self.assertEqual(name, "foo")
+
     def test_simple_inline2(self):
         data = """\
 ExtraSourceFiles:
@@ -822,3 +887,30 @@ ExtraSourceFiles:
 
         ref_str = "EXTRA_SOURCE_FILES_ID COLON INDENT WORD DEDENT"
         self._test(data, split(ref_str))
+
+class TestMeta(TestLexer):
+    def test_license(self):
+        data = """\
+License: PSF or  ZPL
+"""
+
+        ref_str = "LICENSE_ID COLON STRING"
+        self._test(data, split(ref_str))
+
+class TestErrorHandling(TestLexer):
+    def test_multiline_string_count(self):
+        data = """\
+Description: hey
+    how are
+        you
+        doing ?
+NName: foo
+"""
+
+        self.lexer.input(data)
+        try:
+            list(self.lexer)
+            self.fail("lexer did not raise expected ParseError")
+        except ParseError:
+            e = extract_exception()
+            self.assertEqual(e.token.lexer.lineno, 5, "Invalid line number: %d" % e.token.lexer.lineno)

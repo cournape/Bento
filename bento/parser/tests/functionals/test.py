@@ -38,3 +38,6 @@ class TestPackages(unittest.TestCase):
 
     def test_jinja2(self):
         self._test_functional("jinja2")
+
+    def test_distribute(self):
+        self._test_functional("distribute")

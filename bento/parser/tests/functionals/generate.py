@@ -1,5 +1,7 @@
 import sys
 
+import os.path as op
+
 from pprint \
     import \
         pprint
@@ -15,8 +17,9 @@ if __name__ == "__main__":
     else:
         raise ValueError("Usage: generate foo.info")
 
-    base, ext = arg.split(".")
-    py_module  = base + ".py"
+    base, _ = op.splitext(op.basename(arg))
+    base = "data_" + base
+    py_module  = op.join(op.dirname(arg), base + ".py")
     p = parse(data)
     dispatcher = Dispatcher()
     res = ast_walk(p, dispatcher)

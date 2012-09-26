@@ -39,7 +39,7 @@ class TestSimpleMeta(unittest.TestCase):
 
     def test_empty(self):
         data = ""
-        self.assertEqual(parse_and_analyse(data), {})
+        self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_name(self):
         data = """\
@@ -158,8 +158,7 @@ Name: foo
 simple
     description
         on
-%s
-""" % last_indent
+"""
         self.assertEqual(parse_and_analyse(data), self.ref)
 
     def test_description_from_file(self):

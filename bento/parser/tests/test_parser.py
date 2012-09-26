@@ -2,16 +2,22 @@ import sys
 
 from six.moves import cStringIO
 
-from unittest \
+from bento.errors \
     import \
-        TestCase
-
+        ParseError
+from bento.utils.utils \
+    import \
+        extract_exception
 from bento.parser.nodes \
     import \
         ast_pprint
 from bento.parser.parser \
     import \
         parse
+
+from unittest \
+    import \
+        TestCase
 
 class _TestGrammar(TestCase):
     def _test(self, data, expected):
@@ -46,14 +52,20 @@ Node(type='stmt_list'):
 
         self._test(data, expected)
 
+    def test_recurse(self):
+        data = "Recurse: foo, bar"
+        expected = """\
+Node(type='stmt_list'):
+    Node(type='subento', value=['foo', 'bar'])\
+"""
+
+        self._test(data, expected)
+
     def test_meta_summary(self):
         data = "Summary: a few words of description."
         expected = """\
 Node(type='stmt_list'):
-    Node(type='summary', value=[Node('literal'), """ \
-        """Node('literal'), Node('literal'), Node('literal'), """ \
-        """Node('literal'), Node('literal'), Node('literal'), """ \
-        """Node('literal'), Node('literal')])"""
+    Node(type='summary', value='a few words of description.')"""
 
         self._test(data, expected)
 
@@ -61,8 +73,7 @@ Node(type='stmt_list'):
         data = "Author: John Doe"
         expected = """\
 Node(type='stmt_list'):
-    Node(type='author', """\
-    "value=[Node('literal'), Node('literal'), Node('literal')])"
+    Node(type='author', value='John Doe')"""
 
         self._test(data, expected)
 
@@ -86,8 +97,7 @@ Node(type='stmt_list'):
         data = "Maintainer: John Doe"
         expected = """\
 Node(type='stmt_list'):
-    Node(type='maintainer', """ \
-    "value=[Node('literal'), Node('literal'), Node('literal')])"
+    Node(type='maintainer', value='John Doe')"""
 
         self._test(data, expected)
 
@@ -170,20 +180,19 @@ Summary: yeah\
         expected = """\
 Node(type='stmt_list'):
     Node(type='name', value='yo')
-    Node(type='summary', value=[Node('literal')])\
-"""
+    Node(type='summary', value='yeah')"""
 
         self._test(data, expected)
 
     def test_empty(self):
         data = ""
-        expected = "Node(type='empty')"
+        expected = "Node(type='stmt_list')"
 
         self._test(data, expected)
 
     def test_newline(self):
         data = "\n"
-        expected = "Node(type='empty')"
+        expected = "Node(type='stmt_list')"
 
         self._test(data, expected)
 
@@ -191,7 +200,7 @@ Node(type='stmt_list'):
         data = "Description: some words."
         expected = """\
 Node(type='stmt_list'):
-    Node(type='description', value=[Node('literal'), Node('literal'), Node('literal')])"""
+    Node(type='description', value='some words.')"""
 
         self._test(data, expected)
 
@@ -201,8 +210,7 @@ Description:
     some words."""
         expected = """\
 Node(type='stmt_list'):
-    Node(type='description', value=[Node('multi_literal'), Node('multi_literal'), """ \
-        """Node('multi_literal')])"""
+    Node(type='description', value='some words.')"""
 
         self._test(data, expected)
 
@@ -213,8 +221,7 @@ Description:
     some words."""
         expected = """\
 Node(type='stmt_list'):
-    Node(type='description', value=[Node('multi_literal'), Node('multi_literal'), """ \
-        """Node('multi_literal')])"""
+    Node(type='description', value='some words.')"""
 
         self._test(data, expected)
 
@@ -226,15 +233,14 @@ Description:
             words
     ."""
 
+        description = """\
+some
+    indented
+        words
+."""
         expected = """\
 Node(type='stmt_list'):
-    Node(type='description', value=[Node('multi_literal'), Node('newline'), """ \
-        """Node('indent'), """ \
-        """Node('multi_literal'), """ \
-        """Node('newline'), Node('indent'), """ \
-        """Node('multi_literal'), Node('newline'), """ \
-        """Node('dedent'), Node('dedent'), """ \
-        """Node('multi_literal')])"""
+    Node(type='description', value=%r)""" % description
 
         self._test(data, expected)
 
@@ -272,7 +278,7 @@ Node(type='stmt_list'):
         Node(type='flag_declaration', value='foo')
         Node(type='flag_stmts'):
             Node(type='flag_default', value='true')
-            Node(type='flag_description', value=[Node('literal'), Node('literal'), Node('literal')])
+            Node(type='flag_description', value='yo mama')
     Node(type='library'):
         Node(type='library_name', value='default')
         Node(type='library_stmts'):
@@ -429,7 +435,7 @@ Node(type='stmt_list'):
         Node(type='path_declaration', value='foo')
         Node(type='path_stmts'):
             Node(type='path_default', value='foo_default')
-            Node(type='path_description', value=[Node('literal')])"""
+            Node(type='path_description', value='foo_description')"""
 
         self._test(data, expected)
 
@@ -449,6 +455,42 @@ Node(type='stmt_list'):
             Node(type='conditional'):
                 Node(type='path_stmts'):
                     Node(type='path_default', value='foo_default')
-            Node(type='path_description', value=[Node('literal')])"""
+            Node(type='path_description', value='foo_description')"""
 
         self._test(data, expected)
+
+class TestErrorHandling(TestCase):
+    def test_invalid_keyword(self):
+        data = """\
+Library:
+    Name: foo
+"""
+
+        try:
+            parse(data)
+            self.fail("parser did not raise expected ParseError")
+        except ParseError:
+            e = extract_exception()
+            self.assertMultiLineEqual(e.msg, """\
+yacc: Syntax error at line 2, Token(NAME_ID, 'Name')
+    Name: foo
+    ^""")
+
+    def test_invalid_keyword_comment(self):
+        """Check comments don't screw up line counting."""
+        data = """\
+# Some useless
+# comments
+Library:
+    Name: foo
+"""
+
+        try:
+            parse(data)
+            self.fail("parser did not raise expected ParseError")
+        except ParseError:
+            e = extract_exception()
+            self.assertMultiLineEqual(e.msg, """\
+yacc: Syntax error at line 4, Token(NAME_ID, 'Name')
+    Name: foo
+    ^""")

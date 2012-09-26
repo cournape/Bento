@@ -47,9 +47,7 @@ class TestParseError(unittest.TestCase):
         text = """\
 NName: foo
 """
-        error_msg = """\
-yacc: Syntax error at line 1, Token\(WORD, 'NName'\)
-\t'NName: foo'"""
+        error_msg = "Unrecognized keyword: 'NName'"
         self.assertRaisesRegexp(ParseError, error_msg, lambda : PackageDescription.from_string(text))
 
     def test_simple_filename(self):
