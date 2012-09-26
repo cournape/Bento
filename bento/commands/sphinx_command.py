@@ -50,9 +50,11 @@ Usage:   bentomaker sphinx [OPTIONS]."""
 
     def can_run(self):
         try:
-            import sphinx
+            import sphinx.application
             return True
         except ImportError:
+            return False
+        except SyntaxError:
             return False
 
     def run(self, context):
