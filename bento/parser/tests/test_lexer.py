@@ -1,13 +1,13 @@
-from unittest2 \
-    import \
-        TestCase
-
 from bento.utils.utils \
     import \
         extract_exception, is_string
 from bento.parser.lexer \
     import \
         BentoLexer
+
+from unittest \
+    import \
+        TestCase
 
 def split(s):
     ret = []
