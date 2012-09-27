@@ -26,8 +26,6 @@ def setup(mode=None):
     mode: None/str
         'distutils' or 'setuptools' for now
     """
-    import traceback
-    traceback.print_stack()
     if mode is None:
         if "setuptools" in sys.modules:
             mode = "setuptools"
