@@ -1,3 +1,6 @@
+.. image:: https://secure.travis-ci.org/cournape/Bento.png
+    :alt: Travis CI Build Status
+
 Bento is an alternative to distutils-based packaging tools such as distutils,
 setuptools or distribute. Bento focus on reproducibility, extensibility and
 simplicity (in that order).
