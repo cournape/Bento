@@ -47,10 +47,6 @@ class TestCommand(Command):
     def run(self, ctx):
         pprint('BLUE', "Running test command....")
 
-        if sys.platform == "win32":
-            suffix = ".exe"
-        else:
-            suffix = ""
         p = ctx.options_context.parser
         o, a = p.parse_args(ctx.command_argv)
         if sys.version_info[:2] < (2, 5):
