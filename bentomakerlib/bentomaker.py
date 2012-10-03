@@ -451,8 +451,6 @@ def get_running_package(global_context, cached_package, bento_info):
     return cached_package.get_package(bento_info, flag_values)
 
 def run_cmd(global_context, cached_package, cmd_name, cmd_argv, run_node, top_node, build_node):
-    cmd = global_context.retrieve_command(cmd_name)
-
     # XXX: fix this special casing (commands which do not need a pkg instance)
     if cmd_name in ["help", "convert"]:
         global_context.run_command(cmd_name, cmd_argv, PackageDescription(), run_node)
