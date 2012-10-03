@@ -91,6 +91,7 @@ from bento.convert \
     import \
         ConvertCommand, DetectTypeCommand
 import bento.errors
+import bento.warnings
 
 from bentomakerlib.package_cache \
     import \
@@ -279,7 +280,7 @@ def _wrapped_main(global_context, popts, run_node, top_node, build_node):
 
     else:
         warnings.warn("No %r file in current directory - only generic options "
-                      "will be displayed" % BENTO_SCRIPT)
+                      "will be displayed" % BENTO_SCRIPT, bento.warnings.NoBentoInfoWarning)
         cached_package = None
         package_options = None
         mods = []
