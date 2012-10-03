@@ -6,6 +6,10 @@ Released on .
 Main features:
 
         - new build_msi command to build a MSI installer.
+        - fix examples
+        - revamped parser: comments should now be consistantly handled, and
+          parsing is significantly faster in most cases (from 30 % to several
+          times faster for large description strings).
 
 Fixed issues
 ------------
@@ -14,6 +18,7 @@ Internals
 ---------
 
         - InstalledPkgDescription renamed to BuildManifest.
+        - Test suite does not spill out unwanted output anymore
 
 Version 0.1
 ===========
