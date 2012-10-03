@@ -5,24 +5,6 @@ from bento.parser.nodes \
     import \
         Node
 
-def split_newline(s):
-    try:
-        ind = [i.type for i in s].index("newline")
-        return [s[:ind+1], s[ind+1:]]
-    except ValueError:
-        return [s]
-
-def split_newlines(s):
-    t = []
-    def _split_newlines(s):
-        sp = split_newline(s)
-        t.append(sp[0])
-        if len(sp) > 1 and sp[1]:
-            _split_newlines(sp[1])
-
-    _split_newlines(s)
-    return t
-
 # XXX: fix the str vs bool issue with flag variables
 _LIT_BOOL = {"true": True, "false": False, True: True, False: False}
 
