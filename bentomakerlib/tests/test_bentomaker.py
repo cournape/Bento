@@ -20,13 +20,15 @@ from bento.utils.utils \
 from bento.commands.contexts \
     import \
         GlobalContext
+from bento.testing.decorators \
+    import \
+         disable_missing_bento_warning
 from bento.testing.sub_test_case \
     import \
          SubprocessTestCase
 from bento.errors \
     import \
         UsageException, CommandExecutionFailure, ConvertionError, ParseError
-
 
 import bentomakerlib.bentomaker
 import bento.commands.build_yaku
@@ -43,7 +45,6 @@ if sys.platform == "darwin":
     import bento.commands.build_mpkg
 # FIXME: nose is broken - needed to make it happy
 # FIXME: nose is broken - needed to make it happy
-
 
 class Common(unittest.TestCase):
     def setUp(self):
@@ -66,9 +67,11 @@ class Common(unittest.TestCase):
         super(Common, self).tearDown()
 
 class TestSpecialCommands(Common):
+    @disable_missing_bento_warning
     def test_help_globals(self):
         main(["help", "globals"])
 
+    @disable_missing_bento_warning
     def test_help_commands(self):
         main(["help", "commands"])
 
@@ -81,6 +84,7 @@ class TestSpecialCommands(Common):
     def test_usage(self):
         main(["--help"])
 
+    @disable_missing_bento_warning
     def test_command_help(self):
         main(["configure", "--help"])
 
@@ -88,6 +92,7 @@ class TestMain(Common):
     def test_no_bento(self):
         main([])
 
+    @disable_missing_bento_warning
     def test_help_non_existing_command(self):
         self.assertRaises(UsageException, lambda: main(["help", "floupi"]))
 
