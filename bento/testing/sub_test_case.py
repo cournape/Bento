@@ -42,7 +42,7 @@ def _execute_test(module_name, class_name, function_name):
     if sys.platform == "win32":
         env = copy.deepcopy(os.environ)
     else:
-        env = {}
+        env = {"PYTHONPATH": os.environ["PYTHONPATH"]}
     env["SUBTESTPIPE"] = "1"
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             stdin=subprocess.PIPE, env=env)
