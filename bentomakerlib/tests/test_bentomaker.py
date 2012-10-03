@@ -5,6 +5,7 @@ import shutil
 
 import os.path as op
 
+import mock
 import multiprocessing
 
 from bento.compat.api.moves \
@@ -272,6 +273,7 @@ def raise_function(klass):
     raise klass()
 
 class TestBentomakerError(Common):
+    @mock.patch("bentomakerlib.bentomaker.pprint", lambda color, s, fout=None: None)
     def test_simple(self):
         errors = (
             (UsageException, 2),
