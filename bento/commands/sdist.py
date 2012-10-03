@@ -8,6 +8,13 @@ import bento.errors
 from bento.commands.core \
     import \
         Command, Option
+from bento.conv \
+    import \
+        write_pkg_info
+
+from six.moves \
+    import \
+        StringIO
 
 def archive_basename(pkg):
     if pkg.version:
@@ -76,6 +83,12 @@ Usage:   bentomaker sdist [OPTIONS]."""
             if output != o.output_file:
                 raise bento.errors.BentoError("Invalid output file: should not contain any directory")
             archive_name = output
+
+        s = StringIO()
+        write_pkg_info(ctx.pkg, s)
+        n = ctx.build_node.make_node("PKG_INFO")
+        n.write(s.getvalue())
+        ctx.register_source_node(n, "PKG_INFO")
 
         # XXX: find a better way to pass archive name from other commands (used
         # by distcheck ATM)
