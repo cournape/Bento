@@ -415,7 +415,7 @@ class BuildContext(ContextWithBuildDirectory):
                         if node != target_node:
                             _install_node(category, node, from_node, target_dir)
 
-class SdistContext(CmdContext):
+class SdistContext(ContextWithBuildDirectory):
     def __init__(self, global_context, cmd_args, option_context, pkg, run_node):
         super(SdistContext, self).__init__(global_context, cmd_args, option_context, pkg, run_node)
         self._meta = {}

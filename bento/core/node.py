@@ -14,7 +14,7 @@ import os.path as op
 
 from bento.compat.api \
     import \
-        rename
+        rename, NamedTemporaryFile
 from bento.utils.utils \
     import \
         is_string, extract_exception
