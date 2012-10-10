@@ -34,7 +34,8 @@ class egg_info(old_egg_info):
         egg_info_dir = op.join(self.egg_base, "%s.egg-info" % dist.pkg.name)
         try:
             os.makedirs(egg_info_dir)
-        except OSError, e:
+        except OSError:
+            e = extract_exception()
             if e.errno != 17:
                 raise
         for filename, cnt in egg_info.iter_meta(dist.build_node):
