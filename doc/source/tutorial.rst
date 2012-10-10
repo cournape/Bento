@@ -22,7 +22,7 @@ A simple bento.info file would look as follows::
     Summary: a simple module
 
     Library:
-        Modules: hello.py
+        Modules: hello
 
 The indentation must be done through spaces (tabs are considered
 syntax errors). The bento.info is located just next to your hello.py::
