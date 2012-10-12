@@ -57,8 +57,10 @@ Usage: bentomaker register [OPTIONS] distribution_file"""
             # FIXME
             raise NotImplementedError("automatic distribution type not yet implemented")
         if not o.distribution_type in _SUPPORTED_DISTRIBUTIONS:
-            # FIXME
-            raise NotImplementedError()
+            raise bento.errors.BentoError(
+                "Unsupported distribution type %r (supported types: %s)" % \
+                (o.distribution_type,
+                 ", ".join(repr(i) for i in _SUPPORTED_DISTRIBUTIONS)))
 
         upload_type = _SUPPORTED_DISTRIBUTIONS[o.distribution_type]
         upload(filename, upload_type, context.pkg, config=config)
