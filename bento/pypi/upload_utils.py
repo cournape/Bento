@@ -112,6 +112,12 @@ def upload(dist_filename, dist_type, package, config, sign=False):
         e = extract_exception()
         status = e.code
         reason = e.msg
+    except URLError:
+        e = extract_exception()
+        reason = e.reason
+        raise PyPIError(
+                "Could not upload to repository %r - error %s" \
+                % (config.repository, reason))
 
     if status != 200:
         raise PyPIError(
