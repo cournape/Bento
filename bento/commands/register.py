@@ -65,10 +65,10 @@ Usage: bentomaker register [OPTIONS]"""
             config = PyPIConfig(o.username, o.password, o.repository_url)
 
         auth = HTTPPasswordMgr()
-        host = urlparse(config.repository)[0]
+        host = urlparse(config.repository)[1]
         auth.add_password(config.realm, host, config.username, config.password)
 
         post_data = build_post_data(context.pkg, "submit")
-        code, msg = post_to_server(post_data, config)
+        code, msg = post_to_server(post_data, config, auth)
         if code != 200:
             raise bento.errors.BentoError("Error while submitting package metadata to server: %r" % msg)
