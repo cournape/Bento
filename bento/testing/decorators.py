@@ -1,13 +1,15 @@
-import functools
 import warnings
 
+from bento.compat.api \
+    import \
+        wraps
 from bento.warnings \
     import \
         NoBentoInfoWarning
 
 def disable_warning(f):
     def decorator_factory(warning_class=UserWarning):
-        @functools.wraps(f)
+        @wraps(f)
         def decorator(*a, **kw):
             filters = warnings.filters[:]
             warnings.simplefilter("ignore", warning_class)

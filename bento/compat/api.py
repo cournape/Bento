@@ -75,9 +75,9 @@ else:
     input = input
 
 try:
-    from functools import partial
+    from functools import partial, wraps
 except ImportError:
-    from bento.compat._functools import partial
+    from bento.compat._functools import partial, wraps
 
 from bento.compat.misc \
     import \
