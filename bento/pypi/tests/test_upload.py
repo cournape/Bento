@@ -112,7 +112,7 @@ Name: foo
     @mock.patch("bento.pypi.upload_utils.urlopen", my_urlopen_factory(URLError("dummy")))
     def test_upload_error_no_host(self):
         config = PyPIConfig("john", "password", repository="http://llocalhost")
-        self.assertRaises(URLError, upload, "foo.bin", "bdist_dumb", self.package, config)
+        self.assertRaises(bento.errors.PyPIError, upload, "foo.bin", "bdist_dumb", self.package, config)
 
     @mock.patch("bento.pypi.upload_utils.urlopen", lambda request: MockedResult(200, ""))
     def test_upload_auth(self):
