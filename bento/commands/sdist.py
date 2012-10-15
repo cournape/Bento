@@ -87,6 +87,7 @@ Usage:   bentomaker sdist [OPTIONS]."""
         s = StringIO()
         write_pkg_info(ctx.pkg, s)
         n = ctx.build_node.make_node("PKG_INFO")
+        n.parent.mkdir()
         n.write(s.getvalue())
         ctx.register_source_node(n, "PKG_INFO")
 

@@ -72,6 +72,7 @@ Library:
     Modules: fubar
 """
         archive_list = [op.join("foo-1.0", f) for f in ["yeah.info",
+                                                        "PKG_INFO",
                                                         op.join("foo", "__init__.py"),
                                                         op.join("foo", "bar", "__init__.py"),
                                                         "fubar.py"]]
@@ -96,7 +97,7 @@ Version: 1.0
 Library:
     Modules: fubar
 """
-        archive_list = [op.join("foo-1.0", f) for f in ["fubar.py", "yeah.info"]]
+        archive_list = [op.join("foo-1.0", f) for f in ["fubar.py", "yeah.info", "PKG_INFO"]]
 
         extra_node = self.top_node.make_node("yeah.info")
         extra_node.write("")
@@ -122,7 +123,7 @@ Version: 1.0
 Library:
     Modules: fubar
 """
-        archive_list = [op.join("foo-1.0", f) for f in ["fubar.py", "bohou.info"]]
+        archive_list = [op.join("foo-1.0", f) for f in ["fubar.py", "bohou.info", "PKG_INFO"]]
 
         extra_node = self.top_node.make_node("yeah.info")
         extra_node.write("")
@@ -150,7 +151,7 @@ MetaTemplateFiles: release.py.in
 Library:
     Modules: fubar
 """
-        archive_list = [op.join("foo-1.0", f) for f in ["fubar.py", "release.py.in", "release.py"]]
+        archive_list = [op.join("foo-1.0", f) for f in ["fubar.py", "release.py.in", "release.py", "PKG_INFO"]]
 
         template = self.top_node.make_node("release.py.in")
         template.write("""\
