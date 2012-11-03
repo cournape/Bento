@@ -13,41 +13,44 @@ import waflib
 
 from waflib import Options
 
-_PLATFORM_TO_DEFAULT = collections.defaultdict(lambda: "atlas")
-_PLATFORM_TO_DEFAULT.update({
-        "win32": "mkl",
-        "darwin": "accelerate",
+_PLATFORM_DEFAULT_ORDER = collections.defaultdict(
+    lambda: ["atlas", "mkl", "openblas", "generic"])
+_PLATFORM_DEFAULT_ORDER.update({
+        "win32": ["mkl", "generic"],
+        "darwin": ["accelerate", "generic"],
 })
 
-_OPTIMIZED_CBLAS_TO_KWARGS = {
+_CBLAS_TO_KWARGS = {
         "mkl": {"lib": "mkl_intel_c,mkl_intel_thread,mkl_core,libiomp5md".split(",")},
         "atlas": {"lib": ["cblas", "atlas"]},
         "accelerate": {"framework": ["Accelerate"]},
         "openblas": {"lib": ["openblas"]},
+        "generic": {"lib": ["cblas"]},
 }
 
-_OPTIMIZED_LAPACK_TO_KWARGS = {
+_LAPACK_TO_KWARGS = {
         "mkl": {"lib": "mkl_lapack95,mkl_blas95,mkl_intel_c,mkl_intel_thread,mkl_core,libiomp5md".split(",")},
         "atlas": {"lib": ["lapack", "f77blas", "cblas", "atlas"]},
         "accelerate": {"framework": ["Accelerate"]},
         "openblas": {"lib": ["openblas"]},
+        "generic": {"lib": ["lapack", "blas"]},
 }
 
-def get_optimized_name(context):
+def get_blas_lapack_order(context):
     o, a = context.options_context.parser.parse_args(context.command_argv)
     if o.blas_lapack_type == "default" or o.blas_lapack_type is None:
-        optimized = _PLATFORM_TO_DEFAULT[sys.platform]
+        order = _PLATFORM_DEFAULT_ORDER[sys.platform]
     else:
-        optimized = o.blas_lapack_type
+        order = [o.blas_lapack_type]
 
-    return optimized
+    return order
 
 def check_cblas(context, optimized):
     conf = context.waf_context
 
     msg = "Checking for %s (CBLAS)" % optimized.upper()
 
-    kwargs = _OPTIMIZED_CBLAS_TO_KWARGS[optimized]
+    kwargs = dict(_CBLAS_TO_KWARGS[optimized])
     kwargs.update({"msg": msg, "uselib_store": "CBLAS"})
 
     try:
@@ -63,7 +66,7 @@ def check_lapack(context, optimized):
     if optimized in ["openblas", "atlas"]:
         check_fortran(context)
 
-    kwargs = _OPTIMIZED_LAPACK_TO_KWARGS[optimized]
+    kwargs = dict(_LAPACK_TO_KWARGS[optimized])
     kwargs.update({"msg": msg, "uselib_store": "LAPACK"})
 
     try:
@@ -73,14 +76,26 @@ def check_lapack(context, optimized):
         conf.env.HAS_LAPACK = False
 
 def check_blas_lapack(context):
-    optimized = get_optimized_name(context)
+    conf = context.waf_context
+
+    order = list(get_blas_lapack_order(context))
 
     o, a = context.options_context.parser.parse_args(context.command_argv)
     if o.blas_lapack_libdir:
         context.waf_context.env.append_value("LIBPATH", o.blas_lapack_libdir)
 
-    check_cblas(context, optimized)
-    check_lapack(context, optimized)
+    for blas_lapack_name in order:
+        check_cblas(context, blas_lapack_name)
+        if conf.env.HAS_CBLAS:
+            # prefer this source also for LAPACK
+            order.remove(blas_lapack_name)
+            order.insert(0, blas_lapack_name)
+            break
+
+    for blas_lapack_name in order:
+        check_lapack(context, blas_lapack_name)
+        if conf.env.HAS_LAPACK:
+            break
 
     # You can manually set up blas/lapack as follows:
     #conf.env.HAS_CBLAS = True
@@ -104,7 +119,7 @@ def check_fortran(context):
 def add_options(global_context):
     global_context.add_option_group("configure", "blas_lapack", "blas/lapack")
 
-    available_optimized = ",".join(_OPTIMIZED_LAPACK_TO_KWARGS.keys())
+    available_optimized = ",".join(_LAPACK_TO_KWARGS.keys())
     global_context.add_option("configure",
             Option("--blas-lapack-type", help="Which blas lapack to use (%s)" % available_optimized),
             "blas_lapack")
