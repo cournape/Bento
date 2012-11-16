@@ -10,6 +10,7 @@ Main features:
         - revamped parser: comments should now be consistantly handled, and
           parsing is significantly faster in most cases (from 30 % to several
           times faster for large description strings).
+        - fix upload_pypi and register_pypi commands.
 
 Fixed issues
 ------------
