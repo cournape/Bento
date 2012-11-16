@@ -57,7 +57,11 @@ class TestWininstUtils(moves.unittest.TestCase):
 
         fid, arcname = tempfile.mkstemp(prefix="zip")
         try:
-            create_exe(build_manifest, arcname, "some-name.exe")
+            f = tempfile.NamedTemporaryFile(suffix=".exe")
+            try:
+                create_exe(build_manifest, arcname, f.name)
+            finally:
+                f.close()
         finally:
             os.close(fid)
 
