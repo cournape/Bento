@@ -18,7 +18,8 @@ Fixed issues
 Internals
 ---------
 
-        - InstalledPkgDescription renamed to BuildManifest.
+        - InstalledPkgDescription renamed to BuildManifest. Consistent
+          replacement of ipkg -> build_manifest
         - Test suite does not spill out unwanted output anymore
 
 Version 0.1
