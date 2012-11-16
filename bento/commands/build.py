@@ -7,10 +7,10 @@ from bento.utils.utils \
         subst_vars
 from bento.installed_package_description \
     import \
-        BuildManifest, ipkg_meta_from_pkg
+        BuildManifest, build_manifest_meta_from_pkg
 from bento._config \
     import \
-        IPKG_PATH
+        BUILD_MANIFEST_PATH
 
 from bento.commands.core \
     import \
@@ -24,7 +24,7 @@ class SectionWriter(object):
         self.sections = {}
 
     def store(self, filename, pkg):
-        meta = ipkg_meta_from_pkg(pkg)
+        meta = build_manifest_meta_from_pkg(pkg)
         p = BuildManifest(self.sections, meta, pkg.executables)
         if not op.exists(op.dirname(filename)):
             os.makedirs(op.dirname(filename))
@@ -57,7 +57,7 @@ Usage:   bentomaker build [OPTIONS]."""
 
     def finish(self, ctx):
         super(BuildCommand, self).finish(ctx)
-        n = ctx.build_node.make_node(IPKG_PATH)
+        n = ctx.build_node.make_node(BUILD_MANIFEST_PATH)
         ctx.section_writer.store(n.abspath(), ctx.pkg)
 
 def _config_content(paths):

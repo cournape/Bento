@@ -3,7 +3,7 @@ import warnings
 
 from bento._config \
     import \
-        IPKG_PATH
+        BUILD_MANIFEST_PATH
 from bento.commands.core \
     import \
         Command, Option
@@ -45,13 +45,13 @@ Usage:   bentomaker build_egg [OPTIONS]"""
         output_dir = o.output_dir
         output_file = o.output_file
 
-        n = ctx.build_node.make_node(IPKG_PATH)
+        n = ctx.build_node.make_node(BUILD_MANIFEST_PATH)
         build_manifest = BuildManifest.from_file(n.abspath())
         build_egg(build_manifest, ctx.build_node, ctx.build_node, output_dir, output_file)
 
 def build_egg(build_manifest, build_node, source_root, output_dir=None, output_file=None):
-    meta = PackageMetadata.from_ipkg(build_manifest)
-    egg_info = EggInfo.from_ipkg(build_manifest, build_node)
+    meta = PackageMetadata.from_build_manifest(build_manifest)
+    egg_info = EggInfo.from_build_manifest(build_manifest, build_node)
 
     # FIXME: fix egg name
     if output_dir is None:

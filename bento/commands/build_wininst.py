@@ -3,7 +3,7 @@ import tempfile
 
 from bento._config \
     import \
-        IPKG_PATH
+        BUILD_MANIFEST_PATH
 from bento.commands.core \
     import \
         Command, Option
@@ -42,16 +42,16 @@ Usage:   bentomaker build_wininst [OPTIONS]"""
             p.print_help()
             return
 
-        n = ctx.build_node.make_node(IPKG_PATH)
-        ipkg = BuildManifest.from_file(n.abspath())
-        create_wininst(ipkg, src_root_node=ctx.build_node, build_node=ctx.build_node,
+        n = ctx.build_node.make_node(BUILD_MANIFEST_PATH)
+        build_manifest = BuildManifest.from_file(n.abspath())
+        create_wininst(build_manifest, src_root_node=ctx.build_node, build_node=ctx.build_node,
                        wininst=o.output_file,
                        output_dir=o.output_dir)
 
-def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None, output_dir=None):
-    meta = PackageMetadata.from_ipkg(ipkg)
+def create_wininst(build_manifest, src_root_node, build_node, egg_info=None, wininst=None, output_dir=None):
+    meta = PackageMetadata.from_build_manifest(build_manifest)
     if egg_info is None:
-        egg_info = EggInfo.from_ipkg(ipkg, build_node)
+        egg_info = EggInfo.from_build_manifest(build_manifest, build_node)
 
     # XXX: do this correctly, maybe use same as distutils ?
     if wininst is None:
@@ -72,10 +72,10 @@ def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None,
         wininst_paths.update({"bindir": "SCRIPTS", "sitedir": "PURELIB",
                               "gendatadir": "$sitedir"})
         d = {}
-        for k in ipkg._path_variables:
+        for k in build_manifest._path_variables:
             d[k] = wininst_paths[k]
-        ipkg.update_paths(d)
-        file_sections = ipkg.resolve_paths(src_root_node)
+        build_manifest.update_paths(d)
+        file_sections = build_manifest.resolve_paths(src_root_node)
 
         def write_content(source, target, kind):
             zid.write(source.abspath(), target.abspath())
@@ -87,4 +87,4 @@ def create_wininst(ipkg, src_root_node, build_node, egg_info=None, wininst=None,
         zid.close()
         os.close(fid)
 
-    create_exe(ipkg, arcname, wininst)
+    create_exe(build_manifest, arcname, wininst)

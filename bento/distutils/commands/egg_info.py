@@ -13,7 +13,7 @@ else:
 
 from bento._config \
     import \
-        IPKG_PATH
+        BUILD_MANIFEST_PATH
 from bento.installed_package_description \
     import \
         BuildManifest
@@ -26,10 +26,10 @@ class egg_info(old_egg_info):
         self.run_command("build")
         dist = self.distribution
 
-        n = dist.build_node.make_node(IPKG_PATH)
-        ipkg = BuildManifest.from_file(n.abspath())
+        n = dist.build_node.make_node(BUILD_MANIFEST_PATH)
+        build_manifest = BuildManifest.from_file(n.abspath())
 
-        egg_info = EggInfo.from_ipkg(ipkg, dist.build_node)
+        egg_info = EggInfo.from_build_manifest(build_manifest, dist.build_node)
 
         egg_info_dir = op.join(self.egg_base, "%s.egg-info" % dist.pkg.name)
         try:

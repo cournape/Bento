@@ -2,7 +2,7 @@ import shutil
 
 from bento._config \
     import \
-        IPKG_PATH
+        BUILD_MANIFEST_PATH
 from bento.commands.core \
     import \
         Command, Option
@@ -46,7 +46,7 @@ Usage:   bentomaker build_msi [OPTIONS]"""
         output_dir = o.output_dir
         output_file = o.output_file
 
-        n = context.build_node.find_node(IPKG_PATH)
+        n = context.build_node.find_node(BUILD_MANIFEST_PATH)
         manifest = BuildManifest.from_file(n.abspath())
         msi_root = context.build_node.make_node("msi")
 

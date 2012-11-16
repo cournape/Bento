@@ -14,7 +14,7 @@ from bento.installed_package_description \
         BuildManifest, iter_files
 from bento._config \
     import \
-        IPKG_PATH
+        BUILD_MANIFEST_PATH
 from bento.commands.core \
     import \
         Command, Option
@@ -66,10 +66,10 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
         default_prefix = default_scheme["prefix"]
         default_sitedir = default_scheme["sitedir"]
 
-        n = ctx.build_node.make_node(IPKG_PATH)
-        ipkg = BuildManifest.from_file(n.abspath())
-        name = ipkg.meta["name"]
-        version = ipkg.meta["version"]
+        n = ctx.build_node.make_node(BUILD_MANIFEST_PATH)
+        build_manifest = BuildManifest.from_file(n.abspath())
+        name = build_manifest.meta["name"]
+        version = build_manifest.meta["version"]
         py_short = ".".join([str(i) for i in sys.version_info[:2]])
         if o.output_file is None:
             mpkg_name = "%s-%s-py%s.mpkg" % (name, version, py_short)
@@ -77,7 +77,7 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
             mpkg_name = o.output_file
 
         categories = set()
-        file_sections = ipkg.resolve_paths(ctx.build_node)
+        file_sections = build_manifest.resolve_paths(ctx.build_node)
         for kind, source, target in iter_files(file_sections):
             categories.add(kind)
 
@@ -92,7 +92,7 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
             f.write("pmkrpkg1")
         finally:
             f.close()
-        mpkg_info = MetaPackageInfo.from_ipkg(ipkg)
+        mpkg_info = MetaPackageInfo.from_build_manifest(build_manifest)
 
         purelib_pkg = "%s-purelib-%s-py%s.pkg" % (name, version, py_short)
         scripts_pkg = "%s-scripts-%s-py%s.pkg" % (name, version, py_short)
@@ -106,22 +106,22 @@ Usage:   bentomaker build_mpkg [OPTIONS]"""
 
         # Package the stuff which ends up into site-packages
         pkg_root = os.path.join(mpkg_root, "Contents", "Packages", purelib_pkg)
-        build_pkg_from_temp(ctx, ipkg, pkg_root, root, "/", ["pythonfiles"], "Pure Python modules and packages")
+        build_pkg_from_temp(ctx, build_manifest, pkg_root, root, "/", ["pythonfiles"], "Pure Python modules and packages")
 
         pkg_root = os.path.join(mpkg_root, "Contents", "Packages", scripts_pkg)
-        build_pkg_from_temp(ctx, ipkg, pkg_root, root, "/", ["executables"], "Scripts and binaries")
+        build_pkg_from_temp(ctx, build_manifest, pkg_root, root, "/", ["executables"], "Scripts and binaries")
 
         pkg_root = os.path.join(mpkg_root, "Contents", "Packages", datafiles_pkg)
-        build_pkg_from_temp(ctx, ipkg, pkg_root, root, "/", ["bentofiles", "datafiles"], "Data files")
+        build_pkg_from_temp(ctx, build_manifest, pkg_root, root, "/", ["bentofiles", "datafiles"], "Data files")
 
-def build_pkg_from_temp(ctx, ipkg, pkg_root, root_node, install_root, categories, description=None):
+def build_pkg_from_temp(ctx, build_manifest, pkg_root, root_node, install_root, categories, description=None):
     d = tempfile.mkdtemp()
     try:
         tmp_root = root_node.make_node(d)
         prefix_node = tmp_root.make_node(root_node.make_node(sys.exec_prefix).path_from(root_node))
         prefix = eprefix = prefix_node.abspath()
-        ipkg.update_paths({"prefix": prefix, "eprefix": eprefix})
-        file_sections = ipkg.resolve_paths(ctx.build_node)
+        build_manifest.update_paths({"prefix": prefix, "eprefix": eprefix})
+        file_sections = build_manifest.resolve_paths(ctx.build_node)
         for kind, source, target in iter_files(file_sections):
             if kind in categories:
                 #if not os.path.exists(target.parent.abspath()):

@@ -20,7 +20,7 @@ from bento.core.node \
         create_root_with_source_tree
 from bento.testing.misc \
     import \
-        create_simple_ipkg_args
+        create_simple_build_manifest_args
 from bento.commands.wininst_utils \
     import \
         get_inidata, create_exe, get_exe_bytes
@@ -44,20 +44,20 @@ class TestWininstUtils(moves.unittest.TestCase):
     def test_get_inidata_run(self):
         """Simply execute get_inidata."""
         # FIXME: do a real test here
-        meta, sections, nodes = create_simple_ipkg_args(self.top_node)
-        ipkg = BuildManifest(sections, meta, {})
-        get_inidata(ipkg)
+        meta, sections, nodes = create_simple_build_manifest_args(self.top_node)
+        build_manifest = BuildManifest(sections, meta, {})
+        get_inidata(build_manifest)
 
     @mock.patch('distutils.msvccompiler.get_build_version', lambda: 9.0)
     @mock.patch('encodings._cache', {"mbcs": encodings.search_function("ascii")})
     def test_create_exe(self):
         # FIXME: do a real test here
-        meta, sections, nodes = create_simple_ipkg_args(self.top_node)
-        ipkg = BuildManifest(sections, meta, {})
+        meta, sections, nodes = create_simple_build_manifest_args(self.top_node)
+        build_manifest = BuildManifest(sections, meta, {})
 
         fid, arcname = tempfile.mkstemp(prefix="zip")
         try:
-            create_exe(ipkg, arcname, "some-name.exe")
+            create_exe(build_manifest, arcname, "some-name.exe")
         finally:
             os.close(fid)
 

@@ -97,8 +97,8 @@ class PackageMetadata(object):
     metadata_attributes = _METADATA_FIELDS + ["fullname", "contact", "contact_email"]
 
     @classmethod
-    def from_ipkg(cls, ipkg):
-        return cls(**ipkg.meta)
+    def from_build_manifest(cls, build_manifest):
+        return cls(**build_manifest.meta)
 
     @classmethod
     def from_package(cls, pkg):

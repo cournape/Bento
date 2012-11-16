@@ -5,7 +5,7 @@ import errno
 
 from bento._config \
     import \
-        IPKG_PATH
+        BUILD_MANIFEST_PATH
 from bento.installed_package_description import \
     BuildManifest, iter_files
 
@@ -139,11 +139,11 @@ Usage:   bentomaker install [OPTIONS]."""
             p.print_help()
             return
 
-        n = ctx.build_node.make_node(IPKG_PATH)
-        ipkg = BuildManifest.from_file(n.abspath())
+        n = ctx.build_node.make_node(BUILD_MANIFEST_PATH)
+        build_manifest = BuildManifest.from_file(n.abspath())
         scheme = ctx.retrieve_configured_scheme()
-        ipkg.update_paths(scheme)
-        node_sections = ipkg.resolve_paths_with_destdir(ctx.build_node)
+        build_manifest.update_paths(scheme)
+        node_sections = build_manifest.resolve_paths_with_destdir(ctx.build_node)
 
         if o.list_files:
             # XXX: this won't take into account action in post install scripts.

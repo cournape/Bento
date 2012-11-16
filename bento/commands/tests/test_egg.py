@@ -8,7 +8,7 @@ from bento.compat.api.moves \
 
 from bento._config \
     import \
-        IPKG_PATH
+        BUILD_MANIFEST_PATH
 from bento.core.node \
     import \
         create_base_nodes
@@ -124,9 +124,9 @@ class TestEggInfo(unittest.TestCase):
     def _prepare_egg_info(self):
         create_fake_package(self.top_node, ["sphinx", "sphinx.builders"],
                             ["cat.py"], [Extension("_dog", [os.path.join("src", "dog.c")])])
-        ipkg_file = self.build_node.make_node(IPKG_PATH)
-        ipkg_file.parent.mkdir()
-        ipkg_file.write("")
+        build_manifest_file = self.build_node.make_node(BUILD_MANIFEST_PATH)
+        build_manifest_file.parent.mkdir()
+        build_manifest_file.write("")
 
         files = [os.path.join("sphinx", "builders", "__init__.py"),
                  os.path.join("sphinx", "__init__.py"),

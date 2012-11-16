@@ -18,7 +18,7 @@ from bento.core.pkg_objects \
         Executable
 import bento.utils.path
 
-def ipkg_meta_from_pkg(pkg):
+def build_manifest_meta_from_pkg(pkg):
     """Return meta dict for Installed pkg from a PackageDescription
     instance."""
     meta = {}
@@ -114,7 +114,7 @@ class BuildManifest(object):
     def from_egg(cls, egg_path):
         zid = compat.ZipFile(egg_path)
         try:
-            data = json.loads(zid.read("EGG-INFO/ipkg.info"))
+            data = json.loads(zid.read("EGG-INFO/build_manifest.info"))
             return cls.from_json_dict(data)
         finally:
             zid.close()

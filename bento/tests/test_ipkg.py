@@ -15,7 +15,7 @@ from bento.core.node \
         create_root_with_source_tree
 from bento.testing.misc \
     import \
-        create_simple_ipkg_args
+        create_simple_build_manifest_args
 from bento.installed_package_description \
     import \
         BuildManifest, InstalledSection, iter_files
@@ -37,7 +37,7 @@ class TestInstalledSection(unittest.TestCase):
 
         self.assertEqual(r_section.files, section.files)
 
-class TestIPKG(unittest.TestCase):
+class TestBUILD_MANIFEST(unittest.TestCase):
     def setUp(self):
         self.src_root = tempfile.mkdtemp()
         self.bld_root = self.src_root
@@ -45,7 +45,7 @@ class TestIPKG(unittest.TestCase):
         root = create_root_with_source_tree(self.src_root, self.bld_root)
         self.top_node = root.find_node(self.src_root)
 
-        self.meta, self.sections, self.nodes = create_simple_ipkg_args(self.top_node)
+        self.meta, self.sections, self.nodes = create_simple_build_manifest_args(self.top_node)
 
     def tearDown(self):
         shutil.rmtree(self.top_node.abspath())
@@ -56,14 +56,14 @@ class TestIPKG(unittest.TestCase):
     def test_simple_roundtrip(self):
         # FIXME: we compare the loaded json to avoid dealing with encoding
         # differences when comparing objects, but this is kinda stupid
-        r_ipkg = BuildManifest(self.sections, self.meta, {})
+        r_build_manifest = BuildManifest(self.sections, self.meta, {})
         f = StringIO()
-        r_ipkg._write(f)
+        r_build_manifest._write(f)
         r_s = f.getvalue()
 
-        ipkg = BuildManifest.from_string(r_s)
+        build_manifest = BuildManifest.from_string(r_s)
         f = StringIO()
-        ipkg._write(f)
+        build_manifest._write(f)
         s = f.getvalue()
         
         self.assertEqual(json.loads(r_s), json.loads(s))
@@ -76,7 +76,7 @@ class TestIterFiles(unittest.TestCase):
         root = create_root_with_source_tree(self.src_root, self.bld_root)
         self.top_node = root.find_node(self.src_root)
 
-        self.meta, self.sections, nodes = create_simple_ipkg_args(self.top_node)
+        self.meta, self.sections, nodes = create_simple_build_manifest_args(self.top_node)
         for n in nodes:
             print(n.abspath())
 
@@ -84,11 +84,11 @@ class TestIterFiles(unittest.TestCase):
         shutil.rmtree(self.top_node.abspath())
 
     def test_simple(self):
-        ipkg = BuildManifest(self.sections, self.meta, {})
-        sections = ipkg.resolve_paths(self.top_node)
+        build_manifest = BuildManifest(self.sections, self.meta, {})
+        sections = build_manifest.resolve_paths(self.top_node)
         res = sorted([(kind, source.abspath(), target.abspath()) \
                       for kind, source, target in iter_files(sections)])
-        target_dir = ipkg.resolve_path(os.path.join("$prefix", "target"))
+        target_dir = build_manifest.resolve_path(os.path.join("$prefix", "target"))
         ref = [("pythonfiles", os.path.join(self.top_node.abspath(), "source", "scripts", "bar.py"),
                                os.path.join(target_dir, "scripts", "bar.py")),
                ("pythonfiles", os.path.join(self.top_node.abspath(), "source", "scripts", "foo.py"),

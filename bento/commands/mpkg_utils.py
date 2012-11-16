@@ -171,8 +171,8 @@ class PackageInfo(object):
 
 class MetaPackageInfo(object):
     @classmethod
-    def from_ipkg(cls, ipkg):
-        m = ipkg.meta
+    def from_build_manifest(cls, build_manifest):
+        m = build_manifest.meta
         info_string = "%s %s" % (m["name"], m["version"])
         identifier = "com.github.cournape.bento"
         version_info = (0, 0, 5)

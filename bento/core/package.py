@@ -385,3 +385,8 @@ def static_representation(pkg, options={}):
         r.append(' ' * indent_level + "Function: %s" % value.function)
         r.append("")
     return "\n".join(r)
+
+def static_representation_yaml(package, options={}):
+    """Return the static representation of the given PackageDescription
+    instance as a string."""
+    indent_level = 4

@@ -78,13 +78,13 @@ def get_exe_bytes (target_version=None, plat_name=None):
     filename = os.path.join(directory, "wininst-%.1f%s.exe" % (bv, sfix))
     return open(filename, "rb").read()
 
-def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="bento"):
+def create_exe(build_manifest, arcname, installer_name, bitmap=None, dist_dir="bento"):
     import struct
 
     if not os.path.exists(dist_dir):
         os.makedirs(dist_dir)
 
-    cfgdata = get_inidata(ipkg)
+    cfgdata = get_inidata(build_manifest)
 
     if bitmap:
         bitmapdata = open(bitmap, "rb").read()
@@ -114,9 +114,9 @@ def create_exe(ipkg, arcname, installer_name, bitmap=None, dist_dir="bento"):
     fid.write(header)
     fid.write(open(arcname, "rb").read())
 
-def get_inidata(ipkg):
+def get_inidata(build_manifest):
     # Return data describing the installation.
-    meta = PackageMetadata.from_ipkg(ipkg)
+    meta = PackageMetadata.from_build_manifest(build_manifest)
 
     # Write the [metadata] section.
     lines = []

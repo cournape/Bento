@@ -7,7 +7,7 @@ from bento.core.package \
         PackageDescription
 from bento.installed_package_description \
     import \
-        InstalledSection, ipkg_meta_from_pkg
+        InstalledSection, build_manifest_meta_from_pkg
 
 # FIXME: use correct install path instead of python package hack
 BENTOS_DIR = os.path.dirname(bento.testing.bentos.__file__)
@@ -15,7 +15,7 @@ SPHINX_META = os.path.join(BENTOS_DIR, "sphinx_meta.info")
 
 SPHINX_META_PKG = PackageDescription.from_file(SPHINX_META)
 
-def create_simple_ipkg_args(top_node):
+def create_simple_build_manifest_args(top_node):
     files = ["scripts/foo.py", "scripts/bar.py"]
     srcdir = "source"
 
@@ -27,6 +27,6 @@ def create_simple_ipkg_args(top_node):
                     "section1", os.path.join("$_srcrootdir", srcdir), "$prefix/target", files)
     sections = {"pythonfiles": {"section1": section}}
 
-    meta = ipkg_meta_from_pkg(SPHINX_META_PKG)
+    meta = build_manifest_meta_from_pkg(SPHINX_META_PKG)
     return meta, sections, nodes
 

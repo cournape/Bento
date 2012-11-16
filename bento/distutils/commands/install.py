@@ -12,7 +12,7 @@ from distutils.command.install \
 
 from bento._config \
     import \
-        IPKG_PATH
+        BUILD_MANIFEST_PATH
 from bento.installed_package_description \
     import \
         BuildManifest, iter_files
@@ -148,11 +148,11 @@ class install(Command):
         cmd_context_klass = dist.global_context.retrieve_command_context(self.cmd_name)
         context = cmd_context_klass(dist.global_context, [], options_context, dist.pkg, dist.run_node)
 
-        n = context.build_node.make_node(IPKG_PATH)
-        ipkg = BuildManifest.from_file(n.abspath())
+        n = context.build_node.make_node(BUILD_MANIFEST_PATH)
+        build_manifest = BuildManifest.from_file(n.abspath())
         scheme = context.retrieve_configured_scheme()
-        ipkg.update_paths(scheme)
-        file_sections = ipkg.resolve_paths_with_destdir(src_root_node=context.build_node)
+        build_manifest.update_paths(scheme)
+        file_sections = build_manifest.resolve_paths_with_destdir(src_root_node=context.build_node)
 
         def writer(fid):
             for kind, source, target in iter_files(file_sections):
