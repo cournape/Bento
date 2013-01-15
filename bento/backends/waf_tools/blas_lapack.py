@@ -33,6 +33,13 @@ _OPTIMIZED_LAPACK_TO_KWARGS = {
         "openblas": {"lib": ["openblas"]},
 }
 
+_OPTIMIZED_BLAS_TO_KWARGS = {
+        "mkl": {"lib": "mkl_blas95,mkl_intel_c,mkl_intel_thread,mkl_core,libiomp5md".split(",")},
+        "atlas": {"lib": ["f77blas", "cblas", "atlas"]},
+        "accelerate": {"framework": ["Accelerate"]},
+        "openblas": {"lib": ["openblas"]},
+}
+
 def get_optimized_name(context):
     o, a = context.options_context.parser.parse_args(context.command_argv)
     if o.blas_lapack_type == "default" or o.blas_lapack_type is None:
@@ -42,7 +49,10 @@ def get_optimized_name(context):
 
     return optimized
 
-def check_cblas(context, optimized):
+def check_cblas(context, optimized=None):
+    if optimized is None:
+        optimized = get_optimized_name(context)
+
     conf = context.waf_context
 
     msg = "Checking for %s (CBLAS)" % optimized.upper()
@@ -55,6 +65,20 @@ def check_cblas(context, optimized):
         conf.env.HAS_CBLAS = True
     except waflib.Errors.ConfigurationError:
         conf.env.HAS_CBLAS = False
+
+def check_blas(context, optimized):
+    conf = context.waf_context
+
+    msg = "Checking for %s (BLAS)" % optimized.upper()
+
+    kwargs = _OPTIMIZED_BLAS_TO_KWARGS[optimized]
+    kwargs.update({"msg": msg, "uselib_store": "BLAS"})
+
+    try:
+        conf.check_cc(**kwargs)
+        conf.env.HAS_BLAS = True
+    except waflib.Errors.ConfigurationError:
+        conf.env.HAS_BLAS = False
 
 def check_lapack(context, optimized):
     conf = context.waf_context
@@ -79,7 +103,7 @@ def check_blas_lapack(context):
     if o.blas_lapack_libdir:
         context.waf_context.env.append_value("LIBPATH", o.blas_lapack_libdir)
 
-    check_cblas(context, optimized)
+    check_blas(context, optimized)
     check_lapack(context, optimized)
 
     # You can manually set up blas/lapack as follows:
