@@ -18,6 +18,9 @@ from bento.errors \
 from bento._config \
      import \
         SITEDIR
+from bento.utils.utils \
+    import \
+        extract_exception
 
 if "WAFDIR" in os.environ:
     WAFDIR = os.path.join(os.environ["WAFDIR"], "waflib")
@@ -361,6 +364,13 @@ class BuildWafContext(BuildContext):
             sys.stderr.write(Logs.colors.cursor_off)
         try:
             self.waf_context.compile()
+        except waflib.Errors.BuildError:
+            e = extract_exception()
+            if len(e.tasks) > 0:
+                task0 = e.tasks[0]
+                raise bento.errors.BuildError("Error while compiling %r"  % task0.inputs[0].abspath())
+            else:
+                raise
         finally:
             if self.progress_bar:
                 c = len(self.waf_context.returned_tasks) or 1
