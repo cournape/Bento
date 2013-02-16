@@ -41,6 +41,7 @@ _BLAS_TO_KWARGS = {
         "atlas": {"lib": ["f77blas", "cblas", "atlas"]},
         "accelerate": {"framework": ["Accelerate"]},
         "openblas": {"lib": ["openblas"]},
+        "generic": {"lib": ["blas"]},
 }
 
 def get_blas_lapack_order(context):
