@@ -240,6 +240,13 @@ def apply_pyext_target_renaming(self):
     self.target = self.target.replace(".", os.sep)
 
 @waflib.TaskGen.feature("bento")
+@waflib.TaskGen.before_method("apply_link")
+def apply_pyext_cstlib_fpic(self):
+    if "cstlib" in self.features and self.env["CC_NAME"] == "gcc":
+        if "-fPIC" in self.env.CFLAGS_cshlib:
+                self.env.CFLAGS_cstlib = ["-fPIC"]
+
+@waflib.TaskGen.feature("bento")
 @waflib.TaskGen.after_method("apply_link")
 def apply_register_outputs(self):
     for x in self.features:
