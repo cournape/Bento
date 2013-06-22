@@ -171,10 +171,6 @@ def init_pyext(self):
 	except AttributeError:
 		self.install_path = '${PYTHONARCHDIR}'
 
-	# XXX: there has to be a better way to do this
-	if "cstlib" in self.features and "-fPIC" in self.env["CFLAGS_shlib"]:
-		self.env.append_value("CFLAGS_cstlib", "-fPIC")
-
 def configure(conf):
 	"""
 	Detect the python interpreter
