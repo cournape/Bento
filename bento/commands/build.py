@@ -30,6 +30,13 @@ class SectionWriter(object):
             os.makedirs(op.dirname(filename))
         p.write(filename)
 
+
+def jobs_callback(option, opt, value, parser):
+    if not value:
+        import multiprocessing
+        value = multiprocessing.cpu_count()
+    setattr(parser.values, option.dest, value)
+
 class BuildCommand(Command):
     long_descr = """\
 Purpose: build the project
@@ -40,7 +47,7 @@ Usage:   bentomaker build [OPTIONS]."""
                                   help="Build extensions in place", action="store_true"),
                            Option("-j", "--jobs",
                                   help="Parallel builds (yaku build only - EXPERIMENTAL)",
-                                  dest="jobs"),
+                                  dest="jobs", action="callback", callback=jobs_callback),
                            Option("-v", "--verbose",
                                   help="Verbose output (yaku build only)",
                                   action="store_true")]
