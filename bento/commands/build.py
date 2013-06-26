@@ -18,6 +18,9 @@ from bento.commands.core \
 from bento.commands.core \
     import \
         Command
+from bento.utils \
+    import \
+        cpu_count
 
 class SectionWriter(object):
     def __init__(self):
@@ -32,10 +35,7 @@ class SectionWriter(object):
 
 
 def jobs_callback(option, opt, value, parser):
-    if not value:
-        import multiprocessing
-        value = multiprocessing.cpu_count()
-    setattr(parser.values, option.dest, value)
+    setattr(parser.values, option.dest, cpu_count())
 
 class BuildCommand(Command):
     long_descr = """\
