@@ -1,4 +1,3 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -7,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Version 0.2 &mdash; Bento 0.2-git835af09012 documentation</title>
+    <title>Version 0.2 &mdash; Bento 0.2.0-git2be31f57c3 documentation</title>
     
     <link rel="stylesheet" href="static/nature.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.2-git835af09012',
+        URL_ROOT:    './',
+        VERSION:     '0.2.0-git2be31f57c3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +23,7 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="Bento 0.2-git835af09012 documentation" href="index.html" />
+    <link rel="top" title="Bento 0.2.0-git2be31f57c3 documentation" href="index.html" />
  
 <style type="text/css">
   table.right { float: right; margin-left: 20px; }
@@ -59,6 +58,11 @@
 <blockquote>
 <div><ul class="simple">
 <li>new build_msi command to build a MSI installer.</li>
+<li>fix examples</li>
+<li>revamped parser: comments should now be consistantly handled, and
+parsing is significantly faster in most cases (from 30 % to several
+times faster for large description strings).</li>
+<li>fix upload_pypi and register_pypi commands.</li>
 </ul>
 </div></blockquote>
 <div class="section" id="fixed-issues">
@@ -66,6 +70,13 @@
 </div>
 <div class="section" id="internals">
 <h2>Internals<a class="headerlink" href="#internals" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>InstalledPkgDescription renamed to BuildManifest. Consistent
+replacement of ipkg -&gt; build_manifest</li>
+<li>Test suite does not spill out unwanted output anymore</li>
+</ul>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="version-0-1">
@@ -487,7 +498,7 @@ most of their implementation</li>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2011, David Cournapeau.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

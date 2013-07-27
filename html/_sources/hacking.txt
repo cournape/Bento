@@ -46,28 +46,48 @@ language and in most environments (local machine, browser, etc...).
 Format internals
 ~~~~~~~~~~~~~~~~
 
-The main sections is a list of json 'dicts', e.g.::
+(This is likely to change in the future)
 
-    "files": [
-        ["bentomaker", "bentomaker-2.6"],
-        ["bentomaker", "bentomaker"],
-    ],
-    "name": "bentomaker",
-    "category": "executables",
-    "source_dir": "build/scripts-2.6",
-    "target_dir": "$bindir"
+The json file contains 4 elements:
 
-The files variable is a list of tuples (source, target). This is interpreted as
-installing the file build/scripts-2.6/bentomaker into $bindir/bentomaker-2.6
-and into $bindir/bentomaker. The category variable may be used to customize
-installation/packaging behavior (and later to extend the build manifest for
-installation hook).
+        - meta: this contains the metadata (as defined in the relevant
+          packaging PEP)
+        - install_paths: a dict of the configured paths
+        - file_sections: a list of so-called file sections
+        - executables: a list of executable sections
 
-A key point of the format is to specify source_dir and target_dir outside the
-source/destination, so that they may be modified when the build manifest is
-read depending on the usages. In particular, since eggs and windows installers
-produced by bento include the build manifest, this may be used to losslessly
-convert between installer formats.
+File sections
+*************
+
+A list of dictionaries. Each dictionary contains:
+
+        - category: the category name
+        - name: name of this section
+        - files: a list of tuple source -> target
+        - source_dir: os.path.join(source_dir, source) gives an absolute path
+          for each source file
+        - target_dir: os.path.join(target_dir, target) gives an absolute path
+          for each target file
+
+Note that both source_dir and target_dir can refer to path variables as defined
+in the install_paths section. This allows to "retarget" a build tree to
+different tree configurations, as required by different packages formats.
+
+Example::
+
+       "category": "executables",
+            "files": [
+                [
+                    "bentomaker-2.7",
+                    "bentomaker"
+                ]
+            ],
+            "name": "bentomaker",
+            "source_dir": "$_srcrootdir/scripts-2.7",
+            "target_dir": "$bindir"
+
+This is interpreted as installing the file
+$_srcrootdir/scripts-2.7/bentomaker-2.7 into $bindir/bentomaker.
 
 Advantages
 ~~~~~~~~~~
@@ -79,16 +99,12 @@ you can produce a build manifest, you can use the installation
 commands as is.
 
 Besides installation, the manifest is also used to produce installers.
-Currently, only windows installers and eggs are supported, but adding
-new types of installers should be easier than with distutils. If you
-look at the build_wininst and build_egg commands source code, they are
-simple, and most of the "magic" happens in the build manifest. In
-particular, the build manifest still refers to installed bits
-relatively to abstract paths, and those paths are resolved when
-building the installers.
-
-WARNING: the build manifest will most likely need to be changed in
-backward incompatible ways, including the API to access it.
+Currently, windows installers (both .exe and .msi), eggs and mpkg are
+supported, and adding new types of installers should be easier than with
+distutils. If you look at the build_wininst and build_egg commands source code,
+they are simple, and most of the "magic" happens in the build manifest. In
+particular, the build manifest still refers to installed bits relatively to
+abstract paths, and those paths are resolved when building the installers.
 
 Installers conversion
 ~~~~~~~~~~~~~~~~~~~~~
