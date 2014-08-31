@@ -6,7 +6,11 @@ python:
    - 3.4
 # mock/multiprocessing are only necessary for testing
 install:
-   - pip install -rdev_requirements.txt
+   - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then
+     pip install -rdev_requirements2.6.txt;
+     else
+     pip install -rdev_requirements.txt;
+     fi
 
 # command to run tests, e.g. python setup.py test
 script:
