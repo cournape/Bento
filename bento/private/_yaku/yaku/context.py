@@ -1,6 +1,5 @@
 import os
 import sys
-import subprocess
 
 if sys.version_info[0] < 3:
     from cPickle \
@@ -26,7 +25,7 @@ from yaku.utils \
         ensure_dir, rename, join_bytes
 from yaku.errors \
     import \
-        UnknownTask, ConfigurationFailure, TaskRunFailure, WindowsError
+        UnknownTask, ConfigurationFailure
 import yaku.node
 import yaku.task_manager
 
@@ -159,42 +158,6 @@ class ConfigureContext(object):
             return self._stdout_cache[tid]
         except KeyError:
             raise UnknownTask
-
-    def try_command(self, cmd, cwd=None, env=None, kw=None):
-        if cwd is None:
-            cwd = self.bld_root.abspath()
-        if kw is None:
-            kw = {}
-        if env is not None:
-            kw["env"] = env
-
-        def log_failure(succeed, explanation):
-            if succeed:
-                self.log.write("---> Succeeded !\n")
-            else:
-                self.log.write("---> Failure !\n")
-                self.log.write("~~~~~~~~~~~~~~\n")
-                self.log.write(explanation)
-                self.log.write("~~~~~~~~~~~~~~\n")
-            self.log.write("Command was:\n")
-            self.log.write("%s\n" % cmd)
-            self.log.write("\n")
-
-        try:
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT, cwd=cwd, **kw)
-            stdout = p.communicate()[0].decode("utf-8")
-            log_failure(p.returncode == 0, stdout)
-            if p.returncode:
-                return False
-            return True
-        except OSError:
-            e = get_exception()
-            log_failure(False, str(e))
-        except WindowsError:
-            e = get_exception()
-            log_failure(False, str(e))
-        return False
 
 def load_tools(self, fid):
     tools = eval(fid.read())

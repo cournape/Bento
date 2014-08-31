@@ -11,17 +11,12 @@ from yaku.context \
 from yaku.conftests \
     import \
         check_compiler, check_header
-from yaku.conftests.pytests \
-    import \
-        check_module
 
 def configure(ctx):
     ctx.use_tools(["pyext", "ctasks"], ["tools"])
 
     check_compiler(ctx)
     check_header(ctx, "stdio.h")
-    check_module(ctx, "sys")
-    check_module(ctx, "ssys")
 
 def build(ctx):
     builder = ctx.builders["pyext"]

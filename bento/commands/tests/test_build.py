@@ -83,7 +83,7 @@ Library:
     Modules: fubar
 """
 
-class _TestBuildSimpleExtension(unittest.TestCase):
+class _TestBuildSimpleExtension(object):
     # Those should be set by subclasses
     _configure_context = None
     _build_context = None
@@ -249,7 +249,7 @@ Library:
             for f in isection.files[0]:
                 self.assertTrue(op.exists(op.join(source_dir, f)))
 
-class TestBuildDistutils(_TestBuildSimpleExtension):
+class TestBuildDistutils(_TestBuildSimpleExtension, unittest.TestCase):
     def setUp(self):
         from bento.commands.build_distutils import DistutilsBuilder
         _TestBuildSimpleExtension.setUp(self)
@@ -274,9 +274,9 @@ class TestBuildDistutils(_TestBuildSimpleExtension):
     def test_simple_extension(self):
         super(TestBuildDistutils, self).test_simple_extension()
 
-class TestBuildYaku(_TestBuildSimpleExtension):
+class TestBuildYaku(_TestBuildSimpleExtension, unittest.TestCase):
     def setUp(self):
-        super(TestBuildYaku, self).setUp()
+        _TestBuildSimpleExtension.setUp(self)
 
         self._configure_context = ConfigureYakuContext
         self._build_context = BuildYakuContext
@@ -318,7 +318,7 @@ def _not_has_waf():
 def skip_no_waf(f):
     return skip_if(_not_has_waf(), "waf not found")(f)
 
-class TestBuildWaf(_TestBuildSimpleExtension):
+class TestBuildWaf(_TestBuildSimpleExtension, unittest.TestCase):
     #def __init__(self, *a, **kw):
     #    super(TestBuildWaf, self).__init__(*a, **kw)
 
@@ -386,7 +386,7 @@ class TestBuildWaf(_TestBuildSimpleExtension):
         self._fake_output = None
         self._stderr = sys.stderr
         self._stdout = sys.stdout
-        super(TestBuildWaf, self).setUp()
+        _TestBuildSimpleExtension.setUp(self)
         # XXX: ugly stuff to make waf and nose happy together
         sys.stdout = EncodedStringIO()
         sys.stderr = EncodedStringIO()
