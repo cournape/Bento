@@ -20,9 +20,6 @@ from bento.compat.api.moves \
 from bento.core \
     import \
         PackageDescription
-from bento.core.testing \
-    import \
-        expected_failure
 
 from six \
     import \
@@ -45,9 +42,7 @@ else:
     _OPENER_DIRECTOR = "urllib2.OpenerDirector"
 
 class TestRegisterUtils(unittest.TestCase):
-    @expected_failure
     def test_build_post_data(self):
-        self.maxDiff = None
         r_content = six.b("""----------------GHSKFJDLGDS7543FJKLFHRE75642756743254\r\n""" \
 """Content-Disposition: form-data; name="maintainer"\r\n\r\n\r\n""" \
 """----------------GHSKFJDLGDS7543FJKLFHRE75642756743254\r\n""" \
@@ -86,7 +81,7 @@ Author: John Doe
         package = PackageDescription.from_string(bento_info)
         post_data = build_post_data(package, "submit")
         content_type, body = encode_multipart(post_data.items(), [])
-        self.assertMultiLineEqual(r_content, body)
+        self.assertEqual(r_content, body)
 
     @mock.patch(_OPENER_DIRECTOR, mock.MagicMock())
     def test_register_server(self):
