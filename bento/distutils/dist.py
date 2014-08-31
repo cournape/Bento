@@ -12,6 +12,9 @@ else:
         import \
             Distribution
 
+from bento.backends.distutils_backend \
+    import \
+        DistutilsConfigureContext, DistutilsBuildContext
 from bento.commands.configure \
     import \
         _setup_options_parser
@@ -49,9 +52,6 @@ from bento.commands.command_contexts \
 from bento.commands.registries \
     import \
         CommandRegistry, ContextRegistry, OptionsRegistry
-from bento.backends.yaku_backend \
-    import \
-        ConfigureYakuContext, BuildYakuContext
 from bento.commands.build_egg \
     import \
         BuildEggCommand
@@ -127,8 +127,8 @@ def global_context_factory(package_options):
 def register_command_contexts(global_context):
     default_mapping = defaultdict(lambda: ContextWithBuildDirectory)
     default_mapping.update(dict([
-            ("configure", ConfigureYakuContext),
-            ("build", BuildYakuContext),
+            ("configure", DistutilsConfigureContext),
+            ("build", DistutilsBuildContext),
             ("install", ContextWithBuildDirectory),
             ("sdist", SdistContext)]))
 

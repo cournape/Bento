@@ -8,5 +8,5 @@ from bento.backends.utils \
 
 class TestLoadBackend(unittest.TestCase):
     def test_simple(self):
-        for backend in ("Distutils", "Yaku"):
+        for backend in ("Distutils", ):
             load_backend(backend)

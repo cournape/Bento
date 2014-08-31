@@ -30,10 +30,7 @@ from bento.utils.utils \
         subst_vars
 from bento.backends.distutils_backend \
     import \
-        DistutilsBuildContext, DistutilsConfigureContext
-from bento.backends.yaku_backend \
-    import \
-        BuildYakuContext, ConfigureYakuContext, YakuBackend
+        DistutilsBuildContext, DistutilsConfigureContext, DistutilsBackend
 from bento.commands.hooks \
     import \
         PreHookWrapper
@@ -274,37 +271,6 @@ class TestBuildDistutils(_TestBuildSimpleExtension, unittest.TestCase):
     def test_simple_extension(self):
         super(TestBuildDistutils, self).test_simple_extension()
 
-class TestBuildYaku(_TestBuildSimpleExtension, unittest.TestCase):
-    def setUp(self):
-        _TestBuildSimpleExtension.setUp(self)
-
-        self._configure_context = ConfigureYakuContext
-        self._build_context = BuildYakuContext
-
-    @require_c_compiler("yaku")
-    def test_simple_inplace(self):
-        super(TestBuildYaku, self).test_simple_inplace()
-
-    @require_c_compiler("yaku")
-    def test_extension_registration(self):
-        super(TestBuildYaku, self).test_extension_registration()
-
-    @require_c_compiler("yaku")
-    def test_simple_library(self):
-        super(TestBuildYaku, self).test_simple_library()
-
-    @require_c_compiler("yaku")
-    def test_simple_extension(self):
-        super(TestBuildYaku, self).test_simple_extension()
-
-    @require_c_compiler("yaku")
-    def test_disable_extension(self):
-        super(TestBuildYaku, self).test_disable_extension()
-
-    @require_c_compiler("yaku")
-    def test_disable_nonexisting_extension(self):
-        super(TestBuildYaku, self).test_disable_nonexisting_extension()
-
 def _not_has_waf():
     try:
         import bento.backends.waf_backend
@@ -424,7 +390,7 @@ class TestBuildCommand(unittest.TestCase):
         package = PackageDescription.from_string(bento_info)
         package_options = PackageOptions.from_string(bento_info)
 
-        global_context = create_global_context(package, package_options, YakuBackend())
+        global_context = create_global_context(package, package_options, DistutilsBackend())
         conf, configure = prepare_command(global_context, "configure", [], package, self.run_node)
         run_command_in_context(conf, configure)
 
@@ -501,19 +467,6 @@ class TestBuildDirectoryBase(unittest.TestCase):
         shutil.rmtree(self.d)
 
 class TestBuildDirectory(TestBuildDirectoryBase):
-    def test_simple_yaku(self):
-        top_node = self.top_node
-
-        create_fake_package_from_bento_info(top_node, BENTO_INFO_WITH_EXT)
-        conf, configure = prepare_configure(top_node, BENTO_INFO_WITH_EXT, ConfigureYakuContext)
-        run_command_in_context(conf, configure)
-
-        build = BuildCommand()
-        opts = OptionsContext.from_command(build)
-
-        bld = BuildYakuContext(None, [], opts, conf.pkg, top_node)
-        run_command_in_context(bld, build)
-
     def test_simple_distutils(self):
         top_node = self.top_node
 

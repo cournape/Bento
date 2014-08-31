@@ -75,9 +75,9 @@ from bento.commands.options \
 from bento.backends.utils \
     import \
         load_backend
-from bento.backends.yaku_backend \
+from bento.backends.distutils_backend \
     import \
-        BuildYakuContext, ConfigureYakuContext
+        DistutilsBuildContext, DistutilsConfigureContext
 from bento.commands.command_contexts \
     import \
         HelpContext, SdistContext, ContextWithBuildDirectory
@@ -184,8 +184,8 @@ def register_command_contexts(global_context):
    # global_context.register_default_context(CmdContext)
     default_mapping = defaultdict(lambda: ContextWithBuildDirectory)
     default_mapping.update(dict([
-            ("configure", ConfigureYakuContext),
-            ("build", BuildYakuContext),
+            ("configure", DistutilsConfigureContext),
+            ("build", DistutilsBuildContext),
             ("build_egg", ContextWithBuildDirectory),
             ("build_wininst", ContextWithBuildDirectory),
             ("build_mpkg", ContextWithBuildDirectory),

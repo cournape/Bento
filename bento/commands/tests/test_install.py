@@ -7,13 +7,13 @@ from bento.compat.api.moves \
     import \
         unittest
 
+from bento.backends.distutils_backend \
+    import \
+        DistutilsConfigureContext
 from bento.core.node \
     import \
         create_root_with_source_tree
 
-from bento.backends.yaku_backend \
-    import \
-        ConfigureYakuContext
 from bento.commands.command_contexts \
     import \
         ContextWithBuildDirectory
@@ -64,7 +64,7 @@ class TestBuildCommand(unittest.TestCase):
 
         cmd_argv = ["--prefix=%s" % install_prefix, "--exec-prefix=%s" % install_prefix]
 
-        conf, configure = prepare_configure(top_node, bento_info, ConfigureYakuContext, cmd_argv)
+        conf, configure = prepare_configure(top_node, bento_info, DistutilsConfigureContext, cmd_argv)
 
         context.register_command("configure", configure)
         options_context = OptionsContext.from_command(configure)
@@ -127,7 +127,7 @@ Library:
 """
         self._test_dry_run(bento_info)
 
-    @require_c_compiler()
+    @require_c_compiler("distutils")
     def test_simple_extension_list_only(self):
         """Test whether install runs at all for a trivial package."""
         bento_info = """\

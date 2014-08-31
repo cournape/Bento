@@ -4,7 +4,6 @@ import os.path as op
 
 _BACKENDS = {
         "Waf": ("WafBackend", "waf_backend"),
-        "Yaku": ("YakuBackend", "yaku_backend"),
         "Distutils": ("DistutilsBackend", "distutils_backend")
 }
 

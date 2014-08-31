@@ -4,9 +4,9 @@ from six.moves \
     import \
         StringIO
 
-from bento.backends.yaku_backend \
+from bento.backends.distutils_backend \
     import \
-        ConfigureYakuContext, BuildYakuContext, YakuBackend
+        DistutilsConfigureContext, DistutilsBuildContext, DistutilsBackend
 from bento.commands.build \
     import \
         BuildCommand
@@ -26,12 +26,12 @@ from bento.core.testing \
     import \
         create_fake_package_from_bento_info
 
-def prepare_configure(run_node, bento_info, context_klass=ConfigureYakuContext, cmd_argv=None):
+def prepare_configure(run_node, bento_info, context_klass=DistutilsConfigureContext, cmd_argv=None):
     if cmd_argv is None:
         cmd_argv = []
     return _prepare_command(run_node, bento_info, ConfigureCommand, context_klass, cmd_argv)
 
-def prepare_build(run_node, bento_info, context_klass=BuildYakuContext, cmd_argv=None):
+def prepare_build(run_node, bento_info, context_klass=DistutilsBuildContext, cmd_argv=None):
     if cmd_argv is None:
         cmd_argv = []
     return _prepare_command(run_node, bento_info, BuildCommand, context_klass, cmd_argv)
@@ -56,7 +56,7 @@ def _prepare_command(run_node, bento_info, cmd_klass, context_klass, cmd_argv):
 
 def create_global_context(package, package_options, backend=None):
     if backend is None:
-        backend = YakuBackend()
+        backend = DistutilsBackend()
 
     global_context = GlobalContext(None)
     global_context.register_package_options(package_options)

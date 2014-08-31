@@ -8,6 +8,8 @@ import os.path as op
 import mock
 import multiprocessing
 
+import bento.errors
+
 from bento.compat.api.moves \
     import \
         unittest
@@ -31,7 +33,6 @@ from bento.errors \
         UsageException, CommandExecutionFailure, ConvertionError, ParseError
 
 import bentomakerlib.bentomaker
-import bento.commands.build_yaku
 from bento.compat.dist \
     import \
         DistributionMetadata

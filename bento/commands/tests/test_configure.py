@@ -11,6 +11,9 @@ from bento.compat.api.moves \
     import \
         unittest
 
+from bento.backends.distutils_backend \
+    import \
+        DistutilsConfigureContext
 from bento.core.options \
     import \
         PackageOptions
@@ -26,9 +29,6 @@ from bento.commands.wrapper_utils \
 from bento.commands.tests.utils \
     import \
         prepare_configure
-from bento.backends.yaku_backend \
-    import \
-        ConfigureYakuContext
 from bento.commands.configure \
     import \
         _compute_scheme, set_scheme_unix, set_scheme_win32
@@ -66,7 +66,7 @@ class TestConfigureCommand(unittest.TestCase):
         root = self.root
         run_node = root.find_node(self.d)
 
-        conf, configure = prepare_configure(run_node, BENTO_INFO, ConfigureYakuContext)
+        conf, configure = prepare_configure(run_node, BENTO_INFO, DistutilsConfigureContext)
         run_command_in_context(conf, configure)
 
     def test_flags(self):
@@ -79,7 +79,7 @@ Flag: floupi
 """
         run_node = self.root.find_node(self.d)
 
-        conf, configure = prepare_configure(run_node, bento_info, ConfigureYakuContext, ["--floupi=false"])
+        conf, configure = prepare_configure(run_node, bento_info, DistutilsConfigureContext, ["--floupi=false"])
         run_command_in_context(conf, configure)
 
 UNIX_REFERENCE = {

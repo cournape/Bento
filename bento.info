@@ -30,10 +30,6 @@ Flag: bundle
     Description: whether to install bundled upstream modules or not
     Default: true
 
-Flag: bundle_yaku
-    Description: whether to install bundled yaku or not
-    Default: true
-
 DataFiles: windows_arch_data
     SourceDir: bento/commands
     TargetDir: $pkgdatadir/commands
@@ -80,12 +76,6 @@ Library:
             bento.private._simplejson.simplejson
         Modules:
             bento/private/_six/six
-    if flag(bundle_yaku):
-        Packages:
-            bento.private._yaku.yaku,
-            bento.private._yaku.yaku.tools,
-            bento.private._yaku.yaku.compat,
-            bento.private._yaku.yaku.conftests
 
 Executable: bentomaker
     Module: bentomakerlib.bentomaker

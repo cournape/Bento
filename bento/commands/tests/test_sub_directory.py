@@ -18,7 +18,7 @@ from bento.core.node_package \
         NodeRepresentation
 from bento.core.testing \
     import \
-        create_fake_package_from_bento_info
+        create_fake_package_from_bento_info, expected_failure
 from bento.commands.tests.utils \
     import \
         prepare_configure, prepare_build
@@ -99,7 +99,8 @@ Library:
                          {"foo": r_section}}
         self._test_installed_sections(bento_info, r_sections)
 
-    @require_c_compiler("yaku")
+    @require_c_compiler("distutils")
+    @expected_failure
     def test_extension(self):
         """Test sub_directory support for C extensions."""
         bento_info = """\
@@ -121,7 +122,8 @@ Library:
                             r_section}}
         self._test_installed_sections(bento_info, r_sections)
 
-    @require_c_compiler("yaku")
+    @require_c_compiler("distutils")
+    @expected_failure
     def test_compiled_library(self):
         """Test sub_directory support for C compiled libraries."""
         bento_info = """\

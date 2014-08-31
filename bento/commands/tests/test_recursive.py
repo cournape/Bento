@@ -7,9 +7,15 @@ import os.path as op
 from bento.compat.api.moves \
     import \
         unittest
+from bento.backends.distutils_backend \
+    import \
+        DistutilsConfigureContext
 from bento.core \
     import \
         PackageDescription, PackageOptions
+from bento.core.testing\
+    import \
+        expected_failure
 from bento.errors \
     import \
         InvalidPackage
@@ -25,9 +31,6 @@ from bento.commands.hooks \
 from bento.commands.wrapper_utils\
     import \
         run_command_in_context
-from bento.backends.yaku_backend \
-    import \
-        ConfigureYakuContext
 from bento.installed_package_description \
     import \
         InstalledSection
@@ -234,7 +237,7 @@ def configure(ctx):
         bscripts = {os.path.join("bar", "bscript"): bscript}
         create_fake_package_from_bento_infos(top_node, bentos, bscripts)
 
-        conf, configure = prepare_configure(self.run_node, bento_info, ConfigureYakuContext)
+        conf, configure = prepare_configure(self.run_node, bento_info, DistutilsConfigureContext)
         try:
             hook = top_node.search("bar/bscript")
             m = create_hook_module(hook.abspath())
@@ -316,6 +319,7 @@ Library:
         self._test_installed_sections({"bento.info": bento_info, op.join("foo", "bento.info"): sub_bento_info},
                                       r_sections)
 
+    @expected_failure
     def test_extension(self):
         bento_info = """\
 Name: foo
