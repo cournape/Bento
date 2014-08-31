@@ -106,8 +106,10 @@ def setup_pyext_env(ctx, cc_type="default", use_distutils=True):
             dist_env = get_configuration()
         else:
             dist_env = get_configuration(cc_type)
+        print(dist_env)
         for name, value in dist_env.items():
             pyenv["PYEXT_%s" % name] = value
+        pyenv["PYEXT_CFLAGS"].extend(dist_env.get("SHARED", []))
         pyenv["PYEXT_FMT"] = "%%s%s" % dist_env["SO"]
         pyenv["PYEXT_SHLINKFLAGS"] = dist_env["LDFLAGS"]
     else:
