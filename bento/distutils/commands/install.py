@@ -34,6 +34,7 @@ class install(Command):
         ('single-version-externally-managed', None, "Do nothing. For compatibility with pip only."),
         ('install-headers=', None, "Do nothing. For compatibility with pip only."),
         ('force', None, "Do nothing. For compatibility with distutils."),
+        ('compile', 'c', "Do nothing, for compatibility with pip only."),
     ]
 
     def initialize_options(self):
@@ -42,6 +43,7 @@ class install(Command):
         self.record = None
         self.root = None
         self.dry_run = None
+        self.compile = None
         self.install_headers = None
         self.single_version_externally_managed = None
 
@@ -50,6 +52,8 @@ class install(Command):
     def finalize_options(self):
         if self.install_headers is not None:
             warnings.warn("--install-headers option is ignored.")
+        if self.compile is not None:
+            warnings.warn("--compile option is ignored.")
 
         if self.prefix is None:
             prefix_customized = False
